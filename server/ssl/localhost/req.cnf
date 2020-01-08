@@ -1,0 +1,14 @@
+[req]
+default_bits        = 2048
+distinguished_name  = dn
+x509_extensions     = san
+req_extensions      = san
+extensions          = san
+prompt              = no
+[ dn ]
+countryName         = AU
+stateOrProvinceName = South Australia
+localityName        = Adelaide
+organizationName    = WokeNetwork
+[ san ]
+subjectAltName      = DNS:localhost

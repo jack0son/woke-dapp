@@ -1,0 +1,4 @@
+{
+  "dbUrl": "postgresql://postgres:postgres@db:5432/hedgehog_demo",
+  "port": 3001
+}
