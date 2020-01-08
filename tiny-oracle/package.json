@@ -1,0 +1,29 @@
+{
+  "name": "tiny-oracle",
+  "version": "1.0.0",
+  "description": "Tiny oracle for Twitter API to avoid waiting for Oraclize",
+  "main": "index.js",
+  "scripts": {
+    "test": "./node_modules/.bin/mocha",
+    "test-debug": "DEBUG=m:* ./node_modules/.bin/mocha",
+    "start": "NODE_ENV=production DEBUG=m:* node index.js",
+    "dev": "NODE_ENV=development DEBUG=m:*,twitter node index.js",
+    "ropsten": "NODE_ENV=ropsten DEBUG=m:*,twitter node index.js",
+    "rinkeby": "NODE_ENV=rinkeby DEBUG=m:*,twitter node index.js",
+    "client": "DEBUG=m:* node lib/client.js",
+    "tweet": "DEBUG=twitter* node lib/twitter.js"
+  },
+  "author": "Jackson Virgo",
+  "license": "ISC",
+  "dependencies": {
+    "chalk": "^2.4.2",
+    "dotenv": "^8.0.0",
+    "request-promise-native": "^1.0.7",
+    "twitter": "^1.7.1",
+    "web3": "^1.2.4"
+  },
+  "devDependencies": {
+    "minimist": "^1.2.0",
+    "mocha": "^6.2.0"
+  }
+}
