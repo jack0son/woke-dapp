@@ -1,0 +1,11 @@
+{
+  "name": "woke-lib",
+  "version": "1.0.0",
+  "description": "Common modules for woke dApp.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Jackson Virgo",
+  "license": "ISC"
+}
