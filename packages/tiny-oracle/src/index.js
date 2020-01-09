@@ -1,8 +1,9 @@
-const debug = require('./lib/debug/index.js');
+const {
+	debug,
+	twitter,
+	web3Tools,
+} = require('woke-lib');
 const Web3 = require('web3');
-const {initContract} = require('./lib/utils');
-var twitter = require('./lib/twitter');
-const initWeb3 = require('./lib/web3/web3-init');
 
 const oracleMockInterface = require('./contracts/TwitterOracleMock.json')
 
@@ -31,7 +32,7 @@ class TinyOracle {
 
 		while(!connected) {
 			attempts += 1;
-			web3Instance = initWeb3();
+			web3Instance = web3Tools.init();
 
 			if(attempts == 1) {
 				console.dir(web3Instance.network);
