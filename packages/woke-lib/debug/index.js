@@ -1,10 +1,16 @@
-// Replace d<module initial> convention with d.<module> (e.g. debug.main)
-const {debug, wrapInspect} = require('./common');
+const debug = require('debug');
+const supportsColor = require('supports-color');
+const {inspect} = require('util');
+const chalk = require('chalk');
 
-const Debugger = (prefix = 'm') => {
+const blog = (str, d=null) => console.log(chalk.blue(inspect(str, {depth: d})));
+const wrapInspect = (wrapper) => ((str, d=null) => wrapper(chalk.blue(inspect(str, {depth: d}))));
+
+const Logger = (prefix = 'm') => {
 	const i = wrapInspect(debug(`${prefix}:obj`)); // inspect object
 	const t = debug(`${prefix}:test`);
 	const e = debug(`${prefix}:event`);
+	// Replace d<module initial> convention with d.<module> (e.g. debug.main)
 
 	return {
 		d: debug(`${prefix}`),
@@ -25,5 +31,5 @@ const Debugger = (prefix = 'm') => {
 	}
 }
 
-module.exports = Debugger
+module.exports = Logger
 

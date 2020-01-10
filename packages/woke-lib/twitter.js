@@ -1,7 +1,7 @@
 const Twitter = require('twitter');
 var request = require('request-promise-native');
-var {debug, blog, chalk} = require('./debug/common.js');
-debug = debug('twitter');
+
+const debug = require('./debug')('twitter');
 
 require('dotenv').config();
 const consumerKey = process.env.TWITTER_CONSUMER_KEY;
@@ -104,7 +104,7 @@ const searchClaimTweet = async (handle) => { // claimString = `@getwoketoke 0xWO
 		// Should never get here
 		debug(tweets);
 	}
-	debug(chalk.cyan(tweets))
+	debug(tweets);
 	return tweets[0];
 }
 

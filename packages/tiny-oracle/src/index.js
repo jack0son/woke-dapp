@@ -1,9 +1,11 @@
 const {
-	debug,
+	Logger,
 	twitter,
 	web3Tools,
 } = require('woke-lib');
 const Web3 = require('web3');
+
+const debug = Logger();
 
 const oracleMockInterface = require('../../contracts/build/contracts/TwitterOracleMock.json')
 

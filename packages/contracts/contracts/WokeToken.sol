@@ -234,7 +234,6 @@ contract WokeToken is Ownable, ERC20 {
 		// @fix factor in userCount
 		// @fix use safeMath
 		uint256 unclaimedPool = balanceOf(address(this)); // total unclaimed tokens
-		emit TraceUint256('unclaimedpool', unclaimedPool);
 
 		uint256 count = userCount;
 		if(count == 0) {
