@@ -1,4 +1,4 @@
 {
-  "dbUrl": "postgresql://postgres:postgres@localhost:5432/hedgehog_demo",
+  "dbUrl": "postgresql://postgres:postgres@localhost:5432/woke_dapp",
   "port": 3001
 }

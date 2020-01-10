@@ -33,10 +33,11 @@ class Funder extends Emitter {
 		let connected = false;
 
 		while(!connected) {
-			attempts += 1;
+			++attempts;
 			web3Instance = web3Tools.init();
 
 			if(attempts == 1) {
+				debug.d('Web3 network conf:');
 				console.dir(web3Instance.network);
 			}
 
