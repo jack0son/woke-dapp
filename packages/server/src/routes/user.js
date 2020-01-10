@@ -1,10 +1,10 @@
 const debug = require('debug')('server:model-user');
 const models = require('../models')
-const { handleResponse, successResponse, errorResponseBadRequest } = require('../apiHelpers')
+const { handleResponse, successResponse, errorResponseBadRequest } = require('../lib/apiHelpers')
 var express = require('express')
 var router = express.Router()
 
-const WalletFunder = require('../lib/walletfunder');
+const WalletFunder = require('../lib/walletFunder');
 
 const funder = new WalletFunder();
 

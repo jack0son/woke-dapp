@@ -1,7 +1,7 @@
 const Umzug = require('umzug')
 const path = require('path')
 
-const { sequelize } = require('./models')
+const { sequelize } = require('../models')
 
 function runMigrations () {
   const umzug = new Umzug({
@@ -16,7 +16,7 @@ function runMigrations () {
         sequelize.getQueryInterface(),
         sequelize.constructor
       ],
-      path: path.join(__dirname, '../sequelize/migrations')
+      path: path.join(__dirname, '../../sequelize/migrations')
     }
   })
   return umzug.up()

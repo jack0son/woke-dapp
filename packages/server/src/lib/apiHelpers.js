@@ -15,35 +15,10 @@ module.exports.handleResponse = (func) => {
   }
 }
 
-const isValidResponse = (resp) => {
-  if (!resp || !resp.statusCode || !resp.object) {
-    return false
-  }
-
-  return true
-}
-
-/**
- * Success response
- */
-const sendResponse = (req, res, resp) => {
-  res.status(resp.statusCode).send(resp.object)
-}
-
 module.exports.successResponse = (obj = {}) => {
   return {
     statusCode: 200,
     object: obj
-  }
-}
-
-/**
- * Error response
- */
-const errorResponse = (statusCode, message) => {
-  return {
-    statusCode: statusCode,
-    object: { error: message }
   }
 }
 
@@ -53,4 +28,25 @@ module.exports.errorResponseBadRequest = (message) => {
 
 module.exports.errorResponseServerError = (message) => {
   return errorResponse(500, message)
+}
+
+// Check response validity
+const isValidResponse = (resp) => {
+  if (!resp || !resp.statusCode || !resp.object) {
+    return false
+  }
+  return true
+}
+
+// Success response
+const sendResponse = (req, res, resp) => {
+  res.status(resp.statusCode).send(resp.object)
+}
+
+// Error response
+const errorResponse = (statusCode, message) => {
+  return {
+    statusCode: statusCode,
+    object: { error: message }
+  }
 }

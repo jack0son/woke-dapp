@@ -4,10 +4,15 @@ const {
 	web3Tools,
 } = require('woke-lib');
 const Web3 = require('web3');
-
-const debug = Logger();
+const debug = Logger('oracle');
 
 const oracleMockInterface = require('../../contracts/build/contracts/TwitterOracleMock.json')
+
+function timeoutPromise(ms) {
+	return new Promise((resolve, reject) => setTimeout(() => {
+		resolve();
+	}, ms));
+}
 
 // @dev Minimal oracle server to respond to queries in the mock oracle contract.
 class TinyOracle {
@@ -33,7 +38,7 @@ class TinyOracle {
 		let connected = false;
 
 		while(!connected) {
-			attempts += 1;
+			++attempts
 			web3Instance = web3Tools.init();
 
 			if(attempts == 1) {
@@ -61,7 +66,7 @@ class TinyOracle {
 					debug.m(`FATAL ERROR: Could not instantiate Web3 after ${attempts} attempts.`);
 					return false;
 				}
-				await asyncTimeout(3000);
+				await timeoutPromise(3000);
 			}
 		}
 
@@ -98,7 +103,7 @@ class TinyOracle {
 
 			if(!connected) {
 				if(attempts < maxAttempts) {
-					await asyncTimeout(2000);
+					await timeoutPromise(2000);
 				} else {
 					await self.initWeb3();
 					self.initContract();
@@ -143,7 +148,7 @@ class TinyOracle {
 					// Reinstantiate web3
 					await self.initWeb3();
 					self.initContract();
-					asyncTimeout(5000);
+					timeoutPromise(5000);
 				}
 			}
 		}
@@ -301,8 +306,3 @@ if(debug.debug.enabled && require.main === module) {
 	})();
 }
 
-function asyncTimeout(ms) {
-	return new Promise((resolve, reject) => setTimeout(() => {
-		resolve();
-	}, ms));
-}

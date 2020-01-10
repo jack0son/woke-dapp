@@ -1,22 +1,25 @@
-const debug = require('debug')('server:funder');
+const {
+	Logger,
+	web3Tools,
+} = require('woke-lib');
 const Emitter = require('events');
-const initWeb3 = require('./web3-init');
 
-const {web3, network, account} = initWeb3();
-const DEFAULT_WEI = web3.utils.toWei('0.2', 'ether');
+const debug = Logger('server:funder');
+
+const web3Utils = require('web3-utils');
+const DEFAULT_WEI = web3Utils.toWei('0.2', 'ether');
 
 // TODO confirm with woketoken that account is not already funded
 class Funder extends Emitter {
 	constructor(donationAmount = DEFAULT_WEI) {
 		super();
 		const self = this;
-		self.account = account;
 		self.value = donationAmount
 		self.txFailures = [];
 
 		self.initWeb3().then(success => success ?
 			self.setupListener() :
-			debug('Could not setup funding listener')
+			debug.d('Could not setup funding listener')
 		);
 	}
 
@@ -31,24 +34,24 @@ class Funder extends Emitter {
 
 		while(!connected) {
 			attempts += 1;
-			web3Instance = initWeb3();
+			web3Instance = web3Tools.init();
 
 			if(attempts == 1) {
 				console.dir(web3Instance.network);
 			}
 
 			try {
-				debug(`Attempting Web3 connection on network ${web3Instance.network.id} ...`);
+				debug.d(`Attempting Web3 connection on network ${web3Instance.network.id} ...`);
 				await web3Instance.web3.eth.net.getId();
 				connected = true;
 			} catch (error) {
-				debug('Encountered error trying to instantiate new Web3 instance ...');
-				debug('... ', error);
+				debug.d('Encountered error trying to instantiate new Web3 instance ...');
+				debug.d('... ', error);
 			}
 
 			if(!connected) {
 				if(attempts >= maxAttempts) {
-					debug(`FATAL ERROR: Could not instantiate Web3 after ${attempts} attempts.`);
+					debug.d(`FATAL ERROR: Could not instantiate Web3 after ${attempts} attempts.`);
 					return false;
 				}
 				await asyncTimeout(3000);
@@ -62,26 +65,26 @@ class Funder extends Emitter {
 
 		let chainId = await self.web3.eth.getChainId();
 		let id = await self.web3.eth.net.getId();
-		debug(`web3.eth.getChainId: ${chainId}`);
-		debug(`web3.eth.net.getId: ${chainId}`);
-		debug('default common', web3.eth.defaultCommon);
+		debug.d(`web3.eth.getChainId: ${chainId}`);
+		debug.d(`web3.eth.net.getId: ${chainId}`);
+		debug.d('default common', web3.eth.defaultCommon);
 
 		self.chainId = chainId;
 
-		debug('... Web3 connection success');
+		debug.d('... Web3 connection success');
 		return true;
 	}
 
 	setupListener() {
 		const self = this;
 
-		debug('Fund pool address: ', self.account);
+		debug.d('Fund pool address: ', self.account);
 
 		self.on('new-user', user => {
-			debug(`Funding ${user.username} at ${user.walletAddress} ... `);
+			debug.d(`Funding ${user.username} at ${user.walletAddress} ... `);
 			self.fundWallet(user.walletAddress)
 				.then(receipt => {
-					debug(`FUNDED: Sent ${self.value} to ${user.username}`)
+					debug.d(`FUNDED: Sent ${self.value} to ${user.username}`)
 				})
 				.catch(error => self.failedToFund(error));
 		});
@@ -118,8 +121,8 @@ class Funder extends Emitter {
 				receipt = r;
 
 			} catch (error) {
-				debug(error);
-				debug('... retrying funding');
+				debug.d(error);
+				debug.d('... retrying funding');
 			}
 
 			if(!receipt) {
@@ -144,7 +147,7 @@ class Funder extends Emitter {
 	}
 
 	failedToFund(user, failure) {
-		debug(`Failed to fund ${user}:`);
+		debug.d(`Failed to fund ${user}:`);
 		console.error(failure);
 		this.txFailures.push({
 			user: user,

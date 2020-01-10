@@ -1,5 +1,5 @@
 const models = require('../models')
-const { handleResponse, successResponse, errorResponseBadRequest } = require('../apiHelpers')
+const { handleResponse, successResponse, errorResponseBadRequest } = require('../lib/apiHelpers')
 var express = require('express')
 var router = express.Router()
 //const debug = require('debug')('server:auth-router');
