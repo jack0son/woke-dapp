@@ -3,9 +3,16 @@
   "version": "1.0.0",
   "description": "Common modules for woke dApp.",
   "main": "index.js",
+  "author": "Jackson Virgo",
+  "license": "ISC",
+  "dependencies": {
+    "chalk": "^3.0.0",
+    "dotenv": "^8.2.0",
+    "request-promise-native": "^1.0.8",
+    "twitter": "^1.7.1",
+    "web3": "^1.2.4"
+  },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
-  },
-  "author": "Jackson Virgo",
-  "license": "ISC"
+  }
 }

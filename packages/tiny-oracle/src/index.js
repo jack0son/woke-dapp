@@ -5,7 +5,7 @@ const {
 } = require('woke-lib');
 const Web3 = require('web3');
 
-const oracleMockInterface = require('./contracts/TwitterOracleMock.json')
+const oracleMockInterface = require('../../contracts/build/contracts/TwitterOracleMock.json')
 
 // @dev Minimal oracle server to respond to queries in the mock oracle contract.
 class TinyOracle {
