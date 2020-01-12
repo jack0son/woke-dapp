@@ -62,12 +62,10 @@ class Funder extends Emitter {
 		const {web3, network, account} = web3Instance;
 		self.web3 = web3;
 		self.network = network;
-		self.acccount = account;
+		self.account = account;
 
 		let chainId = await self.web3.eth.getChainId();
-		let id = await self.web3.eth.net.getId();
-		debug.d(`web3.eth.getChainId: ${chainId}`);
-		debug.d(`web3.eth.net.getId: ${chainId}`);
+		debug.d(`chainId: ${chainId}`);
 		debug.d('default common', web3.eth.defaultCommon);
 
 		self.chainId = chainId;
