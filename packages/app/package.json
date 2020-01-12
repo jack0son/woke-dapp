@@ -24,6 +24,7 @@
   },
   "scripts": {
     "start": "react-scripts start",
+    "rinkeby": "REACT_APP_ETH_NETWORK=rinkeby react-scripts start",
     "design": "REACT_APP_DEV_MODE=design react-scripts start",
     "build": "react-scripts build",
     "test": "react-scripts test",
