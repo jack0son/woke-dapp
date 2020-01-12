@@ -19,11 +19,12 @@ import createUseEvents from './create-use-events';
 
 // Contract artifacts are defined manually for now. Can be generalised for use
 // in another project.
-import config from '../../config/config';
+import { getWeb3Network } from '../../config/web3-helpers'
 import TwitterOracleMock from '../../contracts/TwitterOracleMock.json';
 import WokeToken from '../../contracts/WokeToken.json';
 
-let network = config.web3.networks[process.env.NODE_ENV];
+let network = getWeb3Network();
+
 const artifacts = {
 	TwitterOracleMock: TwitterOracleMock,
 	WokeToken: WokeToken
@@ -32,7 +33,7 @@ const artifacts = {
 const Context = createContext();
 export const useWeb3Context = () => useContext(Context);
 
-// TODO identify why web3 call sometimes returns incorrect network ID
+// @TODO identify why web3 call sometimes returns incorrect network ID
 export async function initWeb3(provider) {
 	// Check connection
 	const web3 = new Web3(provider);
@@ -51,7 +52,7 @@ export async function initWeb3(provider) {
 }
 
 export const Web3ContextProvider = ({children, web3, networkId, account}) => {
-	// TODO set default web3 send options
+	// @TODO set default web3 send options
 	const useContract = useMemo(() => createUseContract(web3, artifacts, networkId), [web3, artifacts, networkId]);
 	//const getPastEvents = useMemo(() => createGetPastEvents(web3), [web3]);
 	const useContractSubscriptions = createUseContractSubscriptions(web3);

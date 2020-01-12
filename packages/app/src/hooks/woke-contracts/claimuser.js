@@ -524,7 +524,6 @@ export default (props) => {
 	// Log once
 	useEffect(() => {
 		console.log('Claim account: ', account);
-		//console.log('User balance: ', drizzleState.balance);
 	}, [])
 
 	useEffect(() => {
@@ -540,7 +539,6 @@ export default (props) => {
 			userClickedPostTweet,
 			userConfirmedTweeted
 		},
-		//balance: drizzleState.balance,
 		claimString,
 		transactions: {
 			sendClaimUser,

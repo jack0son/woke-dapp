@@ -1,4 +1,7 @@
+import path from 'path'
 const infuraApiKey = process.env.REACT_APP_INFURA_API_KEY;
+
+const root = path.dirname(require.main.filename);
 
 export default {
 	web3: {
@@ -13,23 +16,30 @@ export default {
 			ropsten: {
 				protocol: 'wss',
 				host: `ropsten.infura.io/ws/v3/${infuraApiKey}`,
-				//host: `ropsten.infura.io/ws`,
 				id: 3,
 			},
 
 			rinkeby: {
 				protocol: 'wss',
 				host: `rinkeby.infura.io/ws/v3/${infuraApiKey}`,
-				//host: `ropsten.infura.io/ws`,
 				id: 4,
 			},
 
 			production: {
 				protocol: 'wss',
 				host: `rinkeby.infura.io/ws/v3/${infuraApiKey}`,
-				//host: `ropsten.infura.io/ws`,
 				id: 4,
 			}
+		},
+
+		contracts: {
+			development: {
+				path: 'src/contracts'
+			},
+			production: {
+				// Relative to app
+				path: '../contracts/build/contracts'
+			},
 		},
 	},
 

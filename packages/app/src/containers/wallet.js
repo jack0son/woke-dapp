@@ -40,7 +40,6 @@ export default function WalletContainer(props) {
 	const [fetchingTxData, setFetchingTxData] = useState(false);
 	const [txList, setTxList] = useState([]);
 
-	//const balance = useCacheCall('WokeToken', 'balanceOf', drizzleState.account);
 	const balance = useSubscribeCall('WokeToken', 'balanceOf', account);
 
 	// Custom hooks

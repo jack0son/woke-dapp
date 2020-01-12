@@ -14,7 +14,7 @@ export default function(twitterUsers, blockCache) {
 	const userIds = twitterUsers.state.ids;
 	const setUserIds = twitterUsers.setIds;
 
-	// Cannot use indexed strings on drizzle as it using an old web3 beta
+	// TODO: use indexed strings on smart-contract to look up by user id
 	let rewardEvents = useEvents('WokeToken', 'Reward',
 		useMemo(() => (
 			{
