@@ -34,7 +34,7 @@ export default {
 
 		contracts: {
 			development: {
-				path: 'src/contracts'
+				path: 'contracts'
 			},
 			production: {
 				// Relative to app

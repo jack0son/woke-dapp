@@ -6,7 +6,6 @@ import React, {
 	useMemo
 } from 'react';
 import Web3 from 'web3';
-
 import { getContract } from '../../lib/web3/web3-utils';
 
 import createUseContract from './create-use-contract';
@@ -19,16 +18,10 @@ import createUseEvents from './create-use-events';
 
 // Contract artifacts are defined manually for now. Can be generalised for use
 // in another project.
-import { getWeb3Network } from '../../config/web3-helpers'
-import TwitterOracleMock from '../../contracts/TwitterOracleMock.json';
-import WokeToken from '../../contracts/WokeToken.json';
+import { getWeb3Network, loadContractArtifacts } from '../../config/web3-helpers'
 
-let network = getWeb3Network();
-
-const artifacts = {
-	TwitterOracleMock: TwitterOracleMock,
-	WokeToken: WokeToken
-}
+const network = getWeb3Network();
+const artifacts = loadContractArtifacts();
 
 const Context = createContext();
 export const useWeb3Context = () => useContext(Context);
@@ -52,6 +45,12 @@ export async function initWeb3(provider) {
 }
 
 export const Web3ContextProvider = ({children, web3, networkId, account}) => {
+	const [artifacts, setArtifacts] = useState(null);
+
+	useEffect(() => {
+		loadContractArtifacts().then(setArtifacts);
+	}, []);
+
 	// @TODO set default web3 send options
 	const useContract = useMemo(() => createUseContract(web3, artifacts, networkId), [web3, artifacts, networkId]);
 	//const getPastEvents = useMemo(() => createGetPastEvents(web3), [web3]);
