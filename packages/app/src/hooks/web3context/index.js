@@ -45,12 +45,6 @@ export async function initWeb3(provider) {
 }
 
 export const Web3ContextProvider = ({children, web3, networkId, account}) => {
-	const [artifacts, setArtifacts] = useState(null);
-
-	useEffect(() => {
-		loadContractArtifacts().then(setArtifacts);
-	}, []);
-
 	// @TODO set default web3 send options
 	const useContract = useMemo(() => createUseContract(web3, artifacts, networkId), [web3, artifacts, networkId]);
 	//const getPastEvents = useMemo(() => createGetPastEvents(web3), [web3]);

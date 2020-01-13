@@ -30,17 +30,7 @@ export default {
 				host: `rinkeby.infura.io/ws/v3/${infuraApiKey}`,
 				id: 4,
 			}
-		},
-
-		contracts: {
-			development: {
-				path: 'contracts'
-			},
-			production: {
-				// Relative to app
-				path: '../contracts/build/contracts'
-			},
-		},
+		}
 	},
 
 	server: {

@@ -4,33 +4,37 @@ import fs from 'fs';
 import TwitterOracleMock from '../contracts/TwitterOracleMock.json';
 import WokeToken from '../contracts/WokeToken.json';
 
+
 const nodeEnv = process.env.NODE_ENV;
 const ethNetwork = process.env.REACT_APP_ETH_NETWORK;
-const productionArtifacts = {
-	WokeToken,
-	TwitterOracleMock,
-}
-const contractNames = Object.keys(productionArtifacts);
 
-// @dev Need to use conditional import for contract artifacts
+const contractArtifacts = {
+	production: {
+		WokeToken,
+		TwitterOracleMock,
+	},
+	development: null
+}
+
+if(nodeEnv === 'development') {
+	contractArtifacts.development = require('../contracts')
+}
+
 export function loadContractArtifacts() {
-	return new Promise((resolve, reject) => {
-		let artifacts = {};
-		import('../../../contracts/build/contracts/WokeToken.json').then(console.dir)
-		if(nodeEnv !== 'production') {
-			const contractsPath = path.resolve(__dirname, config.web3.contracts[nodeEnv].path);
-			console.log(contractsPath);
-			contractNames.forEach(name => {
-				import(path.resolve(contractsPath, `${name}.json`)).then(artifact => {
-					artifacts[name] = artifact;
-				});
-			})
-		} else {
-			artifacts = productionArtifacts;
+	let artifacts;
+
+	if(nodeEnv !== 'production') {
+		if(contractArtifacts.development === null) {
+			throw new Error('Could not locate development artifacts');
+			return;
 		}
 
-		resolve(artifacts);
-	});
+		artifacts = contractArtifacts.development;
+	} else {
+		artifacts = contractArtifacts.production;
+	}
+
+	return artifacts;
 }
 
 export function getWeb3Network() {

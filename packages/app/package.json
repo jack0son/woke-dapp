@@ -23,6 +23,9 @@
     "web3": "^1.2.1",
     "web3-provider-engine": "^15.0.3"
   },
+  "devDependencies": {
+    "woke-contracts": "1.0.0"
+  },
   "scripts": {
     "start": "react-scripts start",
     "rinkeby": "REACT_APP_ETH_NETWORK=rinkeby react-scripts start",
