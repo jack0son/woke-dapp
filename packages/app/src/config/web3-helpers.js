@@ -13,11 +13,7 @@ const contractArtifacts = {
 		WokeToken,
 		TwitterOracleMock,
 	},
-	development: null
-}
-
-if(nodeEnv === 'development') {
-	contractArtifacts.development = require('../contracts')
+	development: nodeEnv === 'development' ? require('../contracts') : null
 }
 
 export function loadContractArtifacts() {
@@ -39,13 +35,14 @@ export function loadContractArtifacts() {
 
 export function getWeb3Network() {
 	let networkName = nodeEnv == 'development' ?  ethNetwork : nodeEnv;
-	console.log('Ethereum network: ', networkName);
 	let network = config.web3.networks[networkName];
 
 	if(!network) {
 		console.error(`No configuration found for ethereum network '${networkName}'. Using localhost.`);
 		network = {protocol: 'ws', host: 'localhost', port: 8545};
 	}
+
+	network.name = networkName;
 
 	return network;
 }

@@ -29,6 +29,7 @@ export const useWeb3Context = () => useContext(Context);
 // @TODO identify why web3 call sometimes returns incorrect network ID
 export async function initWeb3(provider) {
 	// Check connection
+	console.log('Ethereum network: ', network.name);
 	const web3 = new Web3(provider);
 	await web3.eth.net.isListening();
 	let networkId;
@@ -39,7 +40,7 @@ export async function initWeb3(provider) {
 		networkId = await web3.eth.net.getId()
 	}
 
-	console.log("NETWORK ID: ", networkId);
+	console.log("Netowrk ID: ", networkId);
 
 	return {web3, networkId};
 }
