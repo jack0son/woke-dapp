@@ -11,6 +11,15 @@ const rinkeby = {
 	host: `rinkeby.infura.io/ws/v3/${infuraApiKey}`,
 	gasPrice: 40*GWei,
 	gasLimit:  '6590000',
+	defaultCommon: {
+		customChain: {
+			name: 'rin',
+			networkId: 4,
+			chainId: 4,
+		},
+		baseChain: 'rinkeby', 
+		//hardfork: 'petersburg',
+	},
 }
 
 module.exports = {

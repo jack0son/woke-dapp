@@ -46,9 +46,9 @@ class TinyOracle {
 			}
 
 			try {
-				debug.m(`Attempting Web3 connection on network ${web3Instance.network.id} ...`);
+				debug.d(`Attempting Web3 connection on network ${web3Instance.network.id} ...`);
 				let networkId = await web3Instance.web3.eth.net.getId();
-				debug.m(`... connected to ${networkId}`);
+				debug.d(`... connected to ${networkId}`);
 
 				if(networkId != web3Instance.network.id) {
 					throw new Error(`... got ${networkId}, but expected ${web3Instance.network.id}`);
@@ -63,7 +63,7 @@ class TinyOracle {
 
 			if(!connected) {
 				if(attempts >= maxAttempts) {
-					debug.m(`FATAL ERROR: Could not instantiate Web3 after ${attempts} attempts.`);
+					debug.d(`FATAL ERROR: Could not instantiate Web3 after ${attempts} attempts.`);
 					return false;
 				}
 				await timeoutPromise(3000);
@@ -75,7 +75,7 @@ class TinyOracle {
 		self.network = network;
 		self.address = account;
 
-		debug.m('... Web3 connection success');
+		debug.d('... Web3 connection success');
 		return true;
 	}
 
@@ -91,14 +91,14 @@ class TinyOracle {
 		let connected = false;
 		let networkId;
 
-		debug.m('Checking Web3 connection ...');
+		debug.d('Checking Web3 connection ...');
 		while(!connected) {
 			attempts += 1;
 			try {
 				networkId = await self.web3.eth.net.getId();
 				connected = true;
 			} catch (error) {
-				debug.m('... ERROR: ', error);
+				debug.d('... ERROR: ', error);
 			}
 
 			if(!connected) {
@@ -122,10 +122,10 @@ class TinyOracle {
 		if(!callbackAccount) {
 			callbackAccount = web3.eth.defaultAccount;
 		}
-		debug.m(`Using callback account: ${callbackAccount}`);
-		debug.m(`Connecting to Oracle contract ...`);
+		debug.d(`Using callback account: ${callbackAccount}`);
+		debug.d(`Connecting to Oracle contract ...`);
 		self.initContract();
-		debug.m(`Initialising twitter client ...`);
+		debug.d(`Initialising twitter client ...`);
 		await twitter.initClient();
 
 		let txOpts = {
@@ -155,7 +155,7 @@ class TinyOracle {
 
 		await self.processWaitingQueries(self.oracle, handleQuery);
 
-		debug.m(`Subscribing to oracle requests ...`);
+		debug.d(`Subscribing to oracle requests ...`);
 		self.subscribeLogEvent(
 			self.oracle, 
 			'FindTweetLodged', 
@@ -166,7 +166,7 @@ class TinyOracle {
 	async processWaitingQueries(contract, handleFunc) {
 		let opts = {fromBlock: 0};
 		let responseMap = {};
-		debug.m(`Finding waiting queries ...`);
+		debug.d(`Finding waiting queries ...`);
 		const [queryEvents, responseEvents] = await Promise.all([
 			contract.getPastEvents('FindTweetLodged', opts),
 			contract.getPastEvents('TweetStored', opts).then(events => {
@@ -174,7 +174,7 @@ class TinyOracle {
 				return events;
 			})
 		]);
-		debug.m(`\tQueries: ${queryEvents.length}, Responses: ${responseEvents.length}`);
+		debug.d(`\tQueries: ${queryEvents.length}, Responses: ${responseEvents.length}`);
 		
 		let pendingResponses = [];
 		queryEvents.forEach(event => {
@@ -184,7 +184,7 @@ class TinyOracle {
 			}
 		});
 
-		debug.m(`Responding to ${pendingResponses.length} queries ...`);
+		debug.d(`Responding to ${pendingResponses.length} queries ...`);
 		let r = await Promise.all(pendingResponses);
 
 		return;
@@ -222,7 +222,7 @@ class TinyOracle {
 		// Pre-empt websocket timeout (60 mins on infura)
 		setInterval(() => {
 			self.checkConnection().then(() => {
-				debug.m(`... resubscribed ${eventName}`)
+				debug.d(`... resubscribed ${eventName}`)
 				self.subscribedEvents[eventName].subscribe(handleUpdate);
 			});
 		}, 10*60*1000);
@@ -239,12 +239,12 @@ class TinyOracle {
 						console.error(`Failed to unsubscribe from '${eventName}'`);
 						reject(error);
 					}
-					debug.m(`... unsubscribed '${eventName}'`);
+					debug.d(`... unsubscribed '${eventName}'`);
 					resolve(succ);
 				})
 			))
 		);
-		debug.m('Unsubscribed and stopped.');
+		debug.d('Unsubscribed and stopped.');
 	}
 }
 
@@ -294,7 +294,7 @@ if(debug.debug.enabled && require.main === module) {
 		//while(networkId != network.id) {
 			// Work around if using web3-provider-engine
 		//	networkId = await web3.eth.net.getId();
-		//	debug.m('Web3 provider returned network ID: ', networkId);
+		//	debug.d('Web3 provider returned network ID: ', networkId);
 		//}
 
 		let oracleServer = new TinyOracle() //web3, undefined, account, network);

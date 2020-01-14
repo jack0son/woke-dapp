@@ -5,12 +5,12 @@
   "main": "index.js",
   "scripts": {
     "test": "./node_modules/.bin/mocha",
-    "test-debug": "DEBUG=m:* ./node_modules/.bin/mocha",
-    "start": "NODE_ENV=production DEBUG=m:* node src/index.js",
-    "dev": "NODE_ENV=development DEBUG=m:*,twitter node src/index.js",
-    "ropsten": "NODE_ENV=ropsten DEBUG=m:*,twitter node src/index.js",
-    "rinkeby": "NODE_ENV=rinkeby DEBUG=m:*,twitter node src/index.js",
-    "client": "DEBUG=m:* node src/lib/client.js",
+    "test-debug": "DEBUG=oracle:* ./node_modules/.bin/mocha",
+    "start": "NODE_ENV=production DEBUG=oracle* node src/index.js",
+    "dev": "NODE_ENV=development DEBUG=oracle*,twitter node src/index.js",
+    "ropsten": "NODE_ENV=ropsten DEBUG=oracle*,twitter node src/index.js",
+    "rinkeby": "NODE_ENV=rinkeby DEBUG=oracle*,twitter node src/index.js",
+    "client": "DEBUG=oracle:* node src/lib/client.js",
     "tweet": "DEBUG=twitter* node src/lib/twitter.js"
   },
   "author": "Jackson Virgo",

@@ -13,7 +13,7 @@ const contractArtifacts = {
 		WokeToken,
 		TwitterOracleMock,
 	},
-	development: nodeEnv === 'development' ? require('../../contracts') : null
+	development: nodeEnv !== 'production' ? require('../../contracts') : null
 }
 
 export function loadContractArtifacts() {
