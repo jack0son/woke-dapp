@@ -15,13 +15,12 @@ export default web3 => (contractName, methodName, ...args) => {
 	const callMethod = useCallback(() => {
 		if(contract) {
 			console.log(`call ${contractName}, ${methodName}: ${args}`);
-			console.dir(contract);
-			console.dir(contract);
+			//console.dir(contract);
 			return contract.methods[methodName](...args).call({from: account})
 				.then(result => {
 					if(isMounted.current) {
 						setCallValue(result)
-						console.log(`... <${result} from call ${contractName}, ${methodName}: ${args}`);
+						console.log(`... <${result}> from call ${contractName}, ${methodName}: ${args}`);
 					}
 				})
 				.catch(error => {

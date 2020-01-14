@@ -6,8 +6,8 @@ import React, {
 	useMemo
 } from 'react';
 import Web3 from 'web3';
-
 import { getContract } from '../../lib/web3/web3-utils';
+import { loadContractArtifacts } from '../../lib/web3/web3-config'
 
 import createUseContract from './create-use-contract';
 import createUseContractSubscriptions from './create-use-contract-subscriptions';
@@ -19,37 +19,12 @@ import createUseEvents from './create-use-events';
 
 // Contract artifacts are defined manually for now. Can be generalised for use
 // in another project.
-import { getWeb3Network } from '../../config/web3-helpers'
-import TwitterOracleMock from '../../contracts/TwitterOracleMock.json';
-import WokeToken from '../../contracts/WokeToken.json';
 
-let network = getWeb3Network();
-
-const artifacts = {
-	TwitterOracleMock: TwitterOracleMock,
-	WokeToken: WokeToken
-}
+const artifacts = loadContractArtifacts();
 
 const Context = createContext();
 export const useWeb3Context = () => useContext(Context);
 
-// @TODO identify why web3 call sometimes returns incorrect network ID
-export async function initWeb3(provider) {
-	// Check connection
-	const web3 = new Web3(provider);
-	await web3.eth.net.isListening();
-	let networkId;
-	while(networkId != network.id) {
-		if(networkId) {
-			console.warn(`Expected network ID from config ${network.id}, but got ${networkId}`);
-		}
-		networkId = await web3.eth.net.getId()
-	}
-
-	console.log("NETWORK ID: ", networkId);
-
-	return {web3, networkId};
-}
 
 export const Web3ContextProvider = ({children, web3, networkId, account}) => {
 	// @TODO set default web3 send options

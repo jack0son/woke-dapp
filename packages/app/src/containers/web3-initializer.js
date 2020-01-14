@@ -9,54 +9,75 @@ import Web3Container from './web3-container'
 // View containers
 import Loading from './views/loading'
 
-import injectWeb3 from '../lib/web3/web3-inject'
+import {injectWeb3, makeWeb3} from '../lib/web3/web3-init'
 
-
-export default function Web3Initializer(props) {
-	const [web3Provider, setWeb3Provider] = useState(null);
+function useWeb3Instance(wallet) {
+	const [provider, setProvider] = useState(null);
 	const [networkId, setNetworkId] = useState(null);
-	const [web3State, setWeb3State] = useState(null);
+	const [web3Instance, setWeb3Instance] = useState(null);
 	const [account, setAccount] = useState(null);
 
-	// TODO move to custom hook
-	// Initialize custom provider
 	useEffect(() => {
-		injectWeb3(props.wallet).then(provider => setWeb3Provider(provider));
-	}, [])
+		//injectWeb3(wallet).then(provider => setProvider(provider));
+		setProvider(injectWeb3(wallet));
+	}, [wallet])
 
-	// Ensure web3 has custom provider before setting up dizzle
 	useEffect(() => {
 		async function initializeWeb3() {
-			let {web3, networkId} = await Web3ContextHooks.initWeb3(web3Provider);
-			setWeb3State({web3, networkId});
+			let {web3, network} = await makeWeb3(provider);
 			let accounts = await web3.eth.getAccounts();
+			//console.dir(network);
+			setWeb3Instance(web3);
+			setNetworkId(network.id);
 			setAccount(accounts[0]);
 		}
 
-		if(web3Provider) {
+		if(provider != null) {
+			//console.dir(provider);
 			initializeWeb3();
 		}
-	}, [web3Provider]);
+	}, [provider]);
+
+	const web3IsReady = () => {
+		return (
+			networkId != null &&
+			web3Instance != null &&
+			account != null
+		);
+	}
+
+	return {
+		web3IsReady,
+		networkId,
+		web3Instance,
+		account
+	}
+}
+
+export default function Web3Initializer(props) {
+	const {wallet, ...innerProps} = props;
+	const {web3IsReady, networkId, web3Instance, account } =  useWeb3Instance(wallet);
 
 	useEffect(() => {
 		if(account) {
 			console.log('Using wallet address: ', account);
 		}
 	}, [account]);
-	
+
+
 	return (
 		<>
-		{ web3Provider && web3State && account ? 
-			<Web3ContextHooks.Web3ContextProvider
-				web3={web3State.web3}
-				networkId={web3State.networkId}
-				account={account}
-			>
-				<Web3Container wallet={props.wallet}/>
-			</Web3ContextHooks.Web3ContextProvider> 
+			{ web3IsReady() ? (
+					<Web3ContextHooks.Web3ContextProvider
+						web3={web3Instance}
+						networkId={networkId}
+						account={account}
+					>
+						<Web3Container wallet={wallet}/>
+					</Web3ContextHooks.Web3ContextProvider> 
 
-			: <Loading/>
-		}
+				) : <Loading/>
+			}
 		</>
 	);
 }

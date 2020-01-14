@@ -1,8 +1,8 @@
 {
-  "name": "twitter-oracle",
-  "version": "0.1.0",
+  "name": "woke-contracts",
+  "version": "1.0.0",
   "description": "Testing set up for Oraclize's computation resource url-requests",
-  "main": "README.md",
+  "main": "index.js",
   "directories": {
     "test": "test"
   },
