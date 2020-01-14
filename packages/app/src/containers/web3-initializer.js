@@ -26,14 +26,14 @@ function useWeb3Instance(wallet) {
 		async function initializeWeb3() {
 			let {web3, network} = await makeWeb3(provider);
 			let accounts = await web3.eth.getAccounts();
-			console.dir(network);
+			//console.dir(network);
 			setWeb3Instance(web3);
 			setNetworkId(network.id);
 			setAccount(accounts[0]);
 		}
 
 		if(provider != null) {
-			console.dir(provider);
+			//console.dir(provider);
 			initializeWeb3();
 		}
 	}, [provider]);
