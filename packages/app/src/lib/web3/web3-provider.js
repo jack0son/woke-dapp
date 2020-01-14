@@ -1,6 +1,6 @@
 import ZeroClientProvider from './engine/light';
 import Web3 from 'web3';
-import { getCurrentRpcUrl } from '../../config/web3-helpers';
+import { getCurrentRpcUrl } from './web3-config';
 
 
 export default (wallet) => {
