@@ -6,7 +6,11 @@ const {
 const Web3 = require('web3');
 const debug = Logger('oracle');
 
-const oracleMockInterface = require('../../contracts/build/contracts/TwitterOracleMock.json')
+
+const oracleMockInterface = process.env.NODE_ENV == 'production' ? 
+	require('../../app/src/contracts/TwitterOracleMock.json') :
+	require('woke-contracts').TwitterOracleMock;
+
 
 function timeoutPromise(ms) {
 	return new Promise((resolve, reject) => setTimeout(() => {

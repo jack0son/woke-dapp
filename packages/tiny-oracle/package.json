@@ -10,14 +10,15 @@
     "dev": "NODE_ENV=development DEBUG=oracle*,twitter node src/index.js",
     "ropsten": "NODE_ENV=ropsten DEBUG=oracle*,twitter node src/index.js",
     "rinkeby": "NODE_ENV=rinkeby DEBUG=oracle*,twitter node src/index.js",
-    "client": "DEBUG=oracle:* node src/lib/client.js",
+    "dev:with_client": "DEBUG=oracle:* node src/lib/client.js",
     "tweet": "DEBUG=twitter* node src/lib/twitter.js"
   },
   "author": "Jackson Virgo",
   "license": "ISC",
   "dependencies": {
     "web3": "^1.2.4",
-    "woke-lib": "1.0.0"
+    "woke-lib": "1.0.0",
+    "woke-contracts": "1.0.0"
   },
   "devDependencies": {
     "minimist": "^1.2.0",
