@@ -17,14 +17,14 @@ import createUseSend from './create-use-send';
 import createUseEvents from './create-use-events';
 //import createGetPastEvents from './create-get-events';
 
+import useWeb3Instance from './use-web3-instance';
+export { useWeb3Instance };
+
 // Contract artifacts are defined manually for now. Can be generalised for use
 // in another project.
-
 const artifacts = loadContractArtifacts();
-
 const Context = createContext();
 export const useWeb3Context = () => useContext(Context);
-
 
 export const Web3ContextProvider = ({children, web3, networkId, account}) => {
 	// @TODO set default web3 send options

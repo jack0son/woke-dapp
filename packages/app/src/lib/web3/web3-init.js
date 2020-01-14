@@ -1,5 +1,5 @@
 import Web3 from "web3";
-import getProviderEngine from './web3-provider';
+import getProviderEngine from './engine/web3-provider';
 import { getWeb3Network } from './web3-config.js'
 
 
@@ -20,17 +20,18 @@ export async function makeWeb3(provider) {
 	}
 
 	console.log("Network ID: ", networkId);
-
 	return {web3, network};
 }
 
-// Instantiate provider and null any existing web3 object
-export const injectWeb3 = (wallet) => {
+export function makeWalletProvider(wallet) {
 	console.log('Loading wallet provider ...')
-	const zeroProvider = getProviderEngine(wallet);
+	const lightProvider = getProviderEngine(wallet);
+	return lightProvider;
+}
 
+// Overwrite any existing web3 object
+export const injectWeb3 = (_web3 = null) => {
 	window.ethereum = null;
-	window.web3  = null;
-	return zeroProvider;
+	window.web3 = _web3;
 }
 
