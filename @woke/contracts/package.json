@@ -1,7 +1,8 @@
 {
-  "name": "woke-contracts",
-  "version": "1.0.0",
+  "name": "@woke/contracts",
+  "version": "0.1.0",
   "description": "Testing set up for Oraclize's computation resource url-requests",
+  "private": true,
   "main": "index.js",
   "directories": {
     "test": "test"
@@ -29,8 +30,7 @@
     "debug": "^4.1.1",
     "supports-color": "^7.0.0",
     "truffle": "^5.0.27",
-    "truffle-assertions": "^0.9.1",
-    "web3": "^1.0.0-beta.36"
+    "truffle-assertions": "^0.9.1"
   },
   "scripts": {
     "migrate:client": "./node_modules/.bin/truffle migrate --network client --reset",

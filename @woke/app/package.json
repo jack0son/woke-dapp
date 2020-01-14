@@ -1,6 +1,7 @@
 {
-  "name": "woke-app",
+  "name": "@woke/app",
   "version": "0.1.0",
+  "description": "Woke Web App",
   "private": true,
   "dependencies": {
     "@audius/hedgehog": "^1.0.4",
@@ -23,7 +24,7 @@
     "web3-provider-engine": "^15.0.3"
   },
   "devDependencies": {
-    "woke-contracts": "1.0.0"
+    "@woke/contracts": "0.1.0"
   },
   "scripts": {
     "start": "react-scripts start",

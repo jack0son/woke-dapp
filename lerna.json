@@ -1,6 +1,6 @@
 {
   "packages": [
-    "packages/*"
+    "@woke/*"
   ],
   "version": "0.0.0"
 }

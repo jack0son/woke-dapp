@@ -1,7 +1,8 @@
 {
-  "name": "tiny-oracle",
-  "version": "1.0.0",
+  "name": "@woke/tiny-oracle",
+  "version": "0.1.0",
   "description": "Tiny oracle for Twitter API to avoid waiting for Oraclize",
+  "private": true,
   "main": "index.js",
   "scripts": {
     "test": "./node_modules/.bin/mocha",
@@ -16,9 +17,9 @@
   "author": "Jackson Virgo",
   "license": "ISC",
   "dependencies": {
-    "web3": "^1.2.4",
-    "woke-lib": "1.0.0",
-    "woke-contracts": "1.0.0"
+    "@woke/contracts": "0.1.0",
+    "@woke/lib": "0.1.0",
+    "web3": "^1.2.4"
   },
   "devDependencies": {
     "minimist": "^1.2.0",
