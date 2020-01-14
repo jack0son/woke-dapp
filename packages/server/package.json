@@ -1,6 +1,7 @@
 {
-  "name": "server",
-  "version": "0.0.0",
+  "name": "@woke/server",
+  "version": "0.1.0",
+  "description": "Wallet backend: account creation and funding.",
   "private": true,
   "scripts": {
     "start": "NODE_ENV=production DEBUG=server:* node ./bin/www",
@@ -9,7 +10,7 @@
     "rinkeby": "NODE_ENV=rinkeby DEBUG=server:* node ./bin/www"
   },
   "dependencies": {
-    "woke-lib": "1.0.0",
+    "@woke/lib": "0.1.0",
     "cookie-parser": "~1.4.4",
     "cors": "^2.8.5",
     "debug": "~2.6.9",

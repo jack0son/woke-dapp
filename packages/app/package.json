@@ -1,6 +1,7 @@
 {
-  "name": "woke-app",
+  "name": "@woke/app",
   "version": "0.1.0",
+  "description": "Woke Web App",
   "private": true,
   "dependencies": {
     "@audius/hedgehog": "^1.0.4",
