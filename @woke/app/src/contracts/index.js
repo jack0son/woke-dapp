@@ -1,3 +1,3 @@
-const artifacts = require('woke-contracts');
+const artifacts = require('@woke/contracts');
 
 module.exports = artifacts;

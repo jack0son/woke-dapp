@@ -9,7 +9,7 @@ const debug = Logger('oracle');
 
 const oracleMockInterface = process.env.NODE_ENV == 'production' ? 
 	require('../../app/src/contracts/TwitterOracleMock.json') :
-	require('woke-contracts').TwitterOracleMock;
+	require('@woke/contracts').TwitterOracleMock;
 
 
 function timeoutPromise(ms) {
