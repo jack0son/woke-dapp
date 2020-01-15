@@ -12,9 +12,9 @@ var client, appOnlyClient, userClient;
 
 const hostUrl = config.hostUrl;
 
-const proxy_api_path = 'twitter_api';
+const proxy_api_path = config.api.proxy_api_path || 'twitter_api';
+const callback_path = config.api.callback_path || 'oauth_twitter';
 const api_data_path = proxy_api_path + '/1.1';
-const callback_path = 'oauth_twitter';
 
 const proxy_api_url = hostUrl + proxy_api_path + '/';
 const proxy_data_url = hostUrl + api_data_path + '/';
@@ -29,8 +29,8 @@ const clientRequest = {
 	post: (path, params) => sendClientRequest('get', client, path, params),
 }
 
+// ** User Auth paths
 const verifyCredentials = async () => {
-	// claimString = `@getwoketoke 0xWOKE:${userId},${sig},1`;
 	const params = {
 		include_entities: false,
 		skip_status: true,
@@ -158,17 +158,21 @@ export const getUserFriendsList = async (userId, count) => { // claimString = `@
 	return r;
 }
 
+function isClaimTweet(tweet) {
+	const CLAIM_FRAME = '0xWOKE:';
+	return tweet.full_text && tweet.full_text.includes(CLAIM_FRAME);
+}
+
 // TODO replace claimFrame with regex
 // @param claimFrame: Text common to each claim string
-const CLAIM_FRAME = '0xWOKE:';
-const findClaimTweet = async (userId, claimFrame = CLAIM_FRAME) => {
+const findClaimTweet = async (userId) => {
 	let latestTweets = await getUserTimeline(userId);
 	let latest = latestTweets[0];
-	if(latest.full_text && latest.full_text.includes(claimFrame)) {
+	if(isClaimTweet(latest)) {
 		return latest.full_text;
 	} else {
 		for(let tweet of latestTweets.slice(1, latestTweets.length)) {
-			if(tweet.full_text && tweet.full_text.includes(claimFrame)) {
+			if(isClaimTweet(tweet)) {
 				return tweet.full_text;
 			}
 		}
@@ -176,6 +180,7 @@ const findClaimTweet = async (userId, claimFrame = CLAIM_FRAME) => {
 
 	throw new Error('Could not find claim tweet');
 }
+
 
 const searchClaimTweet = async (handle) => { // claimString = `@getwoketoke 0xWOKE:${userId},${sig},1`;
 	const searchParams = {

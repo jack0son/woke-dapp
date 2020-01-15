@@ -3,6 +3,11 @@ const infuraApiKey = process.env.REACT_APP_INFURA_API_KEY;
 
 const root = path.dirname(require.main.filename);
 
+const twitterApi = {
+	proxy_api_path: 'twitter_api',
+	callback_path: 'oauth_twitter',
+}
+
 export default {
 	web3: {
 		networks: {
@@ -46,10 +51,12 @@ export default {
 
 	twitter: {
 		development: {
+			api: twitterApi,
 			hostUrl: 'http://localhost:3000/',
 		},
 
 		production: {
+			api: twitterApi,
 			hostUrl: 'https://getwoke.me/',
 		},
 	}
