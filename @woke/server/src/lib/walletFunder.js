@@ -1,7 +1,7 @@
 const {
 	Logger,
 	web3Tools,
-} = require('woke-lib');
+} = require('@woke/lib');
 const Emitter = require('events');
 
 const debug = Logger('server:funder');
