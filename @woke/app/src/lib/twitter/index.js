@@ -1,6 +1,6 @@
 // ** Twitter lib
 import makeClient from './lib/client';
-import auth from './lib/auth'
+import oAuthApi from './lib/auth'
 
 // ** API methods wrapper
 // Available methods under lib/rest-user and lib/rest-app
@@ -10,6 +10,6 @@ import auth from './lib/auth'
 // wrapperInterface: tokens >> << apiClient
 export {
 	makeClient,
-	auth,
+	oAuthApi,
 }
 

@@ -20,8 +20,8 @@ function makeMixer(baseObject) {
 // @returns Twitter API wrapper methods
 export default function makeWrapperClient(config) {
 	const {
-		consumer_key, 
-		consumer_secret,
+		access_key, 
+		access_secret,
 		bearer_token, 
 	} = config;
 
@@ -47,12 +47,12 @@ export default function makeWrapperClient(config) {
 	const mix = makeMixer(mixins);
 
 	// ** Mixin Twitter API wrappers
-	// Public API
+	//		Public API
 	const appApiMixin = makeAppMixin(baseClient.request, checkAuth(hasAppAuth, 'app'));
 	mix(appApiMixin);
 	//mixins = {...appApiMixin}
 
-	// Private API
+	//		Private API
 	if(hasUserAuth()) {
 		const userApiMixin = makeUserMixin(baseClient.request, checkAuth(hasUserAuth, 'user'));
 		mix(...mixins, ...userApiMixin);

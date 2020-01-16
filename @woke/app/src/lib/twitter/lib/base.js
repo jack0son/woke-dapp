@@ -5,23 +5,26 @@ import {
 	isValidBearerToken,
 } from './helpers';
 import { TokenError } from './errors';
-const {resources} = require('../config');
+const {resources, keys} = require('../config');
 
 // ** Support proxying of requests
 function makeBaseClient({
-	consumerKey,
-	consumerSecret,
 	bearerToken,
 	accessTokenKey,
 	accessTokenSecret,
+	consumerKey, 
+	consumerSecret,
 }) {
 	checkToken(isValidConsumerKey, consumerKey, 'consumer_key');
 	checkToken(isValidConsumerSecret, consumerKey, 'consumer_secret');
 	checkToken(isValidBearerToken, bearerToken, 'bearer');
 
 	const client = new Twitter({
-		consumer_key: consumerKey, 
-		consumer_secret: consumerSecret,
+		// Load from app config
+		consumer_key: consumerKey || keys.consumer_key, 
+		consumer_secret: consumerSecret || keys.consumer_secret,
+		bearer_token: bearerToken || keys.bearerToken,
+
 		access_token_key: accessTokenKey,
 		access_token_secret: accessTokenSecret,
 	});
