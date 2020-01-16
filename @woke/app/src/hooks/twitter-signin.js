@@ -53,7 +53,7 @@ function catchOAuthResp() {
 	//if(window.location.pathname == verifierPath) {
 		if(window.location.search) {
 			let callbackParams = window.location.search.substr(1);
-			return twitter.deparam(callbackParams);
+			return twitter.unmarshal(callbackParams);
 		}
 	//}
 }
