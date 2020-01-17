@@ -2,7 +2,7 @@ const request = require('request-promise-native');
 const { resources, keys } = require('../config');
 
 
-function createAuthString(key, secret) {
+function createAppAuthString(key, secret) {
 	return Buffer.from(encodeURI(key).concat(':', encodeURI(secret))).toString('base64');
 }
 
@@ -14,7 +14,7 @@ export function getBearerToken(consumerKey, consumerSecret) {
 	const opts = {
 		url: resources.urls.proxy_api_url + 'oauth2/token',
 		headers: {
-			'Authorization': 'Basic ' + createAuthString(consumerKey, consumerSecret),
+			'Authorization': 'Basic ' + createAppAuthString(consumerKey, consumerSecret),
 			'Content-Type':  'application/x-www-form-urlencoded',
 		},
 
@@ -29,32 +29,6 @@ export function getBearerToken(consumerKey, consumerSecret) {
 			return resp.access_token;
 		} else {
 			throw new Error('Failed to retrieve bearer token');
-		}
-	});
-}
-
-export async function getUserAccessToken(oAuthToken, verifierToken) {
-	// TODO configure in env
-	const oauthParams = {
-		verifier: verifierToken,
-		token: oAuthToken,
-		consumer_key: keys.consumerKey,
-		consumer_secret: keys.consumerSecret,
-		proxy_uri: resources.twitterApiUrl + 'oauth/access_token',
-	};
-
-	const opts = {
-		url: resources.proxy_api_url + 'oauth/access_token',
-		oauth: oauthParams,
-	};
-
-	return request.post(opts).then(resp => {
-		console.dir(resp);
-		var resp = unmarshal(resp);
-		if(resp.oauth_token && resp.oauth_token_secret) {
-			return resp;
-		} else {
-			throw new Error('Failed to retrieve user access token');
 		}
 	});
 }
@@ -84,6 +58,39 @@ export function getUserOAuthToken() {
 		}
 	});
 }
+
+export function createUserOAuthUrl(requestToken) {
+		const authUrl = resources.twitterApiUrl + 'oauth/authenticate?oauth_token=' + requestToken.oauth_token;
+}
+
+export async function getUserAccessToken(oAuthToken, verifierToken) {
+	// TODO configure in env
+	const oauthParams = {
+		verifier: verifierToken,
+		token: oAuthToken,
+		consumer_key: keys.consumerKey,
+		consumer_secret: keys.consumerSecret,
+		proxy_uri: resources.twitterApiUrl + 'oauth/access_token',
+	};
+
+	const opts = {
+		url: resources.proxy_api_url + 'oauth/access_token',
+		oauth: oauthParams,
+	};
+
+	return request.post(opts).then(resp => {
+		console.dir(resp);
+		var resp = unmarshal(resp);
+		if(resp.oauth_token && resp.oauth_token_secret) {
+			return resp;
+		} else {
+			throw new Error('Failed to retrieve user access token');
+		}
+	});
+}
+
+
+
 
 function unmarshal(params) {
 	var obj = {};
