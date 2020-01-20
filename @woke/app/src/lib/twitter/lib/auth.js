@@ -33,7 +33,7 @@ export function getBearerToken(consumerKey, consumerSecret) {
 	});
 }
 
-export function getUserOAuthToken() {
+export function getUserRequestToken() {
 	// TODO configure in env
 	const oauthParams = {
 		callback: resources.callback_url,
@@ -49,6 +49,7 @@ export function getUserOAuthToken() {
 
 	console.log(opts);
 
+	// Returns {oauth_token, oauth_token_secret, oauth_callback_confirmed}
 	return request.post(opts).then(resp => {
 		var resp = unmarshal(resp);
 		if(resp.oauth_callback_confirmed === 'true') {
@@ -87,6 +88,17 @@ export async function getUserAccessToken(oAuthToken, verifierToken) {
 			throw new Error('Failed to retrieve user access token');
 		}
 	});
+}
+
+// @params verifierPath: Unique temporary oauth token contained in callback
+// response
+function catchOAuthCallback(verifierPath) {
+	if(window.location.pathname == verifierPath) {
+		if(window.location.search) {
+			let callbackParams = window.location.search.substr(1);
+			return unmarshal(callbackParams);
+		}
+	}
 }
 
 
