@@ -1,5 +1,5 @@
 import React, {useState, useEffect, useMemo} from 'react';
-import twitter from '../lib/twitter'
+import useTwitterContext from '../lib/twitter'
 
 //@notice Initialise a twitter app-client instance
 export const useAppClient = () => {

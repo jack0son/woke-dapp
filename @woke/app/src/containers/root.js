@@ -8,7 +8,7 @@ import Web3Initializer from './web3-initializer'
 import Root from './views/root'
 
 // Hooks
-import TwitterContextProvider from '../hooks/twitter'
+import TwitterContextProvider from '../hooks/twitter/index.js'
 import useHedgehog from '../hooks/hedgehog'
 
 // Instances
