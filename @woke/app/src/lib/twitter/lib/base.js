@@ -15,15 +15,18 @@ export default function makeBaseClient({
 	consumerKey, 
 	consumerSecret,
 }) {
+	consumerKey =  consumerKey || keys.consumerKey;
+	consumerSecret =  consumerSecret || keys.consumerSecret;
+	bearerToken =  bearerToken || keys.bearerToken;
 	checkToken(isValidConsumerKey, consumerKey, 'consumer_key');
 	checkToken(isValidConsumerSecret, consumerKey, 'consumer_secret');
 	checkToken(isValidBearerToken, bearerToken, 'bearer');
 
 	const client = new Twitter({
 		// Load from app config
-		consumer_key: consumerKey || keys.consumer_key, 
-		consumer_secret: consumerSecret || keys.consumer_secret,
-		bearer_token: bearerToken || keys.bearerToken,
+		consumer_key: consumerKey, 
+		consumer_secret: consumerSecret,
+		bearer_token: bearerToken,
 
 		access_token_key: accessTokenKey,
 		access_token_secret: accessTokenSecret,
@@ -44,7 +47,7 @@ function sendClientRequest(type, client, path, params) {
 }
 
 function checkToken(isValidToken, token, label) {
-	if(!(token.length &&  token.length > 0)) {
+	if(!(token && token.length &&  token.length > 0)) {
 		throw new TokenError(`${label} token not supplied`);
 	}
 }

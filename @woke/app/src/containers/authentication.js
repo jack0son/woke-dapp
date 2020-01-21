@@ -26,14 +26,14 @@ function createUserName(id, token) {
 export default function AuthContainer(props) {
 	const hedgehog = props.hedgehog;
 
-	const twitterSignIn = useTwitterSignIn();
+	const twitterSignin = useTwitterSignIn();
 
-	const router = useAuthRouter(twitterSignIn.haveCredentials() ? states.HEDGEHOG : states.TWITTER);
+	const router = useAuthRouter(twitterSignin.haveCredentials() ? states.HEDGEHOG : states.TWITTER);
 	//console.log('Router state: ', router.state);
 
 	const renderSignInWithTwitter = () => (
 		<SignIn
-			triggerSignIn={twitterSignIn.handleStartAuth}
+			triggerSignIn={twitterSignin.handleStartAuth}
 		/>
 	)
 
@@ -83,24 +83,22 @@ export default function AuthContainer(props) {
 		}
 	}, [hedgehog.state.savedUser, router.state == 'HEDGEHOG']);
 
-	const haveCredentials = useCallback(twitterSignIn.haveCredentials());
-
 	useEffect(() => {
-		if(twitterSignIn.haveUser() && twitterSignIn.haveCredentials()) {
+		if(twitterSignin.haveUser() && twitterSignin.haveCredentials()) {
 			const savedUser = hedgehog.state.savedUser
 			if (!(savedUser && savedUser.length > 0)) {
 				hedgehog.api.setUsername(createUserName(
-					twitterSignIn.user.id,
-					twitterSignIn.credentials.oauth_token
+					twitterSignin.user.id,
+					twitterSignin.credentials.oauth_token
 				));
 			}
 
 			console.log('dispatching twitter-authenticated')
 			router.dispatch({type: 'twitter-authenticated'});
-		} else if (twitterSign.haveCredentials()) {
+		} else if (twitterSignin.haveCredentials()) {
 			// LOGOUT
 		}
-	}, [twitterSignIn.haveCredentials()])
+	}, [twitterSignin.haveCredentials()])
 
 	// TODO Saved user needs to be checked on the server
 

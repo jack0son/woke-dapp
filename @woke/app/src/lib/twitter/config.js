@@ -1,5 +1,5 @@
 require('dotenv').config();
-const config = require('../config/config').default.twitter[process.env.NODE_ENV];
+const config = require('../../config/config').default.twitter[process.env.NODE_ENV];
 
 const consumerKey = process.env.REACT_APP_TWITTER_CONSUMER_KEY;
 const consumerSecret = process.env.REACT_APP_TWITTER_CONSUMER_SECRET;
@@ -22,6 +22,8 @@ const resources = {
 		api_data_path,
 
 		hostUrl,
+		twitterApiUrl,
+
 		proxy_api_url,
 		proxy_data_url,
 		callback_url,

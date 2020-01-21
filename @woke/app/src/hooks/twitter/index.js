@@ -8,7 +8,8 @@ import React, {
 
 import useClient from './use-client'
 import useUserSignin from './use-user-signin'
-import {useTwitterUsers} from './use-app-data'
+import { useUsers } from './use-app-data'
+import { createUseFriends } from './use-user-data'
 
 export const useTwitterContext = () => useContext(Context);
 const Context = createContext();
@@ -16,7 +17,8 @@ const Context = createContext();
 export default function TwitterContextProvider({children}) {
 	const userSignin = useUserSignin();
 	const client = useClient(userSignin.credentials);
-	const useTwitterUsers = useTwitterUsers({appClient: client, initialId: '1'})
+	const userList = useUsers({appClient: client, initialId: '1'})
+	const useFriends = useMemo(() => createUseFriends(client), [client]);
 
 	return (
 		<Context.Provider
@@ -28,6 +30,8 @@ export default function TwitterContextProvider({children}) {
 				[
 					client,
 					userSignin,
+					userList,
+					useFriends,
 				]
 			)}
 		>

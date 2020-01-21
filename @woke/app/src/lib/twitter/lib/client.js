@@ -22,13 +22,8 @@ export default function makeWrapperClient(config) {
 	const {
 		access_key, 
 		access_secret,
-		bearer_token, 
+		//bearer_token, 
 	} = config;
-
-	// Must have bearer token as minimum
-	if(!isValidBearerToken(bearer_token)) {
-		throw new WrapperError(`Invalid bearer token <${bearer_token}>`)
-	}
 
 	// ** Auth config API
 	const hasAppAuth = () => true;

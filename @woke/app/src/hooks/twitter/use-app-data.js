@@ -4,9 +4,9 @@ import React, {
 	useMemo
 } from 'react';
 // @notice When userId's list changes, retrieve new user data from twitter as
-export const useTwitterUsers = ({appClient, initialId}) => {
+export const useUsers = ({appClient, initialId}) => {
 	// Change userIds to be object to avoid looping throught to check for new ids
-	let cache = {};
+	let cache = {}; // @TODO implement cache storage / retrieval
 	const [userIds, setUserIds] = useState([initialId]);
 	const [userData, setUserData] = useState(cache); //
 	const [fetching, setFetching] = useState(false);
@@ -27,7 +27,7 @@ export const useTwitterUsers = ({appClient, initialId}) => {
 
 		let fetches = [];
 		let newUserData = {};
-		if(appClient) {
+		if(appClient.hasUserAuth()) {
 			userIds.map(id => {
 				// If we haven't got the user's data (handle, avatar etc.)
 				if(!userData[id]) {

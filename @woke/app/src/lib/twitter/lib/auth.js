@@ -61,7 +61,7 @@ export function getUserRequestToken() {
 }
 
 export function createUserOAuthUrl(requestToken) {
-		const authUrl = resources.twitterApiUrl + 'oauth/authenticate?oauth_token=' + requestToken.oauth_token;
+		return resources.twitterApiUrl + 'oauth/authenticate?oauth_token=' + requestToken.oauth_token;
 }
 
 export async function getUserAccessToken(oAuthToken, verifierToken) {
@@ -79,6 +79,8 @@ export async function getUserAccessToken(oAuthToken, verifierToken) {
 		oauth: oauthParams,
 	};
 
+	console.dir(opts);
+
 	return request.post(opts).then(resp => {
 		console.dir(resp);
 		var resp = unmarshal(resp);
@@ -92,17 +94,18 @@ export async function getUserAccessToken(oAuthToken, verifierToken) {
 
 // @params verifierPath: Unique temporary oauth token contained in callback
 // response
-export function catchOAuthCallback(verifierPath) {
-	if(window.location.pathname == verifierPath) {
+export function catchOAuthCallback() {
+	console.dir(window.location.pathname)
+	console.dir("/" + resources.callback_path)
+	//if(window.location.pathname == resources.callback_path) {
 		if(window.location.search) {
 			let callbackParams = window.location.search.substr(1);
 			return unmarshal(callbackParams);
 		}
-	}
+	//}
+
+	return null;
 }
-
-
-
 
 function unmarshal(params) {
 	var obj = {};

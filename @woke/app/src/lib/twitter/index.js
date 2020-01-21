@@ -1,6 +1,6 @@
 // ** Twitter lib
 import makeClient from './lib/client';
-import oAuthApi from './lib/auth'
+import * as oAuthApi from './lib/auth'
 
 // ** API methods wrapper
 // Available methods under lib/rest-user and lib/rest-app

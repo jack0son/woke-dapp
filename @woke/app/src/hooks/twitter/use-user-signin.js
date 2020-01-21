@@ -1,4 +1,4 @@
-import React, { useReducer } from 'react';
+import React, { useReducer, useEffect } from 'react';
 import { oAuthApi } from '../../lib/twitter'
 
 export default function useUserSignin() {
@@ -6,34 +6,37 @@ export default function useUserSignin() {
 		//state: 'INIT',
 		loading: false,
 		requestToken: retrieveRequestToken(),
-		verifierToken: null,
+		verifierResp: null,
 		userTokens: retrieveUserTokens(),
 		user: retrieveUser(),
 	});
 
 	function reducer(state, action) {
+		console.dir(action);
 		switch(action.type) {
 			case 'got-callback-response': {
 				if(haveUser(state.user)) {
 					return state;
 				}
 
-				fetchAccessTokens(action.payload.callbackResp.re);
+				const verifier = action.payload.verifierResp;
+
+				fetchAccessTokens(verifier.oauth_token, verifier.oauth_verifier);
 
 				return {
 					...state,
-					callbackResp: action.payload.callbackResp,
+					verifierResp: action.payload.verifierResp,
 				}
 			}
 
 			case 'got-access-tokens': {
-				const {userTokens} = action.payload;
+				const {accessTokens} = action.payload;
 				const user = {
-					id: userTokens.user_id,
-					handle: userTokens.screen_name,
+					id: accessTokens.user_id,
+					handle: accessTokens.screen_name,
 				}
 
-				storeUserTokens(userTokens);
+				storeUserTokens(accessTokens);
 				storeUser(user);
 
 				return {
@@ -41,8 +44,8 @@ export default function useUserSignin() {
 					loading: false,
 					user,
 					credentials: {
-						accessKey: userTokens.oath_token,
-						accessSecret: userTokens.oath_secret,
+						accessKey: accessTokens.oath_token,
+						accessSecret: accessTokens.oath_secret,
 					}
 				}
 			}
@@ -54,24 +57,35 @@ export default function useUserSignin() {
 	}
 
 	async function handleStartAuth() {
-		const requestToken = await oAuthApi.getUserRequesToken();
+		const requestToken = await oAuthApi.getUserRequestToken();
 		if (requestToken.oauth_callback_confirmed !== 'true') {
 			throw new Error('Twitter OAuth 1.0: callback confirmation failed');
 		}
+		console.dir(requestToken);
 		storeRequestToken(requestToken);
 		window.location.replace(oAuthApi.createUserOAuthUrl(requestToken));
 	}
 
-	(function handleCallback() {
-		const callbackResp = oAuthApi.catchOAuthCallback();
-		if(!haveUser(authState.user)) {
-			dispatch({type: 'got-callback-response', payload: {callbackResp}});
+
+	useEffect(() => {
+		function handleCallback() {
+			const verifierResp = oAuthApi.catchOAuthCallback();
+			console.dir(verifierResp);
+			if(verifierResp && !authState.verifierResp) {
+				dispatch({type: 'got-callback-response', payload: {verifierResp}});
+			}
+		};
+
+		console.dir(authState);
+		if(!authState.verifierResp) {
+			handleCallback();
 		}
-	})();
+	}, [authState.verifierResp])
 
 	async function fetchAccessTokens(requestToken, verifierToken) {
 		const accessTokens = await oAuthApi.getUserAccessToken(requestToken, verifierToken);
-		dispatch({type: 'got-access-tokens', payload: accessTokens});
+		console.dir(accessTokens);
+		dispatch({type: 'got-access-tokens', payload: {accessTokens}});
 	}
 
 	function isSignedIn() {
@@ -82,8 +96,8 @@ export default function useUserSignin() {
 		handleStartAuth,
 		haveUser,
 		haveCredentials,
-		user: state.user,
-		credentials: state.userTokens,
+		user: authState.user,
+		credentials: authState.userTokens,
 	}
 }
 
@@ -131,9 +145,9 @@ function nonEmptyArray(str) {
 }
 
 function haveUser(user) {
-	return nonEmptyArray(user.id) && nonEmptyArray(user.handle);
+	return user && nonEmptyArray(user.id) && nonEmptyArray(user.handle);
 }
 
 function haveCredentials(tokens) {
-	return nonEmptyArray(tokens.oauth_token) && nonEmptyArray(tokens.oauth_token_secret);
+	return tokens && nonEmptyArray(tokens.oauth_token) && nonEmptyArray(tokens.oauth_token_secret);
 }

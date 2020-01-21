@@ -10,8 +10,7 @@ import { useWeb3Context } from '../web3context';
 import * as claimStates from './claimuser-states';
 
 import { genClaimString } from '../../lib/web3/web3-utils'
-import { appClient } from '../../lib/twitter'
-
+import { useTwitterContext } from '../twitter/index.js'
 
 const {statesMap, statesList} = claimStates;
 const states = statesMap;
@@ -22,14 +21,14 @@ export default (props) => {
 	const {
 		web3,
 		account,
-		twitterClient,
 		useContract,
 		useEvents,
 		useSend,
 		useSubscribeCall,
 	} = useWeb3Context();
 
-	const appClient = twitterClient;
+	const twitterContext = useTwitterContext();
+	const twitterClient = twitterContext.client;
 
 	const [error, setError] = useState(null);
 
@@ -359,11 +358,6 @@ export default (props) => {
 		generateClaimString();
 	}, [claimState.gathering])
 
-	// Init twitter client
-	useEffect(() => {
-		appClient.initClient().then(r => console.log(`Init'd twitter client`)).catch(error => console.log(error));
-	}, [])
-
 	const timeoutPromise = (ms) => {
 		return new Promise((resolve, reject) => {
 			setTimeout(() => {
@@ -387,7 +381,7 @@ export default (props) => {
 			while (!tweet && count < maxAttempts) {
 				try {
 					await timeoutPromise(1000)
-					tweet = await appClient.findClaimTweet(userId, '0xWOKE');
+					tweet = await twitterClient.findClaimTweet(userId, '0xWOKE');
 
 				} catch (error) {
 					count += 1;
