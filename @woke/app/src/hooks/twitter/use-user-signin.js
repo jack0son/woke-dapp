@@ -5,35 +5,117 @@ import {
 	getUserAccessToken,
 }
 
-const actions = {
-}
 
-const stateMap = {
-	INIT: {
-		'fetch-request-token': {next: 'WAITING_REQUEST_TOKEN', reduce:  fetchRequestToken},
-		'got-request-token': {next: LOADING, reduce: redirectToSignin},
-		'got-verifier-token': {next: 'WAITING_FOR_ACCESS', action: fetchAccessTokens}
-	},
 
-	WAITING_REQUEST_TOKEN: {
-		'got-request-token': {next: REDIRECTING, reduce: redirectToSignin},
+export default function useUserAuth() {
+	const [authState, dispatch] = useReducer(reducer, {
+		//state: 'INIT',
+		loading: false,
+		requestToken: retrieveRequestToken(),
+		verifierToken: null,
+		userTokens: retrieveUserTokens(),
+		user: retrieveUser(),
+	});
 
+	function reducer(state, action) {
+		switch(action.type) {
+			case 'got-callback-response': {
+				if(haveUser(state.user)) {
+					return state;
+				}
+
+				fetchAccessTokens();
+
+				return {
+					...state,
+					callbackResp: action.payload.callbackResp,
+					requestToken: action.payload.requestToken
+				}
+			}
+
+			case 'got-access-tokens': {
+				const {userTokens} = action.payload;
+				const user = {
+					id: userTokens.user_id,
+					handle: userTokens.screen_name,
+				}
+
+				storeUserTokens(userTokens);
+				storeUser(user);
+
+				return {
+					...state,
+					loading: false,
+					user,
+				}
+			}
+
+			default: {
+				console.warn('useTwitterSignin: undefined action, ', action);
+			}
+		}
 	}
 
-	WAITING_FOR_VERIFIER: {
-		'got-verifier-token': {next: 'WAITING_FOR_ACCESS', action: fetchAccessTokens}
-	},
+	async function handleStartAuth() {
+		const requestToken = await twitter.getUserOAuthToken();
+		if (requestToken.oauth_callback_confirmed !== 'true') {
+			throw new Error('Twitter OAuth 1.0: callback confirmation failed');
+		}
+		storeRequestToken(requestToken);
+		window.location.replace(twitter.createUserOAuthUrl(requestToken));
+	}
 
-	WAITING_FOR_ACCESS: {
-		'got-access-token': {next: NEXT_STATE, action: }
-	},
+	(function handleCallback() {
+		const callbackResp = catchOAuthCallback();
+		if(!haveUser(state.user)) {
+			dispatch({type: 'got-callback-response', payload: {callbackResp}});
+		}
+	})();
 
-	GOT_VERIFIER_TOKEN: {
-		
-	},
+	function fetchAccessTokens() {
+		const accessTokens = await twitter.getUserAccessToken(requestToken, verifierToken);
+		dispatch({type: 'got-access-tokens', payload: accessTokens});
+	}
 
-	WAITING_REQUEST_TOKEN: {
-		'gotRequestToken':  {next: 
+	return {
+		handleStartAuth,
+		user: state.user,
+		credentials: state.userTokens,
+	}
+}
+
+function storeUserTokens (tokens) {
+	// TODO if env == dev
+	window.localStorage.setItem('oauth_token', tokens.oauth_token);
+	window.localStorage.setItem('oauth_token_secret', tokens.oauth_token_secret);
+}
+
+function storeRequestToken (token) {
+	window.localStorage.setItem('request_token', token);
+}
+
+function retrieveRequestToken (token) {
+	return window.localStorage.getItem('request_token')
+}
+
+function storeUser (user) {
+	window.localStorage.setItem('user_id', user.id);
+	window.localStorage.setItem('user_handle', user.handle);
+}
+
+function retrieveUser () {
+	return {
+		id: window.localStorage.getItem('user_id'),
+		handle: window.localStorage.getItem('user_handle')
+	}
+}
+
+export function retrieveUserTokens () {
+	const oauth_token = window.localStorage.getItem('oauth_token');
+	const oauth_secret = window.localStorage.getItem('oauth_token_secret');
+	return {
+		oauth_token,
+		oauth_secret
 	}
 }
 
@@ -41,40 +123,10 @@ function refreshOAuthToken() {
 	// If oauth token older than 30 seconds, delete it
 }
 
-export default function useUserAuth() {
-	const [authState, dispatch] = useReducer(reducer, {
-		state: null,
-		tokens: {
-			accessTokenKey: null,
-			accessTokenSecret: null, 
-		}
-	});
+function nonEmptyArray(str) {
+	return str && str.length && str.length > 0;
+}
 
-	function reducer(state, action) {
-		switch(action.type) {
-			case 'gotRequestToken': {
-				return {
-					...state,
-					stage: '
-					requestToken: action.payload.requestToken
-				}
-			}
-		}
-	}
-
-
-	// 1. Initial oauth request
-	const handleAuthUser = async () => {
-		const requestToken = await twitter.getUserOAuthToken();
-		console.dir(requestToken);
-		if (requestToken.oauth_callback_confirmed !== 'true') {
-			throw new Error('Twitter OAuth 1.0: callback confirmation failed');
-		}
-		storeRequestToken(requestToken.oauth_token);
-		setLoading(true);
-
-		window.location.replace(authUrl)
-		//popupCenter(authUrl, 'Twitter Sign-in (Get Woke)', 400, 700);
-		//setRequestToken(requestToken);
-	}
+function haveUser(user) {
+	return nonEmptyArray(user.id) && nonEmptyArray(user.handle);
 }
