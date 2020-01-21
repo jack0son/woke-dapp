@@ -9,18 +9,19 @@ import React, {
 import { makeClient, oAuthApi } from '../../lib/twitter'
 
 // ** Synchronise access tokens with client API
+// @credentials: Object containing access key and access secret
 export default function useTwitterClient({
-	accessTokenKey,
-	accessTokenSecret,
+	accessKey,
+	accessSecret,
 }) {
-	const [client, setClient] = useState(makeClient({accessTokenKey, accessTokenSecret}))
+	const [client, setClient] = useState(makeClient({accessKey, accessSecret}))
 
-	// When accessTokens provided, get a user app instance
+	// When accesss provided, get a user app instance
 	useEffect(() => {
-		if(isValidToken(accessTokenKey) && isValidToken(accessTokenSecret)) {
-			setClient(makeClient({accessTokenKey, accessTokenSecret}));
+		if(isValidToken(accessKey) && isValidToken(accessSecret)) {
+			setClient(makeClient({accessKey, accessSecret}));
 		}
-	}, [accessTokenKey, accessTokenSecret])
+	}, [accessKey, accessSecret])
 
 	return client;
 }

@@ -1,13 +1,7 @@
 import React, { useReducer } from 'react';
-import {
-	getUserOAuthToken,
-	createUserOAuthUrl,
-	getUserAccessToken,
-}
+import { oAuthApi } from '../../lib/twitter'
 
-
-
-export default function useUserAuth() {
+export default function useUserSignin() {
 	const [authState, dispatch] = useReducer(reducer, {
 		//state: 'INIT',
 		loading: false,
@@ -24,12 +18,11 @@ export default function useUserAuth() {
 					return state;
 				}
 
-				fetchAccessTokens();
+				fetchAccessTokens(action.payload.callbackResp.re);
 
 				return {
 					...state,
 					callbackResp: action.payload.callbackResp,
-					requestToken: action.payload.requestToken
 				}
 			}
 
@@ -47,6 +40,10 @@ export default function useUserAuth() {
 					...state,
 					loading: false,
 					user,
+					credentials: {
+						accessKey: userTokens.oath_token,
+						accessSecret: userTokens.oath_secret,
+					}
 				}
 			}
 
@@ -57,28 +54,34 @@ export default function useUserAuth() {
 	}
 
 	async function handleStartAuth() {
-		const requestToken = await twitter.getUserOAuthToken();
+		const requestToken = await oAuthApi.getUserRequesToken();
 		if (requestToken.oauth_callback_confirmed !== 'true') {
 			throw new Error('Twitter OAuth 1.0: callback confirmation failed');
 		}
 		storeRequestToken(requestToken);
-		window.location.replace(twitter.createUserOAuthUrl(requestToken));
+		window.location.replace(oAuthApi.createUserOAuthUrl(requestToken));
 	}
 
 	(function handleCallback() {
-		const callbackResp = catchOAuthCallback();
-		if(!haveUser(state.user)) {
+		const callbackResp = oAuthApi.catchOAuthCallback();
+		if(!haveUser(authState.user)) {
 			dispatch({type: 'got-callback-response', payload: {callbackResp}});
 		}
 	})();
 
-	function fetchAccessTokens() {
-		const accessTokens = await twitter.getUserAccessToken(requestToken, verifierToken);
+	async function fetchAccessTokens(requestToken, verifierToken) {
+		const accessTokens = await oAuthApi.getUserAccessToken(requestToken, verifierToken);
 		dispatch({type: 'got-access-tokens', payload: accessTokens});
+	}
+
+	function isSignedIn() {
+		return haveUser(authState.user) && haveCredentials(authState.credentials)
 	}
 
 	return {
 		handleStartAuth,
+		haveUser,
+		haveCredentials,
 		user: state.user,
 		credentials: state.userTokens,
 	}
@@ -129,4 +132,8 @@ function nonEmptyArray(str) {
 
 function haveUser(user) {
 	return nonEmptyArray(user.id) && nonEmptyArray(user.handle);
+}
+
+function haveCredentials(tokens) {
+	return nonEmptyArray(tokens.oauth_token) && nonEmptyArray(tokens.oauth_token_secret);
 }

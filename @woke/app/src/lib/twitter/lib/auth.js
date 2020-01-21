@@ -92,7 +92,7 @@ export async function getUserAccessToken(oAuthToken, verifierToken) {
 
 // @params verifierPath: Unique temporary oauth token contained in callback
 // response
-function catchOAuthCallback(verifierPath) {
+export function catchOAuthCallback(verifierPath) {
 	if(window.location.pathname == verifierPath) {
 		if(window.location.search) {
 			let callbackParams = window.location.search.substr(1);

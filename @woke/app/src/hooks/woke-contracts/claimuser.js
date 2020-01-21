@@ -22,11 +22,14 @@ export default (props) => {
 	const {
 		web3,
 		account,
+		twitterClient,
 		useContract,
 		useEvents,
 		useSend,
 		useSubscribeCall,
 	} = useWeb3Context();
+
+	const appClient = twitterClient;
 
 	const [error, setError] = useState(null);
 

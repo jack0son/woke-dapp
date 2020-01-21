@@ -12,7 +12,7 @@ import LargeBody from '../components/text/body-large'
 
 // Hooks
 import useAuthRouter, {states} from '../hooks/auth-router'
-import { useAuthTokens,  useTwitterSignIn } from '../hooks/twitter-signin'
+import useTwitterSignIn from '../hooks/twitter/use-user-signin'
 import useHedgehog from '../hooks/hedgehog'
 
 function createUserName(id, token) {
@@ -26,15 +26,14 @@ function createUserName(id, token) {
 export default function AuthContainer(props) {
 	const hedgehog = props.hedgehog;
 
-	const twitterAuthTokens = useAuthTokens();
-	const twitterSignIn = useTwitterSignIn(twitterAuthTokens.refresh);
+	const twitterSignIn = useTwitterSignIn();
 
-	const router = useAuthRouter(twitterAuthTokens.status ? states.HEDGEHOG : states.TWITTER);
+	const router = useAuthRouter(twitterSignIn.haveCredentials() ? states.HEDGEHOG : states.TWITTER);
 	//console.log('Router state: ', router.state);
 
 	const renderSignInWithTwitter = () => (
 		<SignIn
-			triggerSignIn={twitterSignIn.handleAuthUser}
+			triggerSignIn={twitterSignIn.handleStartAuth}
 		/>
 	)
 
@@ -84,24 +83,24 @@ export default function AuthContainer(props) {
 		}
 	}, [hedgehog.state.savedUser, router.state == 'HEDGEHOG']);
 
+	const haveCredentials = useCallback(twitterSignIn.haveCredentials());
+
 	useEffect(() => {
-		//console.dir(twitterAuthTokens);
-		//console.dir(twitterSignIn);
-		if(twitterAuthTokens.status === true) {
+		if(twitterSignIn.haveUser() && twitterSignIn.haveCredentials()) {
 			const savedUser = hedgehog.state.savedUser
 			if (!(savedUser && savedUser.length > 0)) {
 				hedgehog.api.setUsername(createUserName(
-					twitterAuthTokens.user.id,
-					twitterAuthTokens.userTokens.oauth_token
+					twitterSignIn.user.id,
+					twitterSignIn.credentials.oauth_token
 				));
 			}
 
 			console.log('dispatching twitter-authenticated')
 			router.dispatch({type: 'twitter-authenticated'});
-		} else if (twitterAuthTokens.status === false) {
+		} else if (twitterSign.haveCredentials()) {
 			// LOGOUT
 		}
-	}, [twitterAuthTokens.status])
+	}, [twitterSignIn.haveCredentials()])
 
 	// TODO Saved user needs to be checked on the server
 
