@@ -9,12 +9,6 @@ import makeAppMixin from './rest-app'
 import makeUserMixin from './rest-user'
 
 
-function makeMixer(baseObject) {
-	return (mixin) => {
-		baseObject = {...baseObject, ...mixin};
-	}
-}
-
 // ** Twitter Client Wrapper API
 // @dev App methods available for app-only auth, and user auth
 // @returns Twitter API wrapper methods
@@ -39,20 +33,19 @@ export default function makeWrapperClient(config) {
 
 	const baseClient = makeBaseClient(config);
 	let mixins = {};
-	const mix = makeMixer(mixins);
 
 	// ** Mixin Twitter API wrappers
 	//		Public API
 	const appApiMixin = makeAppMixin(baseClient.request, checkAuth(hasAppAuth, 'app'));
-	mix(appApiMixin);
-	//mixins = {...appApiMixin}
+	mixins = {...appApiMixin}
 
 	//		Private API
 	if(hasUserAuth()) {
 		const userApiMixin = makeUserMixin(baseClient.request, checkAuth(hasUserAuth, 'user'));
-		mix(...mixins, ...userApiMixin);
-		//mixins = {...mixins, ...userApiMixin}
+		mixins = {...mixins, ...userApiMixin}
 	}
+
+	console.log(mixins);
 
 	// ** Wrapper client interface
 	return {
@@ -61,6 +54,3 @@ export default function makeWrapperClient(config) {
 		...mixins,
 	}
 }
-
-
-

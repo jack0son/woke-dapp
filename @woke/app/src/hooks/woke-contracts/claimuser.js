@@ -10,6 +10,7 @@ import { useWeb3Context } from '../web3context';
 import * as claimStates from './claimuser-states';
 
 import { genClaimString } from '../../lib/web3/web3-utils'
+import { findClaimTweet } from '../../lib/twitter-helpers'
 import { useTwitterContext } from '../twitter/index.js'
 
 const {statesMap, statesList} = claimStates;
@@ -27,8 +28,7 @@ export default (props) => {
 		useSubscribeCall,
 	} = useWeb3Context();
 
-	const twitterContext = useTwitterContext();
-	const twitterClient = twitterContext.client;
+	const twitterClient = useTwitterContext().client;
 
 	const [error, setError] = useState(null);
 
@@ -381,7 +381,7 @@ export default (props) => {
 			while (!tweet && count < maxAttempts) {
 				try {
 					await timeoutPromise(1000)
-					tweet = await twitterClient.findClaimTweet(userId, '0xWOKE');
+					tweet = await findClaimTweet(twitterClient, userId, '0xWOKE');
 
 				} catch (error) {
 					count += 1;
@@ -409,7 +409,7 @@ export default (props) => {
 			setFetchingTweet(false);
 		}
 
-	}, [claimString, claimState.stage == states.CONFIRMED])
+	}, [claimString, claimState.stage == states.CONFIRMED, twitterClient])
 
 
 	const events = {TweetStored: [], Claimed: [], Lodged: []};

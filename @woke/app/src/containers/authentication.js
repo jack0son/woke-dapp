@@ -87,7 +87,6 @@ export default function AuthContainer(props) {
 	}, [hedgehog.state.savedUser, router.state == 'HEDGEHOG']);
 
 	useEffect(() => {
-		console.log('detect twitter signin state');
 		if(twitterSignin.isSignedIn()) {
 			const savedUser = hedgehog.state.savedUser
 			if (!(savedUser && savedUser.length > 0)) {
