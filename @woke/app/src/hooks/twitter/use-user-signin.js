@@ -1,4 +1,4 @@
-import React, { useReducer, useEffect } from 'react';
+import React, { useReducer, useEffect, useCallback } from 'react';
 import { oAuthApi } from '../../lib/twitter'
 
 export default function useUserSignin() {
@@ -11,6 +11,9 @@ export default function useUserSignin() {
 		user: retrieveUser(),
 	});
 
+	const haveUser = useCallback(() => validUser(authState.user), [authState.user])
+	const haveCreds = useCallback(() => validCreds(authState.credentials), [authState.credentials])
+
 	function reducer(state, action) {
 		console.dir(action);
 		switch(action.type) {
@@ -18,15 +21,18 @@ export default function useUserSignin() {
 				if(haveUser(state.user)) {
 					return state;
 				}
+				const {verifierResp} = action.payload;
 
-				const verifier = action.payload.verifierResp;
-
-				fetchAccessTokens(verifier.oauth_token, verifier.oauth_verifier);
-
-				return {
-					...state,
-					verifierResp: action.payload.verifierResp,
+				console.log(verifierResp);
+				if(verifierResp && state.verifierResp == null) {
+					return {
+						...state,
+						verifierResp,
+					}
 				}
+				console.log('skipped');
+
+				return state;
 			}
 
 			case 'got-access-tokens': {
@@ -41,7 +47,7 @@ export default function useUserSignin() {
 
 				return {
 					...state,
-					loading: false,
+					//loading: false,
 					user,
 					credentials: {
 						accessKey: accessTokens.oath_token,
@@ -62,40 +68,45 @@ export default function useUserSignin() {
 			throw new Error('Twitter OAuth 1.0: callback confirmation failed');
 		}
 		console.dir(requestToken);
-		storeRequestToken(requestToken);
+		storeRequestToken(requestToken.oauth_token);
 		window.location.replace(oAuthApi.createUserOAuthUrl(requestToken));
 	}
 
+	function handleCallback() {
+		const verifierResp = oAuthApi.catchOAuthCallback();
+		if(verifierResp && nonEmptyArray(verifierResp.oauth_token)) {
+			dispatch({type: 'got-callback-response', payload: {verifierResp}});
+		}
+	}
+
+
+	// @dev Extract callback response params from verifier callback
+	useEffect(() => {
+		handleCallback();
+	}, []);
 
 	useEffect(() => {
-		function handleCallback() {
-			const verifierResp = oAuthApi.catchOAuthCallback();
-			console.dir(verifierResp);
-			if(verifierResp && !authState.verifierResp) {
-				dispatch({type: 'got-callback-response', payload: {verifierResp}});
-			}
-		};
-
-		console.dir(authState);
-		if(!authState.verifierResp) {
-			handleCallback();
+		async function fetchAccessTokens(requestToken, verifierToken) {
+			const accessTokens = await oAuthApi.getUserAccessToken(requestToken, verifierToken);
+			console.dir(accessTokens);
+			dispatch({type: 'got-access-tokens', payload: {accessTokens}});
 		}
-	}, [authState.verifierResp])
 
-	async function fetchAccessTokens(requestToken, verifierToken) {
-		const accessTokens = await oAuthApi.getUserAccessToken(requestToken, verifierToken);
-		console.dir(accessTokens);
-		dispatch({type: 'got-access-tokens', payload: {accessTokens}});
-	}
+		console.log(authState);
+		if(authState.verifierResp && !haveUser()) {
+			console.log('fetching user creds');
+			fetchAccessTokens(authState.verifierResp.oauth_token, authState.verifierResp.oauth_verifier);
+		}
+	}, [authState.verifierResp, haveUser])
 
-	function isSignedIn() {
-		return haveUser(authState.user) && haveCredentials(authState.credentials)
-	}
+
+	const isSignedIn = useCallback(() => {
+		return haveUser() && haveCreds()
+	}, [haveUser, haveCreds])
 
 	return {
 		handleStartAuth,
-		haveUser,
-		haveCredentials,
+		isSignedIn,
 		user: authState.user,
 		credentials: authState.userTokens,
 	}
@@ -144,10 +155,10 @@ function nonEmptyArray(str) {
 	return str && str.length && str.length > 0;
 }
 
-function haveUser(user) {
+function validUser(user) {
 	return user && nonEmptyArray(user.id) && nonEmptyArray(user.handle);
 }
 
-function haveCredentials(tokens) {
-	return tokens && nonEmptyArray(tokens.oauth_token) && nonEmptyArray(tokens.oauth_token_secret);
+function validCreds(creds) {
+	return creds && nonEmptyArray(creds.oauth_token) && nonEmptyArray(creds.oauth_token_secret);
 }

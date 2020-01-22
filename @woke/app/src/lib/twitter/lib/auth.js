@@ -95,15 +95,12 @@ export async function getUserAccessToken(oAuthToken, verifierToken) {
 // @params verifierPath: Unique temporary oauth token contained in callback
 // response
 export function catchOAuthCallback() {
-	console.dir(window.location.pathname)
-	console.dir("/" + resources.callback_path)
-	//if(window.location.pathname == resources.callback_path) {
+	if(window.location.pathname == ('/' + resources.callback_path)) {
 		if(window.location.search) {
 			let callbackParams = window.location.search.substr(1);
 			return unmarshal(callbackParams);
 		}
-	//}
-
+	}
 	return null;
 }
 

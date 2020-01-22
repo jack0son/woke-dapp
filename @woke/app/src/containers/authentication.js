@@ -12,7 +12,7 @@ import LargeBody from '../components/text/body-large'
 
 // Hooks
 import useAuthRouter, {states} from '../hooks/auth-router'
-import useTwitterSignIn from '../hooks/twitter/use-user-signin'
+import { useTwitterContext } from '../hooks/twitter/index.js'
 import useHedgehog from '../hooks/hedgehog'
 
 function createUserName(id, token) {
@@ -26,7 +26,7 @@ function createUserName(id, token) {
 export default function AuthContainer(props) {
 	const hedgehog = props.hedgehog;
 
-	const twitterSignin = useTwitterSignIn();
+	const twitterSignin = useTwitterContext().userSignin;
 
 	const router = useAuthRouter(twitterSignin.haveCredentials() ? states.HEDGEHOG : states.TWITTER);
 	//console.log('Router state: ', router.state);
