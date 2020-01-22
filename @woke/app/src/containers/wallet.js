@@ -40,6 +40,7 @@ export default function WalletContainer(props) {
 
 	// Custom hooks
 	const twitter = useTwitterContext();
+	console.log(twitter);
 	const twitterUsers = twitter.userList;
 	const friends = twitter.useFriends({userId: myUserId, max:500});
 

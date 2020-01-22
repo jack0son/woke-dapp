@@ -26,6 +26,8 @@ export default function TwitterContextProvider({children}) {
 				() => ({
 					client,
 					userSignin,
+					userList,
+					useFriends,
 				}),
 				[
 					client,
