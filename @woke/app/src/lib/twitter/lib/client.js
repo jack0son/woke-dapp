@@ -45,8 +45,6 @@ export default function makeWrapperClient(config) {
 		mixins = {...mixins, ...userApiMixin}
 	}
 
-	console.log(mixins);
-
 	// ** Wrapper client interface
 	return {
 		hasAppAuth,

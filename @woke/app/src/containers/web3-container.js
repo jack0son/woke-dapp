@@ -21,8 +21,8 @@ export default function Web3Container(props) {
 
 	const renderWallet = () => (
 		<Wallet
-			userId={retrieveUserId()}
-			userHandle={retrieveUserHandle()}
+			myUserId={retrieveUserId()}
+			myHandle={retrieveUserHandle()}
 		/>
 	)
 

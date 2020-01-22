@@ -7,34 +7,35 @@ import React, {
 export const useUsers = ({appClient, initialId}) => {
 	// Change userIds to be object to avoid looping throught to check for new ids
 	let cache = {}; // @TODO implement cache storage / retrieval
-	const [userIds, setUserIds] = useState([initialId]);
+	const [userIds, setUserIds] = useState(initialId ? [initialId] : []);
 	const [userData, setUserData] = useState(cache); //
 	const [fetching, setFetching] = useState(false);
 
   useEffect(() => {
-		const fetchUserData = async (newData, id) => {
+		let newUserData = {};
+		const fetchUserData = async (id) => {
 			let data = await appClient.getUserData(id);
-			newData[id] = data;
+			newUserData[id] = data;
 			return;
 		}
 
-		const performFetches = async (newUserData, fetches) => {
+		const performFetches = async (fetches) => {
 			//setFetching(true);
 			await Promise.all(fetches);
 			setUserData(userData => ({...userData, ...newUserData}));
 			//setFetching(false);
 		}
 
-		let fetches = [];
-		let newUserData = {};
-		if(appClient.hasUserAuth()) {
-			userIds.map(id => {
+		//  @TODO check length from a ref to avoid uncessary map loop execution
+		if(appClient.hasAppAuth()) {
+			let fetches = [];
+			userIds.forEach(id => {
 				// If we haven't got the user's data (handle, avatar etc.)
 				if(!userData[id]) {
-					fetches.push(fetchUserData(newUserData, id));
+					fetches.push(fetchUserData(id));
 				}
-				performFetches(newUserData, fetches);
 			});
+			performFetches(fetches);
 		}
 
   }, [appClient, userIds.length]);
@@ -44,6 +45,25 @@ export const useUsers = ({appClient, initialId}) => {
 	}, [userData.data])
 
 
+	const addId = (userId) => {
+		setUserIds(ids => {
+			if(ids.includes(userId)) {
+				return null;
+			}
+			return [...ids, userId];
+		});
+	}
+
+	const appendIds = (_ids) => {
+		setUserIds(ids => {
+			const newIds = _ids.filter(id => !ids.includes(id));
+			if(newIds.length == 0) {
+				return null;
+			}
+			return [...ids, ...newIds];
+		})
+	}
+
 	return {
 		state: {
 			ids: userIds,
@@ -51,6 +71,7 @@ export const useUsers = ({appClient, initialId}) => {
 			dataLength: userDataLength,
 			fetching
 		},
-		setIds: setUserIds
+		addId,
+		appendIds
 	}
 }

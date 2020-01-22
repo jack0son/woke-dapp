@@ -17,7 +17,7 @@ const Context = createContext();
 export default function TwitterContextProvider({children}) {
 	const userSignin = useUserSignin();
 	const client = useClient(userSignin.credentials);
-	const userList = useUsers({appClient: client, initialId: '1'})
+	const userList = useUsers({appClient: client})
 	const useFriends = useMemo(() => createUseFriends(client), [client]);
 
 	return (
