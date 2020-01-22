@@ -47,8 +47,6 @@ export function getUserRequestToken() {
 		oauth: oauthParams,
 	};
 
-	console.log(opts);
-
 	// Returns {oauth_token, oauth_token_secret, oauth_callback_confirmed}
 	return request.post(opts).then(resp => {
 		var resp = unmarshal(resp);
@@ -78,11 +76,9 @@ export async function getUserAccessToken(oAuthToken, verifierToken) {
 		url: resources.proxy_api_url + 'oauth/access_token',
 		oauth: oauthParams,
 	};
-
-	console.dir(opts);
+	console.log(opts);
 
 	return request.post(opts).then(resp => {
-		console.dir(resp);
 		var resp = unmarshal(resp);
 		if(resp.oauth_token && resp.oauth_token_secret) {
 			return resp;

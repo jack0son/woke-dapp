@@ -7,53 +7,53 @@ export default function useUserSignin() {
 		loading: false,
 		requestToken: retrieveRequestToken(),
 		verifierResp: null,
-		userTokens: retrieveUserTokens(),
+		credentials: retrieveUserTokens(),
 		user: retrieveUser(),
 	});
 
 	const haveUser = useCallback(() => validUser(authState.user), [authState.user])
 	const haveCreds = useCallback(() => validCreds(authState.credentials), [authState.credentials])
+	const isSignedIn = useCallback(() => {
+		return haveUser() && haveCreds()
+	}, [haveUser, haveCreds])
 
 	function reducer(state, action) {
-		console.dir(action);
 		switch(action.type) {
 			case 'got-callback-response': {
-				if(haveUser(state.user)) {
+				if(validUser(state.user)) {
 					return state;
 				}
 				const {verifierResp} = action.payload;
 
-				console.log(verifierResp);
 				if(verifierResp && state.verifierResp == null) {
 					return {
 						...state,
 						verifierResp,
 					}
 				}
-				console.log('skipped');
 
 				return state;
+				break;
 			}
 
 			case 'got-access-tokens': {
+				console.dir(action);
 				const {accessTokens} = action.payload;
 				const user = {
 					id: accessTokens.user_id,
 					handle: accessTokens.screen_name,
-				}
+				};
 
-				storeUserTokens(accessTokens);
+				const credentials = {
+					accessKey: accessTokens.oauth_token,
+					accessSecret: accessTokens.oauth_token_secret,
+				};
+
+				storeUserTokens(credentials);
 				storeUser(user);
 
-				return {
-					...state,
-					//loading: false,
-					user,
-					credentials: {
-						accessKey: accessTokens.oath_token,
-						accessSecret: accessTokens.oath_secret,
-					}
-				}
+				return {...state, user, credentials}
+				break;
 			}
 
 			default: {
@@ -87,12 +87,14 @@ export default function useUserSignin() {
 
 	useEffect(() => {
 		async function fetchAccessTokens(requestToken, verifierToken) {
-			const accessTokens = await oAuthApi.getUserAccessToken(requestToken, verifierToken);
-			console.dir(accessTokens);
-			dispatch({type: 'got-access-tokens', payload: {accessTokens}});
+			try {
+				const accessTokens = await oAuthApi.getUserAccessToken(requestToken, verifierToken);
+				dispatch({type: 'got-access-tokens', payload: {accessTokens}});
+			} catch (error) {
+				console.error('Error fetching user access tokens');
+			}
 		}
 
-		console.log(authState);
 		if(authState.verifierResp && !haveUser()) {
 			console.log('fetching user creds');
 			fetchAccessTokens(authState.verifierResp.oauth_token, authState.verifierResp.oauth_verifier);
@@ -100,22 +102,28 @@ export default function useUserSignin() {
 	}, [authState.verifierResp, haveUser])
 
 
-	const isSignedIn = useCallback(() => {
-		return haveUser() && haveCreds()
-	}, [haveUser, haveCreds])
 
 	return {
 		handleStartAuth,
 		isSignedIn,
+		haveCreds,
+		haveUser,
 		user: authState.user,
-		credentials: authState.userTokens,
+		credentials: authState.credentials,
 	}
 }
 
 function storeUserTokens (tokens) {
 	// TODO if env == dev
-	window.localStorage.setItem('oauth_token', tokens.oauth_token);
-	window.localStorage.setItem('oauth_token_secret', tokens.oauth_token_secret);
+	window.localStorage.setItem('access_key', tokens.accessKey);
+	window.localStorage.setItem('access_secret', tokens.accessSecret);
+}
+
+export function retrieveUserTokens () {
+	return {
+		accessKey: window.localStorage.getItem('access_key'),
+		accessSecret: window.localStorage.getItem('access_secret'),
+	}
 }
 
 function storeRequestToken (token) {
@@ -138,14 +146,6 @@ function retrieveUser () {
 	}
 }
 
-export function retrieveUserTokens () {
-	const oauth_token = window.localStorage.getItem('oauth_token');
-	const oauth_secret = window.localStorage.getItem('oauth_token_secret');
-	return {
-		oauth_token,
-		oauth_secret
-	}
-}
 
 function refreshOAuthToken() {
 	// If oauth token older than 30 seconds, delete it
@@ -160,5 +160,5 @@ function validUser(user) {
 }
 
 function validCreds(creds) {
-	return creds && nonEmptyArray(creds.oauth_token) && nonEmptyArray(creds.oauth_token_secret);
+	return creds && nonEmptyArray(creds.accessKey) && nonEmptyArray(creds.accessSecret);
 }

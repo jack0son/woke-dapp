@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react'
+import React, { useEffect, useMemo } from 'react'
 
 // View Containers
 import SignIn from './views/signin'
@@ -28,7 +28,10 @@ export default function AuthContainer(props) {
 
 	const twitterSignin = useTwitterContext().userSignin;
 
-	const router = useAuthRouter(twitterSignin.haveCredentials() ? states.HEDGEHOG : states.TWITTER);
+	//const twitterSignedIn = useMemo(() => twitterSignin.isSignedIn(), [twitterSigin]);
+
+	// Initial view router state
+	const router = useAuthRouter(twitterSignin.isSignedIn() ? states.HEDGEHOG : states.TWITTER);
 	//console.log('Router state: ', router.state);
 
 	const renderSignInWithTwitter = () => (
@@ -84,7 +87,8 @@ export default function AuthContainer(props) {
 	}, [hedgehog.state.savedUser, router.state == 'HEDGEHOG']);
 
 	useEffect(() => {
-		if(twitterSignin.haveUser() && twitterSignin.haveCredentials()) {
+		console.log('detect twitter signin state');
+		if(twitterSignin.isSignedIn()) {
 			const savedUser = hedgehog.state.savedUser
 			if (!(savedUser && savedUser.length > 0)) {
 				hedgehog.api.setUsername(createUserName(
@@ -95,10 +99,10 @@ export default function AuthContainer(props) {
 
 			console.log('dispatching twitter-authenticated')
 			router.dispatch({type: 'twitter-authenticated'});
-		} else if (twitterSignin.haveCredentials()) {
+		} else if (twitterSignin.haveCreds()) {
 			// LOGOUT
 		}
-	}, [twitterSignin.haveCredentials()])
+	}, [twitterSignin.isSignedIn()])
 
 	// TODO Saved user needs to be checked on the server
 
