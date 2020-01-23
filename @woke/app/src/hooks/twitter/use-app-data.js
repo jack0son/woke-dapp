@@ -7,9 +7,7 @@ import React, {
 export const useUsers = ({appClient}) => {
 	// Change userIds to be object to avoid looping throught to check for new ids
 	let cache = retrieveUserData() || {}; // @TODO implement cache storage / retrieval
-	console.log(cache);
 	let cachedIds = Object.keys(cache);
-	console.log(cachedIds);
 	const [userIds, setUserIds] = useState(cachedIds && cachedIds.length && cachedIds.length > 0 ? cachedIds : []);
 	const [userData, setUserData] = useState(cache); //
 	//const [fetching, setFetching] = useState(false);

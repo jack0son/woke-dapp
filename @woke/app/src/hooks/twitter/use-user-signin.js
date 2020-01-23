@@ -162,3 +162,9 @@ function validUser(user) {
 function validCreds(creds) {
 	return creds && nonEmptyArray(creds.accessKey) && nonEmptyArray(creds.accessSecret);
 }
+
+function popupCenter(url, title, w, h) {
+	var left = (document.body.clientWidth/2)-(w/2);
+	var top = (document.body.clientHeight.height/2)-(h/2);
+	return window.open(url, title, 'toolbar=no, location=no, directories=no, status=no, menubar=no, scrollbars=no, resizable=no, copyhistory=no, width='+w+', height='+h+', top='+top+', left='+left);
+}
