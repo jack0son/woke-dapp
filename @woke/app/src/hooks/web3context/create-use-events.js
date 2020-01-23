@@ -28,17 +28,14 @@ export default web3 => (contractName, eventName, opts) => {
 		let emitter;
 
 		async function setupEmitter() {
-
 			let pastOpts = {
 				...opts,
 				fromBlock: 0,
 				toBlock: 'latest'
 			};
 
-			//if(opts.fromBlock != 'latest') {
-				let pastEvents = await contract.getPastEvents(eventName, pastOpts);
-				safeSetEvents(events => [...events, ...pastEvents]);
-			//}
+			let pastEvents = await contract.getPastEvents(eventName, pastOpts);
+			safeSetEvents(events => [...events, ...pastEvents]);
 
 			let latestOpts = {
 				...opts,

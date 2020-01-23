@@ -76,7 +76,6 @@ export async function getUserAccessToken(oAuthToken, verifierToken) {
 		url: resources.proxy_api_url + 'oauth/access_token',
 		oauth: oauthParams,
 	};
-	console.log(opts);
 
 	return request.post(opts).then(resp => {
 		var resp = unmarshal(resp);

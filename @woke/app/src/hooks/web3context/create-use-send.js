@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo, useCallback} from 'react'
+import React, { useState, useEffect, useMemo, useCallback, useRef} from 'react'
 import { useWeb3Context } from '.';
 
 
@@ -14,6 +14,21 @@ export default web3 => (contractName, methodName, sendOptions) => {
 		error: null,
 	});
 
+	// Track mounted state to cancel calls if unmounted
+	const isMounted = useRef(true)
+	useEffect(() => {
+		return(() => {
+			isMounted.current = false
+		})
+	}, []);
+
+	const safeSetTxState = (setFunc) => {
+		if(isMounted.current) {
+			setTxState(events => setFunc(events));
+		}
+	}
+
+
 	const { account, useContract } = useWeb3Context();
 	const contract = useContract(contractName);
 
@@ -24,7 +39,7 @@ export default web3 => (contractName, methodName, sendOptions) => {
 
 	const send = (...args) => {
 		if(!txState.pending) {
-			setTxState(txState => ({
+			safeSetTxState(txState => ({
 				...txState,
 				pending: true,
 				error: null,
@@ -32,9 +47,9 @@ export default web3 => (contractName, methodName, sendOptions) => {
 			}));
 
 			contract.methods[methodName](...args).send(opts)
-				.on('transactionHash', hash => setTxState(txState => ({...txState, txHash: hash})))
+				.on('transactionHash', hash => safeSetTxState(txState => ({...txState, txHash: hash})))
 				.on('receipt', receipt => {
-					setTxState(txState => ({
+					safeSetTxState(txState => ({
 						...txState,
 						pending: false,
 						error: null,
@@ -43,7 +58,7 @@ export default web3 => (contractName, methodName, sendOptions) => {
 					console.log('... tx receipt: ', receipt);
 				})
 				.on('error', error => {
-					setTxState(txState => ({
+					safeSetTxState(txState => ({
 						...txState,
 						pending: false,
 						error: error,

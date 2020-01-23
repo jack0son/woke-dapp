@@ -96,7 +96,6 @@ export default function useUserSignin() {
 		}
 
 		if(authState.verifierResp && !haveUser()) {
-			console.log('fetching user creds');
 			fetchAccessTokens(authState.verifierResp.oauth_token, authState.verifierResp.oauth_verifier);
 		}
 	}, [authState.verifierResp, haveUser])

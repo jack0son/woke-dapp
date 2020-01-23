@@ -20,8 +20,6 @@ const USER_TABLE = 'Users'
 const requestToServer = async (axiosRequestObj) => {
   axiosRequestObj.baseURL = serverConfig.url;
 
-	console.log('STARTING WALLET SERVER REQUEST')
-	console.dir(axiosRequestObj);
   try {
     const resp = await axios(axiosRequestObj, {httpsAgent})
     if (resp.status === 200) {

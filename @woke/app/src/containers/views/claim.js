@@ -31,7 +31,7 @@ export default function ClaimView (props) {
 	const renderTweetClaim = () => {
 			return (
 				<ClaimLayout
-					instructionText={[`To securely claim any `, <WokeSpan>WOKENs</WokeSpan>, ` you've already been sent, we need to tweet a signed message.`]}
+					instructionText={[`To securely claim any `, <WokeSpan key="WokeSpan">WOKENs</WokeSpan>, ` you've already been sent, we need to tweet a signed message.`]}
 					button={TweetButton}
 					buttonProps={{
 						href: createShareIntentUrl(claimState.claimString),

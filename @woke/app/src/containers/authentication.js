@@ -24,15 +24,11 @@ function createUserName(id, token) {
 
 // TODO fix the loading state
 export default function AuthContainer(props) {
-	const hedgehog = props.hedgehog;
-
+	const {hedgehog, renderProp} = props;
 	const twitterSignin = useTwitterContext().userSignin;
-
-	//const twitterSignedIn = useMemo(() => twitterSignin.isSignedIn(), [twitterSigin]);
 
 	// Initial view router state
 	const router = useAuthRouter(twitterSignin.isSignedIn() ? states.HEDGEHOG : states.TWITTER);
-	//console.log('Router state: ', router.state);
 
 	const renderSignInWithTwitter = () => (
 		<SignIn
@@ -103,9 +99,8 @@ export default function AuthContainer(props) {
 		}
 	}, [twitterSignin.isSignedIn()])
 
-	// TODO Saved user needs to be checked on the server
-
 	useEffect(() => {
+		// @TODO Saved user needs to be verified on the server
 		if(hedgehog.state.signedIn === true) {
 			console.log('dispatching hedgehog-authenticated')
 			router.dispatch({type: 'hedgehog-authenticated'});
@@ -116,7 +111,7 @@ export default function AuthContainer(props) {
 
 	return (
 		<>
-		{ props.renderProp(router.state == 'TWITTER') }
+		{ renderProp(router.state == 'TWITTER') }
 		{hedgehog.state.loading ? renderLoading() : renderFunc()}
 		</>
 	)
