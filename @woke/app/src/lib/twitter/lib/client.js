@@ -14,16 +14,16 @@ import makeUserMixin from './rest-user'
 // @returns Twitter API wrapper methods
 export default function makeWrapperClient(config) {
 	const {
-		access_key, 
-		access_secret,
+		accessKey, 
+		accessSecret,
 		//bearer_token, 
 	} = config;
 
 	// ** Auth config API
 	const hasAppAuth = () => true;
 	const hasUserAuth = () => ((
-			isValidAccessKey(config.access_key) && 
-			isValidAccessSecret(config.access_secret)
+			isValidAccessKey(config.accessKey) && 
+			isValidAccessSecret(config.accessSecret)
 	) ? true : false );
 	const checkAuth = (hasAuth, label) => () => {
 		if(!hasAuth()) {

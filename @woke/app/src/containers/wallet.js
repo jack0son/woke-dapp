@@ -73,9 +73,6 @@ export default function WalletContainer(props) {
 		twitterUsers
 	});
 
-	console.log(props);
-	console.log(myUserData);
-
 	return (
 		<>
 		{ myUserData ?

@@ -10,8 +10,7 @@ export default function makeAppMixin(clientRequest, checkAuth) {
 		const params = handle ? {screen_name: handle} : {user_id: userId};
 
 		let userObject = await clientRequest.get('users/show.json', params);
-
-		let avatarSmall = userObject.profile_image_url_https;
+		//let avatarSmall = userObject.profile_image_url_https;
 
 		return {
 			id: userObject.id_str,

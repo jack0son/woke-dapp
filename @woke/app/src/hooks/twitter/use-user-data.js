@@ -16,7 +16,7 @@ export const createUseFriends = (userClient) => ({userId, max}) => {
 		if(userClient.hasUserAuth()) {
 			fetchFriends();
 		}
-	}, [userClient]);
+	}, []);
 
 	return friends;
 }

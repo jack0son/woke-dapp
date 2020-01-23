@@ -4,12 +4,15 @@ import React, {
 	useMemo
 } from 'react';
 // @notice When userId's list changes, retrieve new user data from twitter as
-export const useUsers = ({appClient, initialId}) => {
+export const useUsers = ({appClient}) => {
 	// Change userIds to be object to avoid looping throught to check for new ids
-	let cache = {}; // @TODO implement cache storage / retrieval
-	const [userIds, setUserIds] = useState(initialId ? [initialId] : []);
+	let cache = retrieveUserData() || {}; // @TODO implement cache storage / retrieval
+	console.log(cache);
+	let cachedIds = Object.keys(cache);
+	console.log(cachedIds);
+	const [userIds, setUserIds] = useState(cachedIds && cachedIds.length && cachedIds.length > 0 ? cachedIds : []);
 	const [userData, setUserData] = useState(cache); //
-	const [fetching, setFetching] = useState(false);
+	//const [fetching, setFetching] = useState(false);
 
   useEffect(() => {
 		let newUserData = {};
@@ -42,13 +45,17 @@ export const useUsers = ({appClient, initialId}) => {
 
 	const userDataLength = useMemo(() => {
 		return Object.keys(userData).length;
-	}, [userData.data])
+	}, [userData])
+
+	useEffect(() => {
+		storeUserData(userData);
+	}, [userData]);
 
 
 	const addId = (userId) => {
 		setUserIds(ids => {
 			if(ids.includes(userId)) {
-				return null;
+				return ids;
 			}
 			return [...ids, userId];
 		});
@@ -58,7 +65,7 @@ export const useUsers = ({appClient, initialId}) => {
 		setUserIds(ids => {
 			const newIds = _ids.filter(id => !ids.includes(id));
 			if(newIds.length == 0) {
-				return null;
+				return ids;
 			}
 			return [...ids, ...newIds];
 		})
@@ -69,9 +76,17 @@ export const useUsers = ({appClient, initialId}) => {
 			ids: userIds,
 			data: userData,
 			dataLength: userDataLength,
-			fetching
+			//fetching
 		},
 		addId,
 		appendIds
 	}
+}
+
+const userDataKey = 'twitter_user_data';
+function storeUserData (userData) {
+	window.localStorage.setItem(userDataKey, JSON.stringify(userData));
+}
+function retrieveUserData () {
+	return JSON.parse(window.localStorage.getItem(userDataKey));
 }
