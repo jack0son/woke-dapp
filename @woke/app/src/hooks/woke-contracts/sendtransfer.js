@@ -45,9 +45,7 @@ export default function useSendTransferInput({
 		if(recipient && recipient != '') {
 			console.log(`submitTransfer() to: ${recipient.id}, amount:${input.amount}`);
 			sendTransfers.submit(recipient.id, input.amount);
-			if(!twitterUsers.state.ids.includes(recipient.id)) {
-				twitterUsers.setIds(ids => [...ids, recipient.id]);
-			}
+			twitterUsers.addId(recipient.id);
 			//handleClearRecipient();
 
 		} else {

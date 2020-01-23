@@ -1,20 +1,21 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { useWeb3Context } from '../web3context'
+import { useTwitterContext } from '../twitter/index.js'
+
 import dayjs from 'dayjs';
 import { timeSince } from '../../lib/utils';
 
 
 // TODO indexed strings do not work in web3js 1.2.1 
 // https://github.com/ethereum/web3.js/issues/3053
-export default function(userId, twitterUsers, blockCache) {
+export default function(userId, blockCache) {
 	const {
 		web3,
 		account,
 		useEvents
 	} = useWeb3Context();
+	const twitterUsers = useTwitterContext().userList;
 	const [eventList, setEventList] = useState([]);
-	const userIds = twitterUsers.state.ids;
-	const setUserIds = twitterUsers.setIds;
 
 	// @notice web3js 2.0 will not require hashing of indexed filter param
 	const userIdHash = useMemo(() => web3.utils.keccak256(userId), [userId]);
@@ -54,7 +55,7 @@ export default function(userId, twitterUsers, blockCache) {
 	const parseEvents = (events, isSend) => {
 		newEvents = newEvents.concat(events.map(event => {
 			let id = event.returnValues[isSend ? 'toId' : 'fromId'];
-			if(!userIds.includes(id)) {
+			if(!twitterUsers.state.ids.includes(id)) {
 				newUserIds.push(id);
 			}
 
@@ -82,7 +83,7 @@ export default function(userId, twitterUsers, blockCache) {
 		blockCache.addBlocks(blocks);
 
 		if(newUserIds.length > 0) {
-			setUserIds(userIds => [...userIds, ...newUserIds]);
+			twitterUsers.appendIds(newUserIds);
 		}
 
 		if(newEvents.length > 0) {

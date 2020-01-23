@@ -2,17 +2,17 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { useWeb3Context } from '../web3context'
 import dayjs from 'dayjs';
 import { timeSince } from '../../lib/utils';
+import { useTwitterContext } from '../twitter/index.js'
 
 
-export default function(twitterUsers, blockCache) {
+export default function(blockCache) {
 	const {
 		web3,
 		account,
 		useEvents
 	} = useWeb3Context();
+	const twitterUsers = useTwitterContext().userList;
 	const [eventList, setEventList] = useState([]);
-	const userIds = twitterUsers.state.ids;
-	const setUserIds = twitterUsers.setIds;
 
 	// TODO: use indexed strings on smart-contract to look up by user id
 	let rewardEvents = useEvents('WokeToken', 'Reward',
@@ -32,7 +32,7 @@ export default function(twitterUsers, blockCache) {
 	const parseEvents = (events) => {
 		newEvents = newEvents.concat(events.map(event => {
 			let id = event.returnValues.claimerId;
-			if(!userIds.includes(id)) {
+			if(!twitterUsers.state.ids.includes(id)) {
 				newUserIds.push(id);
 			}
 
@@ -58,7 +58,7 @@ export default function(twitterUsers, blockCache) {
 		blockCache.addBlocks(blocks);
 
 		if(newUserIds.length > 0) {
-			setUserIds(userIds => [...userIds, ...newUserIds]);
+			twitterUsers.appendIds(newUserIds);
 		}
 
 		if(newEvents.length > 0) {

@@ -1,11 +1,11 @@
 import React, {useReducer} from 'react'
 
-	const routerState = [
-		'TWITTER',
-		'HEDGEHOG',
-		'LOGIN',
-		'AUTHD',
-	]
+const routerState = [
+	'TWITTER',
+	'HEDGEHOG',
+	'LOGIN',
+	'AUTHD',
+]
 
 export const states = {
 		TWITTER: routerState[0],

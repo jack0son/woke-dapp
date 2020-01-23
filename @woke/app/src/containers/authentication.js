@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react'
+import React, { useEffect, useMemo } from 'react'
 
 // View Containers
 import SignIn from './views/signin'
@@ -12,7 +12,7 @@ import LargeBody from '../components/text/body-large'
 
 // Hooks
 import useAuthRouter, {states} from '../hooks/auth-router'
-import { useAuthTokens,  useTwitterSignIn } from '../hooks/twitter-signin'
+import { useTwitterContext } from '../hooks/twitter/index.js'
 import useHedgehog from '../hooks/hedgehog'
 
 function createUserName(id, token) {
@@ -26,15 +26,17 @@ function createUserName(id, token) {
 export default function AuthContainer(props) {
 	const hedgehog = props.hedgehog;
 
-	const twitterAuthTokens = useAuthTokens();
-	const twitterSignIn = useTwitterSignIn(twitterAuthTokens.refresh);
+	const twitterSignin = useTwitterContext().userSignin;
 
-	const router = useAuthRouter(twitterAuthTokens.status ? states.HEDGEHOG : states.TWITTER);
+	//const twitterSignedIn = useMemo(() => twitterSignin.isSignedIn(), [twitterSigin]);
+
+	// Initial view router state
+	const router = useAuthRouter(twitterSignin.isSignedIn() ? states.HEDGEHOG : states.TWITTER);
 	//console.log('Router state: ', router.state);
 
 	const renderSignInWithTwitter = () => (
 		<SignIn
-			triggerSignIn={twitterSignIn.handleAuthUser}
+			triggerSignIn={twitterSignin.handleStartAuth}
 		/>
 	)
 
@@ -85,23 +87,21 @@ export default function AuthContainer(props) {
 	}, [hedgehog.state.savedUser, router.state == 'HEDGEHOG']);
 
 	useEffect(() => {
-		//console.dir(twitterAuthTokens);
-		//console.dir(twitterSignIn);
-		if(twitterAuthTokens.status === true) {
+		if(twitterSignin.isSignedIn()) {
 			const savedUser = hedgehog.state.savedUser
 			if (!(savedUser && savedUser.length > 0)) {
 				hedgehog.api.setUsername(createUserName(
-					twitterAuthTokens.user.id,
-					twitterAuthTokens.userTokens.oauth_token
+					twitterSignin.user.id,
+					twitterSignin.credentials.oauth_token
 				));
 			}
 
 			console.log('dispatching twitter-authenticated')
 			router.dispatch({type: 'twitter-authenticated'});
-		} else if (twitterAuthTokens.status === false) {
+		} else if (twitterSignin.haveCreds()) {
 			// LOGOUT
 		}
-	}, [twitterAuthTokens.status])
+	}, [twitterSignin.isSignedIn()])
 
 	// TODO Saved user needs to be checked on the server
 
