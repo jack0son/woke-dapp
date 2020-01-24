@@ -20,22 +20,17 @@ const getwoketoke_id = '932596541822419000'
 
 export default function WalletContainer(props) {
 	const {myUserId, myHandle} = props;
-
 	const {
 		web3,
 		account,
 		useSubscribeCall,
 	} = useWeb3Context();
-
-
 	const [error, setError] = useState(null);
 
 	// Move into seperate hook
 	//const [fetchingTxData, setFetchingTxData] = useState(false);
 	//const [txList, setTxList] = useState([]);
-
 	const balance = useSubscribeCall('WokeToken', 'balanceOf', account);
-
 
 	// Custom hooks
 	const twitter = useTwitterContext();

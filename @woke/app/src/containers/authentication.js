@@ -15,9 +15,9 @@ import useAuthRouter, {states} from '../hooks/auth-router'
 import { useTwitterContext } from '../hooks/twitter/index.js'
 import useHedgehog from '../hooks/hedgehog'
 
-function createUserName(id, token) {
+function createUserName(id) {
 	if(process.env.NODE_ENV == 'development') {
-	 return id + token + Math.floor(Math.random() * Math.floor(1000));
+	 return id + Math.floor(Math.random() * Math.floor(1000));
 	}
 	return id;// + token; 
 }
@@ -88,7 +88,7 @@ export default function AuthContainer(props) {
 			if (!(savedUser && savedUser.length > 0)) {
 				hedgehog.api.setUsername(createUserName(
 					twitterSignin.user.id,
-					twitterSignin.credentials.oauth_token
+					//twitterSignin.credentials.oauth_token
 				));
 			}
 

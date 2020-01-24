@@ -462,8 +462,8 @@ export default (props) => {
 		if(events.Lodged && events.Lodged.length > 0) {
 			// Use latest - there should only be one
 			// Once oracle stores tweet text, fulfill the claim
-			let event = events.Lodged[events.Lodged.length - 1]; 
-			dispatch({type: 'new-event', name:'Lodged', payload: event.returnValues});
+			let event = events.Lodged[events.Lodged.length - 1].returnValues; 
+			dispatch({type: 'new-event', name:'Lodged', payload: event});
 		}
 	}, [claimState.gathering, events.Lodged && events.Lodged.length]);
 

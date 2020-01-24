@@ -1,6 +1,11 @@
 import React, { useState, useEffect, useRef, useMemo } from 'react'
 import { useWeb3Context } from '.';
 
+
+// Need to use this utility in place of web3.eth.Contract.getPastEvents due to
+// version synchonisation issue between web3-provider-engine and web3
+import { makeLogEventSubscription } from '../../lib/web3/web3-utils';
+
 // @dev createUseEvents
 // @dev Hook generator for web3 provider context
 export default web3 => (contractName, eventName, opts) => {
@@ -27,21 +32,23 @@ export default web3 => (contractName, eventName, opts) => {
 	useEffect(() => {
 		let emitter;
 
-		async function setupEmitter() {
+		function setupEmitter() {
 			let pastOpts = {
 				...opts,
 				fromBlock: 0,
-				toBlock: 'latest'
+				toBlock: 'latest',
 			};
 
-			let pastEvents = await contract.getPastEvents(eventName, pastOpts);
-			safeSetEvents(events => [...events, ...pastEvents]);
+			contract.getPastEvents(eventName, pastOpts, function(error, events) {
+				if(error) {
+					console.error(error, {contract, eventName, pastOpts});
+				}
+			}).then(pastEvents => safeSetEvents(events => [...events, ...pastEvents]));
 
 			let latestOpts = {
 				...opts,
 				fromBlock: 'latest',
 			}
-
 
 			emitter = contract.events[eventName](latestOpts, (error, event) => {
 				if (error) {
@@ -53,16 +60,19 @@ export default web3 => (contractName, eventName, opts) => {
 			})
 		}
 
-		setupEmitter();
+		if(contract && contractName && eventName) {
+			setupEmitter();
+		}
 
 		// TODO use web3.eth.subscribe to manage subscription
 		// TODO emitter needs to be stored in state to cleanup
 		return (() => {
 			if(emitter && emitter.unsubscribe) {
-				//emitter.unsubcribe();
+				console.log(emitter);
+				emitter.unsubscribe();
 			}
 		})
-	}, [contractName, eventName, opts]);
+	}, [contract, contractName, eventName, opts]);
 
 	return events;
 }

@@ -1,15 +1,19 @@
 import Web3 from "web3";
 import getProviderEngine from './engine/web3-provider';
-import { getWeb3Network } from './web3-config.js'
+import { getWeb3Network, getCurrentRpcUrl} from './web3-config.js'
 
 
 const network = getWeb3Network();
 
 // Instantiate web3 object
-export async function makeWeb3(provider) {
+export async function makeWeb3({wallet}) {
 	// Check connection
 	console.log('Ethereum network: ', network.name);
-	const web3 = new Web3(provider);
+	console.log(wallet);
+	//const web3 = new Web3(provider);
+	const web3 = new Web3(getCurrentRpcUrl());
+	addAccountFromWallet(web3, wallet);
+
 	await web3.eth.net.isListening();
 	let networkId;
 	while(networkId != network.id) {
@@ -21,6 +25,12 @@ export async function makeWeb3(provider) {
 
 	console.log("Network ID: ", networkId);
 	return {web3, network};
+}
+
+function addAccountFromWallet(web3, wallet) {
+	console.log('Adding account: ', wallet.getAddressString());
+	const account = web3.eth.accounts.wallet.add(wallet.getPrivateKeyString());
+	web3.eth.defaultAccount = account.address;
 }
 
 export function makeWalletProvider(wallet) {

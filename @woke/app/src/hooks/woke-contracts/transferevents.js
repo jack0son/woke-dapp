@@ -35,14 +35,14 @@ export default function(userId, blockCache) {
 	sends = sends.filter(event => event.returnValues.fromId == userId);
 
 	let receives = useEvents('WokeToken', 'Tx',
-		useMemo(() => (
-			{
+		useMemo(() => {
+			return {
 				//filter: { toId_ind: userIdHash },
 				//filter: { toId_ind: userIdHash },
 				//filter: { toId: userId },
 				fromBlock: 0
 			}
-		),
+		},
 			[account, userIdHash])
 	);
 	// Manual filter to account for issue 3053
