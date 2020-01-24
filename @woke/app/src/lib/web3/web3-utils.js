@@ -54,7 +54,7 @@ export const subscribeLogContract = web3 => (contract, handleFunc) => {
 			}
 		})
 		subscription = newSub;
-		console.log('Subscriber', `Subscribed to ${contract.options.address}`);
+		//console.log('Subscriber', `Subscribed to ${contract.options.address}`);
 	}
 
 	const stop = () => new Promise((resolve, reject) => 

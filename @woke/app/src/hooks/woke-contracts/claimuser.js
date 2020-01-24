@@ -16,6 +16,8 @@ import { useTwitterContext } from '../twitter/index.js'
 const {statesMap, statesList} = claimStates;
 const states = statesMap;
 
+const logVerbose = false ? console.log : () => {};
+
 // TODO implement a an unmount variable to cancel async calls when claimuser
 // unmounts
 export default (props) => {
@@ -244,14 +246,14 @@ export default (props) => {
 			let opts = {fromBlock: 0, toBlock: 'latest'};
 
 			// Has Lodging occured?
-			console.log('\t... initial getting lodge events');
+			logVerbose('\t... initial getting lodge events');
 			const lodgeEvents = await WokeToken.getPastEvents('Lodged', { ...opts,
 				filter: { claimer: account}
 			});
 
 			if(lodgeEvents.length > 0) {
 				const latestLodgeEvent = lodgeEvents[lodgeEvents.length - 1].returnValues;
-				console.log('\t... initial getting tweet stored');
+				logVerbose('\t... initial getting tweet stored');
 				const tweetEvents = await TwitterOracleMock.getPastEvents('TweetStored', { ...opts,
 					filter: {queryId: latestLodgeEvent.queryId}
 				});
@@ -298,7 +300,7 @@ export default (props) => {
 						}
 
 						default: {
-							console.log('waiting for userClaimed(id) call');
+							logVerbose('waiting for userClaimed(id) call');
 						}
 					}
 					break;
@@ -306,14 +308,14 @@ export default (props) => {
 
 				case undefined: {
 					// No result from call
-					console.log('waiting for getUser(account) call');
+					logVerbose('waiting for getUser(account) call');
 					break;
 				}
 
 				default: {
 					// A user exists
 					if(typeof callGetUser == 'string' && callGetUser.length > 0) {
-						if(callGetUser == props.userId) {
+						if(callGetUser === props.userId) {
 							// User is already claimed
 							dispatch({type: 'contract-call', payload: 'claimed'});
 						} else {
@@ -327,12 +329,12 @@ export default (props) => {
 		}
 
 		gatherContractState();
-	}, [callGetUser, callUserClaimed]);
+	}, [callGetUser, callUserClaimed, props.userId]);
 
 	const tweetText = useSubscribeCall('TwitterOracleMock', 'getTweetText', props.userId);
 
 	useEffect(() => {
-		console.log(tweetText);
+		console.log('Got tweet from contract: ', tweetText);
 		if(typeof tweetText == 'string' && tweetText != '') {
 			//dispatch({type: 'new-event', name: 'TweetStored'});
 			dispatch({type: 'already-stored', name: 'TweetStored'});
@@ -356,7 +358,7 @@ export default (props) => {
 			setClaimString(str);
 		}
 		generateClaimString();
-	}, [claimState.gathering])
+	}, [web3, claimState.gathering, account, props.userId])
 
 	const timeoutPromise = (ms) => {
 		return new Promise((resolve, reject) => {
@@ -370,14 +372,14 @@ export default (props) => {
 	const [fetchingTweet, setFetchingTweet] = useState(false);
 	useEffect(() => {
 		const waitForTweet = async (userId) => {
-			console.log('Searching for ', claimString);
+			logVerbose('Searching for ', claimString);
 			let tweet = null
 			let count = 0;
 
 			// Search for the tweet once initially, then until found
 			const maxAttempts = claimState.stage < states.TWEETED ? 1 : 3;
 
-			console.log(`\tsearching for claim tweet with ${maxAttempts} attempts`);
+			logVerbose(`\tsearching for claim tweet with ${maxAttempts} attempts`);
 			while (!tweet && count < maxAttempts) {
 				try {
 					await timeoutPromise(1000)
@@ -385,8 +387,8 @@ export default (props) => {
 
 				} catch (error) {
 					count += 1;
-					console.log(`Could not find claim tweet on attempt ${count}`);
-					console.log(error);
+					logVerbose(`Could not find claim tweet on attempt ${count}`);
+					logVerbose(error);
 				}
 			}
 
@@ -429,7 +431,7 @@ export default (props) => {
 		if(events.Claimed && events.Claimed.length > 0) {
 			dispatch({type: 'new-event', name: 'Claimed'});
 		}
-	}, [claimState.gathering, events.Claimed && events.Claimed.length]);
+	}, [claimState.gathering, events.Claimed]) //events.Claimed && events.Claimed.length]);
 
 	events.TweetStored = useEvents('TwitterOracleMock', 'TweetStored',
 		useMemo(() => (
@@ -438,7 +440,7 @@ export default (props) => {
 				fromBlock: 0
 			}
 		),
-			[account, claimState.queryId])
+			[claimState.queryId])
 	);
 
 	useEffect(() => {
@@ -447,7 +449,7 @@ export default (props) => {
 			let event = events.TweetStored[events.TweetStored.length - 1].returnValues;
 			dispatch({type: 'new-event', name: 'TweetStored', payload: event});
 		}
-	}, [claimState.gathering, claimState.queryId, events.TweetStored && events.TweetStored.length]);
+	}, [claimState.gathering, claimState.queryId, events.TweetStored]); // && events.TweetStored.length]);
 
 	events.Lodged = useEvents('WokeToken', 'Lodged',
 		useMemo(() => (
@@ -465,7 +467,7 @@ export default (props) => {
 			let event = events.Lodged[events.Lodged.length - 1].returnValues; 
 			dispatch({type: 'new-event', name:'Lodged', payload: event});
 		}
-	}, [claimState.gathering, events.Lodged && events.Lodged.length]);
+	}, [claimState.gathering, events.Lodged]); // && events.Lodged.length]);
 
 	function hasEnoughEth () {
 		setError('Insufficient eth for transaction');

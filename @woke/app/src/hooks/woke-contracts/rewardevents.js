@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { useWeb3Context } from '../web3context'
 import dayjs from 'dayjs';
 import { timeSince } from '../../lib/utils';
@@ -7,7 +7,6 @@ import { useTwitterContext } from '../twitter/index.js'
 
 export default function(blockCache) {
 	const {
-		web3,
 		account,
 		useEvents
 	} = useWeb3Context();
@@ -69,24 +68,28 @@ export default function(blockCache) {
 	}
 
 	// Link events to block and user data as it becomes available
+	const numBlocks = useRef(blockCache.blockNumbers.length);
 	useEffect(() => {
-		setEventList(eventList => {
-			eventList.forEach(event => {
-				event.block = blockCache.blocks[event.blockNumber];
-				if(event.block) {
-					event.timestamp = dayjs.unix(event.block.timestamp)
-					event.timeSince = timeSince(event.timestamp);
-				}
+		if(blockCache.blockNumbers.length > numBlocks.current) {
+			numBlocks.current = blockCache.blockNumbers.length;
+			setEventList(eventList => {
+				eventList.forEach(event => {
+					event.block = blockCache.blocks[event.blockNumber];
+					if(event.block) {
+						event.timestamp = dayjs.unix(event.block.timestamp)
+						event.timeSince = timeSince(event.timestamp);
+					}
 
-				if(twitterUsers.state.data[event.counterParty.id]) {
-					event.counterParty = twitterUsers.state.data[event.counterParty.id];
-				}
+					if(twitterUsers.state.data[event.counterParty.id]) {
+						event.counterParty = twitterUsers.state.data[event.counterParty.id];
+					}
 
-			});
+				});
 
-			return eventList;
-		})
-	}, [eventList, blockCache.blockNumbers.length, twitterUsers.state.data]);
+				return eventList;
+			})
+		}
+	}, [eventList, blockCache, twitterUsers.state.data]);
 
 	return eventList;
 }

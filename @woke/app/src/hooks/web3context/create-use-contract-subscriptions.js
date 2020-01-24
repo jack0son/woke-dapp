@@ -62,8 +62,6 @@ export default web3 => {
 			});
 		}
 
-		console.log('subscriber index ', subscriberIndex);
-
 		return {
 			update,
 			stop

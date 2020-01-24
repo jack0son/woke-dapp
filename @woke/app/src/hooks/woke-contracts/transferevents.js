@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { useWeb3Context } from '../web3context'
 import { useTwitterContext } from '../twitter/index.js'
 
@@ -6,11 +6,10 @@ import dayjs from 'dayjs';
 import { timeSince } from '../../lib/utils';
 
 
-// TODO indexed strings do not work in web3js 1.2.1 
+// TODO indexed strings do not work in web3js 1.2.4
 // https://github.com/ethereum/web3.js/issues/3053
 export default function(userId, blockCache) {
 	const {
-		web3,
 		account,
 		useEvents
 	} = useWeb3Context();
@@ -18,37 +17,31 @@ export default function(userId, blockCache) {
 	const [eventList, setEventList] = useState([]);
 
 	// @notice web3js 2.0 will not require hashing of indexed filter param
-	const userIdHash = useMemo(() => web3.utils.keccak256(userId), [userId]);
+	//const userIdHash = useMemo(() => web3.utils.keccak256(userId), [userId]);
 
 	let sends = useEvents('WokeToken', 'Tx',
 		useMemo(() => (
 			{
-				//filter: { fromId_ind: userIdHash },
-				//filter: { fromId_ind: userId },
-				//filter: { fromId: userId },
 				filter: { from: account },
 				fromBlock: 0
 			}
 		),
-			[account, userIdHash])
+			[account])
 	);
 	// Manual filter to account for issue 3053
-	sends = sends.filter(event => event.returnValues.fromId == userId);
+	sends = sends.filter(event => event.returnValues.fromId === userId);
 
 	let receives = useEvents('WokeToken', 'Tx',
 		useMemo(() => {
 			return {
-				//filter: { toId_ind: userIdHash },
-				//filter: { toId_ind: userIdHash },
-				//filter: { toId: userId },
 				filter: { to: account },
 				fromBlock: 0
 			}
 		},
-			[account, userIdHash])
+			[account])
 	);
 	// Manual filter to account for issue 3053
-	receives = receives.filter(event => event.returnValues.toId == userId);
+	receives = receives.filter(event => event.returnValues.toId === userId);
 
 	let newEvents = [];
 	let newUserIds = [];
@@ -94,27 +87,31 @@ export default function(userId, blockCache) {
 		setEventList(newEvents);
 	}
 
-	// Link events to block and user data as it becomes available
+	// Link events to block and user data as it becomes available.
+	// Use a ref here to decouple effect execution from changes to blockCache.
+	const numBlocks = useRef(blockCache.blockNumbers.length);
 	useEffect(() => {
-		setEventList(eventList => {
-			eventList.forEach(event => {
-				event.block = blockCache.blocks[event.blockNumber];
-				if(event.block) {
-					event.timestamp = dayjs.unix(event.block.timestamp)
-					event.timeSince = timeSince(event.timestamp);
-				}
+		if(blockCache.blockNumbers.length > numBlocks.current) {
+			numBlocks.current = blockCache.blockNumbers.length;
 
-				if(twitterUsers.state.data[event.counterParty.id]) {
-					event.counterParty = twitterUsers.state.data[event.counterParty.id];
-				}
+			setEventList(eventList => {
+				eventList.forEach(event => {
+					event.block = blockCache.blocks[event.blockNumber];
+					if(event.block) {
+						event.timestamp = dayjs.unix(event.block.timestamp)
+						event.timeSince = timeSince(event.timestamp);
+					}
 
-			});
+					if(twitterUsers.state.data[event.counterParty.id]) {
+						event.counterParty = twitterUsers.state.data[event.counterParty.id];
+					}
 
-			return eventList;
-		})
-	}, [eventList, blockCache.blockNumbers.length, twitterUsers.state.data]);
+				});
 
-	//console.dir(eventList);
+				return eventList;
+			})
+		}
+	}, [eventList, blockCache, twitterUsers.state.data]);
 
 	return eventList;
 }
