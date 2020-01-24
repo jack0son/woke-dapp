@@ -470,7 +470,7 @@ export default (props) => {
 	}, [claimState.gathering, events.Lodged]); // && events.Lodged.length]);
 
 	function hasEnoughEth () {
-		setError('Insufficient eth for transaction');
+		//setError('Insufficient eth for transaction');
 		return true;
 	}
 
@@ -545,12 +545,4 @@ export default (props) => {
 		},
 		error
 	};
-}
-
-function usePrevious(value) {
-	const ref = useRef();
-	useEffect(() => {
-		ref.current = value;
-	});
-	return ref.current;
 }

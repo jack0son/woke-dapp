@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
 
 export function useInputListener(initialState) {
 	const [input, setInput] = useState({
@@ -7,4 +7,17 @@ export function useInputListener(initialState) {
 	const handleChangeInput = name => event => {
 		setInput({ ...input, [name]: event.target.value });
 	};
+
+	return {
+		input,
+		handleChangeInput,
+	}
+}
+
+export function usePrevious(value) {
+	const ref = useRef();
+	useEffect(() => {
+		ref.current = value;
+	});
+	return ref.current;
 }

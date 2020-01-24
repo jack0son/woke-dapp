@@ -74,6 +74,22 @@ export default function(userId, blockCache) {
 		parseEvents(receives, false);
 	}
 
+	const attachEventMetaData = (events) => {
+		events.forEach(event => {
+			event.block = blockCache.blocks[event.blockNumber];
+			if(event.block) {
+				event.timestamp = dayjs.unix(event.block.timestamp)
+				event.timeSince = timeSince(event.timestamp);
+			}
+
+			if(twitterUsers.state.data[event.counterParty.id]) {
+				event.counterParty = twitterUsers.state.data[event.counterParty.id];
+			}
+
+		});
+		return eventList;
+	}
+
 	if(newEvents.length > eventList.length) {
 		blockCache.addBlocks(blocks);
 
@@ -84,6 +100,7 @@ export default function(userId, blockCache) {
 		if(newEvents.length > 0) {
 			newEvents.sort((a,b) => b.blockNumber - a.blockNumber);
 		}
+		attachEventMetaData(newEvents);
 		setEventList(newEvents);
 	}
 
@@ -91,7 +108,7 @@ export default function(userId, blockCache) {
 	// Use a ref here to decouple effect execution from changes to blockCache.
 	const numBlocks = useRef(blockCache.blockNumbers.length);
 	useEffect(() => {
-		if(blockCache.blockNumbers.length > numBlocks.current) {
+		//if(blockCache.blockNumbers.length > numBlocks.current) {
 			numBlocks.current = blockCache.blockNumbers.length;
 
 			setEventList(eventList => {
@@ -110,7 +127,7 @@ export default function(userId, blockCache) {
 
 				return eventList;
 			})
-		}
+		//}
 	}, [eventList, blockCache, twitterUsers.state.data]);
 
 	return eventList;
