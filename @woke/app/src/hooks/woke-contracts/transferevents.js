@@ -103,6 +103,7 @@ export default function(userId, blockCache) {
 		attachEventMetaData(newEvents);
 		setEventList(newEvents);
 	}
+	console.log(newEvents);
 
 	// Link events to block and user data as it becomes available.
 	// Use a ref here to decouple effect execution from changes to blockCache.

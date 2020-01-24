@@ -7,12 +7,12 @@ export function timeSince(date, startDate = Date.now()) {
 	date = dayjs(date);
 
 	const periods = [
-		["seconds", 60],
-		["minutes", 60],
-		["hours", 24],
-		["days", 30],
-		["months", 12],
-		["years", 100],
+		["seconds", 60, "sec"],
+		["minutes", 60, "min"],
+		["hours", 24, "hour"],
+		["days", 30, "day"],
+		["months", 12, "month"],
+		["years", 100, "year"],
 	];
 
 	let diff, i;
@@ -23,7 +23,8 @@ export function timeSince(date, startDate = Date.now()) {
 		}
 	}
 
-	return `${Math.floor(diff)} ${periods[i][0]}`;
+	const t = Math.floor(diff);
+	return `${t} ${periods[i][2]}${t > 1 ? 's' : ''}`;
 }
 
 export function createShareIntentUrl(claimString) {
