@@ -15,11 +15,11 @@ export default function useWeb3Instance(wallet) {
 	useEffect(() => {
 		async function initializeWeb3() {
 			//let {web3, network} = await makeWeb3(provider);
-			let {web3, network} = await makeWeb3({wallet});
-			let accounts = await web3.eth.getAccounts();
+			let {web3, network, account} = await makeWeb3({wallet});
+			//let accounts = await web3.eth.getAccounts();
 			setWeb3Instance(web3);
 			setNetwork(network);
-			setAccount(accounts[0]);
+			setAccount(account);
 		}
 
 		initializeWeb3();

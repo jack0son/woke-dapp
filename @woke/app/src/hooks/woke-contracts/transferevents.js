@@ -26,6 +26,7 @@ export default function(userId, blockCache) {
 				//filter: { fromId_ind: userIdHash },
 				//filter: { fromId_ind: userId },
 				//filter: { fromId: userId },
+				filter: { from: account },
 				fromBlock: 0
 			}
 		),
@@ -40,6 +41,7 @@ export default function(userId, blockCache) {
 				//filter: { toId_ind: userIdHash },
 				//filter: { toId_ind: userIdHash },
 				//filter: { toId: userId },
+				filter: { to: account },
 				fromBlock: 0
 			}
 		},

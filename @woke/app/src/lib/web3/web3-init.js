@@ -12,8 +12,13 @@ export async function makeWeb3({wallet}) {
 	console.log(wallet);
 	//const web3 = new Web3(provider);
 	const web3 = new Web3(getCurrentRpcUrl());
-	addAccountFromWallet(web3, wallet);
 
+	// Add wallet to in-memory wallet
+	const account = web3.eth.accounts.wallet.add(wallet.getPrivateKeyString());
+	console.log(account);
+	web3.eth.defaultAccount = account.address;
+
+	console.log(await web3.eth.personal.getAccounts())
 	await web3.eth.net.isListening();
 	let networkId;
 	while(networkId != network.id) {
@@ -24,14 +29,9 @@ export async function makeWeb3({wallet}) {
 	}
 
 	console.log("Network ID: ", networkId);
-	return {web3, network};
+	return {web3, network, account: account.address};
 }
 
-function addAccountFromWallet(web3, wallet) {
-	console.log('Adding account: ', wallet.getAddressString());
-	const account = web3.eth.accounts.wallet.add(wallet.getPrivateKeyString());
-	web3.eth.defaultAccount = account.address;
-}
 
 export function makeWalletProvider(wallet) {
 	console.log('Loading wallet provider ...')
