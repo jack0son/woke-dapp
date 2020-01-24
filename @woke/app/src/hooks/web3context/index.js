@@ -5,8 +5,6 @@ import React, {
 	useEffect,
 	useMemo
 } from 'react';
-import Web3 from 'web3';
-import { getContract } from '../../lib/web3/web3-utils';
 import { loadContractArtifacts } from '../../lib/web3/web3-config'
 
 import createUseContract from './create-use-contract';

@@ -73,16 +73,17 @@ export const subscribeLogContract = web3 => (contract, handleFunc) => {
 	}
 }
 
-export const subscribeLogEvent = web3 => (contract, eventName, handleFunc) => {
-	let subscribedEvents = null;
-	const subscribe = () => {
+export const makeLogEventSubscription = web3 => (contract, eventName, opts, handleFunc) => {
+	let subscription = null;
+	const start = () => {
 		const eventJsonInterface = web3.utils._.find(
 			contract._jsonInterface,
 			o => o.name === eventName && o.type === 'event',
 		);
-		const subscription = web3.eth.subscribe('logs', {
+		const newSub = web3.eth.subscribe('logs', {
+			...opts,
 			address: contract.options.address,
-			topics: [eventJsonInterface.signature]
+			topics: [eventJsonInterface.signature],
 		}, (error, result) => {
 			if (!error) {
 				const eventObj = web3.eth.abi.decodeLog(
@@ -96,19 +97,24 @@ export const subscribeLogEvent = web3 => (contract, eventName, handleFunc) => {
 				console.error(error);
 			}
 		})
-		subscribedEvents[eventName] = subscription;
+
+		subscription = newSub;
+		subscription.on("data", log => console.log);
 		//console.log('Subscriber', `Subscribed to ${eventName}.`);
 	}
 
-	async function unsubscribe() {
-		for(let sub of Object.values(subscribedEvents)) {
-			await sub.unsubscribe();
-		}
-		console.log('Unsubscribed and stopped.');
-	}
+	const stop = () => new Promise((resolve, reject) => 
+		subscription.unsubscribe((error, succ) => {
+			if(error) {
+				reject(error);;
+			}
+			console.log(`... unsub'd ${eventName}`);
+			resolve(succ);
+		})
+	);
 
 	return {
-		subscribe,
-		unsubscribe,
+		start,
+		stop,
 	}
 }

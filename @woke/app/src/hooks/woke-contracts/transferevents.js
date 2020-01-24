@@ -26,6 +26,7 @@ export default function(userId, blockCache) {
 				//filter: { fromId_ind: userIdHash },
 				//filter: { fromId_ind: userId },
 				//filter: { fromId: userId },
+				filter: { from: account },
 				fromBlock: 0
 			}
 		),
@@ -35,14 +36,15 @@ export default function(userId, blockCache) {
 	sends = sends.filter(event => event.returnValues.fromId == userId);
 
 	let receives = useEvents('WokeToken', 'Tx',
-		useMemo(() => (
-			{
+		useMemo(() => {
+			return {
 				//filter: { toId_ind: userIdHash },
 				//filter: { toId_ind: userIdHash },
 				//filter: { toId: userId },
+				filter: { to: account },
 				fromBlock: 0
 			}
-		),
+		},
 			[account, userIdHash])
 	);
 	// Manual filter to account for issue 3053
