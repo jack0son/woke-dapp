@@ -35,7 +35,7 @@ export default function useHedgehog(wallet) {
       setErrorMessage(messages.empty);
 
     } else {
-      setLoading(true);
+      setLoading('signup');
       setErrorMessage("");
 
       try {
@@ -56,7 +56,7 @@ export default function useHedgehog(wallet) {
   const handleLogin = async _password => {
 		const pass = _password || password;
     setErrorMessage("");
-    setLoading(true);
+    setLoading('login');
 
     try {
 			console.log(`Attempt login: ${username}`);

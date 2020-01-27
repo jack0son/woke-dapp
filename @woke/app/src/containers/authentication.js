@@ -9,6 +9,7 @@ import Login from './views/login'
 // TODO move to view
 import Spinner from '../components/progress/spinner-indeterminate'
 import LargeBody from '../components/text/body-large'
+import WokeSpan from '../components/text/span-woke'
 
 // Hooks
 import useAuthRouter, {states} from '../hooks/auth-router'
@@ -23,6 +24,7 @@ function createUserName(id) {
 }
 
 // TODO fix the loading state
+// TODO after signed in with twitter should check if account exists at server
 export default function AuthContainer(props) {
 	const {hedgehog, renderProp} = props;
 	const twitterSignin = useTwitterContext().userSignin;
@@ -56,10 +58,22 @@ export default function AuthContainer(props) {
 	)
 
 	// TODO replace spinner with logo animation
-	const renderLoading = () => (
+	const renderLoading = (message) => (
 		<>
 		<Loading>
-			<LargeBody align="center">Generating wallet<br/>Big math, long wait ...<br/>
+			<LargeBody align="center">
+				{ 
+					(() => {
+						switch(message) {
+							case 'signup': 
+								return <>Generating wallet<br/>Big math, long wait ...<br/></>;
+							case 'login': 
+								return <>Summoning your <WokeSpan>Wokens</WokeSpan> ...<br/></>
+							default: 
+								return null;
+						}
+					})()
+				}
 			</LargeBody>
 		</Loading>
 		</>
@@ -109,10 +123,14 @@ export default function AuthContainer(props) {
 
 	const renderFunc = renderMap[router.state] // choose render
 
+	useEffect(() => {
+		console.log('Auth state: ', router.state);
+	}, [router.state])
+
 	return (
 		<>
 		{ renderProp(router.state == 'TWITTER') }
-		{hedgehog.state.loading ? renderLoading() : renderFunc()}
+		{hedgehog.state.loading ? renderLoading(hedgehog.state.loading) : renderFunc()}
 		</>
 	)
 }

@@ -223,6 +223,7 @@ export default (props) => {
 		}
 	}
 
+	/*
 	// Async Dispatcher 
 	useEffect(() => {
 		switch(claimState.stage) {
@@ -237,6 +238,7 @@ export default (props) => {
 			}
 		}
 	}, [claimState, ...dispatchers])
+	*/
 
 	const WokeToken = useContract('WokeToken');
 	const TwitterOracleMock = useContract('TwitterOracleMock');

@@ -27,8 +27,7 @@ export default function EnterPassword (props) {
 	const classes = useStyles();
 	const theme = useTheme();
 
-	console.dir(props);
-	const {onClick, ...buttonProps} = props.buttonProps;
+	const {onClick, styles, ...buttonProps} = props.buttonProps;
 
 	const [input, setInput] = useState({
 		password: '',
@@ -44,7 +43,7 @@ export default function EnterPassword (props) {
 	}
 
 	return (
-		<FieldWrapper>
+		<FieldWrapper styles={styles}>
 			<Box
 				className={classes.centeredForm}
 			>

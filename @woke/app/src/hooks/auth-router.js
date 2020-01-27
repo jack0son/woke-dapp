@@ -39,7 +39,7 @@ export default initialState => {
 						return states.LOGIN;
 					}
 
-					case state.HEDGEHOG: {
+					case states.HEDGEHOG: {
 						return states.LOGIN;
 					}
 
@@ -65,6 +65,10 @@ export default initialState => {
 					}
 				}
 				break;
+			}
+
+			default: {
+				console.warn('authentication router: invalid action', action);
 			}
 		}
 	}
