@@ -308,6 +308,11 @@ contract WokeToken is Ownable, ERC20 {
 		return userIds[account];
 	}
 
+	function getMyUser() public view
+	returns (string memory)
+	{
+		return userIds[msg.sender];
+	}
 
 	function getUserCount() public view
 	returns (uint256)

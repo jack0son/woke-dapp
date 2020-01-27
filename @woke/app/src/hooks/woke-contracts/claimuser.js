@@ -1,5 +1,6 @@
 import React, {
 	useEffect,
+	useCallback,
 	useReducer,
 	useMemo,
 	useState,
@@ -217,11 +218,11 @@ export default (props) => {
 	}
 
 	const [claimState, unsafeDispatch] = useReducer(reduce, initialState);
-	const dispatch = (action) => {
+	const dispatch = useCallback((action) => {
 		if(isMounted) {
 			unsafeDispatch(action);
 		}
-	}
+	}, [unsafeDispatch, isMounted]);
 
 	/*
 	// Async Dispatcher 
@@ -439,7 +440,7 @@ export default (props) => {
 		if(events.Claimed && events.Claimed.length > 0) {
 			dispatch({type: 'web3-event', name: 'Claimed'});
 		}
-	}, [claimState.gathering, events.Claimed]) //events.Claimed && events.Claimed.length]);
+	}, [events.Claimed]) //events.Claimed && events.Claimed.length]);
 
 	events.TweetStored = useEvents('TwitterOracleMock', 'TweetStored',
 		useMemo(() => (
@@ -475,7 +476,7 @@ export default (props) => {
 			let event = events.Lodged[events.Lodged.length - 1].returnValues; 
 			dispatch({type: 'web3-event', name:'Lodged', payload: event});
 		}
-	}, [claimState.gathering, events.Lodged]); // && events.Lodged.length]);
+	}, [dispatch, claimState.gathering, events.Lodged]); // && events.Lodged.length]);
 
 	function hasEnoughEth () {
 		//setError('Insufficient eth for transaction');

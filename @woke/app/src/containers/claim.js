@@ -45,14 +45,6 @@ export default function ClaimContainer(props) {
 	);
 }
 
-function storeClaimed () {
-	window.localStorage.setItem('claimed', true);
-}
-
-function storeTweeted () {
-	window.localStorage.setItem('tweeted', true);
-}
-
 function retrieveTweeted () {
 	const tweeted = window.localStorage.getItem('tweeted')
 	if(tweeted == undefined || tweeted == null || !tweeted) {
@@ -68,3 +60,13 @@ function retrieveClaimed () {
 	}
 	return claimed;
 }
+
+/*
+function storeClaimed () {
+	window.localStorage.setItem('claimed', true);
+}
+
+function storeTweeted () {
+	window.localStorage.setItem('tweeted', true);
+}
+*/

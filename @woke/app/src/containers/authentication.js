@@ -18,7 +18,7 @@ import useHedgehog from '../hooks/hedgehog'
 
 function createUserName(id) {
 	if(process.env.NODE_ENV == 'development') {
-	 return id + Math.floor(Math.random() * Math.floor(1000));
+	 return id;// + Math.floor(Math.random() * Math.floor(1000));
 	}
 	return id;// + token; 
 }
@@ -94,7 +94,7 @@ export default function AuthContainer(props) {
 			console.log('dispatching hedgehog-account_exists')
 			router.dispatch({type: 'hedgehog-account_exists'});
 		}
-	}, [hedgehog.state.savedUser, router.state == 'HEDGEHOG']);
+	}, [hedgehog.state.savedUser, router.state === 'HEDGEHOG']);
 
 	useEffect(() => {
 		if(twitterSignin.isSignedIn()) {
