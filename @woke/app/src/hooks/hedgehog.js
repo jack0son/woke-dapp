@@ -90,7 +90,7 @@ export default function useHedgehog(wallet) {
 	}
 
 	return {
-		getWallet: () => wallet.hedgehog.wallet,
+		getWallet: wallet.hedgehog.getWallet,
 
 		api: {
 			handleLogin,

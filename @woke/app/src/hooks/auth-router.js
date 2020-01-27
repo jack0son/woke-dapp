@@ -8,11 +8,11 @@ const routerState = [
 ]
 
 export const states = {
-		TWITTER: routerState[0],
-		HEDGEHOG: routerState[1],
-		LOGIN: routerState[2],
-		AUTHD: routerState[3],
-	}
+	TWITTER: routerState[0],
+	HEDGEHOG: routerState[1],
+	LOGIN: routerState[2],
+	AUTHD: routerState[3],
+}
 
 export default initialState => {
 
@@ -35,7 +35,7 @@ export default initialState => {
 				console.log('Case: hedgehog-account_exists');
 				switch(state) {
 					case states.TWITTER: {
-				console.log('return state LOGIN');
+						console.log('return state LOGIN');
 						return states.LOGIN;
 					}
 

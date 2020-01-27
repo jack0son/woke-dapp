@@ -14,7 +14,9 @@ import WokeSpan from '../components/text/span-woke'
 // Hooks
 import useAuthRouter, {states} from '../hooks/auth-router'
 import { useTwitterContext } from '../hooks/twitter/index.js'
+import useUserIsClaimed from '../hooks/woke-contracts/user-is-claimed'
 import useHedgehog from '../hooks/hedgehog'
+
 
 function createUserName(id) {
 	if(process.env.NODE_ENV == 'development') {
@@ -28,9 +30,10 @@ function createUserName(id) {
 export default function AuthContainer(props) {
 	const {hedgehog, renderProp} = props;
 	const twitterSignin = useTwitterContext().userSignin;
+	const twitterSignedIn = twitterSignin.isSignedIn()
 
 	// Initial view router state
-	const router = useAuthRouter(twitterSignin.isSignedIn() ? states.HEDGEHOG : states.TWITTER);
+	const router = useAuthRouter(twitterSignedIn ? states.HEDGEHOG : states.TWITTER);
 
 	const renderSignInWithTwitter = () => (
 		<SignIn
@@ -85,19 +88,37 @@ export default function AuthContainer(props) {
 		'LOGIN': renderAccountLogin,
 		'AUTHD': renderLoading,
 	}
+	const renderFunc = renderMap[router.state] // choose render
 
+	const userIsClaimed = useUserIsClaimed(twitterSignedIn ? twitterSignin.user.id : null);
 	useEffect(() => {
-		const savedUser = hedgehog.state.savedUser
-		if (savedUser && savedUser.length > 0) {
-
-			hedgehog.api.restoreUsername();
-			console.log('dispatching hedgehog-account_exists')
+		if(userIsClaimed === true) {
+			console.log('Auth: Twitter user is claimed on-chain')
 			router.dispatch({type: 'hedgehog-account_exists'});
+		} else if(userIsClaimed === false) {
 		}
-	}, [hedgehog.state.savedUser, router.state === 'HEDGEHOG']);
+	}, [userIsClaimed])
+
+	const hedgehogPredicate = router.state === states.HEDGEHOG;
+	useEffect(() => {
+		if(hedgehogPredicate) {
+			const savedUser = hedgehog.state.savedUser
+			if (savedUser && savedUser.length > 0) {
+
+				hedgehog.api.restoreUsername();
+				console.log('dispatching hedgehog-account_exists')
+				router.dispatch({type: 'hedgehog-account_exists'});
+			}
+		}
+	},
+		[
+			hedgehogPredicate,
+			hedgehog.state.savedUser,
+			hedgehog.api.restoreUsername
+		]);
 
 	useEffect(() => {
-		if(twitterSignin.isSignedIn()) {
+		if(twitterSignedIn) {
 			const savedUser = hedgehog.state.savedUser
 			if (!(savedUser && savedUser.length > 0)) {
 				hedgehog.api.setUsername(createUserName(
@@ -108,10 +129,16 @@ export default function AuthContainer(props) {
 
 			console.log('dispatching twitter-authenticated')
 			router.dispatch({type: 'twitter-authenticated'});
-		} else if (twitterSignin.haveCreds()) {
+		} else if (false) { //twitterSignin.haveCreds()) {
 			// LOGOUT
 		}
-	}, [twitterSignin.isSignedIn()])
+	},
+		[
+			twitterSignedIn,
+			twitterSignin.user.id,
+			hedgehog.state.savedUser,
+			hedgehog.api.setUsername
+		])
 
 	useEffect(() => {
 		// @TODO Saved user needs to be verified on the server
@@ -120,8 +147,6 @@ export default function AuthContainer(props) {
 			router.dispatch({type: 'hedgehog-authenticated'});
 		}
 	}, [hedgehog.state.signedIn]);
-
-	const renderFunc = renderMap[router.state] // choose render
 
 	useEffect(() => {
 		console.log('Auth state: ', router.state);

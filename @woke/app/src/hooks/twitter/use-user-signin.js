@@ -37,7 +37,6 @@ export default function useUserSignin() {
 			}
 
 			case 'got-access-tokens': {
-				console.dir(action);
 				const {accessTokens} = action.payload;
 				const user = {
 					id: accessTokens.user_id,
@@ -67,7 +66,6 @@ export default function useUserSignin() {
 		if (requestToken.oauth_callback_confirmed !== 'true') {
 			throw new Error('Twitter OAuth 1.0: callback confirmation failed');
 		}
-		console.dir(requestToken);
 		storeRequestToken(requestToken.oauth_token);
 		window.location.replace(oAuthApi.createUserOAuthUrl(requestToken));
 	}
