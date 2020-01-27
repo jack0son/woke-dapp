@@ -14,6 +14,19 @@ export function useInputListener(initialState) {
 	}
 }
 
+// Prevent re-render of unmounted component
+// Useful for components doing which do IO
+export function useIsMounted() {
+	const isMounted = useRef(true)
+	useEffect(() => {
+		return () => {
+			isMounted.current = false
+		}
+	}, []);
+
+	return isMounted.current;
+}
+
 export function usePrevious(value) {
 	const ref = useRef();
 	useEffect(() => {

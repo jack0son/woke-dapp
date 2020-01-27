@@ -323,6 +323,15 @@ contract WokeToken is Ownable, ERC20 {
 		}
 		return true;
 	}
+
+	function lodgedRequest(string memory _userId) public view
+	returns (bool)
+	{
+		if(requester[_userId] == msg.sender) {
+			return true;
+		}
+		return false;
+	}
 	/*---------*/
 
 	/* MODIFIERS */

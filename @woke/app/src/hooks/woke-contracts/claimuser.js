@@ -1,5 +1,4 @@
 import React, {
-	useRef,
 	useEffect,
 	useReducer,
 	useMemo,
@@ -12,6 +11,7 @@ import * as claimStates from './claimuser-states';
 import { genClaimString } from '../../lib/web3/web3-utils'
 import { findClaimTweet } from '../../lib/twitter-helpers'
 import { useTwitterContext } from '../twitter/index.js'
+import { useIsMounted } from '../util-hooks'
 
 const {statesMap, statesList} = claimStates;
 const states = statesMap;
@@ -29,17 +29,11 @@ export default (props) => {
 		useSend,
 		useSubscribeCall,
 	} = useWeb3Context();
-
 	const twitterClient = useTwitterContext().client;
+	const isMounted = useIsMounted();
 
 	const [error, setError] = useState(null);
 
-	const isMounted = useRef(true)
-	useEffect(() => {
-		return () => {
-			isMounted.current = false
-		}
-	}, []);
 	// @dev Knowledge of the state of the claimUser process can come from
 	// contract calls, new transactions sent, or contract events, depending on
 	// when the app has been closed and reopened. Therefore use a reduce
@@ -47,7 +41,7 @@ export default (props) => {
 	const reduce = (state, action) => {
 		//console.log(`Reduce: action:${action.type}, payload:${action.payload}`);
 		//console.log(`Actions thisRender:${thisRender}, actionCount:${actionCount + 1}`);
-		if(isMounted.current) {
+		if(isMounted) {
 			switch(action.type) {
 				case 'already-claimed': {
 					console.log(`Reduce - already-claimed`);
@@ -56,7 +50,6 @@ export default (props) => {
 						gathering: false,
 						stage: states.CLAIMED,
 					}
-					break;
 				}
 
 				case 'already-stored': {
@@ -66,7 +59,6 @@ export default (props) => {
 						gathering: false,
 						stage: states.STORED_TWEET,
 					}
-					break;
 				}
 
 				case 'already-lodged': {
@@ -78,7 +70,6 @@ export default (props) => {
 						queryId: action.payload.queryId,
 						stage: states.LODGED,
 					}
-					break;
 				}
 
 				case 'already-tweeted': {
@@ -88,7 +79,6 @@ export default (props) => {
 						gathering: false,
 						stage: states.CONFIRMED,
 					}
-					break;
 				}
 
 				case 'done-gathering': {
@@ -97,26 +87,25 @@ export default (props) => {
 						...state,
 						gathering: false,
 					}
-					break;
 				}
 
 				case 'twitter-event': {
 					if(action.error && state.stage < states.FOUND_TWEET) {
-						if(state.stage == state.CONFIRMED) {
+						if(state.stage === states.CONFIRMED) {
 							setError('Could not find your tweet. Please refresh and try again');
 						}
 						return state;
 					}
 
-					if(action.name == 'tweet-found' && state.stage < states.FOUND_TWEET) {
+					if(action.name === 'tweet-found' && state.stage < states.FOUND_TWEET) {
 						return {...state, stage: states.FOUND_TWEET}
 					}
 
-					if(action.name == 'tweetbutton-clicked' && state.stage < states.TWEETED) {
+					if(action.name === 'tweetbutton-clicked' && state.stage < states.TWEETED) {
 						return {...state, stage: states.TWEETED}
 					}
 
-					if(action.name == 'tweet-not_found' && state.stage == states.CONFIRMED) {
+					if(action.name === 'tweet-not_found' && state.stage === states.CONFIRMED) {
 						return {...state, stage: states.ERROR}
 					}
 
@@ -124,9 +113,8 @@ export default (props) => {
 					break;
 				}
 
-					// Subsumption state machine
-				case 'new-event': {
-					console.log(`\tReduce: new-event ${action.name} with payload ${action.payload}`, action);
+				case 'web3-event': {
+					console.log(`\tReduce: web3-event ${action.name} with payload ${action.payload}`, action);
 					if(action.payload) console.dir(action.payload);
 
 					if(!state.gathering) {
@@ -156,7 +144,7 @@ export default (props) => {
 								stage: states.LODGED
 							}
 						}
-						console.log(`Reduce: new-event triggered no state change`);
+						console.log(`Reduce: web3-event triggered no state change`);
 						return state;
 						break;
 					}
@@ -228,16 +216,31 @@ export default (props) => {
 		gathering: true
 	}
 
-	const [claimState, dispatch] = useReducer(reduce, initialState);
+	const [claimState, unsafeDispatch] = useReducer(reduce, initialState);
+	const dispatch = (action) => {
+		if(isMounted) {
+			unsafeDispatch(action);
+		}
+	}
+
+	// Async Dispatcher 
+	useEffect(() => {
+		switch(claimState.stage) {
+			case: states.INIT: {
+				break;
+			}
+			case: states.INIT: {
+				break;
+			}
+			case: states.INIT: {
+				break;
+			}
+		}
+	}, [claimState, ...dispatchers])
 
 	const WokeToken = useContract('WokeToken');
 	const TwitterOracleMock = useContract('TwitterOracleMock');
 
-	const safeDispatch = (action) => {
-		if(isMounted.current) {
-			dispatch(action);
-		}
-	}
 
 	// 1. Gather initial contract state
 	useEffect(() => {
@@ -246,6 +249,7 @@ export default (props) => {
 			let opts = {fromBlock: 0, toBlock: 'latest'};
 
 			// Has Lodging occured?
+			// @TODO replace with contract state
 			logVerbose('\t... initial getting lodge events');
 			const lodgeEvents = await WokeToken.getPastEvents('Lodged', { ...opts,
 				filter: { claimer: account}
@@ -259,15 +263,15 @@ export default (props) => {
 				});
 
 				if(tweetEvents.length > 0) {
-					safeDispatch({type: 'already-stored', payload: tweetEvents[tweetEvents.length - 1].returnValues});
+					dispatch({type: 'already-stored', payload: tweetEvents[tweetEvents.length - 1].returnValues});
 				} else {
-					safeDispatch({type: 'already-lodged', payload: latestLodgeEvent})
+					dispatch({type: 'already-lodged', payload: latestLodgeEvent})
 				}
-				safeDispatch({type: 'done-gathering'});
+				dispatch({type: 'done-gathering'});
 				return; 
 			}
 
-			safeDispatch({type: 'done-gathering'});
+			dispatch({type: 'done-gathering'});
 			return;
 		}
 
@@ -287,9 +291,10 @@ export default (props) => {
 		const gatherContractState = () => {
 			switch (callGetUser) {
 				case '': {
-					// User does not exist
+					// Account has no user: User does not exist
 					switch(callUserClaimed) {
 						case false: {
+							// User ID not yet claimed
 							dispatch({type: 'contract-call', payload: 'unclaimed'});
 							break;
 						}
@@ -300,6 +305,7 @@ export default (props) => {
 						}
 
 						default: {
+							// No result from call
 							logVerbose('waiting for userClaimed(id) call');
 						}
 					}
@@ -313,13 +319,13 @@ export default (props) => {
 				}
 
 				default: {
-					// A user exists
+					// Account has a userId claimed
 					if(typeof callGetUser == 'string' && callGetUser.length > 0) {
 						if(callGetUser === props.userId) {
-							// User is already claimed
+							// Correct user is already claimed
 							dispatch({type: 'contract-call', payload: 'claimed'});
 						} else {
-							// It's someone else's ID
+							// Collision: this should never happen
 							dispatch({type: 'contract-call', err: 'User ID and account mismatch'});
 						}
 					}
@@ -336,7 +342,7 @@ export default (props) => {
 	useEffect(() => {
 		console.log('Got tweet from contract: ', tweetText);
 		if(typeof tweetText == 'string' && tweetText != '') {
-			//dispatch({type: 'new-event', name: 'TweetStored'});
+			//dispatch({type: 'web3-event', name: 'TweetStored'});
 			dispatch({type: 'already-stored', name: 'TweetStored'});
 		}
 	}, [tweetText, claimState.stage == states.LODGED, claimState.gathering])
@@ -392,7 +398,7 @@ export default (props) => {
 				}
 			}
 
-			if(isMounted.current) {
+			if(isMounted) {
 				if(tweet) {
 					if(tweet.includes(claimString)) {
 						dispatch({type: 'twitter-event', name: 'tweet-found'}); // No event name, default event logic
@@ -429,7 +435,7 @@ export default (props) => {
 
 	useEffect(() => {
 		if(events.Claimed && events.Claimed.length > 0) {
-			dispatch({type: 'new-event', name: 'Claimed'});
+			dispatch({type: 'web3-event', name: 'Claimed'});
 		}
 	}, [claimState.gathering, events.Claimed]) //events.Claimed && events.Claimed.length]);
 
@@ -447,7 +453,7 @@ export default (props) => {
 		if(claimState.queryId != null && events.TweetStored && events.TweetStored.length > 0) {
 
 			let event = events.TweetStored[events.TweetStored.length - 1].returnValues;
-			dispatch({type: 'new-event', name: 'TweetStored', payload: event});
+			dispatch({type: 'web3-event', name: 'TweetStored', payload: event});
 		}
 	}, [claimState.gathering, claimState.queryId, events.TweetStored]); // && events.TweetStored.length]);
 
@@ -465,7 +471,7 @@ export default (props) => {
 			// Use latest - there should only be one
 			// Once oracle stores tweet text, fulfill the claim
 			let event = events.Lodged[events.Lodged.length - 1].returnValues; 
-			dispatch({type: 'new-event', name:'Lodged', payload: event});
+			dispatch({type: 'web3-event', name:'Lodged', payload: event});
 		}
 	}, [claimState.gathering, events.Lodged]); // && events.Lodged.length]);
 
