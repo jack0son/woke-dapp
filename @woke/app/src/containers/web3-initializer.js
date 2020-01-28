@@ -29,7 +29,7 @@ export default function Web3Initializer(props) {
 						<Web3Container wallet={wallet}/>
 					</Web3ContextProvider> 
 
-				) : <Loading/>
+				) : <Loading message={'Plugging in ...'}/>
 			}
 		</>
 	);

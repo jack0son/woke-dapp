@@ -2,7 +2,6 @@ import React, {useState, useEffect} from 'react'
 
 // View containers
 import Claim from './views/claim'
-import Loading from './views/loading'
 
 // Custom hooks
 import useClaimUser from '../hooks/woke-contracts/claimuser'

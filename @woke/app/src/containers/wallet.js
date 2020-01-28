@@ -80,7 +80,7 @@ export default function WalletContainer(props) {
 				sendTransfers={sendTransfers}
 				friends={friends}
 			/>
-			 : <Loading/>}
+			 : <Loading message={'Plugging in ...'}/>}
 		</>
 	);
 }

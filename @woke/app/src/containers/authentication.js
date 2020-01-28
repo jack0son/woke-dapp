@@ -104,9 +104,7 @@ export default function AuthContainer(props) {
 		if(hedgehogPredicate) {
 			const savedUser = hedgehog.state.savedUser
 			if (savedUser && savedUser.length > 0) {
-
 				hedgehog.api.restoreUsername();
-				console.log('dispatching hedgehog-account_exists')
 				router.dispatch({type: 'hedgehog-account_exists'});
 			}
 		}
@@ -120,17 +118,16 @@ export default function AuthContainer(props) {
 	useEffect(() => {
 		if(twitterSignedIn) {
 			const savedUser = hedgehog.state.savedUser
-			if (!(savedUser && savedUser.length > 0)) {
+			if (savedUser && savedUser.length > 0) {
+				router.dispatch({type: 'hedgehog-account_exists'});
+			} else {
 				hedgehog.api.setUsername(createUserName(
 					twitterSignin.user.id,
 					//twitterSignin.credentials.oauth_token
 				));
+				console.log('dispatching twitter-authenticated')
+				router.dispatch({type: 'twitter-authenticated'});
 			}
-
-			console.log('dispatching twitter-authenticated')
-			router.dispatch({type: 'twitter-authenticated'});
-		} else if (false) { //twitterSignin.haveCreds()) {
-			// LOGOUT
 		}
 	},
 		[

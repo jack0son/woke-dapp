@@ -10,8 +10,6 @@ export async function makeWeb3({wallet}) {
 	console.log('Ethereum network: ', network.name);
 	const web3 = new Web3(getCurrentRpcUrl());
 
-	console.trace(wallet);
-
 	// Add wallet to in-memory wallet
 	let account = {address: null}
 	if(wallet) {

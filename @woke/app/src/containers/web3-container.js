@@ -6,6 +6,7 @@ import Wallet from './wallet'
 
 export default function Web3Container(props) {
 	const [claimed, setClaimed] = useState(false);
+	//const claimStatus = useClaimStatus();
 
 	const renderClaimProcess = () => (
 		<Claim 

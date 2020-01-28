@@ -47,11 +47,12 @@ export default function EnterPassword (props) {
 			<Box
 				className={classes.centeredForm}
 			>
-				<Password type={'password'}/>
-				<Button 
+				<Password
 					type={'password'}
 					value={input.password}
 					onChange={handleChangeInput('password')}
+				/>
+				<Button 
 					onClick={triggerLogin}
 					styles={{
 						marginTop: theme.spacing(4),

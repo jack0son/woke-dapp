@@ -12,7 +12,7 @@ import messages from '../constants/messages-login'
 export default function useHedgehog(wallet) {
 	//const wallet = props.wallet;
 	const [savedUser, setSavedUser] = useState(retrieveUsername());
-	const [userId, setUserId] = useState(retrieveUserId());
+	//const [userId, setUserId] = useState(retrieveUserId());
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [passwordConfirmation, setPasswordConfirmation] = useState("");
@@ -40,8 +40,7 @@ export default function useHedgehog(wallet) {
 
       try {
         await wallet.signUp(username, pass);
-				storeUsername(username);
-				saveUserId(userId);
+				saveUsername(username);
 				await handleLogin(pass);
 
       } catch (e) {
@@ -59,9 +58,9 @@ export default function useHedgehog(wallet) {
     setLoading('login');
 
     try {
-			console.log(`Attempt login: ${username}`);
+			console.log(`Attempting login: ${username} ...`);
       await wallet.login(username, pass);
-			saveUserId(userId);
+			saveUsername(username);
       updateWalletStatus();
 
     } catch (e) {
@@ -84,13 +83,13 @@ export default function useHedgehog(wallet) {
     updateWalletStatus();
   };
 
-	const saveUserId = (userId) => {
-		setUserId(userId);
-		storeUserId(userId);
+	const saveUsername = (userId) => {
+		setUsername(userId);
+		storeUsername(userId);
 	}
 
 	return {
-		getWallet: wallet.hedgehog.getWallet,
+		getWallet: () => wallet.hedgehog.wallet,
 
 		api: {
 			handleLogin,
@@ -106,7 +105,7 @@ export default function useHedgehog(wallet) {
 
 		state: {
 			username,
-			userId,
+			//userId,
 			savedUser,
 			signedIn,
 			loading,
@@ -123,6 +122,7 @@ function retrieveUsername () {
 	return window.localStorage.getItem('hedgehog_username')
 }
 
+	/*
 function storeUserId (userId) {
 	window.localStorage.setItem('hedgehog_userid', userId);
 }
@@ -131,7 +131,6 @@ function retrieveUserId () {
 	return window.localStorage.getItem('hedgehog_userid');
 }
 
-	/*
 
 refer here https://github.com/AsureNetwork/asure-dapp/blob/master/packages/dapp/src/utils/asure-ws-wallet-provider.js
 */
