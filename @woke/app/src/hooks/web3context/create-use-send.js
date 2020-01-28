@@ -64,7 +64,7 @@ export default web3 => (contractName, methodName, sendOptions) => {
 						error: error,
 					}));
 				})
-			console.log('... tx send with opts: ', opts);
+			console.log('... tx sending with opts: ', opts);
 
 			return true;
 		} 
