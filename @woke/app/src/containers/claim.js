@@ -32,12 +32,19 @@ export default function ClaimContainer(props) {
 		//storeTweeted();
 	}
 
+	const handleNotTweeted = () => {
+		console.log('NOT TWEETED')
+		claim.stageTriggers.userDidNotTweet();
+		setTweetedClaimString(false);
+	}
+
 	return (
 		<>
 		<Claim
 			claimState={claim}
 			handleTweeted={handleTweeted}
 			handleConfirmedTweeted={handleConfirmedTweeted}
+			handleNotTweeted={handleNotTweeted}
 		/>
 		{ props.renderProp(claim.stageList[claim.stage]) }
 		</>

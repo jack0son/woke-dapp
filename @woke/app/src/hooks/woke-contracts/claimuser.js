@@ -106,6 +106,10 @@ export default (props) => {
 						return {...state, stage: states.TWEETED}
 					}
 
+					if(action.name === 'tweet-retweet' && state.stage <= states.CONFIRMED) {
+						return {...state, stage: states.READY}
+					}
+
 					if(action.name === 'tweet-not_found' && state.stage === states.CONFIRMED) {
 						return {...state, stage: states.ERROR}
 					}
@@ -357,6 +361,10 @@ export default (props) => {
 		dispatch({type: 'twitter-event', name: 'tweetbutton-clicked'});
 	}
 
+	function userDidNotTweet() {
+		dispatch({type: 'twitter-event', name: 'tweet-retweet'});
+	}
+
 	function userConfirmedTweeted() {
 		dispatch({type: 'already-tweeted'});
 	}
@@ -545,7 +553,8 @@ export default (props) => {
 		stageMap: statesMap,
 		stageTriggers: {
 			userClickedPostTweet,
-			userConfirmedTweeted
+			userConfirmedTweeted,
+			userDidNotTweet,
 		},
 		claimString,
 		transactions: {

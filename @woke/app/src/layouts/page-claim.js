@@ -40,6 +40,7 @@ export default function ClaimsProcess(props) {
 					buttonProps={props.buttonProps}
 					//styles={{marginTop: ''}}
 				/>
+				{props.children}
 			</BottomHolder>
 		</Footer>
 		</>
