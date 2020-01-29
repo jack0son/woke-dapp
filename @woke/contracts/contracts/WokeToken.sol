@@ -308,6 +308,11 @@ contract WokeToken is Ownable, ERC20 {
 		return userIds[account];
 	}
 
+	function myUser() public view
+	returns (string memory)
+	{
+		return userIds[msg.sender];
+	}
 
 	function getUserCount() public view
 	returns (uint256)
@@ -322,6 +327,15 @@ contract WokeToken is Ownable, ERC20 {
 			return false;
 		}
 		return true;
+	}
+
+	function lodgedRequest(string memory _userId) public view
+	returns (bool)
+	{
+		if(requester[_userId] == msg.sender) {
+			return true;
+		}
+		return false;
 	}
 	/*---------*/
 

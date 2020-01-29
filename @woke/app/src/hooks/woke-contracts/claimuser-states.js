@@ -1,5 +1,5 @@
 export const statesList = [
-	'INIT',
+//	'INIT',
 	'READY',
 	'TWEETED',
 	'CONFIRMED',

@@ -20,6 +20,7 @@ export default function ClaimView (props) {
 		claimState, 
 		handleTweeted,
 		handleConfirmedTweeted,
+		handleNotTweeted,
 		triggerPostTweet, // if not use share intent
 	} = props;
 
@@ -43,6 +44,7 @@ export default function ClaimView (props) {
 	};
 
 	const renderConfirmTweeted = () => (
+		<>
 		<ClaimLayout
 			instructionText={<><br/><br/>Did you tweet?</>}
 			textAlign="center"
@@ -51,7 +53,17 @@ export default function ClaimView (props) {
 				text: `Yes, I tweeted!`,
 				color: 'primary',
 			}}
+		>
+			<Button
+				onClick={handleNotTweeted}
+				text={'No'}
+				color='secondary'
+				sytles={{
+					paddingBottom: '30%'
+				}}
 		/>
+		</ClaimLayout>
+		</>
 	);
 
 	const renderClaiming = () => (
@@ -67,7 +79,7 @@ export default function ClaimView (props) {
 
 	
 	// Subsumption tree
-	let chooseRender = () => (<Loading message={' '}/>);
+	let chooseRender = () => (<Loading message={'Analysing wokeness ...'}/>);
 	if(claimState.stage >= sc.CLAIMED) {
 		// Shouldn't get here
 	} else if (claimState.stage >= sc.CONFIRMED) {

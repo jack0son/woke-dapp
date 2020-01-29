@@ -11,13 +11,18 @@ export async function makeWeb3({wallet}) {
 	const web3 = new Web3(getCurrentRpcUrl());
 
 	// Add wallet to in-memory wallet
-	const account = web3.eth.accounts.wallet.add(wallet.getPrivateKeyString());
-	web3.eth.defaultAccount = account.address;
+	let account = {address: null}
+	if(wallet) {
+		account = web3.eth.accounts.wallet.add(wallet.getPrivateKeyString());
+		web3.eth.defaultAccount = account.address;
+	} else {
+		console.log('Web3 initialised with no account');
+	}
 
 	// Check connection
 	await web3.eth.net.isListening();
 	let networkId;
-	while(networkId != network.id) {
+	while(networkId !== network.id) {
 		if(networkId) {
 			console.warn(`Expected network ID from config ${network.id}, but got ${networkId}`);
 		}

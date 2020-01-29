@@ -3,14 +3,23 @@ import React, {useState, useEffect} from 'react'
 // Logical containers
 import Claim from './claim'
 import Wallet from './wallet'
+import Loading from './views/loading'
+
+// Hooks
+import useClaimStatus, {states} from '../hooks/woke-contracts/claim-status';
 
 export default function Web3Container(props) {
 	const [claimed, setClaimed] = useState(false);
+	const userId = retrieveUserId();
+	const userHandle = retrieveUserHandle();
+
+	const claimStatus = useClaimStatus(userId);
 
 	const renderClaimProcess = () => (
 		<Claim 
-			userId={retrieveUserId()}
-			userHandle={retrieveUserHandle()}
+			claimStatus={claimStatus}
+			userId={userId}
+			userHandle={userHandle}
 			renderProp={(claimStage) => {
 				if(claimStage == 'CLAIMED') {
 					setClaimed(true);
@@ -24,9 +33,40 @@ export default function Web3Container(props) {
 			myUserId={retrieveUserId()}
 			myHandle={retrieveUserHandle()}
 		/>
-	)
+	);
 
-	const renderFunc = claimed ? renderWallet : renderClaimProcess; // choose render
+	function renderLoading(message) {
+		return (
+			<Loading message={message}/>
+		);
+	}
+
+	function chooseRender() {
+		switch(claimStatus) {
+			case states.UNCLAIMED: {
+				return renderClaimProcess;
+			}
+
+			case states.CLAIMED: {
+				return renderWallet;
+			}
+
+			case states.USER_ALREADY_CLAIMED: {
+				console.log('Error: user already claimed by a different address');
+				// Go back to login
+			}
+
+			case states.ACCOUNT_ALREADY_CLAIMED: {
+				console.log('Error: address has already claimed another user');
+			}
+
+			default: {
+				return () => renderLoading('Determining wokeness ... ');
+			}
+		}
+	}
+
+	const renderFunc = chooseRender();
 
 	return (
 		<>

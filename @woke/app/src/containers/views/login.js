@@ -16,10 +16,9 @@ export default function LoginView(props) {
 	return (
 		<>
 		<ContentWrapper
-			styles={{marginTop: '10%'}}
+			styles={{marginTop: '10%', paddingTop: '15%'}}
 		>
-			<LargeBody>
-				Enter your password
+			<LargeBody styles={{textAlign: 'center'}}>
 			</LargeBody>
 			<StandardBody
 				color='secondary'

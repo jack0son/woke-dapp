@@ -5,7 +5,7 @@ import Box from '@material-ui/core/Box';
 
 
 const useStyles = makeStyles(theme => ({
-	contentWrapper: styles => ({
+	fieldWrapper: styles => ({
 		width: '100%',
 		position: 'static',
 		display: 'block',
@@ -23,7 +23,7 @@ export default function FieldWrapper(props) {
 
 	return (
 		<Box
-			className={classes.contentWrapper}
+			className={classes.fieldWrapper}
 			{...innerProps}
 		/>
 	);

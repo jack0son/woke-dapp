@@ -2,7 +2,6 @@ import React, {useState, useEffect} from 'react'
 
 // View containers
 import Claim from './views/claim'
-import Loading from './views/loading'
 
 // Custom hooks
 import useClaimUser from '../hooks/woke-contracts/claimuser'
@@ -13,6 +12,7 @@ export default function ClaimContainer(props) {
 	const claim = useClaimUser({
 		userId: props.userId,
 		userHandle: props.userHandle,
+		claimStatus: props.claimStatus,
 	});
 
 	useEffect(() => {
@@ -20,7 +20,6 @@ export default function ClaimContainer(props) {
 			claim.stageTriggers.userConfirmedTweeted();
 		}
 	}, [tweetedClaimString])
-
 
 	const handleTweeted = () => {
 		claim.stageTriggers.userClickedPostTweet();
@@ -33,24 +32,23 @@ export default function ClaimContainer(props) {
 		//storeTweeted();
 	}
 
+	const handleNotTweeted = () => {
+		console.log('NOT TWEETED')
+		claim.stageTriggers.userDidNotTweet();
+		setTweetedClaimString(false);
+	}
+
 	return (
 		<>
 		<Claim
 			claimState={claim}
 			handleTweeted={handleTweeted}
 			handleConfirmedTweeted={handleConfirmedTweeted}
+			handleNotTweeted={handleNotTweeted}
 		/>
 		{ props.renderProp(claim.stageList[claim.stage]) }
 		</>
 	);
-}
-
-function storeClaimed () {
-	window.localStorage.setItem('claimed', true);
-}
-
-function storeTweeted () {
-	window.localStorage.setItem('tweeted', true);
 }
 
 function retrieveTweeted () {
@@ -61,10 +59,6 @@ function retrieveTweeted () {
 	return tweeted;
 }
 
-function retrieveClaimed () {
-	const claimed = window.localStorage.getItem('claimed')
-	if(claimed == undefined || claimed == null || !claimed) {
-		return false;
-	}
-	return claimed;
+function storeTweeted () {
+	window.localStorage.setItem('tweeted', true);
 }

@@ -1,6 +1,6 @@
 import React, {
-	useRef,
 	useEffect,
+	useCallback,
 	useReducer,
 	useMemo,
 	useState,
@@ -8,10 +8,13 @@ import React, {
 
 import { useWeb3Context } from '../web3context';
 import * as claimStates from './claimuser-states';
+import * as statuses from './claim-status';
 
 import { genClaimString } from '../../lib/web3/web3-utils'
 import { findClaimTweet } from '../../lib/twitter-helpers'
+import { setSyncTimeout } from '../../lib/utils'
 import { useTwitterContext } from '../twitter/index.js'
+import { useIsMounted } from '../util-hooks'
 
 const {statesMap, statesList} = claimStates;
 const states = statesMap;
@@ -20,7 +23,7 @@ const logVerbose = false ? console.log : () => {};
 
 // TODO implement a an unmount variable to cancel async calls when claimuser
 // unmounts
-export default (props) => {
+export default function useClaimUser({userId, userHandle, claimStatus}) {
 	const {
 		web3,
 		account,
@@ -29,17 +32,12 @@ export default (props) => {
 		useSend,
 		useSubscribeCall,
 	} = useWeb3Context();
-
 	const twitterClient = useTwitterContext().client;
+	const isMounted = useIsMounted();
 
 	const [error, setError] = useState(null);
 
-	const isMounted = useRef(true)
-	useEffect(() => {
-		return () => {
-			isMounted.current = false
-		}
-	}, []);
+
 	// @dev Knowledge of the state of the claimUser process can come from
 	// contract calls, new transactions sent, or contract events, depending on
 	// when the app has been closed and reopened. Therefore use a reduce
@@ -47,76 +45,44 @@ export default (props) => {
 	const reduce = (state, action) => {
 		//console.log(`Reduce: action:${action.type}, payload:${action.payload}`);
 		//console.log(`Actions thisRender:${thisRender}, actionCount:${actionCount + 1}`);
-		if(isMounted.current) {
+		if(isMounted) {
+			console.log(action);
 			switch(action.type) {
 				case 'already-claimed': {
-					console.log(`Reduce - already-claimed`);
-					return {
-						...state,
-						gathering: false,
-						stage: states.CLAIMED,
-					}
-					break;
-				}
-
-				case 'already-stored': {
 					console.log(`Reduce - already-stored`);
 					return {
 						...state,
-						gathering: false,
-						stage: states.STORED_TWEET,
+						stage: states.CLAIMED,
 					}
-					break;
-				}
-
-				case 'already-lodged': {
-					console.log(`Reduce - already-lodged`);
-					console.dir(state);
-					return {
-						...state,
-						gathering: false,
-						queryId: action.payload.queryId,
-						stage: states.LODGED,
-					}
-					break;
-				}
-
-				case 'already-tweeted': {
-					console.log(`Reduce - already-tweeted`);
-					return {
-						...state,
-						gathering: false,
-						stage: states.CONFIRMED,
-					}
-					break;
-				}
-
-				case 'done-gathering': {
-					console.log(`Reduce - done-gathering`);
-					return {
-						...state,
-						gathering: false,
-					}
-					break;
 				}
 
 				case 'twitter-event': {
 					if(action.error && state.stage < states.FOUND_TWEET) {
-						if(state.stage == state.CONFIRMED) {
+						if(state.stage === states.CONFIRMED) {
 							setError('Could not find your tweet. Please refresh and try again');
+						//} else if (state.stage >  {
+						//	setError(action.error);
 						}
 						return state;
 					}
 
-					if(action.name == 'tweet-found' && state.stage < states.FOUND_TWEET) {
+					if(action.name === 'tweet-found' && state.stage < states.FOUND_TWEET) {
 						return {...state, stage: states.FOUND_TWEET}
 					}
 
-					if(action.name == 'tweetbutton-clicked' && state.stage < states.TWEETED) {
+					if(action.name === 'tweet-confirmed' && state.stage <= states.CONFIRMED) {
+						return {...state, stage: states.CONFIRMED}
+					}
+
+					if(action.name === 'tweet-retweet' && state.stage <= states.CONFIRMED) {
+						return {...state, stage: states.READY}
+					}
+
+					if(action.name === 'tweetbutton-clicked' && state.stage < states.TWEETED) {
 						return {...state, stage: states.TWEETED}
 					}
 
-					if(action.name == 'tweet-not_found' && state.stage == states.CONFIRMED) {
+					if(action.name === 'tweet-not_found' && state.stage === states.CONFIRMED) {
 						return {...state, stage: states.ERROR}
 					}
 
@@ -124,77 +90,38 @@ export default (props) => {
 					break;
 				}
 
-					// Subsumption state machine
-				case 'new-event': {
-					console.log(`\tReduce: new-event ${action.name} with payload ${action.payload}`, action);
+				case 'web3-event': {
+					console.log(`\tReduce: web3-event ${action.name} with payload ${action.payload}`, action);
 					if(action.payload) console.dir(action.payload);
 
-					if(!state.gathering) {
-						if(action.err) {
-							if(state.stage != states.ERROR) {
-								// Preserve existing error
-								setError(action.err);
-							}
-							return {...state, stage: states.ERROR}
-						}
-
-						if(action.name == 'Claimed') {
-							console.log(`\t${action.name} triggered states.CLAIMED`);
-							return {...state, stage: states.CLAIMED}
-						}
-
-						if(action.name == 'TweetStored' && state.stage < states.STORED_TWEET) {
-							console.log(`\t${action.name} triggered states.STORED_TWEET`);
-							return {...state, stage: states.STORED_TWEET}
-						}
-
-						if(action.name == 'Lodged' && state.stage < states.LODGED) {
-							console.log(`\t${action.name} triggered states.LODGED`);
-							return {
-								...state, 
-								queryId: action.payload.queryId,
-								stage: states.LODGED
-							}
-						}
-						console.log(`Reduce: new-event triggered no state change`);
-						return state;
-						break;
-					}
-
-					console.log(`${action.name} event received before done gathering`);
-
-					return state;
-					break;
-				}
-
-				case 'contract-call': {
 					if(action.err) {
-						setError(action.err);
-						console.log('states.ERROR: ', action.err);
+						if(state.stage != states.ERROR) {
+							// Preserve existing error
+							setError(action.err);
+						}
 						return {...state, stage: states.ERROR}
 					}
 
-					switch(action.payload) {
-						case 'claimed': {
-							console.log(`\t${action.type} triggered states.CLAIMED`);
-							return {...state, stage: states.CLAIMED}
-							break;
-						}
-
-						case 'unclaimed': {
-							if(state.stage < states.READY) {
-								return {...state, stage: states.READY}
-							}
-							return state;
-							break;
-						}
-
-						default: {
-							return state;
-							break;
-						}
-
+					if(action.name == 'Claimed') {
+						console.log(`\t${action.name} triggered states.CLAIMED`);
+						return {...state, stage: states.CLAIMED}
 					}
+
+					if(action.name == 'TweetStored' && state.stage < states.STORED_TWEET) {
+						console.log(`\t${action.name} triggered states.STORED_TWEET`);
+						return {...state, stage: states.STORED_TWEET}
+					}
+
+					if(action.name == 'Lodged' && state.stage < states.LODGED) {
+						console.log(`\t${action.name} triggered states.LODGED`);
+						return {
+							...state, 
+							queryId: action.payload.queryId,
+							stage: states.LODGED
+						}
+					}
+
+					return state;
 					break;
 				}
 
@@ -215,34 +142,51 @@ export default (props) => {
 				default: {
 					return state;
 				}
-
 			}
 		}
 	}
 
-
-	// Instead of 'gathering' use function for initialstate
 	const initialState = {
-		stage: states.INIT,
+		stage: states.READY,
 		queryId: null,
-		gathering: true
 	}
 
 	const [claimState, dispatch] = useReducer(reduce, initialState);
+	const safeDispatch = useCallback((action) => {
+		if(isMounted) {
+			dispatch(action);
+		}
+	}, [dispatch, isMounted]);
+
+	useEffect(() => {
+		if(claimStatus === statuses.states.CLAIMED ) {
+			dispatch({type: 'already-claimed'});
+		} 
+	}, [dispatch, claimStatus])
+
+	/*
+		// Async Dispatcher 
+	useEffect(() => {
+		switch(claimState.stage) {
+			case: states.INIT: {
+				break;
+			}
+			case: states.INIT: {
+				break;
+			}
+			case: states.INIT: {
+				break;
+			}
+		}
+	}, [claimState, ...dispatchers])
+	*/
 
 	const WokeToken = useContract('WokeToken');
 	const TwitterOracleMock = useContract('TwitterOracleMock');
 
-	const safeDispatch = (action) => {
-		if(isMounted.current) {
-			dispatch(action);
-		}
-	}
-
-	// 1. Gather initial contract state
+	// 1. Gather initial contract state from events (race the contract calls)
 	useEffect(() => {
 		const gatherEventState = async () => {
-			let fetches = [];
 			let opts = {fromBlock: 0, toBlock: 'latest'};
 
 			// Has Lodging occured?
@@ -259,117 +203,53 @@ export default (props) => {
 				});
 
 				if(tweetEvents.length > 0) {
-					safeDispatch({type: 'already-stored', payload: tweetEvents[tweetEvents.length - 1].returnValues});
+					dispatch({type: 'web3-event', name: 'TweetStored', payload: tweetEvents[tweetEvents.length - 1].returnValues});
 				} else {
-					safeDispatch({type: 'already-lodged', payload: latestLodgeEvent})
+					dispatch({type: 'web3-event', name: 'Lodged', payload: latestLodgeEvent})
 				}
-				safeDispatch({type: 'done-gathering'});
 				return; 
 			}
 
-			safeDispatch({type: 'done-gathering'});
 			return;
 		}
 
 		gatherEventState();
 	}, []);
 
-	const callGetUser = useSubscribeCall('WokeToken', 'getUser', account);
-	const callUserClaimed = useSubscribeCall('WokeToken', 'userClaimed', props.userId);
-
-	useEffect(() => {
-		if(callUserClaimed == true) {
-			dispatch({type: 'already-claimed'});
-		}
-	}, [claimState.stage, claimState.gathering, callUserClaimed])
-
-	useEffect(() => {
-		const gatherContractState = () => {
-			switch (callGetUser) {
-				case '': {
-					// User does not exist
-					switch(callUserClaimed) {
-						case false: {
-							dispatch({type: 'contract-call', payload: 'unclaimed'});
-							break;
-						}
-						case true: {
-							// Another wallet has claimed this ID
-							dispatch({type: 'contract-call', err: 'User ID already claimed'});
-							break;
-						}
-
-						default: {
-							logVerbose('waiting for userClaimed(id) call');
-						}
-					}
-					break;
-				}
-
-				case undefined: {
-					// No result from call
-					logVerbose('waiting for getUser(account) call');
-					break;
-				}
-
-				default: {
-					// A user exists
-					if(typeof callGetUser == 'string' && callGetUser.length > 0) {
-						if(callGetUser === props.userId) {
-							// User is already claimed
-							dispatch({type: 'contract-call', payload: 'claimed'});
-						} else {
-							// It's someone else's ID
-							dispatch({type: 'contract-call', err: 'User ID and account mismatch'});
-						}
-					}
-					break;
-				}
-			}
-		}
-
-		gatherContractState();
-	}, [callGetUser, callUserClaimed, props.userId]);
-
-	const tweetText = useSubscribeCall('TwitterOracleMock', 'getTweetText', props.userId);
-
+	const tweetText = useSubscribeCall('TwitterOracleMock', 'getTweetText', userId);
+	const lodgedPredicate = claimState.stage == states.LODGED;
 	useEffect(() => {
 		console.log('Got tweet from contract: ', tweetText);
-		if(typeof tweetText == 'string' && tweetText != '') {
-			//dispatch({type: 'new-event', name: 'TweetStored'});
-			dispatch({type: 'already-stored', name: 'TweetStored'});
+		if(typeof tweetText == 'string' && tweetText.length > 0) {
+			dispatch({type: 'web3-event', name: 'TweetStored'});
 		}
-	}, [tweetText, claimState.stage == states.LODGED, claimState.gathering])
+	}, [tweetText, lodgedPredicate]);
+
+	const [claimString, setClaimString] = useState(null);
+	useEffect(() => {
+		const generateClaimString = async () => {
+			const str = await genClaimString(web3, account, userId);
+			setClaimString(str);
+		}
+		generateClaimString();
+	}, [web3, account, userId])
 
 	// 2. Gather claim-tweet status 
-	const [claimString, setClaimString] = useState(null);
-
 	function userClickedPostTweet() {
 		dispatch({type: 'twitter-event', name: 'tweetbutton-clicked'});
 	}
 
+	function userDidNotTweet() {
+		dispatch({type: 'twitter-event', name: 'tweet-retweet'});
+	}
+
 	function userConfirmedTweeted() {
-		dispatch({type: 'already-tweeted'});
+		dispatch({type: 'twitter-event', name: 'tweet-confirmed'});
 	}
-
-	useEffect(() => {
-		const generateClaimString = async () => {
-			const str = await genClaimString(web3, account, props.userId);
-			setClaimString(str);
-		}
-		generateClaimString();
-	}, [web3, claimState.gathering, account, props.userId])
-
-	const timeoutPromise = (ms) => {
-		return new Promise((resolve, reject) => {
-			setTimeout(() => {
-				resolve();
-			}, ms);
-		})
-	}
-
 	// Search for claim string
 	const [fetchingTweet, setFetchingTweet] = useState(false);
+	const confirmedPredicate = claimState.stage == states.CONFIRMED;
+
 	useEffect(() => {
 		const waitForTweet = async (userId) => {
 			logVerbose('Searching for ', claimString);
@@ -377,12 +257,12 @@ export default (props) => {
 			let count = 0;
 
 			// Search for the tweet once initially, then until found
-			const maxAttempts = claimState.stage < states.TWEETED ? 1 : 3;
+			const maxAttempts = claimState.stage < states.TWEETED ? 1 : 4;
 
 			logVerbose(`\tsearching for claim tweet with ${maxAttempts} attempts`);
 			while (!tweet && count < maxAttempts) {
 				try {
-					await timeoutPromise(1000)
+					await setSyncTimeout(1000)
 					tweet = await findClaimTweet(twitterClient, userId, '0xWOKE');
 
 				} catch (error) {
@@ -392,46 +272,41 @@ export default (props) => {
 				}
 			}
 
-			if(isMounted.current) {
-				if(tweet) {
-					if(tweet.includes(claimString)) {
-						dispatch({type: 'twitter-event', name: 'tweet-found'}); // No event name, default event logic
-					} else {
-						dispatch({type: 'twitter-event', error: 'Tweet does not match. Delete the previous tweet and retry'});
-					}
+			if(tweet) {
+				if(tweet.includes(claimString)) {
+					dispatch({type: 'twitter-event', name: 'tweet-found'}); // No event name, default event logic
 				} else {
-					dispatch({type: 'twitter-event', name:'tweet-not_found'})
+					dispatch({type: 'twitter-event', error: 'Tweet does not match. Delete the previous tweet and retry'});
 				}
+			} else {
+				dispatch({type: 'twitter-event', name:'tweet-not_found'})
 			}
 		}
 
 		if(!fetchingTweet && claimString != null && claimState.stage < states.FOUND_TWEET) {
 			setFetchingTweet(true);
-			waitForTweet(props.userId);
+			waitForTweet(userId);
 			setFetchingTweet(false);
 		}
 
-	}, [claimString, claimState.stage == states.CONFIRMED, twitterClient])
+	}, [userId, claimString, twitterClient, confirmedPredicate, claimState.stage, fetchingTweet])
 
 
+	// 3. Monitor state from events
 	const events = {TweetStored: [], Claimed: [], Lodged: []};
-
-	// 2. Monitor state from events
 	events.Claimed = useEvents('WokeToken', 'Claimed',
 		useMemo(() => (
 			{
 				filter: { account: account},
 				fromBlock: 0
 			}
-		),
-			[account])
+		), [account])
 	);
-
 	useEffect(() => {
 		if(events.Claimed && events.Claimed.length > 0) {
-			dispatch({type: 'new-event', name: 'Claimed'});
+			dispatch({type: 'web3-event', name: 'Claimed'});
 		}
-	}, [claimState.gathering, events.Claimed]) //events.Claimed && events.Claimed.length]);
+	}, [events.Claimed]) //events.Claimed && events.Claimed.length]);
 
 	events.TweetStored = useEvents('TwitterOracleMock', 'TweetStored',
 		useMemo(() => (
@@ -439,17 +314,15 @@ export default (props) => {
 				filter: { queryId: claimState.queryId },
 				fromBlock: 0
 			}
-		),
-			[claimState.queryId])
+		), [claimState.queryId])
 	);
-
 	useEffect(() => {
 		if(claimState.queryId != null && events.TweetStored && events.TweetStored.length > 0) {
 
 			let event = events.TweetStored[events.TweetStored.length - 1].returnValues;
-			dispatch({type: 'new-event', name: 'TweetStored', payload: event});
+			dispatch({type: 'web3-event', name: 'TweetStored', payload: event});
 		}
-	}, [claimState.gathering, claimState.queryId, events.TweetStored]); // && events.TweetStored.length]);
+	}, [claimState.queryId, events.TweetStored]); // && events.TweetStored.length]);
 
 	events.Lodged = useEvents('WokeToken', 'Lodged',
 		useMemo(() => (
@@ -459,15 +332,14 @@ export default (props) => {
 			}
 		), [account])
 	);
-
 	useEffect(() => {
 		if(events.Lodged && events.Lodged.length > 0) {
 			// Use latest - there should only be one
 			// Once oracle stores tweet text, fulfill the claim
 			let event = events.Lodged[events.Lodged.length - 1].returnValues; 
-			dispatch({type: 'new-event', name:'Lodged', payload: event});
+			dispatch({type: 'web3-event', name:'Lodged', payload: event});
 		}
-	}, [claimState.gathering, events.Lodged]); // && events.Lodged.length]);
+	}, [events.Lodged]); // && events.Lodged.length]);
 
 	function hasEnoughEth () {
 		//setError('Insufficient eth for transaction');
@@ -485,7 +357,7 @@ export default (props) => {
 		}
 
 		if(sendClaimUser.send(id)) {
-			console.log(`sendClaimUser(${props.userId})`)
+			console.log(`sendClaimUser(${userId})`)
 			dispatch({type: 'sent-transaction', payload: 'claim'})
 		} else {
 			console.error('Failed to sendClaimUser');
@@ -497,27 +369,30 @@ export default (props) => {
 			return;
 		}
 
-		sendFulfillClaim.send(props.userId);
-		console.dir(sendFulfillClaim);
-		console.log(`sendFulfillClaim(${props.userId})`)
+		console.log(`sendFulfillClaim(${userId})`)
+		sendFulfillClaim.send(userId);
 		dispatch({type: 'sent-transaction', payload: 'fulfill'})
 	}
 
+	const foundTweetPredicate = claimState.stage === states.FOUND_TWEET;
 	useEffect(() => {
-		if(claimState.stage == states.STORED_TWEET && !claimState.gathering) {
+		if(foundTweetPredicate) {
+			handleSendClaimUser(userId, userHandle);
+		}
+	}, [userId, userHandle, foundTweetPredicate, handleSendClaimUser])
+
+	const storedTweetPredicate = claimState.stage === states.STORED_TWEET;
+	useEffect(() => {
+		if(storedTweetPredicate) {
 			handleSendFulfillClaim();
 		}
-	}, [claimState.stage == states.STORED_TWEET, claimState.gathering])
+	}, [storedTweetPredicate, handleSendFulfillClaim])
 
-	useEffect(() => {
-		if(claimState.stage == states.FOUND_TWEET && !claimState.gathering) {
-			handleSendClaimUser(props.userId, props.userHandle);
-		}
-	}, [claimState.stage == states.FOUND_TWEET, claimState.gathering])
 
 	// Monitor transaction states
 	useEffect(() => {
-		console.log(`sendClaimUser.status: ${sendClaimUser.status}`);
+		if(sendClaimUser.status) 
+			console.log(`sendClaimUser.status: ${sendClaimUser.status}`);
 	}, [sendClaimUser.status])
 
 	// Log once
@@ -536,7 +411,8 @@ export default (props) => {
 		stageMap: statesMap,
 		stageTriggers: {
 			userClickedPostTweet,
-			userConfirmedTweeted
+			userConfirmedTweeted,
+			userDidNotTweet,
 		},
 		claimString,
 		transactions: {
@@ -546,3 +422,4 @@ export default (props) => {
 		error
 	};
 }
+
