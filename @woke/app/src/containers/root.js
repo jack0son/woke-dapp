@@ -8,6 +8,7 @@ import Web3Initializer from './web3-initializer'
 import Root from './views/root'
 
 // Hooks
+import { RootContextProvider } from '../hooks/root-context'
 import TwitterContextProvider from '../hooks/twitter/index.js'
 import useHedgehog from '../hooks/hedgehog'
 
@@ -18,35 +19,29 @@ const wallet = new HedgehogWallet();
 
 export default function RootContainer(props) {
 	const hedgehog = useHedgehog(wallet);
-	const [initWeb3, setInitWeb3] = useState(false);
-
-	let showLogo = true;
 
 	const renderAuthentication = () => (
 		<Authentication
 			hedgehog={hedgehog}
-			renderProp={(show) => {
-				showLogo = show;
-			}}
 		/>
-	)
+	);
 
-	useEffect(() => {
-		if(hedgehog.state.signedIn && !initWeb3)
-			setInitWeb3(true);
-	}, [hedgehog.state.signedIn])
+	const renderWeb3Initializer = () => (
+		<Web3Initializer
+			wallet={hedgehog.getWallet()}
+		/>
+	);
 
 	return (
-		<Root
-			hideLogo={!(initWeb3 || showLogo)}
-		>
-			<TwitterContextProvider>
-			{!hedgehog.state.signedIn ? renderAuthentication() : (
-				<Web3Initializer
-					wallet={hedgehog.getWallet()}
-				/>
-			)}
-			</TwitterContextProvider>
-		</Root>
+		<RootContextProvider>
+			<Root>
+				<TwitterContextProvider>
+					{	!hedgehog.state.signedIn ? 
+							renderAuthentication() : 
+							renderWeb3Initializer()
+					}
+				</TwitterContextProvider>
+			</Root>
+		</RootContextProvider>
 	);
 }

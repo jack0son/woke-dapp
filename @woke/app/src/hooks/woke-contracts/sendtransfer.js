@@ -100,10 +100,10 @@ export function useSendTransfers (recipient, handleClearRecipient) {
 
 	// Need to use effect to wait for cacheCall result
 	useEffect(() => {
-		console.log('Transfer:\tqueued ', sendQueued);
-		console.log('Transfer:\trecipientIsClaimed ', recipientIsClaimed);
-		console.log('Transfer:\tRecipient', recipient);
-		console.log('Transfer:\ttransferArgs', transferArgs);
+		//console.log('Transfer:\tqueued ', sendQueued);
+		//console.log('Transfer:\trecipientIsClaimed ', recipientIsClaimed);
+		//console.log('Transfer:\tRecipient', recipient);
+		//console.log('Transfer:\ttransferArgs', transferArgs);
 
 		if(sendQueued && (recipientIsClaimed === true || recipientIsClaimed === false) && transferArgs.userId != '' && transferArgs.userId == recipient.id) {
 			console.log(`${transferArgs.userId} is ${recipientIsClaimed ? 'claimed' : 'unclaimed'}`);

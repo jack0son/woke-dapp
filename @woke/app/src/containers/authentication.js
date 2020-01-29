@@ -28,7 +28,7 @@ function createUserName(id) {
 // TODO fix the loading state
 // TODO after signed in with twitter should check if account exists at server
 export default function AuthContainer(props) {
-	const {hedgehog, renderProp} = props;
+	const {hedgehog} = props;
 	const twitterSignin = useTwitterContext().userSignin;
 	const twitterSignedIn = twitterSignin.isSignedIn()
 
@@ -151,7 +151,6 @@ export default function AuthContainer(props) {
 
 	return (
 		<>
-		{ renderProp(router.state == 'TWITTER') }
 		{hedgehog.state.loading ? renderLoading(hedgehog.state.loading) : renderFunc()}
 		</>
 	)
