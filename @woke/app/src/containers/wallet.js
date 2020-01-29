@@ -80,7 +80,7 @@ export default function WalletContainer(props) {
 				sendTransfers={sendTransfers}
 				friends={friends}
 			/>
-			 : <Loading message={'Plugging in ...'}/>}
+			 : <Loading message={'A Woken shared is a Woken doubled.'}/>}
 		</>
 	);
 }

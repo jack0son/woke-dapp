@@ -17,6 +17,7 @@ export default function Web3Container(props) {
 
 	const renderClaimProcess = () => (
 		<Claim 
+			claimStatus={claimStatus}
 			userId={userId}
 			userHandle={userHandle}
 			renderProp={(claimStage) => {
@@ -60,8 +61,7 @@ export default function Web3Container(props) {
 			}
 
 			default: {
-				console.log('web3switch: waiting');
-				return () => renderLoading('WAITING');
+				return () => renderLoading('Determining wokeness ... ');
 			}
 		}
 	}

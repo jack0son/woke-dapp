@@ -12,6 +12,7 @@ export default function ClaimContainer(props) {
 	const claim = useClaimUser({
 		userId: props.userId,
 		userHandle: props.userHandle,
+		claimStatus: props.claimStatus,
 	});
 
 	useEffect(() => {

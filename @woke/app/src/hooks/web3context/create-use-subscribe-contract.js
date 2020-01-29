@@ -12,7 +12,7 @@ export default web3 => (contractName, callback) => {
 
 	useEffect(() => {
 		if(sub == null) {
-			console.log('Creating new subscription for ', contractName);
+			//console.log('Creating new subscription for ', contractName);
 			let newSub = useContractSubscriptions(contract, contractName, callback);
 			setSub(newSub);
 		} else {

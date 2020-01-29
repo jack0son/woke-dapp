@@ -20,13 +20,18 @@ export default function useClaimStatus(userId) {
 	} = useWeb3Context();
 	const callMyUser = useSubscribeCall('WokeToken', 'myUser');
 	const callUserClaimed = useSubscribeCall('WokeToken', 'userClaimed', userId);
-	const [state, setState] = useState(null);
+	const [state, setState] = useState(retrieveStatus(userId));
+
+	function setStatus(status) {
+		storeStatus(userId, status);
+		setState(status);
+	}
 
 	useEffect(() => {
 		if(userId) {
 			switch(callUserClaimed) {
 				case false: {
-					setState(states.UNCLAIMED);
+					setStatus(states.UNCLAIMED);
 					break;
 				}
 
@@ -36,7 +41,7 @@ export default function useClaimStatus(userId) {
 						case '': {
 							// No User
 							// This user was claimed by a different address
-							setState(states.USER_ALREADY_CLAIMED);
+							setStatus(states.USER_ALREADY_CLAIMED);
 							break;
 						}
 
@@ -46,14 +51,14 @@ export default function useClaimStatus(userId) {
 						};
 
 						case userId: {
-							setState(states.CLAIMED);
+							setStatus(states.CLAIMED);
 							break;
 						}
 
 						default: {
 							// This address already claimed a different userId
 							if(callMyUser && callMyUser.length && callMyUser.length > 0) {
-								setState(states.ACCOUNT_ALREADY_CLAIMED)
+								setStatus(states.ACCOUNT_ALREADY_CLAIMED)
 							}
 							break;
 						}
@@ -77,7 +82,7 @@ export default function useClaimStatus(userId) {
 						};
 
 						case userId: {
-							setState(states.CLAIMED);
+							setStatus(states.CLAIMED);
 							break;
 						}
 
@@ -85,7 +90,7 @@ export default function useClaimStatus(userId) {
 							// Some user ID
 							// This address already claimed a different userId
 							if(callMyUser && callMyUser.length && callMyUser.length > 0) {
-								setState(states.ACCOUNT_ALREADY_CLAIMED);
+								setStatus(states.ACCOUNT_ALREADY_CLAIMED);
 							}
 						}
 
@@ -102,3 +107,10 @@ export default function useClaimStatus(userId) {
 	return state;
 }
 
+function retrieveStatus (userId) {
+	return parseInt(window.localStorage.getItem(`claim_status:${userId}`));
+}
+
+function storeStatus (userId, status) {
+	return window.localStorage.setItem(`claim_status:${userId}`, status);
+}
