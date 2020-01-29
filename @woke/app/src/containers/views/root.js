@@ -1,4 +1,4 @@
-import React, {useEffect} from 'react'
+import React from 'react'
 
 // Layout
 import Theming from '../../layouts/theming'
@@ -11,9 +11,7 @@ import { useRootContext } from '../../hooks/root-context'
 
 export default function RootView({children}) {
 	const {loading} = useRootContext();
-	useEffect(() => {
-		console.log('Loading: ', loading);
-	}, [loading]);
+
 	return (
 		<Theming>
 			<PageContainer>

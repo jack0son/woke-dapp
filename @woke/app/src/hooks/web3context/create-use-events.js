@@ -1,11 +1,10 @@
-import React, { useState, useEffect, useRef, useMemo } from 'react'
+import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { useWeb3Context } from '.';
-
+import { useIsMounted } from '../util-hooks';
 
 // Need to use this utility in place of web3.eth.Contract.getPastEvents due to
 // version synchonisation issue between web3-provider-engine and web3
-import { makeLogEventSubscription } from '../../lib/web3/web3-utils';
-
+//import { makeLogEventSubscription } from '../../lib/web3/web3-utils';
 // @dev createUseEvents
 // @dev Hook generator for web3 provider context
 export default web3 => (contractName, eventName, opts) => {
@@ -13,24 +12,18 @@ export default web3 => (contractName, eventName, opts) => {
 	const {useContract} = useWeb3Context();
 	const contract = useContract(contractName);
 	const [events, setEvents] = useState([]);
-	const [errors, setErrors] = useState([]);
 
-	// Track mounted state to cancel calls if unmounted
-	const isMounted = useRef(true)
-	useEffect(() => {
-		return(() => {
-			isMounted.current = false
-		})
-	}, []);
-
-	const safeSetEvents = (setFunc) => {
-		if(isMounted.current) {
-			setEvents(events => setFunc(events));
-		}
-	}
+	const isMounted = useIsMounted()
 
 	useEffect(() => {
 		let emitter;
+		let mounted = true;
+
+		const safeSetEvents = (setFunc) => {
+			if(mounted) {
+				setEvents(events => setFunc(events));
+			}
+		}
 
 		function setupEmitter() {
 			let pastOpts = {
@@ -67,8 +60,9 @@ export default web3 => (contractName, eventName, opts) => {
 		// TODO use web3.eth.subscribe to manage subscription
 		// TODO emitter needs to be stored in state to cleanup
 		return (() => {
+			mounted =  false;
 			if(emitter && emitter.unsubscribe) {
-				console.log(emitter);
+				//console.log(emitter);
 				emitter.unsubscribe();
 			}
 		})
