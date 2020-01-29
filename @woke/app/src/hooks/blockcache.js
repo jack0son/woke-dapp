@@ -9,7 +9,7 @@ export default function useBlockCache() {
 		useEvents
 	} = useWeb3Context();
 
-	const [blockCache, setBlockCache] = useState({});
+	const [blockCache, setBlockCache] = useState(retrieveCache() || {});
 
 	const blockNumbers = useMemo(() => {
 		return Object.keys(blockCache);
@@ -38,12 +38,12 @@ export default function useBlockCache() {
 
 	function addBlock(bn) {
 		if(!blockCache[bn]) {
-				web3.eth.getBlock(bn)
-					.then(block => {
-						setBlockCache(blockCache => ({...blockCache, block}));
-					}).catch(error => {
-						console.log(`Failed to retrieve block ${bn}:\n`, error);
-					});
+			web3.eth.getBlock(bn)
+				.then(block => {
+					setBlockCache(blockCache => ({...blockCache, block}));
+				}).catch(error => {
+					console.log(`Failed to retrieve block ${bn}:\n`, error);
+				});
 		}
 	}
 
@@ -51,8 +51,11 @@ export default function useBlockCache() {
 		addBlocks(blockNumberList.filter(bn => !blockNumbers.includes(bn)));
 	}, [addBlocks, blockNumbers]);
 
+
 	useEffect(()=> {
-		console.log(blockCache);
+		if(blockCache) {
+			storeCache(reduceCache(blockCache));
+		}
 	}, [blockCache])
 
 	return {
@@ -62,4 +65,24 @@ export default function useBlockCache() {
 		blocks: blockCache,
 		blockNumbers,
 	};
+}
+
+const cacheKey = 'block_cache';
+function storeCache (cache) {
+	window.localStorage.setItem(cacheKey, JSON.stringify(cache));
+}
+
+function retrieveCache () {
+	return JSON.parse(window.localStorage.getItem(cacheKey));
+}
+
+function reduceCache(cache) {
+	let r = {}
+	Object.values(cache).forEach(b => {
+		r[b.number] = {
+			blockNumber: b.number,
+			timestamp: b.timestamp,
+		};
+	})
+	return r;
 }
