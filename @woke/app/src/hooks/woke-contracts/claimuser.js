@@ -19,7 +19,7 @@ import { useIsMounted } from '../util-hooks'
 const {statesMap, statesList} = claimStates;
 const states = statesMap;
 
-const logVerbose = true ? console.log : () => {};
+const logVerbose = false ? console.log : () => {};
 
 // TODO implement a an unmount variable to cancel async calls when claimuser
 // unmounts
@@ -369,11 +369,17 @@ export default function useClaimUser({userId, userHandle, claimStatus}) {
 			return;
 		}
 
-		sendFulfillClaim.send(userId);
-		console.dir(sendFulfillClaim);
 		console.log(`sendFulfillClaim(${userId})`)
+		sendFulfillClaim.send(userId);
 		dispatch({type: 'sent-transaction', payload: 'fulfill'})
 	}
+
+	const foundTweetPredicate = claimState.stage === states.FOUND_TWEET;
+	useEffect(() => {
+		if(foundTweetPredicate) {
+			handleSendClaimUser(userId, userHandle);
+		}
+	}, [userId, userHandle, foundTweetPredicate, handleSendClaimUser])
 
 	const storedTweetPredicate = claimState.stage === states.STORED_TWEET;
 	useEffect(() => {
@@ -382,12 +388,6 @@ export default function useClaimUser({userId, userHandle, claimStatus}) {
 		}
 	}, [storedTweetPredicate, handleSendFulfillClaim])
 
-	const foundTweetPredicate = claimState.stage === states.FOUND_TWEET;
-	useEffect(() => {
-		if(foundTweetPredicate) {
-			handleSendClaimUser(userId, userHandle);
-		}
-	}, [userId, userHandle, foundTweetPredicate, handleSendClaimUser])
 
 	// Monitor transaction states
 	useEffect(() => {

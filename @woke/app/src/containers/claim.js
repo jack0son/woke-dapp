@@ -21,7 +21,6 @@ export default function ClaimContainer(props) {
 		}
 	}, [tweetedClaimString])
 
-
 	const handleTweeted = () => {
 		claim.stageTriggers.userClickedPostTweet();
 	}
@@ -60,20 +59,6 @@ function retrieveTweeted () {
 	return tweeted;
 }
 
-function retrieveClaimed () {
-	const claimed = window.localStorage.getItem('claimed')
-	if(claimed == undefined || claimed == null || !claimed) {
-		return false;
-	}
-	return claimed;
-}
-
-/*
-function storeClaimed () {
-	window.localStorage.setItem('claimed', true);
-}
-
 function storeTweeted () {
 	window.localStorage.setItem('tweeted', true);
 }
-*/

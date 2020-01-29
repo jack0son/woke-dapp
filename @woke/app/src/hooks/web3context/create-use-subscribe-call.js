@@ -20,7 +20,7 @@ export default web3 => (contractName, methodName, ...args) => {
 				.then(result => {
 					if(isMounted.current) {
 						setCallValue(result)
-						console.log(`... <${result}> from call ${contractName}, ${methodName}: ${args}`);
+						//console.log(`... <${result}> from call ${contractName}, ${methodName}: ${args}`);
 					}
 				})
 				.catch(error => {

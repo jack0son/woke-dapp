@@ -71,7 +71,7 @@ export default function AuthContainer(props) {
 							case 'signup': 
 								return <>Generating wallet<br/>Big math, long wait ...<br/></>;
 							case 'login': 
-								return <>Summoning your <WokeSpan>Wokens</WokeSpan> ...<br/></>
+								return <>Blessing your <WokeSpan>Wokens</WokeSpan> ...<br/></>
 							default: 
 								return null;
 						}

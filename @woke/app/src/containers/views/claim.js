@@ -79,7 +79,7 @@ export default function ClaimView (props) {
 
 	
 	// Subsumption tree
-	let chooseRender = () => (<Loading message={'UNDEFINED'}/>);
+	let chooseRender = () => (<Loading message={'Analysing wokeness ...'}/>);
 	if(claimState.stage >= sc.CLAIMED) {
 		// Shouldn't get here
 	} else if (claimState.stage >= sc.CONFIRMED) {
