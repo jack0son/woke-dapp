@@ -1,0 +1,30 @@
+{
+  "name": "@woke/server",
+  "version": "0.1.0",
+  "description": "Wallet backend: account creation and funding.",
+  "private": true,
+  "scripts": {
+    "start": "NODE_ENV=production DEBUG=server:* node ./bin/www",
+    "dev": "NODE_ENV=development DEBUG=server:* node ./bin/www",
+    "ropsten": "NODE_ENV=ropsten DEBUG=server:* node ./bin/www",
+    "rinkeby": "NODE_ENV=rinkeby DEBUG=server:* node ./bin/www"
+  },
+  "dependencies": {
+    "@woke/lib": "0.1.0",
+    "cookie-parser": "~1.4.4",
+    "cors": "^2.8.5",
+    "debug": "~2.6.9",
+    "dotenv": "^8.1.0",
+    "express": "~4.16.1",
+    "http-errors": "~1.6.3",
+    "morgan": "~1.9.1",
+    "nconf": "^0.10.0",
+    "pg": "^7.11.0",
+    "sequelize": "^5.8.6",
+    "umzug": "^2.2.0",
+    "web3": "^1.2.4"
+  },
+  "devDependencies": {
+    "standard": "^12.0.1"
+  }
+}

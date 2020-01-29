@@ -1,0 +1,4 @@
+{
+  "dbUrl": "postgresql://postgres:postgres@localhost:5432/woke_dapp",
+  "port": 3001
+}
