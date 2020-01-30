@@ -33,7 +33,7 @@
     "truffle-assertions": "^0.9.1"
   },
   "scripts": {
-    "migrate:client": "./node_modules/.bin/truffle migrate --network client --reset",
+    "migrate:development": "./node_modules/.bin/truffle migrate --network client --reset",
     "migrate:ropsten": "./node_modules/.bin/truffle migrate --network ropsten --reset",
     "migrate:rinkeby": "./node_modules/.bin/truffle migrate --network rinkeby --reset",
     "migrate:production": "CONTRACT_ENV=production ./node_modules/.bin/truffle migrate --network rinkeby",
