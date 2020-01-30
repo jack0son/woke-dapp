@@ -8,12 +8,13 @@ import WokeToken from '../../contracts/WokeToken.json';
 const nodeEnv = process.env.NODE_ENV;
 const ethNetwork = process.env.REACT_APP_ETH_NETWORK;
 
-const contractArtifacts = {
-	production: {
+const production =  {
 		WokeToken,
 		TwitterOracleMock,
-	},
-	development: nodeEnv !== 'production' ? require('@woke/contracts') : null
+	};
+const contractArtifacts = {
+	production,
+	development: production,//nodeEnv !== 'production' ? require('@woke/contracts') : null
 }
 
 export function loadContractArtifacts() {
@@ -33,7 +34,7 @@ export function loadContractArtifacts() {
 }
 
 export function getWeb3Network() {
-	let networkName = nodeEnv == 'development' ?  ethNetwork : nodeEnv;
+	let networkName = ethNetwork ?  ethNetwork : nodeEnv;
 	let network = config.web3.networks[networkName];
 
 	if(!network) {
