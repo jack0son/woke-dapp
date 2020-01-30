@@ -7,8 +7,8 @@ const Web3 = require('web3');
 const debug = Logger('oracle');
 
 
-//const prodContractPath = '../../app/src/contracts/TwitterOracleMock.json'
-const prodContractPath = '@woke/contracts';
+const prodContractPath = '../../contracts/artifacts/production/TwitterOracleMock.json'
+//const prodContractPath = '@woke/contracts';
 const oracleMockInterface = process.env.NODE_ENV == 'production' ? 
 	require(prodContractPath) :
 	require('@woke/contracts').TwitterOracleMock;
