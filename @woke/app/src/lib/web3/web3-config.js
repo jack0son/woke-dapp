@@ -9,7 +9,8 @@ const nodeEnv = process.env.NODE_ENV;
 const ethNetwork = process.env.REACT_APP_ETH_NETWORK;
 
 console.log(nodeEnv);
-const development = nodeEnv != 'production' ? require('@woke/contracts') : null;
+//const development = nodeEnv != 'production' ? require('@woke/contracts') : null;
+const development = null;
 const contractArtifacts = {
 	production: {
 		WokeToken,
