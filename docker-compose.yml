@@ -10,14 +10,16 @@ services:
     ports:
       - '5432:5432'
   auth-server:
-    build: ./@woke/server/.
+    build:
+      context: ./
+      dockerfile: Dockerfile.server
     depends_on:
       - db
     ports:
       - '3001:3001'
       - '8443:8443'
     environment:
-      WAIT_HOSTS: postgres:5432
+      WAIT_HOSTS: db:5432
 
 volumes:
   postgres_data:

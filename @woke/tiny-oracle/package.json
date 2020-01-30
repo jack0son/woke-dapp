@@ -8,6 +8,7 @@
     "test": "./node_modules/.bin/mocha",
     "test-debug": "DEBUG=oracle:* ./node_modules/.bin/mocha",
     "start": "NODE_ENV=production DEBUG=oracle* node src/index.js",
+    "start-docker": "DEBUG=oracle* node src/index.js",
     "dev": "NODE_ENV=development DEBUG=oracle*,twitter node src/index.js",
     "ropsten": "NODE_ENV=ropsten DEBUG=oracle*,twitter node src/index.js",
     "rinkeby": "NODE_ENV=rinkeby DEBUG=oracle*,twitter node src/index.js",
@@ -19,7 +20,7 @@
   "dependencies": {
     "@woke/contracts": "0.1.0",
     "@woke/lib": "0.1.0",
-    "web3": "^1.2.4"
+    "web3": "^1.2.5"
   },
   "devDependencies": {
     "minimist": "^1.2.0",

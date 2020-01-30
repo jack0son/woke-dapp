@@ -4,8 +4,10 @@ require('dotenv').config();
 var mnemonic = "nerve marine frozen use brave brief nasty then acid remain stereo riot";
 var ropstenMnemonic = process.env.ROPSTEN_MNEMONIC;
 var infuraApiKey = process.env.INFURA_API_KEY;
+const contractEnv = process.env.CONTRACT_ENV;
 
 module.exports = {
+	contracts_build_directory: contractEnv ? `./artifacts/${contractEnv}` : undefined,
   networks: {
     test: {
       host: "127.0.0.1",
