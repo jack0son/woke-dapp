@@ -8,13 +8,15 @@ import WokeToken from '../../contracts/WokeToken.json';
 const nodeEnv = process.env.NODE_ENV;
 const ethNetwork = process.env.REACT_APP_ETH_NETWORK;
 
+console.log(nodeEnv);
+const development = nodeEnv != 'production' ? require('@woke/contracts') : null;
 const contractArtifacts = {
 	production: {
 		WokeToken,
 		TwitterOracleMock,
 	},
-	development: nodeEnv !== 'production' ? require('@woke/contracts') : null
-}
+	development
+};
 
 export function loadContractArtifacts() {
 	let artifacts;
