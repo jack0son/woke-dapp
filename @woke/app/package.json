@@ -20,8 +20,7 @@
     "request-promise-native": "^1.0.7",
     "twitter": "^1.7.1",
     "typeface-inconsolata": "0.0.72",
-    "web3": "^1.2.1",
-    "web3-provider-engine": "^15.0.3"
+    "web3": "^1.2.5"
   },
   "devDependencies": {
     "@woke/contracts": "0.1.0"
