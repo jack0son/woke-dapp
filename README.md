@@ -8,6 +8,11 @@ Mono repo for the woke dApp client, smart-contracts, and back-end services.
 The contract artifacts which are built by truffle contain the compiled contract
 binaries, method interfaces, and the migration configuration.
 
+Migration configuration is essentially the contract address and network
+information for each chain the the contract has been deployed to.
+
+Truffle will continually update this build file as you migrate so a contract
+residing on multiple networks can be interacted with using one artifact.
 
 
 # Deployment
@@ -21,6 +26,13 @@ to avoid using any lerna dependencies and simply copy the contract artifacts
 into the `@woke/app/src` on every production migration.
 
 ### Google Cloud
+[Container Optimized
+OS](https://cloud.google.com/container-optimized-os/docs/concepts/features-and-benefits)
+
+**Configuring docker-compose for container optimized OS**
+This [tutorial](https://cloud.google.com/community/tutorials/docker-compose-on-container-optimized-os)
+guides you through running Docker Compose in a container on a
+Container-Optimized OS instance.
 
 ## Ethereum
 Rinkby is the testnet being used at the moment. 
