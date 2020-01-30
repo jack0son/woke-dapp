@@ -28,6 +28,8 @@ Deploy process
 ..+ Netlify: `deploy-netlify`
 ..+ GCloud: `deploy-gcloud`
 
+Deployment branches must always be downstream of develop.
+
 ## App Services
 ### Netlify
 Because of the more limited build options available on netlify, it was simplest
