@@ -10,7 +10,9 @@ services:
     ports:
       - '5432:5432'
   auth-server:
-    image: jvindustries/woke:latest
+    build:
+      context: ./
+      dockerfile: Dockerfile.server
     depends_on:
       - db
     ports:
