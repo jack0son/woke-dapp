@@ -10,9 +10,9 @@ var migrationManager = require('../src/lib/migrationManager')
 var key, cert, ca;
 const nodeEnv = process.env.NODE_ENV;
 if(nodeEnv == 'production') {
-	key = fs.readFileSync('./ssl/getwoke.me/private.key');
-	cert = fs.readFileSync('./ssl/getwoke.me/certificate.crt');
-	ca = fs.readFileSync('./ssl/getwoke.me/ca_bundle.crt');
+	key = fs.readFileSync('./ssl/api.getwoke.me/private.key');
+	cert = fs.readFileSync('./ssl/api.getwoke.me/certificate.crt');
+	ca = fs.readFileSync('./ssl/api.getwoke.me/ca_bundle.crt');
 } else {
 	key = fs.readFileSync('./ssl/localhost/localhost.key');
 	cert = fs.readFileSync('./ssl/localhost/localhost.crt');

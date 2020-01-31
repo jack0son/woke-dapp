@@ -30,7 +30,7 @@ const requestToServer = async (axiosRequestObj) => {
     }
   } catch (e) {
 		console.error(e);
-    //throw new Error('Server returned error: ' + e.response.status.toString() + ' ' + e.response.data['error'])
+    throw new Error('Server returned error: ' + e.response.status.toString() + ' ' + e.response.data['error'])
   }
 }
 

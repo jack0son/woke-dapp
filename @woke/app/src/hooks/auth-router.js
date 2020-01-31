@@ -19,7 +19,7 @@ export default initialState => {
 	const routerReducer = (state, action) => {
 		switch (action.type) {
 			case 'twitter-authenticated': {
-				console.log('Case: twitter-authd');
+				console.log('Auth:action twitter-authd');
 				switch(state) {
 					case states.TWITTER: {
 						return states.HEDGEHOG;
@@ -32,7 +32,7 @@ export default initialState => {
 			}
 
 			case 'hedgehog-account_exists': {
-				console.log('Case: hedgehog-account_exists');
+				console.log('Auth:action hedgehog-account_exists');
 				switch(state) {
 					case states.TWITTER: {
 						console.log('return state LOGIN');
@@ -51,7 +51,7 @@ export default initialState => {
 			}
 
 			case 'hedgehog-authenticated': {
-				console.log('Case: hedgehog-authd');
+				console.log('Auth:action hedgehog-authd');
 				switch(state) {
 					case states.HEDGEHOG: {
 						return states.AUTHD;
