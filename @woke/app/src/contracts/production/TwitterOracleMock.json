@@ -9219,36 +9219,36 @@
     "version": "0.5.12+commit.7709ece9.Emscripten.clang"
   },
   "networks": {
-    "12": {
+    "4": {
       "events": {
-        "0xad32e83c9322068f49f7a247253392fca01bc70546750bb12fd3bf67940af0e3": {
+        "0xe5d85242f0078c93b45bf90642d76990a0944afb431d2c7d61f4c32b339c780a": {
           "anonymous": false,
           "inputs": [
             {
               "indexed": false,
-              "name": "m",
-              "type": "string",
-              "internalType": "string"
+              "internalType": "bytes32",
+              "name": "queryId",
+              "type": "bytes32"
             },
             {
               "indexed": false,
-              "name": "v",
-              "type": "bytes",
-              "internalType": "bytes"
+              "internalType": "string",
+              "name": "userId",
+              "type": "string"
             }
           ],
-          "name": "TraceBytes",
+          "name": "FindTweetLodged",
           "type": "event",
-          "signature": "0xad32e83c9322068f49f7a247253392fca01bc70546750bb12fd3bf67940af0e3"
+          "signature": "0xe5d85242f0078c93b45bf90642d76990a0944afb431d2c7d61f4c32b339c780a"
         },
         "0x746f97619dd4e795da5586af48fcbd8a87f2860948dec93277b5b67b2f105cab": {
           "anonymous": false,
           "inputs": [
             {
               "indexed": false,
+              "internalType": "string",
               "name": "description",
-              "type": "string",
-              "internalType": "string"
+              "type": "string"
             }
           ],
           "name": "LogNewQuery",
@@ -9260,15 +9260,15 @@
           "inputs": [
             {
               "indexed": false,
+              "internalType": "string",
               "name": "result",
-              "type": "string",
-              "internalType": "string"
+              "type": "string"
             },
             {
               "indexed": false,
+              "internalType": "bytes",
               "name": "proof",
-              "type": "bytes",
-              "internalType": "bytes"
+              "type": "bytes"
             }
           ],
           "name": "LogResult",
@@ -9280,103 +9280,63 @@
           "inputs": [
             {
               "indexed": true,
+              "internalType": "address",
               "name": "_owner",
-              "type": "address",
-              "internalType": "address"
+              "type": "address"
             },
             {
               "indexed": true,
+              "internalType": "uint256",
               "name": "_balance",
-              "type": "uint256",
-              "internalType": "uint256"
+              "type": "uint256"
             }
           ],
           "name": "LogUpdate",
           "type": "event",
           "signature": "0xd176e7c6abd789c341ab22cef27aa1fbc7461f5f9d6a6e55faa0b9df32a70514"
         },
-        "0x9f64ee73189d8ec2b952cf3a09e90fd56fd62818c56b87166a1ed69f425d299c": {
+        "0x8be0079c531659141344cd1fd0a4f28419497f9722a3daafe3b4186f6b6457e0": {
           "anonymous": false,
           "inputs": [
             {
-              "indexed": false,
-              "name": "statusId",
-              "type": "string",
-              "internalType": "string"
-            },
-            {
-              "indexed": false,
-              "name": "tweetText",
-              "type": "string",
-              "internalType": "string"
+              "indexed": true,
+              "internalType": "address",
+              "name": "previousOwner",
+              "type": "address"
             },
             {
               "indexed": true,
-              "name": "queryId",
-              "type": "bytes32",
-              "internalType": "bytes32"
+              "internalType": "address",
+              "name": "newOwner",
+              "type": "address"
             }
           ],
-          "name": "TweetStored",
+          "name": "OwnershipTransferred",
           "type": "event",
-          "signature": "0x9f64ee73189d8ec2b952cf3a09e90fd56fd62818c56b87166a1ed69f425d299c"
-        },
-        "0xe5d85242f0078c93b45bf90642d76990a0944afb431d2c7d61f4c32b339c780a": {
-          "anonymous": false,
-          "inputs": [
-            {
-              "indexed": false,
-              "name": "queryId",
-              "type": "bytes32",
-              "internalType": "bytes32"
-            },
-            {
-              "indexed": false,
-              "name": "userId",
-              "type": "string",
-              "internalType": "string"
-            }
-          ],
-          "name": "FindTweetLodged",
-          "type": "event",
-          "signature": "0xe5d85242f0078c93b45bf90642d76990a0944afb431d2c7d61f4c32b339c780a"
+          "signature": "0x8be0079c531659141344cd1fd0a4f28419497f9722a3daafe3b4186f6b6457e0"
         },
         "0x62e78cea01bee320cd4e420270b5ea74000d11b0c9f74754ebdbfc544b05a258": {
           "anonymous": false,
           "inputs": [
             {
               "indexed": false,
+              "internalType": "address",
               "name": "account",
-              "type": "address",
-              "internalType": "address"
+              "type": "address"
             }
           ],
           "name": "Paused",
           "type": "event",
           "signature": "0x62e78cea01bee320cd4e420270b5ea74000d11b0c9f74754ebdbfc544b05a258"
         },
-        "0x5db9ee0a495bf2e6ff9c91a7834c1ba4fdd244a5e8aa4e537bd38aeae4b073aa": {
-          "anonymous": false,
-          "inputs": [
-            {
-              "indexed": false,
-              "name": "account",
-              "type": "address",
-              "internalType": "address"
-            }
-          ],
-          "name": "Unpaused",
-          "type": "event",
-          "signature": "0x5db9ee0a495bf2e6ff9c91a7834c1ba4fdd244a5e8aa4e537bd38aeae4b073aa"
-        },
         "0x6719d08c1888103bea251a4ed56406bd0c3e69723c8a1686e017e7bbe159b6f8": {
           "anonymous": false,
           "inputs": [
             {
               "indexed": true,
+              "internalType": "address",
               "name": "account",
-              "type": "address",
-              "internalType": "address"
+              "type": "address"
             }
           ],
           "name": "PauserAdded",
@@ -9388,43 +9348,83 @@
           "inputs": [
             {
               "indexed": true,
+              "internalType": "address",
               "name": "account",
-              "type": "address",
-              "internalType": "address"
+              "type": "address"
             }
           ],
           "name": "PauserRemoved",
           "type": "event",
           "signature": "0xcd265ebaf09df2871cc7bd4133404a235ba12eff2041bb89d9c714a2621c7c7e"
         },
-        "0x8be0079c531659141344cd1fd0a4f28419497f9722a3daafe3b4186f6b6457e0": {
+        "0xad32e83c9322068f49f7a247253392fca01bc70546750bb12fd3bf67940af0e3": {
           "anonymous": false,
           "inputs": [
             {
-              "indexed": true,
-              "name": "previousOwner",
-              "type": "address",
-              "internalType": "address"
+              "indexed": false,
+              "internalType": "string",
+              "name": "m",
+              "type": "string"
+            },
+            {
+              "indexed": false,
+              "internalType": "bytes",
+              "name": "v",
+              "type": "bytes"
+            }
+          ],
+          "name": "TraceBytes",
+          "type": "event",
+          "signature": "0xad32e83c9322068f49f7a247253392fca01bc70546750bb12fd3bf67940af0e3"
+        },
+        "0x9f64ee73189d8ec2b952cf3a09e90fd56fd62818c56b87166a1ed69f425d299c": {
+          "anonymous": false,
+          "inputs": [
+            {
+              "indexed": false,
+              "internalType": "string",
+              "name": "statusId",
+              "type": "string"
+            },
+            {
+              "indexed": false,
+              "internalType": "string",
+              "name": "tweetText",
+              "type": "string"
             },
             {
               "indexed": true,
-              "name": "newOwner",
-              "type": "address",
-              "internalType": "address"
+              "internalType": "bytes32",
+              "name": "queryId",
+              "type": "bytes32"
             }
           ],
-          "name": "OwnershipTransferred",
+          "name": "TweetStored",
           "type": "event",
-          "signature": "0x8be0079c531659141344cd1fd0a4f28419497f9722a3daafe3b4186f6b6457e0"
+          "signature": "0x9f64ee73189d8ec2b952cf3a09e90fd56fd62818c56b87166a1ed69f425d299c"
+        },
+        "0x5db9ee0a495bf2e6ff9c91a7834c1ba4fdd244a5e8aa4e537bd38aeae4b073aa": {
+          "anonymous": false,
+          "inputs": [
+            {
+              "indexed": false,
+              "internalType": "address",
+              "name": "account",
+              "type": "address"
+            }
+          ],
+          "name": "Unpaused",
+          "type": "event",
+          "signature": "0x5db9ee0a495bf2e6ff9c91a7834c1ba4fdd244a5e8aa4e537bd38aeae4b073aa"
         }
       },
       "links": {},
-      "address": "0x295dE8E0980298c6ad795A29bE3f09d64E7ED868",
-      "transactionHash": "0x6ce50250c2f165847cfb93db86021d354484d0b6026b0a899c4cccac802a734c"
+      "address": "0xE54E39aA8Eab32321A431677cb723eb7340cfAcB",
+      "transactionHash": "0x331f63ca5a0e6ca094b7e887dff12fb30b3e91f6ad93489dfe424782f7e400d0"
     }
   },
   "schemaVersion": "3.0.20",
-  "updatedAt": "2020-01-30T23:46:33.111Z",
+  "updatedAt": "2020-01-30T00:49:42.631Z",
   "networkType": "ethereum",
   "devdoc": {
     "methods": {
