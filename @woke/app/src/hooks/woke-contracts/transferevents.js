@@ -151,6 +151,5 @@ export default function(userId, blockCache) {
 		}
 	}, [twitterUsers.state.data, twitterUsers.state.dataLength]);
 
-	console.log(eventList);
 	return eventList;
 }
