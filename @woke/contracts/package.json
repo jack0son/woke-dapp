@@ -1,0 +1,16 @@
+{
+  "name": "@woke/contracts",
+  "version": "0.1.0",
+  "description": "Smart-contract artifacts",
+  "private": true,
+  "main": "index.js",
+  "directories": {
+    "test": "test"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/n/a.git"
+  },
+  "author": "Jackson Virgo",
+  "license": "MIT"
+}

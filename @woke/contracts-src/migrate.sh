@@ -11,7 +11,7 @@ npm run "migrate:$CONTRACT_ENV"
 
 WORK_DIR=$(pwd)
 BASE_DIR=${WORK_DIR##*/}
-if [[ "$BASE_DIR" != "contracts" ]]; then
+if [[ "$BASE_DIR" != "contracts-src" ]]; then
 	echo "FAILED .. script must be run from @woke/contracts"
 	exit
 fi
@@ -21,7 +21,7 @@ mkdir -p "$APP_DEST"
 
 BUILD_DIR="./build/contracts"
 if [[ "$ENV" == "production" ]]; then
-	BUILD_DIR="./artifacts/${CONTRACT_ENV}"
+	BUILD_DIR="../contracts/artifacts/${CONTRACT_ENV}"
 fi
 
 echo "Copying contracts $APP_DEST ..."
