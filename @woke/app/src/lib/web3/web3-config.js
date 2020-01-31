@@ -1,16 +1,18 @@
 import config from '../../config/config';
 
 // Statically configure contract artifacts
-import TwitterOracleMock from '../../contracts/production/TwitterOracleMock.json';
-import WokeToken from '../../contracts/production/WokeToken.json';
+//import TwitterOracleMock from '../../contracts/production/TwitterOracleMock.json';
+//import WokeToken from '../../contracts/production/WokeToken.json';
 
 
 const nodeEnv = process.env.NODE_ENV;
 const ethNetwork = process.env.REACT_APP_ETH_NETWORK;
 
+const artifactRef = require('../../contracts');
 const contractArtifacts = {
-	production,
-	development: production,//nodeEnv !== 'production' ? require('@woke/contracts') : null
+	//production: {TwitterOracleMock, WokeToken},
+	production: artifactRef,
+	development: artifactRef,
 }
 
 export function loadContractArtifacts() {
