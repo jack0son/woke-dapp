@@ -22,9 +22,7 @@
     "typeface-inconsolata": "0.0.72",
     "web3": "^1.2.5"
   },
-  "devDependencies": {
-    "@woke/contracts": "0.1.0"
-  },
+  "devDependencies": {},
   "scripts": {
     "start": "react-scripts start",
     "rinkeby": "REACT_APP_ETH_NETWORK=rinkeby react-scripts start",
