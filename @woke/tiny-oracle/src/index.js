@@ -3,7 +3,6 @@ const {
 	twitter,
 	web3Tools,
 } = require('@woke/lib');
-const Web3 = require('web3');
 const debug = Logger('oracle');
 
 

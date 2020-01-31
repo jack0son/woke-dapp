@@ -19,8 +19,7 @@
   "license": "ISC",
   "dependencies": {
     "@woke/contracts": "0.1.0",
-    "@woke/lib": "0.1.0",
-    "web3": "^1.2.5"
+    "@woke/lib": "0.1.0"
   },
   "devDependencies": {
     "minimist": "^1.2.0",
