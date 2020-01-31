@@ -31,6 +31,15 @@ export function createShareIntentUrl(claimString) {
 	return encodeURI(`https://twitter.com/intent/tweet?amp;ref_src=twsrc%5Etfw&amp;related=getwoketoke&amp;text=${claimString}&amp;tw_p=tweetbutton`)
 }
 
+export function clearOldVersionStorage(version) {
+	const app_ver = window.localStorage.getItem('app_ver');
+	if(app_ver != version) {
+		window.localStorage.clear();
+		window.localStorage.setItem('app_ver', version);
+	}
+}
+
+
 export function setSyncTimeout(ms) {
 	return new Promise((resolve, reject) => {
 		setTimeout(() => {

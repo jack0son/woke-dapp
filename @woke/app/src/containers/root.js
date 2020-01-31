@@ -11,11 +11,13 @@ import Root from './views/root'
 import { RootContextProvider } from '../hooks/root-context'
 import TwitterContextProvider from '../hooks/twitter/index.js'
 import useHedgehog from '../hooks/hedgehog'
+import { clearOldVersionStorage } from '../lib/utils'
 
 // Instances
 import HedgehogWallet from '../lib/wallet/wallet'
 const wallet = new HedgehogWallet(); 
 
+const appVersion = '0.1b';
 
 export default function RootContainer(props) {
 	const hedgehog = useHedgehog(wallet);
@@ -31,6 +33,12 @@ export default function RootContainer(props) {
 			wallet={hedgehog.getWallet()}
 		/>
 	);
+
+	// Clear 
+	// @TODO only in dev mode
+	useEffect(() => {
+		clearOldVersionStorage(appVersion);
+	}, []);
 
 	return (
 		<RootContextProvider>

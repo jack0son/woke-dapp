@@ -17,7 +17,6 @@ export default function useBlockCache() {
 
 	const addBlocks = useCallback((blockNumbers) => {
 		async function addBlocks(blockNumbers) {
-			console.log(blockNumbers);
 			let newBlocks = {};
 			await Promise.all(blockNumbers.map((bn, i) => {
 				if(!blockCache[bn]) {
