@@ -1,5 +1,4 @@
 import config from '../../config/config';
-
 // Statically configure contract artifacts
 //import TwitterOracleMock from '../../contracts/production/TwitterOracleMock.json';
 //import WokeToken from '../../contracts/production/WokeToken.json';
@@ -16,19 +15,7 @@ const contractArtifacts = {
 }
 
 export function loadContractArtifacts() {
-	let artifacts;
-
-	if(nodeEnv !== 'production') {
-		if(contractArtifacts.development === null) {
-			throw new Error('Could not locate development artifacts');
-			return;
-		}
-		artifacts = contractArtifacts.development;
-	} else {
-		artifacts = contractArtifacts.production;
-	}
-
-	return artifacts;
+	return contractArtifacts
 }
 
 export function getWeb3Network() {

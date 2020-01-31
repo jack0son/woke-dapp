@@ -4,7 +4,8 @@ import https from 'https'
 
 import config from '../../config/config';
 
-const serverConfig = config.server[process.env.NODE_ENV];
+const confLabel = process.env.REACT_APP_SERVER_ENV || process.env.NODE_ENV;
+const serverConfig = config.server[confLabel];
 
 //const httpAgent = new http.Agent({ keepAlive: true });
 const httpsAgent = new https.Agent({ keepAlive: true });
