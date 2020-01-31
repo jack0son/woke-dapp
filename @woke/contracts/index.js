@@ -1,9 +1,19 @@
-const TwitterOracleMock = require('./build/contracts/TwitterOracleMock.json');
-const WokeToken = require('./build/contracts/WokeToken.json');
+const production = {
+	WokeToken: require('./production/WokeToken.json'),
+	TwitterOracleMock: require('./production/TwitterOracleMock.json'),
+}
 
-// Build artifacts not included in repository
-// This package is included as a devDep for the app.
+// Will cause create-react-app webpack to fail
+// No dynamic require (Issue #__);
+let development;
+if(process.env.NODE_ENV == 'development') {
+	development = {
+		WokeToken: require('./development/WokeToken.json'),
+		TwitterOracleMock: require('./development/TwitterOracleMock.json'),
+	};
+}
+
 module.exports = {
-	TwitterOracleMock,
-	WokeToken
+	production,
+	development,
 }
