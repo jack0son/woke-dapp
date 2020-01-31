@@ -22,11 +22,11 @@
     "typeface-inconsolata": "0.0.72",
     "web3": "^1.2.5"
   },
-  "devDependencies": {
-    "@woke/contracts": "0.1.0"
-  },
+  "devDependencies": {},
   "scripts": {
     "start": "react-scripts start",
+    "remote": "REACT_APP_SERVER_ENV=production react-scripts start",
+    "remote:rinkeby": "REACT_APP_SERVER_ENV=production REACT_APP_ETH_NETWORK=rinkeby react-scripts start",
     "rinkeby": "REACT_APP_ETH_NETWORK=rinkeby react-scripts start",
     "design": "REACT_APP_DEV_MODE=design react-scripts start",
     "build": "react-scripts build",

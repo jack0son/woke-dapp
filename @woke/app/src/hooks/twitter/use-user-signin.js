@@ -73,6 +73,7 @@ export default function useUserSignin() {
 	function handleCallback() {
 		const verifierResp = oAuthApi.catchOAuthCallback();
 		if(verifierResp && nonEmptyArray(verifierResp.oauth_token)) {
+			console.log(verifierResp);
 			dispatch({type: 'got-callback-response', payload: {verifierResp}});
 		}
 	}

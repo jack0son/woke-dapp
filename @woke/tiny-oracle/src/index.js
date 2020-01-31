@@ -3,16 +3,10 @@ const {
 	twitter,
 	web3Tools,
 } = require('@woke/lib');
-const Web3 = require('web3');
+const artifacts = require('@woke/contracts');
 const debug = Logger('oracle');
 
-
-const prodContractPath = '../../contracts/artifacts/production/TwitterOracleMock.json'
-//const prodContractPath = '@woke/contracts';
-const oracleMockInterface = process.env.NODE_ENV == 'production' ? 
-	require(prodContractPath) :
-	require('@woke/contracts').TwitterOracleMock;
-
+const oracleMockInterface = artifacts[process.env.NODE_ENV !== 'development' ? 'production' : 'development'].TwitterOracleMock; 
 
 function timeoutPromise(ms) {
 	return new Promise((resolve, reject) => setTimeout(() => {

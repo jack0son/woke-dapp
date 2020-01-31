@@ -4,7 +4,8 @@ import https from 'https'
 
 import config from '../../config/config';
 
-const serverConfig = config.server[process.env.NODE_ENV];
+const confLabel = process.env.REACT_APP_SERVER_ENV || process.env.NODE_ENV;
+const serverConfig = config.server[confLabel];
 
 //const httpAgent = new http.Agent({ keepAlive: true });
 const httpsAgent = new https.Agent({ keepAlive: true });
@@ -28,7 +29,8 @@ const requestToServer = async (axiosRequestObj) => {
       throw new Error('Server returned error: ' + resp.status.toString() + ' ' + resp.data['error'])
     }
   } catch (e) {
-    throw new Error('Server returned error: ' + e.response.status.toString() + ' ' + e.response.data['error'])
+		console.error(e);
+    //throw new Error('Server returned error: ' + e.response.status.toString() + ' ' + e.response.data['error'])
   }
 }
 
