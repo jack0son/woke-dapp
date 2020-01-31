@@ -1,13 +1,13 @@
-var HDWalletProvider = require("truffle-hdwallet-provider");
+var HDWalletProvider = require("@truffle/hdwallet-provider");
 require('dotenv').config();
 //var mnemonic = "large fountain love mountains supernatural bird fresh air through the swinging trees";
 var mnemonic = "nerve marine frozen use brave brief nasty then acid remain stereo riot";
 var ropstenMnemonic = process.env.ROPSTEN_MNEMONIC;
 var infuraApiKey = process.env.INFURA_API_KEY;
-const contractEnv = process.env.CONTRACT_ENV;
+const contractEnv = process.env.CONTRACT_ENV || process.env.NODE_ENV;
 
 module.exports = {
-	contracts_build_directory: contractEnv ? `../contracts/artifacts/${contractEnv}` : undefined,
+	contracts_build_directory: "./build/contracts/artifacts",
   networks: {
     test: {
       host: "127.0.0.1",

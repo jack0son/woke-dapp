@@ -1,5 +1,4 @@
 const debug = require('debug');
-const supportsColor = require('supports-color');
 const {inspect} = require('util');
 const chalk = require('chalk');
 
