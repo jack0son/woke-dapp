@@ -1,8 +1,6 @@
 const debug = require('debug');
-const supportsColor = require('supports-color');
 
 const Logger = (prefix = 'm') => {
-	const i = wrapInspect(debug(`${prefix}:obj`)); // inspect object
 	const t = debug(`${prefix}:test`);
 	const e = debug(`${prefix}:event`);
 	// Replace d<module initial> convention with d.<module> (e.g. debug.main)
@@ -10,7 +8,6 @@ const Logger = (prefix = 'm') => {
 	return {
 		d: debug(`${prefix}`),
 		error: debug(`${prefix}:err`),// errors
-		i: i,
 		ei: (m, obj) => {e(m), i(obj)}, // error with inspect object
 		h: debug(`${prefix}:handler`),		// helpers
 		info: debug(`${prefix}:info`),		// helpers

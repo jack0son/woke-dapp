@@ -6,7 +6,7 @@ const {
 const artifacts = require('@woke/contracts');
 const debug = Logger('oracle');
 
-const oracleMockInterface = artifacts[process.env.NODE_ENV].TwitterOracleMock; 
+const oracleMockInterface = artifacts[process.env.NODE_ENV !== 'development' ? 'production' : 'development'].TwitterOracleMock; 
 
 function timeoutPromise(ms) {
 	return new Promise((resolve, reject) => setTimeout(() => {

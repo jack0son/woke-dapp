@@ -6,7 +6,7 @@ const production = {
 // Will cause create-react-app webpack to fail
 // No dynamic require (Issue #__);
 let development;
-if(process.env.NODE_ENV === 'development') {
+if(process.env.NODE_ENV == 'development') {
 	development = {
 		WokeToken: require('./development/WokeToken.json'),
 		TwitterOracleMock: require('./development/TwitterOracleMock.json'),
