@@ -7,7 +7,7 @@ var infuraApiKey = process.env.INFURA_API_KEY;
 const contractEnv = process.env.CONTRACT_ENV;
 
 module.exports = {
-	contracts_build_directory: contractEnv ? `./artifacts/${contractEnv}` : undefined,
+	contracts_build_directory: contractEnv ? `../contracts/artifacts/${contractEnv}` : undefined,
   networks: {
     test: {
       host: "127.0.0.1",
