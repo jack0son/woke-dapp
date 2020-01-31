@@ -7,15 +7,10 @@ import config from '../../config/config';
 const nodeEnv = process.env.NODE_ENV;
 const ethNetwork = process.env.REACT_APP_ETH_NETWORK;
 
-const artifactRef = require('../../contracts');
-const contractArtifacts = {
-	//production: {TwitterOracleMock, WokeToken},
-	production: artifactRef,
-	development: artifactRef,
-}
+const artifacts = require('../../contracts');
 
 export function loadContractArtifacts() {
-	return contractArtifacts
+	return artifacts;
 }
 
 export function getWeb3Network() {
