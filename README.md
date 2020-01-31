@@ -19,6 +19,17 @@ residing on multiple networks can be interacted with using one artifact.
 The dApp client is currently deployed on netlify whilst all the back end
 services are deployed on google cloud compute engine.
 
+### Deployment branches
+Deploy process
+1. Make changes on feature branch
+2. Merge into `develop`
+3. Merge into `deploy`
+4. Merge into hooked branch
+..+ Netlify: `deploy-netlify`
+..+ GCloud: `deploy-gcloud`
+
+Deployment branches must always be downstream of develop.
+
 ## App Services
 ### Netlify
 Because of the more limited build options available on netlify, it was simplest
