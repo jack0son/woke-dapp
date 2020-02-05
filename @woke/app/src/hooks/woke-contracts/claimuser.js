@@ -145,8 +145,16 @@ export default function useClaimUser({userId, userHandle, claimStatus}) {
 							return {...state, stage: states.LODGING}
 						}
 
+						case 'claim-error': {
+							return {...state, stage: states.FOUND_TWEET}
+						}
+
 						case 'fulfill': {
 							return {...state, stage: states.FINALIZING}
+						}
+
+						case 'fulfill-error': {
+							return {...state, stage: states.STORED_TWEET}
 						}
 					}
 					return state;
@@ -415,7 +423,20 @@ export default function useClaimUser({userId, userHandle, claimStatus}) {
 	useEffect(() => {
 		if(sendClaimUser.status) 
 			console.log(`sendClaimUser.status: ${sendClaimUser.status}`);
+		if(sendClaimUser.status == 'error') {
+			// Retry
+			dispatch({type: 'sent-transaction', payload: 'claim-error'})
+		}
 	}, [sendClaimUser.status])
+
+	useEffect(() => {
+		if(sendFulfillClaim.status) 
+			console.log(`sendFulfillClaim.status: ${sendFulfillClaim.status}`);
+		if(sendFulfillClaim.status == 'error') {
+			// Retry
+			dispatch({type: 'sent-transaction', payload: 'fulfill-error'})
+		}
+	}, [sendFulfillClaim.status])
 
 	// Log once
 	useEffect(() => {
@@ -423,7 +444,7 @@ export default function useClaimUser({userId, userHandle, claimStatus}) {
 	}, [])
 
 	useEffect(() => {
-		console.log(`Claim stage changed: ${claimState.stage}, ${statesList[claimState.stage]}`);
+		console.log(`Claim stage update: ${claimState.stage}, ${statesList[claimState.stage]}`);
 	}, [claimState.stage])
 
 	return {
