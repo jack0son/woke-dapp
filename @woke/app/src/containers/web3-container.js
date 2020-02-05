@@ -1,4 +1,4 @@
-import React, {useState, useEffect} from 'react'
+import React, {useState, useEffect, useMemo} from 'react'
 
 // Logical containers
 import Claim from './claim'
@@ -42,12 +42,19 @@ export default function Web3Container(props) {
 	}
 
 	function chooseRender() {
+		if(claimed) {
+			// claimStatus and claim hook will race to detect this state
+			console.log('Wallet triggered by claim process');
+			return renderWallet;
+		}
+
 		switch(claimStatus) {
 			case states.UNCLAIMED: {
 				return renderClaimProcess;
 			}
 
 			case states.CLAIMED: {
+				console.log('Wallet triggered by contract call');
 				return renderWallet;
 			}
 
@@ -61,12 +68,13 @@ export default function Web3Container(props) {
 			}
 
 			default: {
+				console.error('Undefined claim status');
 				return () => renderLoading('Determining wokeness ... ');
 			}
 		}
 	}
 
-	const renderFunc = chooseRender();
+	const renderFunc = useMemo(() => (chooseRender()), [claimed, claimStatus])
 
 	return (
 		<>
