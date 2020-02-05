@@ -16,10 +16,16 @@ import { setSyncTimeout } from '../../lib/utils'
 import { useTwitterContext } from '../twitter/index.js'
 import { useIsMounted } from '../util-hooks'
 
-const {statesMap, statesList} = claimStates;
+const {statesMap, statesList, statesLabels} = claimStates;
 const states = statesMap;
 
 const logVerbose = false ? console.log : () => {};
+
+function validQueryId(qid) {
+	return qid !== null && qid !== undefined &&
+	typeof quid === 'string' &&
+	parseInt(qid) !== 0;
+}
 
 // TODO implement a an unmount variable to cancel async calls when claimuser
 // unmounts
@@ -92,7 +98,6 @@ export default function useClaimUser({userId, userHandle, claimStatus}) {
 
 				case 'web3-event': {
 					console.log(`\tReduce: web3-event ${action.name} with payload ${action.payload}`, action);
-					if(action.payload) console.dir(action.payload);
 
 					if(action.err) {
 						if(state.stage != states.ERROR) {
@@ -112,8 +117,17 @@ export default function useClaimUser({userId, userHandle, claimStatus}) {
 						return {...state, stage: states.STORED_TWEET}
 					}
 
-					if(action.name == 'Lodged' && state.stage < states.LODGED) {
+					// Accept both lodged events with or without query ID, hence <=
+					if(action.name == 'Lodged' && state.stage <= states.LODGED) {
 						console.log(`\t${action.name} triggered states.LODGED`);
+						if(!validQueryId(action.payload.queryId)) {
+							if(validQueryId(state.queryId)) {
+							// If already got query ID, don't change state
+								return state;
+							}
+
+							return {...state, stage: states.LODGED};
+						}
 						return {
 							...state, 
 							queryId: action.payload.queryId,
@@ -225,6 +239,14 @@ export default function useClaimUser({userId, userHandle, claimStatus}) {
 		}
 	}, [tweetText, lodgedPredicate]);
 
+	const hasLodgedRequest = useSubscribeCall('WokeToken', 'lodgedRequest', userId);
+	useEffect(() => {
+		console.log('\thasLodgedRequest: ', hasLodgedRequest);
+		if(hasLodgedRequest === true) {
+			dispatch({type: 'web3-event', name: 'Lodged'});
+		}
+	}, [tweetText, lodgedPredicate]);
+
 	const [claimString, setClaimString] = useState(null);
 	useEffect(() => {
 		const generateClaimString = async () => {
@@ -317,7 +339,7 @@ export default function useClaimUser({userId, userHandle, claimStatus}) {
 		), [claimState.queryId])
 	);
 	useEffect(() => {
-		if(claimState.queryId != null && events.TweetStored && events.TweetStored.length > 0) {
+		if(validQueryId(claimState.queryId) && events.TweetStored && events.TweetStored.length > 0) {
 
 			let event = events.TweetStored[events.TweetStored.length - 1].returnValues;
 			dispatch({type: 'web3-event', name: 'TweetStored', payload: event});
@@ -408,6 +430,7 @@ export default function useClaimUser({userId, userHandle, claimStatus}) {
 		submitClaim: handleSendClaimUser, 
 		stage: claimState.stage, 
 		stageList: statesList,
+		stageLabels: statesLabels,
 		stageMap: statesMap,
 		stageTriggers: {
 			userClickedPostTweet,

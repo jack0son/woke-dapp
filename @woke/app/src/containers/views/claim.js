@@ -26,6 +26,7 @@ export default function ClaimView (props) {
 
 	const stageMap = claimState.stageMap;
 	const sc = claimState.stageMap;
+	const stage = claimState.stage;
 	const stageString = claimState.stageList[claimState.stage]; // stage string
 
 	// Share intent url
@@ -72,7 +73,8 @@ export default function ClaimView (props) {
 		>
 			<LinearProgress 
 				stageList={claimState.stageList.slice(sc.CONFIRMED,sc.CLAIMED + 1)}
-				stage={claimState.stage - sc.CONFIRMED}
+				labelList={claimState.stageLabels}
+				stage={stage - sc.CONFIRMED}
 			/>
 		</Loading>
 	);
@@ -80,15 +82,18 @@ export default function ClaimView (props) {
 	
 	// Subsumption tree
 	let chooseRender = () => (<Loading message={'Analysing wokeness ...'}/>);
-	if(claimState.stage >= sc.CLAIMED) {
+	if(stage >= sc.CLAIMED) {
 		// Shouldn't get here
-	} else if (claimState.stage >= sc.CONFIRMED) {
+		console.warn('Claim in incorrect state: ', `${stage}: ${stageString}`);
+	} else if (stage >= sc.CONFIRMED) {
 		chooseRender = renderClaiming;
-	} else if (claimState.stage >= sc.TWEETED) {
+	} else if (stage >= sc.TWEETED) {
 		chooseRender = renderConfirmTweeted;
-	} else if (claimState.stage >= sc.READY) {
+	} else if (stage >= sc.READY) {
 		chooseRender = renderTweetClaim;
-	} 
+	} else {
+		console.warn('Claim in undefined state: ', `${stage}: ${stageString}`);
+	}
 	const claimStatus = claimState.transactions.sendClaimUser.pending;
 	const fulfillStatus = claimState.transactions.sendFulfillClaim.pending;
 

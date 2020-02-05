@@ -9219,6 +9219,209 @@
     "version": "0.5.12+commit.7709ece9.Emscripten.clang"
   },
   "networks": {
+    "4": {
+      "events": {
+        "0xe5d85242f0078c93b45bf90642d76990a0944afb431d2c7d61f4c32b339c780a": {
+          "anonymous": false,
+          "inputs": [
+            {
+              "indexed": false,
+              "internalType": "bytes32",
+              "name": "queryId",
+              "type": "bytes32"
+            },
+            {
+              "indexed": false,
+              "internalType": "string",
+              "name": "userId",
+              "type": "string"
+            }
+          ],
+          "name": "FindTweetLodged",
+          "type": "event",
+          "signature": "0xe5d85242f0078c93b45bf90642d76990a0944afb431d2c7d61f4c32b339c780a"
+        },
+        "0x746f97619dd4e795da5586af48fcbd8a87f2860948dec93277b5b67b2f105cab": {
+          "anonymous": false,
+          "inputs": [
+            {
+              "indexed": false,
+              "internalType": "string",
+              "name": "description",
+              "type": "string"
+            }
+          ],
+          "name": "LogNewQuery",
+          "type": "event",
+          "signature": "0x746f97619dd4e795da5586af48fcbd8a87f2860948dec93277b5b67b2f105cab"
+        },
+        "0xa985692bf0f6e75fb1a4a4816819e78421191536bab7ffdc6559c4043feb15a3": {
+          "anonymous": false,
+          "inputs": [
+            {
+              "indexed": false,
+              "internalType": "string",
+              "name": "result",
+              "type": "string"
+            },
+            {
+              "indexed": false,
+              "internalType": "bytes",
+              "name": "proof",
+              "type": "bytes"
+            }
+          ],
+          "name": "LogResult",
+          "type": "event",
+          "signature": "0xa985692bf0f6e75fb1a4a4816819e78421191536bab7ffdc6559c4043feb15a3"
+        },
+        "0xd176e7c6abd789c341ab22cef27aa1fbc7461f5f9d6a6e55faa0b9df32a70514": {
+          "anonymous": false,
+          "inputs": [
+            {
+              "indexed": true,
+              "internalType": "address",
+              "name": "_owner",
+              "type": "address"
+            },
+            {
+              "indexed": true,
+              "internalType": "uint256",
+              "name": "_balance",
+              "type": "uint256"
+            }
+          ],
+          "name": "LogUpdate",
+          "type": "event",
+          "signature": "0xd176e7c6abd789c341ab22cef27aa1fbc7461f5f9d6a6e55faa0b9df32a70514"
+        },
+        "0x8be0079c531659141344cd1fd0a4f28419497f9722a3daafe3b4186f6b6457e0": {
+          "anonymous": false,
+          "inputs": [
+            {
+              "indexed": true,
+              "internalType": "address",
+              "name": "previousOwner",
+              "type": "address"
+            },
+            {
+              "indexed": true,
+              "internalType": "address",
+              "name": "newOwner",
+              "type": "address"
+            }
+          ],
+          "name": "OwnershipTransferred",
+          "type": "event",
+          "signature": "0x8be0079c531659141344cd1fd0a4f28419497f9722a3daafe3b4186f6b6457e0"
+        },
+        "0x62e78cea01bee320cd4e420270b5ea74000d11b0c9f74754ebdbfc544b05a258": {
+          "anonymous": false,
+          "inputs": [
+            {
+              "indexed": false,
+              "internalType": "address",
+              "name": "account",
+              "type": "address"
+            }
+          ],
+          "name": "Paused",
+          "type": "event",
+          "signature": "0x62e78cea01bee320cd4e420270b5ea74000d11b0c9f74754ebdbfc544b05a258"
+        },
+        "0x6719d08c1888103bea251a4ed56406bd0c3e69723c8a1686e017e7bbe159b6f8": {
+          "anonymous": false,
+          "inputs": [
+            {
+              "indexed": true,
+              "internalType": "address",
+              "name": "account",
+              "type": "address"
+            }
+          ],
+          "name": "PauserAdded",
+          "type": "event",
+          "signature": "0x6719d08c1888103bea251a4ed56406bd0c3e69723c8a1686e017e7bbe159b6f8"
+        },
+        "0xcd265ebaf09df2871cc7bd4133404a235ba12eff2041bb89d9c714a2621c7c7e": {
+          "anonymous": false,
+          "inputs": [
+            {
+              "indexed": true,
+              "internalType": "address",
+              "name": "account",
+              "type": "address"
+            }
+          ],
+          "name": "PauserRemoved",
+          "type": "event",
+          "signature": "0xcd265ebaf09df2871cc7bd4133404a235ba12eff2041bb89d9c714a2621c7c7e"
+        },
+        "0xad32e83c9322068f49f7a247253392fca01bc70546750bb12fd3bf67940af0e3": {
+          "anonymous": false,
+          "inputs": [
+            {
+              "indexed": false,
+              "internalType": "string",
+              "name": "m",
+              "type": "string"
+            },
+            {
+              "indexed": false,
+              "internalType": "bytes",
+              "name": "v",
+              "type": "bytes"
+            }
+          ],
+          "name": "TraceBytes",
+          "type": "event",
+          "signature": "0xad32e83c9322068f49f7a247253392fca01bc70546750bb12fd3bf67940af0e3"
+        },
+        "0x9f64ee73189d8ec2b952cf3a09e90fd56fd62818c56b87166a1ed69f425d299c": {
+          "anonymous": false,
+          "inputs": [
+            {
+              "indexed": false,
+              "internalType": "string",
+              "name": "statusId",
+              "type": "string"
+            },
+            {
+              "indexed": false,
+              "internalType": "string",
+              "name": "tweetText",
+              "type": "string"
+            },
+            {
+              "indexed": true,
+              "internalType": "bytes32",
+              "name": "queryId",
+              "type": "bytes32"
+            }
+          ],
+          "name": "TweetStored",
+          "type": "event",
+          "signature": "0x9f64ee73189d8ec2b952cf3a09e90fd56fd62818c56b87166a1ed69f425d299c"
+        },
+        "0x5db9ee0a495bf2e6ff9c91a7834c1ba4fdd244a5e8aa4e537bd38aeae4b073aa": {
+          "anonymous": false,
+          "inputs": [
+            {
+              "indexed": false,
+              "internalType": "address",
+              "name": "account",
+              "type": "address"
+            }
+          ],
+          "name": "Unpaused",
+          "type": "event",
+          "signature": "0x5db9ee0a495bf2e6ff9c91a7834c1ba4fdd244a5e8aa4e537bd38aeae4b073aa"
+        }
+      },
+      "links": {},
+      "address": "0x3E0a9D7449bcB34fa80fc92f76f710b1F9e91CB2",
+      "transactionHash": "0x79c1506310f923bce2ec9de49ee0ab8866a89d706e6f329d2fa52194ef9c3bdb"
+    },
     "12": {
       "events": {
         "0xe5d85242f0078c93b45bf90642d76990a0944afb431d2c7d61f4c32b339c780a": {
@@ -9419,12 +9622,12 @@
         }
       },
       "links": {},
-      "address": "0x0cA5D4dE543e72B5DD8b6D665A9512611A20bcA3",
-      "transactionHash": "0x593b1d98112a2eee16b17d20769b8dcb85fee6ffbce8434e7c1dc178085394f0"
+      "address": "0xA3eC0C6390D496F528FaB445b93DFB3855F1FeAd",
+      "transactionHash": "0x9b4b6bd621f075be2b2b6e0778fe796b07923c2b22840819d27a1d5a04da4b5f"
     }
   },
   "schemaVersion": "3.0.20",
-  "updatedAt": "2020-01-31T08:19:03.716Z",
+  "updatedAt": "2020-02-05T22:32:47.842Z",
   "networkType": "ethereum",
   "devdoc": {
     "methods": {

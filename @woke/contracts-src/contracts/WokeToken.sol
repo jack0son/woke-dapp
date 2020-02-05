@@ -329,6 +329,7 @@ contract WokeToken is Ownable, ERC20 {
 		return true;
 	}
 
+	// @TODO rename to hasLodgedRequest
 	function lodgedRequest(string memory _userId) public view
 	returns (bool)
 	{
