@@ -45,7 +45,14 @@ export default function useHedgehog(wallet) {
 
       } catch (e) {
         console.error(e);
-        setErrorMessage(messages.exists);
+				console.dir(e);
+				if(e.response.data.error == 'User already exits') {
+					setErrorMessage(messages.exists);
+				} else {
+					setErrorMessage(e.response.data.error);
+				}
+				// @TODO store error codes in common file
+				//if(e.
       }
 
       setLoading(false);

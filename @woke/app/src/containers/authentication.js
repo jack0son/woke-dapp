@@ -16,6 +16,7 @@ import useAuthRouter, {states} from '../hooks/auth-router'
 import { useTwitterContext } from '../hooks/twitter/index.js'
 import useUserIsClaimed from '../hooks/woke-contracts/user-is-claimed'
 import useHedgehog from '../hooks/hedgehog'
+import messages from '../constants/messages-login'
 
 
 function createUserName(id) {
@@ -114,6 +115,12 @@ export default function AuthContainer(props) {
 			hedgehog.state.savedUser,
 			hedgehog.api.restoreUsername
 		]);
+
+	useEffect(() => {
+		if(hedgehog.state.errorMessage == messages.exists) {
+				router.dispatch({type: 'hedgehog-account_exists'});
+		}
+	}, [hedgehog.state.errorMessage])
 
 	useEffect(() => {
 		if(twitterSignedIn) {

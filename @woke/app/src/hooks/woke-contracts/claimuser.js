@@ -16,10 +16,16 @@ import { setSyncTimeout } from '../../lib/utils'
 import { useTwitterContext } from '../twitter/index.js'
 import { useIsMounted } from '../util-hooks'
 
-const {statesMap, statesList} = claimStates;
+const {statesMap, statesList, statesLabels} = claimStates;
 const states = statesMap;
 
 const logVerbose = false ? console.log : () => {};
+
+function validQueryId(qid) {
+	return qid !== null && qid !== undefined &&
+	typeof quid === 'string' &&
+	parseInt(qid) !== 0;
+}
 
 // TODO implement a an unmount variable to cancel async calls when claimuser
 // unmounts
@@ -92,7 +98,6 @@ export default function useClaimUser({userId, userHandle, claimStatus}) {
 
 				case 'web3-event': {
 					console.log(`\tReduce: web3-event ${action.name} with payload ${action.payload}`, action);
-					if(action.payload) console.dir(action.payload);
 
 					if(action.err) {
 						if(state.stage != states.ERROR) {
@@ -112,8 +117,17 @@ export default function useClaimUser({userId, userHandle, claimStatus}) {
 						return {...state, stage: states.STORED_TWEET}
 					}
 
-					if(action.name == 'Lodged' && state.stage < states.LODGED) {
+					// Accept both lodged events with or without query ID, hence <=
+					if(action.name == 'Lodged' && state.stage <= states.LODGED) {
 						console.log(`\t${action.name} triggered states.LODGED`);
+						if(!validQueryId(action.payload.queryId)) {
+							if(validQueryId(state.queryId)) {
+							// If already got query ID, don't change state
+								return state;
+							}
+
+							return {...state, stage: states.LODGED};
+						}
 						return {
 							...state, 
 							queryId: action.payload.queryId,
@@ -131,8 +145,16 @@ export default function useClaimUser({userId, userHandle, claimStatus}) {
 							return {...state, stage: states.LODGING}
 						}
 
+						case 'claim-error': {
+							return {...state, stage: states.FOUND_TWEET}
+						}
+
 						case 'fulfill': {
 							return {...state, stage: states.FINALIZING}
+						}
+
+						case 'fulfill-error': {
+							return {...state, stage: states.STORED_TWEET}
 						}
 					}
 					return state;
@@ -222,6 +244,14 @@ export default function useClaimUser({userId, userHandle, claimStatus}) {
 		console.log('Got tweet from contract: ', tweetText);
 		if(typeof tweetText == 'string' && tweetText.length > 0) {
 			dispatch({type: 'web3-event', name: 'TweetStored'});
+		}
+	}, [tweetText, lodgedPredicate]);
+
+	const hasLodgedRequest = useSubscribeCall('WokeToken', 'lodgedRequest', userId);
+	useEffect(() => {
+		console.log('\thasLodgedRequest: ', hasLodgedRequest);
+		if(hasLodgedRequest === true) {
+			dispatch({type: 'web3-event', name: 'Lodged'});
 		}
 	}, [tweetText, lodgedPredicate]);
 
@@ -317,7 +347,7 @@ export default function useClaimUser({userId, userHandle, claimStatus}) {
 		), [claimState.queryId])
 	);
 	useEffect(() => {
-		if(claimState.queryId != null && events.TweetStored && events.TweetStored.length > 0) {
+		if(validQueryId(claimState.queryId) && events.TweetStored && events.TweetStored.length > 0) {
 
 			let event = events.TweetStored[events.TweetStored.length - 1].returnValues;
 			dispatch({type: 'web3-event', name: 'TweetStored', payload: event});
@@ -393,7 +423,20 @@ export default function useClaimUser({userId, userHandle, claimStatus}) {
 	useEffect(() => {
 		if(sendClaimUser.status) 
 			console.log(`sendClaimUser.status: ${sendClaimUser.status}`);
+		if(sendClaimUser.status == 'error') {
+			// Retry
+			dispatch({type: 'sent-transaction', payload: 'claim-error'})
+		}
 	}, [sendClaimUser.status])
+
+	useEffect(() => {
+		if(sendFulfillClaim.status) 
+			console.log(`sendFulfillClaim.status: ${sendFulfillClaim.status}`);
+		if(sendFulfillClaim.status == 'error') {
+			// Retry
+			dispatch({type: 'sent-transaction', payload: 'fulfill-error'})
+		}
+	}, [sendFulfillClaim.status])
 
 	// Log once
 	useEffect(() => {
@@ -401,13 +444,14 @@ export default function useClaimUser({userId, userHandle, claimStatus}) {
 	}, [])
 
 	useEffect(() => {
-		console.log(`Claim stage changed: ${claimState.stage}, ${statesList[claimState.stage]}`);
+		console.log(`Claim stage update: ${claimState.stage}, ${statesList[claimState.stage]}`);
 	}, [claimState.stage])
 
 	return {
 		submitClaim: handleSendClaimUser, 
 		stage: claimState.stage, 
 		stageList: statesList,
+		stageLabels: statesLabels,
 		stageMap: statesMap,
 		stageTriggers: {
 			userClickedPostTweet,
