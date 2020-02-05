@@ -101,7 +101,7 @@ export default function useClaimStatus(userId) {
 	}, [callUserClaimed, callMyUser, userId]);
 
 	useEffect(() => {
-		console.log('Claim status: ', state);
+		console.log(`Claim status ${state}:${statesList[state]}`);
 	}, [state]);
 
 	return state;
