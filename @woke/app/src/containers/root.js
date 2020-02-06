@@ -17,10 +17,11 @@ import { clearOldVersionStorage } from '../lib/utils'
 import HedgehogWallet from '../lib/wallet/wallet'
 const wallet = new HedgehogWallet(); 
 
-const appVersion = '0.1b';
+const appVersion = '0.1c';
 
 export default function RootContainer(props) {
 	const hedgehog = useHedgehog(wallet);
+	const [reset, setReset] = useState(false);
 
 	const renderAuthentication = () => (
 		<Authentication
@@ -34,10 +35,12 @@ export default function RootContainer(props) {
 		/>
 	);
 
-	// Clear 
+	// Clear old app data
 	// @TODO only in dev mode
 	useEffect(() => {
-		clearOldVersionStorage(appVersion);
+		if(clearOldVersionStorage(appVersion)) {
+			setReset(true);
+		}
 	}, []);
 
 	return (

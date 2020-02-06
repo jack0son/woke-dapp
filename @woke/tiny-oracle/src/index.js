@@ -57,8 +57,8 @@ class TinyOracle {
 				connected = true;
 
 			} catch (error) {
-				debug.err('Encountered error trying to instantiate new Web3 instance ...');
-				debug.err('... ', error);
+				debug.error('Encountered error trying to instantiate new Web3 instance ...');
+				debug.error('... ', error);
 			}
 
 			if(!connected) {
@@ -136,15 +136,17 @@ class TinyOracle {
 
 		const handleQuery = async (query) => {
 			let success = false;
-			while(!success) {
+			let attempts = 3;
+			while(!success && attempts > 0) {
 				try {
 					await handleFindTweet(callbackAccount, self.oracle, query, txOpts);
 					success = true;
 				} catch(error) {
-					debug.err('Failed to handle query: ', error);
+					debug.error('Failed to handle query: ', error);
 				}
 
 				if(!success) {
+					--attempts;
 					// Reinstantiate web3
 					await self.initWeb3();
 					self.initContract();
@@ -208,7 +210,7 @@ class TinyOracle {
 				//debug.ei(`${eventName}:`, eventObj)
 				handleFunc(eventObj);
 			} else {
-				debug.err(error);
+				debug.error(error);
 			}
 		}
 
@@ -225,7 +227,7 @@ class TinyOracle {
 				debug.d(`... resubscribed ${eventName}`)
 				self.subscribedEvents[eventName].subscribe(handleUpdate);
 			});
-		}, 10*60*1000);
+		}, 5*60*1000);
 
 		debug.name('Subscriber', `Subscribed to ${eventName}.`);
 	}

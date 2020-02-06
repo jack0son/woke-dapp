@@ -1,6 +1,6 @@
 const debug = require('debug')('server:model-user');
 const models = require('../models')
-const { handleResponse, successResponse, errorResponseBadRequest } = require('../lib/apiHelpers')
+const { handleResponse, successResponse, errorResponseBadRequest, errorResponseServerError} = require('../lib/apiHelpers')
 var express = require('express')
 var router = express.Router()
 
@@ -23,7 +23,7 @@ router.post('/', handleResponse(async (req, res, next) => {
     })
 
     if (existingUser) {
-      return errorResponseBadRequest('Account already exists for user, try logging in')
+      return errorResponseBadRequest('User already exits')
     }
 		debug('Found no existing user');
 
@@ -38,8 +38,8 @@ router.post('/', handleResponse(async (req, res, next) => {
 
       return successResponse()
     } catch (err) {
-      console.error('Error signing up a user', err)
-      return errorResponseBadRequest('Error signing up a user')
+      console.error('Error creating user', err)
+      return errorResponseServerError('Error signing up a user')
     }
   } else return errorResponseBadRequest('Missing one of the required fields: username, walletAddress')
 }))

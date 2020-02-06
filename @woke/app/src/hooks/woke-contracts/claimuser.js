@@ -4,6 +4,7 @@ import React, {
 	useReducer,
 	useMemo,
 	useState,
+	useRef,
 } from 'react'
 
 import { useWeb3Context } from '../web3context';
@@ -14,12 +15,18 @@ import { genClaimString } from '../../lib/web3/web3-utils'
 import { findClaimTweet } from '../../lib/twitter-helpers'
 import { setSyncTimeout } from '../../lib/utils'
 import { useTwitterContext } from '../twitter/index.js'
-import { useIsMounted } from '../util-hooks'
+//import { useIsMounted } from '../util-hooks'
 
-const {statesMap, statesList} = claimStates;
+const {statesMap, statesList, statesLabels} = claimStates;
 const states = statesMap;
 
 const logVerbose = false ? console.log : () => {};
+
+function validQueryId(qid) {
+	return qid !== null && qid !== undefined &&
+	typeof quid === 'string' &&
+	parseInt(qid) !== 0;
+}
 
 // TODO implement a an unmount variable to cancel async calls when claimuser
 // unmounts
@@ -33,23 +40,27 @@ export default function useClaimUser({userId, userHandle, claimStatus}) {
 		useSubscribeCall,
 	} = useWeb3Context();
 	const twitterClient = useTwitterContext().client;
-	const isMounted = useIsMounted();
+	const isMounted = useRef(true)
+	useEffect(() => {
+		return () => {
+			isMounted.current = false
+		}
+	}, []);
 
 	const [error, setError] = useState(null);
-
 
 	// @dev Knowledge of the state of the claimUser process can come from
 	// contract calls, new transactions sent, or contract events, depending on
 	// when the app has been closed and reopened. Therefore use a reduce
 	// funciton to map these events on to the claimUser stage
-	const reduce = (state, action) => {
+	function reduce(state, action) {
 		//console.log(`Reduce: action:${action.type}, payload:${action.payload}`);
 		//console.log(`Actions thisRender:${thisRender}, actionCount:${actionCount + 1}`);
-		if(isMounted) {
+		if(isMounted.current) {
 			console.log(action);
 			switch(action.type) {
 				case 'already-claimed': {
-					console.log(`Reduce - already-stored`);
+					console.log(`Reduce - already-claimed`);
 					return {
 						...state,
 						stage: states.CLAIMED,
@@ -91,8 +102,7 @@ export default function useClaimUser({userId, userHandle, claimStatus}) {
 				}
 
 				case 'web3-event': {
-					console.log(`\tReduce: web3-event ${action.name} with payload ${action.payload}`, action);
-					if(action.payload) console.dir(action.payload);
+					//console.log(`\tReduce: web3-event ${action.name} with payload ${action.payload}`, action);
 
 					if(action.err) {
 						if(state.stage != states.ERROR) {
@@ -112,8 +122,17 @@ export default function useClaimUser({userId, userHandle, claimStatus}) {
 						return {...state, stage: states.STORED_TWEET}
 					}
 
-					if(action.name == 'Lodged' && state.stage < states.LODGED) {
+					// Accept both lodged events with or without query ID, hence <=
+					if(action.name == 'Lodged' && state.stage <= states.LODGED) {
 						console.log(`\t${action.name} triggered states.LODGED`);
+						if(!(action.payload && validQueryId(action.payload.queryId))) {
+							if(validQueryId(state.queryId)) {
+							// If already got query ID, don't change state
+								return state;
+							}
+
+							return {...state, stage: states.LODGED};
+						}
 						return {
 							...state, 
 							queryId: action.payload.queryId,
@@ -131,8 +150,16 @@ export default function useClaimUser({userId, userHandle, claimStatus}) {
 							return {...state, stage: states.LODGING}
 						}
 
+						case 'claim-error': {
+							return {...state, stage: states.FOUND_TWEET}
+						}
+
 						case 'fulfill': {
 							return {...state, stage: states.FINALIZING}
+						}
+
+						case 'fulfill-error': {
+							return {...state, stage: states.STORED_TWEET}
 						}
 					}
 					return state;
@@ -144,6 +171,7 @@ export default function useClaimUser({userId, userHandle, claimStatus}) {
 				}
 			}
 		}
+		return state;
 	}
 
 	const initialState = {
@@ -183,10 +211,13 @@ export default function useClaimUser({userId, userHandle, claimStatus}) {
 
 	const WokeToken = useContract('WokeToken');
 	const TwitterOracleMock = useContract('TwitterOracleMock');
+	const gather = useRef(0);
 
 	// 1. Gather initial contract state from events (race the contract calls)
 	useEffect(() => {
 		const gatherEventState = async () => {
+	console.log(gather.current);
+	gather.current++;
 			let opts = {fromBlock: 0, toBlock: 'latest'};
 
 			// Has Lodging occured?
@@ -205,7 +236,8 @@ export default function useClaimUser({userId, userHandle, claimStatus}) {
 				if(tweetEvents.length > 0) {
 					dispatch({type: 'web3-event', name: 'TweetStored', payload: tweetEvents[tweetEvents.length - 1].returnValues});
 				} else {
-					dispatch({type: 'web3-event', name: 'Lodged', payload: latestLodgeEvent})
+			console.log('\tgather triggered dispatch lodge');
+					dispatch({type: 'web3-event', name: 'Lodged', payload: latestLodgeEvent, source: 'gather'})
 				}
 				return; 
 			}
@@ -219,11 +251,21 @@ export default function useClaimUser({userId, userHandle, claimStatus}) {
 	const tweetText = useSubscribeCall('TwitterOracleMock', 'getTweetText', userId);
 	const lodgedPredicate = claimState.stage == states.LODGED;
 	useEffect(() => {
-		console.log('Got tweet from contract: ', tweetText);
-		if(typeof tweetText == 'string' && tweetText.length > 0) {
-			dispatch({type: 'web3-event', name: 'TweetStored'});
+		if(typeof tweetText == 'string' && tweetText.length >= claimString.length) {
+			console.log('Got tweet from contract: ', tweetText);
+			dispatch({type: 'web3-event', name: 'TweetStored', });
 		}
 	}, [tweetText, lodgedPredicate]);
+
+	const hasLodgedRequestPredicate = claimState.stage < states.LODGED;
+	const hasLodgedRequest = useSubscribeCall('WokeToken', 'lodgedRequest', userId);
+	useEffect(() => {
+		console.log('\thasLodgedRequest: ', hasLodgedRequest);
+		if(hasLodgedRequestPredicate && hasLodgedRequest === true) {
+			console.log('\tcontract call triggered dispatch lodge');
+			dispatch({type: 'web3-event', name: 'Lodged', source: 'useCall'});
+		}
+	}, [tweetText, hasLodgedRequest, hasLodgedRequestPredicate]);
 
 	const [claimString, setClaimString] = useState(null);
 	useEffect(() => {
@@ -317,7 +359,7 @@ export default function useClaimUser({userId, userHandle, claimStatus}) {
 		), [claimState.queryId])
 	);
 	useEffect(() => {
-		if(claimState.queryId != null && events.TweetStored && events.TweetStored.length > 0) {
+		if(validQueryId(claimState.queryId) && events.TweetStored && events.TweetStored.length > 0) {
 
 			let event = events.TweetStored[events.TweetStored.length - 1].returnValues;
 			dispatch({type: 'web3-event', name: 'TweetStored', payload: event});
@@ -337,7 +379,8 @@ export default function useClaimUser({userId, userHandle, claimStatus}) {
 			// Use latest - there should only be one
 			// Once oracle stores tweet text, fulfill the claim
 			let event = events.Lodged[events.Lodged.length - 1].returnValues; 
-			dispatch({type: 'web3-event', name:'Lodged', payload: event});
+			console.log('\tuseEvents triggered dispatch lodge');
+			dispatch({type: 'web3-event', name: 'Lodged', payload: event, source: 'useEvents' });
 		}
 	}, [events.Lodged]); // && events.Lodged.length]);
 
@@ -393,7 +436,23 @@ export default function useClaimUser({userId, userHandle, claimStatus}) {
 	useEffect(() => {
 		if(sendClaimUser.status) 
 			console.log(`sendClaimUser.status: ${sendClaimUser.status}`);
+		if(sendClaimUser.status == 'error') {
+			// Retry
+			setError('Failed to publish claim on-chain. Please refresh.');
+			//dispatch({type: 'sent-transaction', payload: 'claim-error'})
+		}
 	}, [sendClaimUser.status])
+
+	useEffect(() => {
+		if(sendFulfillClaim.status) 
+			console.log(`sendFulfillClaim.status: ${sendFulfillClaim.status}`);
+		if(sendFulfillClaim.status == 'error') {
+			// Retry
+			setError('Failed to complete claim on-chain. Please refresh.');
+			//dispatch({type: 'sent-transaction', payload: 'claim-error'})
+			//dispatch({type: 'sent-transaction', payload: 'fulfill-error'})
+		}
+	}, [sendFulfillClaim.status])
 
 	// Log once
 	useEffect(() => {
@@ -401,13 +460,14 @@ export default function useClaimUser({userId, userHandle, claimStatus}) {
 	}, [])
 
 	useEffect(() => {
-		console.log(`Claim stage changed: ${claimState.stage}, ${statesList[claimState.stage]}`);
+		console.log(`Claim stage update: ${claimState.stage}, ${statesList[claimState.stage]}`);
 	}, [claimState.stage])
 
 	return {
 		submitClaim: handleSendClaimUser, 
 		stage: claimState.stage, 
 		stageList: statesList,
+		stageLabels: statesLabels,
 		stageMap: statesMap,
 		stageTriggers: {
 			userClickedPostTweet,
