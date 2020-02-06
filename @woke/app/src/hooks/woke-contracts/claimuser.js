@@ -4,6 +4,7 @@ import React, {
 	useReducer,
 	useMemo,
 	useState,
+	useRef,
 } from 'react'
 
 import { useWeb3Context } from '../web3context';
@@ -42,7 +43,6 @@ export default function useClaimUser({userId, userHandle, claimStatus}) {
 	const isMounted = useIsMounted();
 
 	const [error, setError] = useState(null);
-
 
 	// @dev Knowledge of the state of the claimUser process can come from
 	// contract calls, new transactions sent, or contract events, depending on
@@ -120,7 +120,7 @@ export default function useClaimUser({userId, userHandle, claimStatus}) {
 					// Accept both lodged events with or without query ID, hence <=
 					if(action.name == 'Lodged' && state.stage <= states.LODGED) {
 						console.log(`\t${action.name} triggered states.LODGED`);
-						if(!validQueryId(action.payload.queryId)) {
+						if(!(action.payload && validQueryId(action.payload.queryId))) {
 							if(validQueryId(state.queryId)) {
 							// If already got query ID, don't change state
 								return state;
@@ -205,10 +205,13 @@ export default function useClaimUser({userId, userHandle, claimStatus}) {
 
 	const WokeToken = useContract('WokeToken');
 	const TwitterOracleMock = useContract('TwitterOracleMock');
+	const gather = useRef(0);
 
 	// 1. Gather initial contract state from events (race the contract calls)
 	useEffect(() => {
 		const gatherEventState = async () => {
+	console.log(gather.current);
+	gather.current++;
 			let opts = {fromBlock: 0, toBlock: 'latest'};
 
 			// Has Lodging occured?
@@ -227,7 +230,8 @@ export default function useClaimUser({userId, userHandle, claimStatus}) {
 				if(tweetEvents.length > 0) {
 					dispatch({type: 'web3-event', name: 'TweetStored', payload: tweetEvents[tweetEvents.length - 1].returnValues});
 				} else {
-					dispatch({type: 'web3-event', name: 'Lodged', payload: latestLodgeEvent})
+			console.log('\tgather triggered dispatch lodge');
+					dispatch({type: 'web3-event', name: 'Lodged', payload: latestLodgeEvent, source: 'gather'})
 				}
 				return; 
 			}
@@ -243,17 +247,19 @@ export default function useClaimUser({userId, userHandle, claimStatus}) {
 	useEffect(() => {
 		if(typeof tweetText == 'string' && tweetText.length >= claimString.length) {
 			console.log('Got tweet from contract: ', tweetText);
-			dispatch({type: 'web3-event', name: 'TweetStored'});
+			dispatch({type: 'web3-event', name: 'TweetStored', });
 		}
 	}, [tweetText, lodgedPredicate]);
 
+	const hasLodgedRequestPredicate = claimState.stage < states.LODGED;
 	const hasLodgedRequest = useSubscribeCall('WokeToken', 'lodgedRequest', userId);
 	useEffect(() => {
 		console.log('\thasLodgedRequest: ', hasLodgedRequest);
-		if(hasLodgedRequest === true) {
-			dispatch({type: 'web3-event', name: 'Lodged'});
+		if(hasLodgedRequestPredicate && hasLodgedRequest === true) {
+			console.log('\tcontract call triggered dispatch lodge');
+			dispatch({type: 'web3-event', name: 'Lodged', source: 'useCall'});
 		}
-	}, [tweetText, lodgedPredicate]);
+	}, [tweetText, hasLodgedRequest, hasLodgedRequestPredicate]);
 
 	const [claimString, setClaimString] = useState(null);
 	useEffect(() => {
@@ -367,7 +373,8 @@ export default function useClaimUser({userId, userHandle, claimStatus}) {
 			// Use latest - there should only be one
 			// Once oracle stores tweet text, fulfill the claim
 			let event = events.Lodged[events.Lodged.length - 1].returnValues; 
-			dispatch({type: 'web3-event', name:'Lodged', payload: event});
+			console.log('\tuseEvents triggered dispatch lodge');
+			dispatch({type: 'web3-event', name: 'Lodged', payload: event, source: 'useEvents' });
 		}
 	}, [events.Lodged]); // && events.Lodged.length]);
 
@@ -425,7 +432,8 @@ export default function useClaimUser({userId, userHandle, claimStatus}) {
 			console.log(`sendClaimUser.status: ${sendClaimUser.status}`);
 		if(sendClaimUser.status == 'error') {
 			// Retry
-			dispatch({type: 'sent-transaction', payload: 'claim-error'})
+			setError('Failed to publish claim on-chain. Please refresh.');
+			//dispatch({type: 'sent-transaction', payload: 'claim-error'})
 		}
 	}, [sendClaimUser.status])
 
@@ -434,7 +442,9 @@ export default function useClaimUser({userId, userHandle, claimStatus}) {
 			console.log(`sendFulfillClaim.status: ${sendFulfillClaim.status}`);
 		if(sendFulfillClaim.status == 'error') {
 			// Retry
-			dispatch({type: 'sent-transaction', payload: 'fulfill-error'})
+			setError('Failed to complete claim on-chain. Please refresh.');
+			//dispatch({type: 'sent-transaction', payload: 'claim-error'})
+			//dispatch({type: 'sent-transaction', payload: 'fulfill-error'})
 		}
 	}, [sendFulfillClaim.status])
 

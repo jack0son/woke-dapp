@@ -14,7 +14,7 @@ export default web3 => (contractName, methodName, ...args) => {
 	// Call on contract update
 	const callMethod = useCallback(() => {
 		if(contract) {
-			//console.log(`call ${contractName}, ${methodName}: ${args}`);
+			console.log(`call ${contractName}, ${methodName}: ${args}`);
 			//console.dir(contract);
 			return contract.methods[methodName](...args).call({from: account})
 				.then(result => {
