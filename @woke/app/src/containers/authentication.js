@@ -30,15 +30,15 @@ function createUserName(id) {
 // TODO after signed in with twitter should check if account exists at server
 export default function AuthContainer(props) {
 	const {hedgehog} = props;
-	const twitterSignin = useTwitterContext().userSignin;
-	const twitterSignedIn = twitterSignin.isSignedIn()
+	const twitter = useTwitterContext();
+	const twitterSignedIn = twitter.signIn.isSignedIn()
 
 	// Initial view router state
 	const router = useAuthRouter(twitterSignedIn ? states.HEDGEHOG : states.TWITTER);
 
 	const renderSignInWithTwitter = () => (
 		<SignIn
-			triggerSignIn={twitterSignin.handleStartAuth}
+			triggerSignIn={twitter.signIn.handleStartAuth}
 		/>
 	)
 
@@ -91,7 +91,7 @@ export default function AuthContainer(props) {
 	}
 	const renderFunc = renderMap[router.state] // choose render
 
-	const userIsClaimed = useUserIsClaimed(twitterSignedIn ? twitterSignin.user.id : null);
+	const userIsClaimed = useUserIsClaimed(twitterSignedIn ? twitter.signIn.user.id : null);
 	useEffect(() => {
 		if(userIsClaimed === true) {
 			console.log('Auth: Twitter user is claimed on-chain')
@@ -124,13 +124,15 @@ export default function AuthContainer(props) {
 
 	useEffect(() => {
 		if(twitterSignedIn) {
+			twitter.userList.addId(twitter.signIn.user.id);
+
 			const savedUser = hedgehog.state.savedUser
 			if (savedUser && savedUser.length > 0) {
 				router.dispatch({type: 'hedgehog-account_exists'});
 			} else {
 				hedgehog.api.setUsername(createUserName(
-					twitterSignin.user.id,
-					//twitterSignin.credentials.oauth_token
+					twitter.signIn.user.id,
+					//twitter.signIn.credentials.oauth_token
 				));
 				console.log('dispatching twitter-authenticated')
 				router.dispatch({type: 'twitter-authenticated'});
@@ -139,7 +141,7 @@ export default function AuthContainer(props) {
 	},
 		[
 			twitterSignedIn,
-			twitterSignin.user.id,
+			twitter.signIn.user.id,
 			hedgehog.state.savedUser,
 			hedgehog.api.setUsername
 		])
