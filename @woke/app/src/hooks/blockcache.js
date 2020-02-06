@@ -78,10 +78,12 @@ function retrieveCache () {
 function reduceCache(cache) {
 	let r = {}
 	Object.values(cache).forEach(b => {
-		r[b.number] = {
-			blockNumber: b.number,
-			timestamp: b.timestamp,
-		};
+		if(b && b.number) {
+			r[b.number] = {
+				blockNumber: b.number,
+				timestamp: b.timestamp,
+			};
+		}
 	})
 	return r;
 }
