@@ -68,7 +68,7 @@ export default function Web3Container(props) {
 			}
 
 			default: {
-				console.error('Undefined claim status');
+				// Waiting for claim status
 				return () => renderLoading('Determining wokeness ... ');
 			}
 		}
