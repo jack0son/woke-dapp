@@ -16,6 +16,7 @@ import "./mocks/TwitterOracleMock.sol";
  *	Needs multisig with admin wallet that prevents spamming of claims to 
  *	large profile accounts.
  * TODO:
+ *	- claim string should have nonce to prevent replay attack
  *  - could get a multiplier based on the size of the unclaimed pool
  *  - Research how zeppelin implements escrow to avoid issues with unclaimed tokens
  *  - Abstract twitter client to generic social client for multiple social networks
@@ -55,7 +56,7 @@ contract WokeToken is Ownable, ERC20 {
 	// User accounts
 	mapping(address => string) userIds; // Mapping of addresses to twitter account IDs (handles are mutable alias for ID)
 	mapping(string => User) users;
-	mapping(string => address) requester; // claim string needs a nonce
+	mapping(string => address) requester; 
 
 	uint256 private userCount;
 
@@ -99,7 +100,7 @@ contract WokeToken is Ownable, ERC20 {
 		//bytes32 queryId = bytes32(0);
 
 		if(queryId == bytes32(0)) {
-			// Query failure, revert
+			// @TODO Query failure, revert
 			emit TraceBytes32('failed query', queryId);
 		}
 
@@ -112,8 +113,27 @@ contract WokeToken is Ownable, ERC20 {
 	// @param _id user id
 	// @param _claimString tweet text which should contain a signed claim string
 	//function _fulfillClaim(string memory _id, string memory _claimString) public
-	function _fulfillClaim(string memory _id) public
+	function fulfillClaim(string memory _id) public
 		//	onlyClient
+	{
+		_fulfillClaim(_id);
+	}
+
+	// @notice Receive claimer data from client and action claim
+	// @param _id user id
+	// @param _claimString tweet text which should contain a signed claim string
+	//function _fulfillClaim(string memory _id, string memory _claimString) public
+	function fulfillMyClaim() public
+	{
+		require(requester[_
+		_ful
+	}
+
+	// @notice Receive claimer data from client and action claim
+	// @param _id user id
+	// @param _claimString tweet text which should contain a signed claim string
+	//function _fulfillClaim(string memory _id, string memory _claimString) public
+	function _fulfillClaim(string memory _id) public
 		userNotClaimed(_id)
 		requestLocked(requester[_id])
 	{
