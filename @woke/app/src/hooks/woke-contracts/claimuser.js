@@ -47,7 +47,7 @@ export default function useClaimUser({userId, userHandle, claimStatus}) {
 		}
 	}, []);
 
-	const [error, setError] = useState(null);
+	//const [error, setError] = useState(null);
 
 	// @dev Knowledge of the state of the claimUser process can come from
 	// contract calls, new transactions sent, or contract events, depending on
@@ -70,9 +70,8 @@ export default function useClaimUser({userId, userHandle, claimStatus}) {
 				case 'twitter-event': {
 					if(action.error && state.stage < states.FOUND_TWEET) {
 						if(state.stage === states.CONFIRMED) {
-							setError('Could not find your tweet. Please refresh and try again');
-						//} else if (state.stage >  {
-						//	setError(action.error);
+							return {...state, error: 'Could not find your tweet. Please refresh and try again'}
+						} else {
 						}
 						return state;
 					}
@@ -94,7 +93,7 @@ export default function useClaimUser({userId, userHandle, claimStatus}) {
 					}
 
 					if(action.name === 'tweet-not_found' && state.stage === states.CONFIRMED) {
-						return {...state, stage: states.ERROR}
+						return {...state, stage: states.ERROR, error: action.error}
 					}
 
 					return state;
@@ -104,12 +103,11 @@ export default function useClaimUser({userId, userHandle, claimStatus}) {
 				case 'web3-event': {
 					//console.log(`\tReduce: web3-event ${action.name} with payload ${action.payload}`, action);
 
-					if(action.err) {
-						if(state.stage != states.ERROR) {
-							// Preserve existing error
-							setError(action.err);
+					if(action.error) {
+						if(state.stage == states.ERROR) {
+							return state;
 						}
-						return {...state, stage: states.ERROR}
+						return {...state, stage: states.ERROR, error: action.error}
 					}
 
 					if(action.name == 'Claimed') {
@@ -151,7 +149,8 @@ export default function useClaimUser({userId, userHandle, claimStatus}) {
 						}
 
 						case 'claim-error': {
-							return {...state, stage: states.FOUND_TWEET}
+							return {...state, stage: states.ERROR, error: action.error}
+							//return {...state, stage: states.FOUND_TWEET}
 						}
 
 						case 'fulfill': {
@@ -159,7 +158,8 @@ export default function useClaimUser({userId, userHandle, claimStatus}) {
 						}
 
 						case 'fulfill-error': {
-							return {...state, stage: states.STORED_TWEET}
+							return {...state, stage: states.ERROR, error: action.error}
+							//return {...state, stage: states.STORED_TWEET}
 						}
 					}
 					return state;
@@ -439,8 +439,8 @@ export default function useClaimUser({userId, userHandle, claimStatus}) {
 			console.log(`sendClaimUser.status: ${sendClaimUser.status}`);
 		if(sendClaimUser.status == 'error') {
 			// Retry
-			setError('Failed to publish claim on-chain. Please refresh.');
-			//dispatch({type: 'sent-transaction', payload: 'claim-error'})
+			//setError('Failed to publish claim on-chain. Please refresh.');
+			dispatch({type: 'sent-transaction', payload: 'claim-error'})
 		}
 	}, [sendClaimUser.status])
 
@@ -449,9 +449,8 @@ export default function useClaimUser({userId, userHandle, claimStatus}) {
 			console.log(`sendFulfillClaim.status: ${sendFulfillClaim.status}`);
 		if(sendFulfillClaim.status == 'error') {
 			// Retry
-			setError('Failed to complete claim on-chain. Please refresh.');
-			//dispatch({type: 'sent-transaction', payload: 'claim-error'})
-			//dispatch({type: 'sent-transaction', payload: 'fulfill-error'})
+			//setError('Failed to complete claim on-chain. Please refresh.');
+			dispatch({type: 'sent-transaction', payload: 'fulfill-error'})
 		}
 	}, [sendFulfillClaim.status])
 
