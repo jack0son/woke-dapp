@@ -248,24 +248,6 @@ export default function useClaimUser({userId, userHandle, claimStatus}) {
 		gatherEventState();
 	}, []);
 
-	const tweetText = useSubscribeCall('TwitterOracleMock', 'getTweetText', userId);
-	const lodgedPredicate = claimState.stage == states.LODGED;
-	useEffect(() => {
-		if(typeof tweetText == 'string' && tweetText.length >= claimString.length) {
-			console.log('Got tweet from contract: ', tweetText);
-			dispatch({type: 'web3-event', name: 'TweetStored', });
-		}
-	}, [tweetText, lodgedPredicate]);
-
-	const hasLodgedRequestPredicate = claimState.stage < states.LODGED;
-	const hasLodgedRequest = useSubscribeCall('WokeToken', 'lodgedRequest', userId);
-	useEffect(() => {
-		console.log('\thasLodgedRequest: ', hasLodgedRequest);
-		if(hasLodgedRequestPredicate && hasLodgedRequest === true) {
-			console.log('\tcontract call triggered dispatch lodge');
-			dispatch({type: 'web3-event', name: 'Lodged', source: 'useCall'});
-		}
-	}, [tweetText, hasLodgedRequest, hasLodgedRequestPredicate]);
 
 	const [claimString, setClaimString] = useState(null);
 	useEffect(() => {
@@ -332,6 +314,25 @@ export default function useClaimUser({userId, userHandle, claimStatus}) {
 		}
 
 	}, [userId, claimString, twitterClient, confirmedPredicate, claimState.stage, fetchingTweet])
+
+	const tweetText = useSubscribeCall('TwitterOracleMock', 'getTweetText', userId);
+	const lodgedPredicate = claimState.stage == states.LODGED;
+	useEffect(() => {
+		if(typeof tweetText == 'string' && tweetText.length >= claimString.length) {
+			console.log('Got tweet from contract: ', tweetText);
+			dispatch({type: 'web3-event', name: 'TweetStored', });
+		}
+	}, [tweetText, lodgedPredicate, claimString]);
+
+	const hasLodgedRequestPredicate = claimState.stage < states.LODGED;
+	const hasLodgedRequest = useSubscribeCall('WokeToken', 'lodgedRequest', userId);
+	useEffect(() => {
+		console.log('\thasLodgedRequest: ', hasLodgedRequest);
+		if(hasLodgedRequestPredicate && hasLodgedRequest === true) {
+			console.log('\tcontract call triggered dispatch lodge');
+			dispatch({type: 'web3-event', name: 'Lodged', source: 'useCall'});
+		}
+	}, [tweetText, hasLodgedRequest, hasLodgedRequestPredicate]);
 
 
 	// 3. Monitor state from events
