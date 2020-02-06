@@ -119,6 +119,7 @@ contract WokeToken is Ownable, ERC20 {
 	{
 		TwitterOracleMock client = TwitterOracleMock(twitterClient);
 		string memory claimString = client.getTweetText(_id);
+		require(bytes(claimString).length > 0, 'claim string not stored');
 
 		address claimer = requester[_id];
 		require(verifyClaimString(claimer, _id, claimString), 'invalid claim string');
@@ -329,6 +330,7 @@ contract WokeToken is Ownable, ERC20 {
 		return true;
 	}
 
+	// @TODO rename to hasLodgedRequest
 	function lodgedRequest(string memory _userId) public view
 	returns (bool)
 	{

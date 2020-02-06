@@ -36,7 +36,9 @@ export function clearOldVersionStorage(version) {
 	if(app_ver != version) {
 		window.localStorage.clear();
 		window.localStorage.setItem('app_ver', version);
+		return true;
 	}
+	return false;
 }
 
 

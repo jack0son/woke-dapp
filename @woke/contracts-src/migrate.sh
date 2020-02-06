@@ -6,10 +6,13 @@ DEFAULT_ENV=development
 if [ -z "$1" ]; then
 	echo "No environment specified. Using $DEFAULT_ENV."
 fi
+ARGS=
+# @TODO warn
+if [ "$2" == "reset" ]; then
+	echo "Resetting migrations."
+	ARGS="--reset"
+fi
 CONTRACT_ENV="${1:-$DEFAULT_ENV}"
-
-# @TODO exit if fail
-npm run "migrate:$CONTRACT_ENV"
 
 WORK_DIR=$(pwd)
 BASE_DIR=${WORK_DIR##*/}
@@ -17,6 +20,10 @@ if [[ "$BASE_DIR" != "contracts-src" ]]; then
 	echo "FAILED .. script must be run from @woke/contracts"
 	exit
 fi
+
+# @TODO exit if fail
+echo $ARGS
+npm run migrate:$CONTRACT_ENV $ARGS
 
 APP_DEST="../app/src/contracts/$CONTRACT_ENV"
 # @woke/contracts package

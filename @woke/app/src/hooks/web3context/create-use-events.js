@@ -48,7 +48,6 @@ export default web3 => (contractName, eventName, opts) => {
 					console.error(`Subscription error ${contractName}.events.${eventName}:\n${error}`);
 					return;
 				}
-				console.dir(event);
 				safeSetEvents(events => [...events, event])
 			})
 		}

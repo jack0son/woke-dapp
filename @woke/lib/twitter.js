@@ -16,10 +16,10 @@ const initClient = async () => {
 		try {
 			bearerToken = await getBearerToken(consumerKey, consumerSecret);
 		} catch(e) {
-			debug('Failed to retrieve bearer token')
+			debug.d('Failed to retrieve bearer token')
 			return process.exit(1);
 		}
-		debug(bearerToken);
+		debug.d(bearerToken);
 	}
 
 	client = new Twitter({
@@ -60,7 +60,7 @@ const findClaimTweet = async (userId, claimFrame = CLAIM_FRAME) => {
 		return latest.full_text;
 	} else {
 		for(let tweet of latestTweets.slice(1, latestTweets.length)) {
-			//debug(tweet);
+			//debug.d(tweet);
 			if(tweet.full_text && tweet.full_text.includes(claimFrame)) {
 				return tweet.full_text;
 			}
@@ -76,7 +76,7 @@ const getUserData = async (userId) => {
 	}
 
 	let userObject = await client.get('users/show', params);
-	debug(userObject);
+	debug.d(userObject);
 
 	return {
 		name: userObject.name,
@@ -95,16 +95,16 @@ const searchClaimTweet = async (handle) => { // claimString = `@getwoketoke 0xWO
 	};
 
 	let r = await client.get('search/tweets', searchParams);
-	debug(r);
+	debug.d(r);
 	let tweets = r.statuses.map(s => s.full_text);
 	if(tweets.length < 1) {
 		throw new Error('No tweets found');
 	}
 	if(tweets.length > 1) {
 		// Should never get here
-		debug(tweets);
+		debug.d(tweets);
 	}
-	debug(tweets);
+	debug.d(tweets);
 	return tweets[0];
 }
 
@@ -136,18 +136,18 @@ function getBearerToken(key, secret) {
 module.exports = {findClaimTweet, initClient}
 
 // Example call
-if(debug.enabled && require.main === module) {
+if(debug.debug.enabled && require.main === module) {
 	//var argv = require('minimist')(process.argv.slice(2));
 	var argv = process.argv.slice(2);
 	const [handle, ...rest] = argv;
-	debug(`Finding user: ${handle}`);
+	debug.d(`Finding user: ${handle}`);
 
 	(async () => {
 		await initClient();
 		//let r = await findClaimTweet(handle);
 		try {
 		let r = await getUserData(handle);
-		//debug(`Found tweet: ${r}`);
+		//debug.d(`Found tweet: ${r}`);
 		console.dir(r);
 		} catch(error) {
 			console.error(error);
