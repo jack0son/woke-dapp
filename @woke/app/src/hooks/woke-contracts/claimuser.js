@@ -241,8 +241,8 @@ export default function useClaimUser({userId, userHandle, claimStatus}) {
 	const tweetText = useSubscribeCall('TwitterOracleMock', 'getTweetText', userId);
 	const lodgedPredicate = claimState.stage == states.LODGED;
 	useEffect(() => {
-		console.log('Got tweet from contract: ', tweetText);
-		if(typeof tweetText == 'string' && tweetText.length > 0) {
+		if(typeof tweetText == 'string' && tweetText.length >= claimString.length) {
+			console.log('Got tweet from contract: ', tweetText);
 			dispatch({type: 'web3-event', name: 'TweetStored'});
 		}
 	}, [tweetText, lodgedPredicate]);

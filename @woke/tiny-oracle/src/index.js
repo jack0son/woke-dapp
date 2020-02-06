@@ -57,8 +57,8 @@ class TinyOracle {
 				connected = true;
 
 			} catch (error) {
-				debug.err('Encountered error trying to instantiate new Web3 instance ...');
-				debug.err('... ', error);
+				debug.error('Encountered error trying to instantiate new Web3 instance ...');
+				debug.error('... ', error);
 			}
 
 			if(!connected) {
@@ -141,7 +141,7 @@ class TinyOracle {
 					await handleFindTweet(callbackAccount, self.oracle, query, txOpts);
 					success = true;
 				} catch(error) {
-					debug.err('Failed to handle query: ', error);
+					debug.error('Failed to handle query: ', error);
 				}
 
 				if(!success) {
@@ -208,7 +208,7 @@ class TinyOracle {
 				//debug.ei(`${eventName}:`, eventObj)
 				handleFunc(eventObj);
 			} else {
-				debug.err(error);
+				debug.error(error);
 			}
 		}
 
