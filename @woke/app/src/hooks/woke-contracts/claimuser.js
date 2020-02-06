@@ -15,7 +15,7 @@ import { genClaimString } from '../../lib/web3/web3-utils'
 import { findClaimTweet } from '../../lib/twitter-helpers'
 import { setSyncTimeout } from '../../lib/utils'
 import { useTwitterContext } from '../twitter/index.js'
-import { useIsMounted } from '../util-hooks'
+//import { useIsMounted } from '../util-hooks'
 
 const {statesMap, statesList, statesLabels} = claimStates;
 const states = statesMap;
@@ -40,7 +40,12 @@ export default function useClaimUser({userId, userHandle, claimStatus}) {
 		useSubscribeCall,
 	} = useWeb3Context();
 	const twitterClient = useTwitterContext().client;
-	const isMounted = useIsMounted();
+	const isMounted = useRef(true)
+	useEffect(() => {
+		return () => {
+			isMounted.current = false
+		}
+	}, []);
 
 	const [error, setError] = useState(null);
 
@@ -48,14 +53,14 @@ export default function useClaimUser({userId, userHandle, claimStatus}) {
 	// contract calls, new transactions sent, or contract events, depending on
 	// when the app has been closed and reopened. Therefore use a reduce
 	// funciton to map these events on to the claimUser stage
-	const reduce = (state, action) => {
+	function reduce(state, action) {
 		//console.log(`Reduce: action:${action.type}, payload:${action.payload}`);
 		//console.log(`Actions thisRender:${thisRender}, actionCount:${actionCount + 1}`);
-		if(isMounted) {
+		if(isMounted.current) {
 			console.log(action);
 			switch(action.type) {
 				case 'already-claimed': {
-					console.log(`Reduce - already-stored`);
+					console.log(`Reduce - already-claimed`);
 					return {
 						...state,
 						stage: states.CLAIMED,
@@ -97,7 +102,7 @@ export default function useClaimUser({userId, userHandle, claimStatus}) {
 				}
 
 				case 'web3-event': {
-					console.log(`\tReduce: web3-event ${action.name} with payload ${action.payload}`, action);
+					//console.log(`\tReduce: web3-event ${action.name} with payload ${action.payload}`, action);
 
 					if(action.err) {
 						if(state.stage != states.ERROR) {
@@ -166,6 +171,7 @@ export default function useClaimUser({userId, userHandle, claimStatus}) {
 				}
 			}
 		}
+		return state;
 	}
 
 	const initialState = {
