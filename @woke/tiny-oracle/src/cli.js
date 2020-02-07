@@ -75,12 +75,19 @@ const getTweetText = oracle => async (_userId, _opts) => {
 const getRewardEvents = wokeToken => async (_claimerId, _referrerId) => {
 	let opts = {
 		fromBlock: 0,
-		claimerId: _claimerId,
-		referrerId: _referrerId,
+
+		// @fix these params are not indexed in WokeToken.sol
+		//claimerId: _claimerId,
+		//referrerId: _referrerId,
 	}
 
+	let events = await wokeToken.getPastEvents('Reward', opts);
 
-	const events = await wokeToken.getPastEvents('Reward', opts);
+	if(_claimerId) 
+		events = events.filter(e => e.returnValues.claimerId == _claimerId)
+
+	if(_referrerId) 
+		events = events.filter(e => e.returnValues.referrerId == _referrerId)
 
 	return events;
 
@@ -201,8 +208,8 @@ if(require.main === module) {
 	const [command, ...args] = argv;
 
 	const usage = {
-		getTweetText: 'getTweetText USERID',
-		getRewardEvents: 'getRewardEvents [CLAIMERID] [REFERRERID]',
+		getTweetText: 'getTweetText <userId>',
+		getRewardEvents: 'getRewardEvents [[claimer,referrer] <userId>]',
 	};
 
 	(async () => {
@@ -211,7 +218,7 @@ if(require.main === module) {
 			case 'getTweetText': {
 				const userId = args[0];
 				if(!nonEmptyString(userId)) {
-					console.log('No value provided for USERID');
+					console.log('No value provided for userId');
 					console.log(usage.getTweetText);
 					break;
 				}
@@ -221,9 +228,22 @@ if(require.main === module) {
 			}
 
 			case 'getRewardEvents': {
-				const [claimerId, referrerId] = args;
-				debug.d(`Getting reward events, claimer:${claimerId} referrer:${referrerId}`);
-				(await commands()).getRewardEvents(claimerId, referrerId)
+				const [selectRole, userId] = args;
+				debug.d('Getting reward events', selectRole ? ` for ${selectRole} ${userId}` : '');
+				switch(selectRole) {
+					case 'claimer': {
+						(await commands()).getRewardEvents(userId)
+						break;
+					}
+					case 'referrer': {
+						(await commands()).getRewardEvents(undefined, userId)
+						break;
+					}
+					default: {
+						(await commands()).getRewardEvents()
+						break;
+					}
+				}
 				break;
 			}
 
