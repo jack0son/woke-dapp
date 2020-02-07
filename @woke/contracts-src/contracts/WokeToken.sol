@@ -139,7 +139,7 @@ contract WokeToken is Ownable, ERC20 {
 		requester[_id] = address(0); // @fix delete this value
 	}
 
-	// @notice Transfer a new userIds bonus to their account
+	// @notice Transfer a new userId's bonus to their account
 	// @returns Total amount claimed
 	function claimBonus(string memory _id, uint256 _followers)
 		private

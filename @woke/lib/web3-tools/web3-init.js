@@ -13,7 +13,7 @@ switch(process.env.NODE_ENV) {
 		break;
 	}
 
-	// TODO add mainnet
+		// TODO add mainnet
 	case 'production': {
 	}
 
@@ -26,14 +26,19 @@ switch(process.env.NODE_ENV) {
 module.exports = () => {
 	const rpcUrl = config.createRpcUrl(network);
 	const web3 = new Web3(rpcUrl);
-	const wallet = web3.eth.accounts.wallet.add(privKey);
 
-	web3.eth.defaultAccount = wallet.address;
-	web3.eth.defaultCommon = network.defaultCommon;
+	let wallet = null;
+	if(!privKey) {
+		console.log('WARNING: web3 has no local unlocked account');
+	} else {
+		let wallet = web3.eth.accounts.wallet.add(privKey);
+		web3.eth.defaultAccount = wallet.address;
+		web3.eth.defaultCommon = network.defaultCommon;
+	}
 
 	return {
 		web3,
 		network,
-		account: wallet.address,
+		account: wallet ? wallet.address : null,
 	}
 }

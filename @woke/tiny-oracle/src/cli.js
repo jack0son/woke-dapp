@@ -5,6 +5,7 @@ const {
 } = require('@woke/lib');
 const artifacts = require('@woke/contracts')[process.env.NODE_ENV !== 'development' ? 'production' : 'development'];
 const debug = Logger('oracle');
+debug.d('Interfaces available on networks: ', Object.keys(artifacts.WokeToken.networks));
 
 const oracleInterface = artifacts.TwitterOracleMock;
 const wokeTokenInterface = artifacts.WokeToken;
@@ -41,8 +42,8 @@ async function initWeb3() {
 			connected = true;
 
 		} catch (error) {
-			debug.err('Encountered error trying to instantiate new Web3 instance ...');
-			debug.err('... ', error);
+			debug.error('Encountered error trying to instantiate new Web3 instance ...');
+			debug.error('... ', error);
 		}
 
 		if(!connected) {
@@ -78,8 +79,11 @@ const getRewardEvents = wokeToken => async (_claimerId, _referrerId) => {
 		referrerId: _referrerId,
 	}
 
+
 	const events = await wokeToken.getPastEvents('Reward', opts);
+
 	return events;
+
 }
 
 const oracleSend = oracle => async (method, args, txOpts) => {
@@ -131,12 +135,46 @@ const checkConnection = async web3Instance =>  {
 const createCommands = ctx => ({
 	getTweetText: async (userId) => {
 		const tweet = await getTweetText(ctx.oracle)(userId);
-		console.log(tweet);
+		if(!nonEmptyString(tweet)) {
+			console.log('None found.');
+			return;
+		}
+		console.dir(tweet);
+		return;
 	},
 
 	getRewardEvents: async (claimer, referrer) => {
-		const events = await getRewardEvents(ctx.wokeToken)(userId);
-		console.log(events);
+		const events = await getRewardEvents(ctx.wokeToken)(claimer, referrer);
+		if(!(events && events.length)) {
+			console.log('None found.');
+			return;
+		}
+
+		users = {}
+		const getHandle = (() =>  {
+			return async (userId) => {
+				if(!users[userId]) {
+					users[userId] = (await twitter.getUserData(userId)).handle
+				}
+				return users[userId];
+			};
+		})();
+
+		let userIds = [];
+		const addId = (id) => {
+			if(!userIds.includes(id)) userIds.push(id);
+		}
+		events.forEach(e => {addId(e.returnValues.referrerId); addId(e.returnValues.claimerId)});
+		debug.d('Fetching user handles...');
+		await Promise.all(userIds.map(id => getHandle(id)));
+		const eventList = events.map(e => ({
+			blockNumber: e.blockNumber,
+			returnValues: e.returnValues,
+			summary: `${e.blockNumber}:\t@${users[e.returnValues.referrerId]} received ${e.returnValues.amount}.W for referring @${users[e.returnValues.claimerId]}`
+		}));
+
+		eventList.forEach(e => console.log(e.summary))
+		return;
 	}
 })
 
@@ -144,11 +182,13 @@ async function initContext() {
 	const web3Instance = await initWeb3();
 	const oracle = initContract(web3Instance, oracleInterface);
 	const wokeToken = initContract(web3Instance, wokeTokenInterface);
+	await twitter.initClient()
 
 	return{
 		web3Instance,
 		oracle,
 		wokeToken,
+		twitter,
 	}
 }
 
@@ -176,13 +216,14 @@ if(require.main === module) {
 					break;
 				}
 				debug.d('Getting tweet text for user ', userId);
-				commands().getTweetText(userId);
+				(await commands()).getTweetText(userId);
 				break;
 			}
 
 			case 'getRewardEvents': {
 				const [claimerId, referrerId] = args;
-				await commands().getRewardEvents(claimerId, referrerId)
+				debug.d(`Getting reward events, claimer:${claimerId} referrer:${referrerId}`);
+				(await commands()).getRewardEvents(claimerId, referrerId)
 				break;
 			}
 
