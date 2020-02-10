@@ -76,7 +76,6 @@ const getUserData = async (userId) => {
 	}
 
 	let userObject = await client.get('users/show', params);
-	debug.d(userObject);
 
 	return {
 		name: userObject.name,

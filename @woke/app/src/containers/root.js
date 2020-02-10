@@ -17,7 +17,7 @@ import { clearOldVersionStorage } from '../lib/utils'
 import HedgehogWallet from '../lib/wallet/wallet'
 const wallet = new HedgehogWallet(); 
 
-const appVersion = '0.1c';
+const appVersion = '0.1d';
 
 export default function RootContainer(props) {
 	const hedgehog = useHedgehog(wallet);

@@ -177,6 +177,7 @@ export default function useClaimUser({userId, userHandle, claimStatus}) {
 	const initialState = {
 		stage: states.READY,
 		queryId: null,
+		error: null,
 	}
 
 	const [claimState, dispatch] = useReducer(reduce, initialState);
@@ -479,7 +480,7 @@ export default function useClaimUser({userId, userHandle, claimStatus}) {
 			sendClaimUser,
 			sendFulfillClaim
 		},
-		error
+		error: claimState.error
 	};
 }
 
