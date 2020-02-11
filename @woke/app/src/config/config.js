@@ -46,8 +46,8 @@ export default {
 
 			production: {
 				protocol: 'wss',
-				host: `rinkeby.infura.io/ws/v3/${infuraApiKey}`,
-				id: 4,
+				host: `goerli.infura.io/ws/v3/${infuraApiKey}`,
+				id: 5,
 			}
 		}
 	},

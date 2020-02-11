@@ -72,7 +72,7 @@ module.exports = {
 
 			goerli,
 
-			production: rinkeby,
+			production: goerli,
 		},
 	},
 
