@@ -217,8 +217,8 @@ export default function useClaimUser({userId, userHandle, claimStatus}) {
 	// 1. Gather initial contract state from events (race the contract calls)
 	useEffect(() => {
 		const gatherEventState = async () => {
-	console.log(gather.current);
-	gather.current++;
+			//console.log(gather.current);
+			gather.current++;
 			let opts = {fromBlock: 0, toBlock: 'latest'};
 
 			// Has Lodging occured?
@@ -440,8 +440,9 @@ export default function useClaimUser({userId, userHandle, claimStatus}) {
 			console.log(`sendClaimUser.status: ${sendClaimUser.status}`);
 		if(sendClaimUser.status == 'error') {
 			// Retry
-			//setError('Failed to publish claim on-chain. Please refresh.');
-			dispatch({type: 'sent-transaction', payload: 'claim-error'})
+			dispatch({type: 'sent-transaction', payload: 'claim-error',
+				error: 'Failed to publish claim on-chain. Please refresh.',
+			})
 		}
 	}, [sendClaimUser.status])
 
@@ -450,8 +451,10 @@ export default function useClaimUser({userId, userHandle, claimStatus}) {
 			console.log(`sendFulfillClaim.status: ${sendFulfillClaim.status}`);
 		if(sendFulfillClaim.status == 'error') {
 			// Retry
-			//setError('Failed to complete claim on-chain. Please refresh.');
-			dispatch({type: 'sent-transaction', payload: 'fulfill-error'})
+			//setError('');
+			dispatch({type: 'sent-transaction', payload: 'fulfill-error',
+				error: 'Failed to complete claim on-chain. Please refresh.',
+			})
 		}
 	}, [sendFulfillClaim.status])
 

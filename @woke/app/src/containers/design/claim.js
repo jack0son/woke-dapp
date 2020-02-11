@@ -4,7 +4,9 @@ import React, { useEffect } from 'react';
 import Claim from '../views/claim';
 import Loading from '../views/loading';
 
+
 // Dummy state 
+import { useRootContext } from '../../hooks/root-context'
 import useLinearStages from '../../hooks/linearstate';
 import StateFlicker from '../../components/stateflicker';
 import * as claimStates from '../../hooks/woke-contracts/claimuser-states';
@@ -13,8 +15,16 @@ const {statesMap, statesList} = claimStates;
 const states = statesMap;
 
 export default function ClaimContainer (props) {
-	const dummyClaimState = useLinearStages({stageList: statesList, initialStage: 1});
+	const dummyClaimState = useLinearStages({stageList: statesList, initialStage: states.LODGED});
 	const {dispatchNext, dummyAsyncJob} = dummyClaimState;
+	const rootContext = useRootContext();
+
+	useEffect(() => {
+		rootContext.setEscapeHatch({
+			items: statesList,
+			onChange: (event) => dummyClaimState.select(event.target.value)
+		});
+	}, []);
 
 	const renderClaim = () => (
 		<Claim

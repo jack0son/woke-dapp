@@ -8,10 +8,10 @@ const useLinearStages = (props) => {
 	const stageMap = {};
 
 	//useEffect(() => {
-		stageList.forEach((stage, i) => {
-			stageEnum[i] = stage;
-			stageMap[stage] = i;
-		});
+	stageList.forEach((stage, i) => {
+		stageEnum[i] = stage;
+		stageMap[stage] = i;
+	});
 	//}, []);
 
 	const reducer = (state, action) => {
@@ -41,6 +41,30 @@ const useLinearStages = (props) => {
 				}
 			}
 
+			case 'SELECT': {
+				if(typeof action.payload === 'string') {
+					const newStage = stageMap[action.payload];
+					if(!newStage) {
+						console.error('Linear state: Attmept to select invalid state');
+						return state;
+					}
+
+					return {
+						...state,
+						stage: newStage
+					}
+				}
+
+				if (!action.payload || action.payload > stageList.length -1 || action.payload < 0) {
+					return state;
+				}
+
+				return {
+					...state,
+					stage: action.payload
+				}
+			}
+
 			default: {
 				return {
 					...state
@@ -56,12 +80,17 @@ const useLinearStages = (props) => {
 		dispatch({type: 'NEXT', payload: event});
 	}
 
+	const select = (stage) => {
+		dispatch({type: 'SELECT', payload: stage});
+	}
+
 	const dummyAsyncJob = (message, delay = 1000) => {
 		{setTimeout(() => dispatchNext({target: message}), delay)}
 	}
 
 	return {
 		dispatch,
+		select,
 		dispatchNext,
 		dummyAsyncJob,
 		stage: dummyState.stage,
