@@ -13,7 +13,15 @@ export default {
 		networks: {
 			development: {
 				protocol: 'ws',
-				host: 'localhost',
+				//host: 'localhost',
+				host: '192.168.1.185',
+				port: 8545,
+				id: 12,
+			},
+
+			mobile: {
+				protocol: 'ws',
+				host: '192.168.1.185', // @TODO LOAD FROM env.local
 				port: 8545,
 				id: 12,
 			},
@@ -47,7 +55,12 @@ export default {
 	server: {
 		development: {
 			// URL must have trailing forward slash
-			url: 'http://localhost:3001/',
+			//url: 'http://localhost:3001/',
+			url: 'http://192.168.1.185:3001/',
+		},
+
+		mobile: {
+			url: 'http://192.168.1.185:3001/',
 		},
 
 		production: {
@@ -58,7 +71,8 @@ export default {
 	twitter: {
 		development: {
 			api: twitterApi,
-			hostUrl: 'http://localhost:3000/',
+			//hostUrl: 'http://localhost:3000/',
+			hostUrl: 'http://192.168.1.185:3000/',
 		},
 
 		production: {
