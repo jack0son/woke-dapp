@@ -22,4 +22,4 @@ statesLabels.LODGING = 'submitting proof ... ';
 statesLabels.LODGED = 'consulting oracles ...';
 statesLabels.STORED_TWEET = 'consulting oracles ...';
 statesLabels.FINALIZING = '... deliverance is near';
-statesLabels.CONFIRMED = 'awakened.';
+statesLabels.CLAIMED = 'awakened.';
