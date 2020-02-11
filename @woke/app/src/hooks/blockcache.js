@@ -1,7 +1,9 @@
 import React, { useState, useMemo, useCallback, useEffect } from 'react';
 import { useWeb3Context } from './web3context';
+import { createObjectCache } from '../lib/utils';
 
 
+const cache = createObjectCache('block_cache');
 export default function useBlockCache() {
 	const {
 		web3,
@@ -9,7 +11,7 @@ export default function useBlockCache() {
 		useEvents
 	} = useWeb3Context();
 
-	const [blockCache, setBlockCache] = useState(retrieveCache() || {});
+	const [blockCache, setBlockCache] = useState(cache.retrieve() || {});
 
 	const blockNumbers = useMemo(() => {
 		return Object.keys(blockCache);
@@ -53,7 +55,7 @@ export default function useBlockCache() {
 
 	useEffect(()=> {
 		if(blockCache) {
-			storeCache(reduceCache(blockCache));
+			cache.store(reduceCache(blockCache));
 		}
 	}, [blockCache])
 
@@ -64,15 +66,6 @@ export default function useBlockCache() {
 		blocks: blockCache,
 		blockNumbers,
 	};
-}
-
-const cacheKey = 'block_cache';
-function storeCache (cache) {
-	window.localStorage.setItem(cacheKey, JSON.stringify(cache));
-}
-
-function retrieveCache () {
-	return JSON.parse(window.localStorage.getItem(cacheKey));
 }
 
 function reduceCache(cache) {

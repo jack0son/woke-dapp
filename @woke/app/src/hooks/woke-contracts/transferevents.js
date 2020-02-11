@@ -5,19 +5,22 @@ import { useTwitterContext } from '../twitter/index.js'
 import dayjs from 'dayjs';
 import { timeSince } from '../../lib/utils';
 
+const ZERO_ADDRESS = '0x0000000000000000000000000000000000000000';
 
 // TODO indexed strings do not work in web3js 1.2.4
 // https://github.com/ethereum/web3.js/issues/3053
 export default function(userId, blockCache) {
 	const {
 		account,
-		useEvents
+		useEvents,
+		web3,
 	} = useWeb3Context();
 	const twitterUsers = useTwitterContext().userList;
 	const [eventList, setEventList] = useState([]);
 
 	// @notice web3js 2.0 will not require hashing of indexed filter param
-	//const userIdHash = useMemo(() => web3.utils.keccak256(userId), [userId]);
+	const userIdHash = useMemo(() => web3.utils.keccak256(userId), [userId]);
+	console.log(userIdHash);
 	let sends = useEvents('WokeToken', 'Tx',
 		useMemo(() => (
 			{
@@ -40,6 +43,17 @@ export default function(userId, blockCache) {
 	);
 	// Manual filter to account for issue 3053
 	//receives = receives.filter(event => event.returnValues.toId === userId);
+
+	// Have to search for all user's pre-claim events due to Issue #21
+	let preClaims = useEvents('WokeToken', 'Tx',
+		useMemo(() => {
+			return {
+				filter: { to: ZERO_ADDRESS },
+				fromBlock: 0
+			}
+		}, [account])
+	).filter(event => event.returnValues.toId === userId); // @fix ineffient at scale
+	console.log(preClaims)
 
 	let newEvents = [];
 	let newUserIds = [];
@@ -93,6 +107,10 @@ export default function(userId, blockCache) {
 		parseEvents(receives, false);
 	}
 
+	if(preClaims.length > 0) {
+		parseEvents(preClaims, false);
+	}
+
 
 	if(newEvents.length > 0) {
 
@@ -129,7 +147,7 @@ export default function(userId, blockCache) {
 				return eventList;
 			})
 		}
-	}, [blockCache.blockNumbers.length, blockCache.blocks])//false, eventList, blockCache, twitterUsers.state.data]);
+	}, [blockCache.blockNumbers, blockCache.blocks])//false, eventList, blockCache, twitterUsers.state.data]);
 
 	// Attach twitter user data
 	const userDataLen = useRef(twitterUsers.state.dataLength);
