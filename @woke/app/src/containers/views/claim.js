@@ -32,13 +32,14 @@ export default function ClaimView (props) {
 
 	// Share intent url
 	const renderTweetClaim = () => {
+			const intentUrl = createShareIntentUrl(claimState.claimString);
 			return (
 				<ClaimLayout
 					instructionText={[`To securely claim any `, <WokeSpan key="WokeSpan">WOKENs</WokeSpan>, ` you've already been sent, we need to tweet a signed message.`]}
 					button={TweetButton}
 					buttonProps={{
-						href: createShareIntentUrl(claimState.claimString),
-						onClick: handleTweeted,
+						href: intentUrl,
+						onClick: handleTweeted
 					}}
 					buttonMessage="Don't alter the message"
 				/>

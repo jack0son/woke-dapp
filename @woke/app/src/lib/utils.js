@@ -28,7 +28,8 @@ export function timeSince(date, startDate = Date.now()) {
 }
 
 export function createShareIntentUrl(claimString) {
-	return encodeURI(`https://twitter.com/intent/tweet?amp;ref_src=twsrc%5Etfw&amp;related=getwoketoke&amp;text=${claimString}&amp;tw_p=tweetbutton`)
+	//return encodeURI(`https://twitter.com/intent/tweet?amp;ref_src=twsrc%5Etfw&amp;related=getwoketoke&amp;text=${claimString}&amp;tw_p=tweetbutton`)
+	return encodeURI(`https://twitter.com/intent/tweet?&related=getwoketoke&text=${claimString}&amp;tw_p=tweetbutton`)
 }
 
 export function clearOldVersionStorage(version) {
