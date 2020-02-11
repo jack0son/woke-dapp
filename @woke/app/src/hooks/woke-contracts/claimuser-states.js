@@ -16,10 +16,10 @@ statesList.forEach((state,i) => statesMap[state] = i);
 
 export const statesLabels = {};
 
-statesLabels.CONFIRMED = 'concressing tweets';
-statesLabels.FOUND_TWEET = 'concressing tweets';
-statesLabels.LODGING = 'submitting proof';
-statesLabels.LODGED = 'submitting proof';
-statesLabels.STORED_TWEET = 'oracle has spoken';
-statesLabels.FINALIZING = 'deliverance is near';
-statesLabels.CONFIRMED = 'you are awakened';
+statesLabels.CONFIRMED = 'Concressing tweets ...';
+statesLabels.FOUND_TWEET = 'Concressing tweets ...';
+statesLabels.LODGING = 'Submitting proof ... ';
+statesLabels.LODGED = 'Submitting proof ...';
+statesLabels.STORED_TWEET = 'Consulting oracles ...';
+statesLabels.FINALIZING = '... deliverance is near';
+statesLabels.CONFIRMED = 'You are awakened.';
