@@ -33,6 +33,11 @@ export function createShareIntentUrl(claimString) {
 
 export function clearOldVersionStorage(version) {
 	const app_ver = window.localStorage.getItem('app_ver');
+	if(!app_ver) {
+		window.localStorage.setItem('app_ver', version);
+		return false;
+	}
+
 	if(app_ver != version) {
 		window.localStorage.clear();
 		window.localStorage.setItem('app_ver', version);

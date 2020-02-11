@@ -7,7 +7,7 @@ const useStyles = makeStyles(theme => ({
 	gif: {
 		marginTop: theme.spacing(1),
 		//height: theme.spacing(5),
-		maxWidth: theme.spacing(12),
+		maxWidth: theme.spacing(20),
 		height: 'auto',
 	},
 }));
@@ -22,7 +22,7 @@ export default function Brain(props) {
 			position="static" 
 			src={src} 
 			alt={props.alt} 
-			className={classes.logo} 
+			className={classes.gif} 
 			style={classes}
 			{...props}
 		/>

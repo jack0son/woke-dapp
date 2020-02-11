@@ -11,7 +11,7 @@ import Brain from '../../components/images/brain';
 import { useRootContext } from '../../hooks/root-context'
 
 
-export default function LoadingView(props) {
+export default function ErrorView(props) {
 	const theme = useTheme();
 	const {setLoading} = useRootContext();
 
@@ -24,13 +24,6 @@ export default function LoadingView(props) {
 
 	return (
 		<CentreHolder>
-			<CentreHolder
-				mt='0 !important'
-				mb={theme.spacing(0.5)}
-			>
-				<Brain/>
-			</CentreHolder>
-
 			<ContentWrapper
 				align='center'
 				styles={{
@@ -40,10 +33,17 @@ export default function LoadingView(props) {
 			>
 			{ props.children ? props.children : (
 				<Typography variant="h4" align="center" gutterBottom>
-					{props.message ? props.message : 'REEEEEEEEEEE'} 
+					{props.message ? props.message : 'F&!K'} 
 				</Typography>
 			)}
 			</ContentWrapper>
+			<CentreHolder
+				mt='0 !important'
+				mb={theme.spacing(0.5)}
+			>
+				<Brain/>
+			</CentreHolder>
+
 		</CentreHolder>
 	);
 }

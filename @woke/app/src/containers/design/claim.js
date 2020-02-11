@@ -15,7 +15,7 @@ const {statesMap, statesList, statesLabels} = claimStates;
 const states = statesMap;
 
 export default function ClaimContainer (props) {
-	const dummyClaimState = useLinearStages({stageList: statesList, initialStage: states.LODGED});
+	const dummyClaimState = useLinearStages({stageList: statesList, initialStage: states.ERROR});
 	const {dispatchNext, dummyAsyncJob} = dummyClaimState;
 	const rootContext = useRootContext();
 
