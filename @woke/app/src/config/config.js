@@ -33,7 +33,7 @@ export default {
 			goerli: {
 				protocol: 'wss',
 				host: `goerli.infura.io/ws/v3/${infuraApiKey}`,
-				id: 4,
+				id: 5,
 			},
 
 			production: {

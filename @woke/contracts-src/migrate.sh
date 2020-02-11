@@ -6,13 +6,14 @@ DEFAULT_ENV=development
 if [ -z "$1" ]; then
 	echo "No environment specified. Using $DEFAULT_ENV."
 fi
+CONTRACT_ENV="${1:-$DEFAULT_ENV}"
+
 ARGS=
 # @TODO warn
 if [ "$2" == "reset" ]; then
 	echo "Resetting migrations."
 	ARGS="--reset"
 fi
-CONTRACT_ENV="${1:-$DEFAULT_ENV}"
 
 WORK_DIR=$(pwd)
 BASE_DIR=${WORK_DIR##*/}

@@ -7,7 +7,7 @@ const devPrivKey = '0xe57d058bb90483a0ebf0ff0107a60d9250a0b9b5ab8c53d47217c99580
 const ropstenPrivKey = process.env.ROPSTEN_PRIV_KEY;
 
 let privKey;
-switch(process.env.NODE_ENV) {
+switch(process.env.ETH_ENV) {
 	case 'development': {
 		privKey = devPrivKey;
 		break;
