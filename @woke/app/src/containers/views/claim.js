@@ -81,7 +81,7 @@ export default function ClaimView (props) {
 	);
 
 	const renderError = () => (
-		<Error message={claimState.error}/>
+		<Error/> //message={claimState.error}/>
 	);
 
 	
