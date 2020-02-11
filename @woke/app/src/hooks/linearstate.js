@@ -44,7 +44,7 @@ const useLinearStages = (props) => {
 			case 'SELECT': {
 				if(typeof action.payload === 'string') {
 					const newStage = stageMap[action.payload];
-					if(!newStage) {
+					if(newStage === undefined || newStage === null) {
 						console.error('Linear state: Attmept to select invalid state');
 						return state;
 					}

@@ -11,7 +11,7 @@ import useLinearStages from '../../hooks/linearstate';
 import StateFlicker from '../../components/stateflicker';
 import * as claimStates from '../../hooks/woke-contracts/claimuser-states';
 
-const {statesMap, statesList} = claimStates;
+const {statesMap, statesList, statesLabels} = claimStates;
 const states = statesMap;
 
 export default function ClaimContainer (props) {
@@ -35,6 +35,7 @@ export default function ClaimContainer (props) {
 					sendFulfillClaim: {
 					},
 				},
+				stageLabels: statesLabels,
 				...dummyClaimState
 			}}
 			triggerPostTweet={() => dispatchNext()}

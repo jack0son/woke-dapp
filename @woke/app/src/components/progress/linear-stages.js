@@ -17,7 +17,7 @@ export default function LinearstageList(props) {
 		//console.dir(props.stageList);
 		//throw new Error('Linear stageList only accepts an array');
 	}
-	const {stageList, stage} = props;
+	const {stageList, stage, labelList} = props;
 
 	const stageMap = {}
 	stageList.forEach((stage, i) => {
@@ -43,9 +43,14 @@ export default function LinearstageList(props) {
 
   }, [stage]);
 
+	const label = labelList ? labelList[stageList[stage]] : stageList[stage];
+	console.log(labelList);
+	console.log(label);
+
   return (
 		<>
-			<BodyLarge>{stageList[stage]}</BodyLarge>
+			<BodyLarge>{label}</BodyLarge>
+			<br/>
       <LinearProgress variant="determinate" value={completed} />
 		</>
   );
