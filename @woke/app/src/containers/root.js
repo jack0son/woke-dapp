@@ -40,6 +40,7 @@ export default function RootContainer(props) {
 	// @TODO only in dev mode
 	useEffect(() => {
 		if(clearOldVersionStorage(appVersion)) {
+			console.log('Reloading...');
 			setReset(true);
 			window.location.reload()
 		}

@@ -34,15 +34,18 @@ export function createShareIntentUrl(claimString) {
 export function clearOldVersionStorage(version) {
 	const app_ver = window.localStorage.getItem('app_ver');
 	if(!app_ver) {
+		console.log('Saving app_ver...');
 		window.localStorage.setItem('app_ver', version);
 		return false;
 	}
 
 	if(app_ver != version) {
+		console.log('Found old app data. Clearing...');
 		window.localStorage.clear();
 		window.localStorage.setItem('app_ver', version);
 		return true;
 	}
+
 	return false;
 }
 
