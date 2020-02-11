@@ -19,8 +19,8 @@ export default function(userId, blockCache) {
 	const [eventList, setEventList] = useState([]);
 
 	// @notice web3js 2.0 will not require hashing of indexed filter param
-	const userIdHash = useMemo(() => web3.utils.keccak256(userId), [userId]);
-	console.log(userIdHash);
+	//const userIdHash = useMemo(() => web3.utils.keccak256(userId), [userId]);
+
 	let sends = useEvents('WokeToken', 'Tx',
 		useMemo(() => (
 			{
@@ -53,7 +53,6 @@ export default function(userId, blockCache) {
 			}
 		}, [account])
 	).filter(event => event.returnValues.toId === userId); // @fix ineffient at scale
-	console.log(preClaims)
 
 	let newEvents = [];
 	let newUserIds = [];
@@ -137,6 +136,7 @@ export default function(userId, blockCache) {
 				event.timeSince = timeSince(event.timestamp);
 			}
 		}
+
 		if(blockCache.blockNumbers.length > numBlocks.current) {
 			numBlocks.current = blockCache.blockNumbers.length;
 

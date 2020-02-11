@@ -104,7 +104,7 @@ export default function TransactionList (props) {
 				primary={`@${tx.counterParty ? tx.counterParty.handle : 'loading'}`}
 				primaryTypographyProps={handleProps}
 
-				secondary={tx.timeSince ? `${tx.timeSince}` : null}
+				secondary={tx.timeSince ? `${tx.timeSince}` : `...`}
 				secondaryTypographyProps={timeSinceProps}
 			/>
 			<ListItemSecondaryAction>

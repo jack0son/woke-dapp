@@ -17,10 +17,10 @@ export default function useBlockCache() {
 		return Object.keys(blockCache);
 	}, [blockCache]);
 
-	const addBlocks = useCallback((blockNumbers) => {
-		async function addBlocks(blockNumbers) {
+	const addBlocks = useCallback((_bns) => {
+		async function addBlocks(_blockNumbers) {
 			let newBlocks = {};
-			await Promise.all(blockNumbers.map((bn, i) => {
+			await Promise.all(_blockNumbers.map((bn, i) => {
 				if(!blockCache[bn]) {
 					return web3.eth.getBlock(bn)
 						.then(block => {
@@ -33,7 +33,7 @@ export default function useBlockCache() {
 			setBlockCache(blockCache => ({...blockCache, ...newBlocks}));
 		}
 
-		addBlocks(blockNumbers);
+		addBlocks(_bns);
 	}, [blockNumbers, blockCache]);
 
 
