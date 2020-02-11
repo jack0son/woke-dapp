@@ -54,3 +54,18 @@ export function setSyncTimeout(ms) {
 		}, ms);
 	})
 }
+
+export function createObjectCache (cacheKey) {
+	function store (cache) {
+		window.localStorage.setItem(cacheKey, JSON.stringify(cache));
+	}
+
+	function retrieve () {
+		return JSON.parse(window.localStorage.getItem(cacheKey));
+	}
+
+	return {
+		store,
+		retrieve,
+	}
+}

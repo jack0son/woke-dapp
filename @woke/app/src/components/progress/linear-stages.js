@@ -44,8 +44,6 @@ export default function LinearstageList(props) {
   }, [stage]);
 
 	const label = labelList ? labelList[stageList[stage]] : stageList[stage];
-	console.log(labelList);
-	console.log(label);
 
   return (
 		<>
