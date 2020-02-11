@@ -151,7 +151,7 @@ const initClient = async (simulate) => {
 				r = await wt.methods._fulfillClaim(u.id).send(opts);
 				debug.name(u.handle, 'Fulfilled claim.');
 			} catch (err) {
-				debug.err(err);
+				debug.error(err);
 			}
 		}
 

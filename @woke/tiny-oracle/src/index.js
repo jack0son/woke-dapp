@@ -120,7 +120,7 @@ class TinyOracle {
 		await self.initWeb3();
 		let callbackAccount = self.address;
 		if(!callbackAccount) {
-			callbackAccount = web3.eth.defaultAccount;
+			callbackAccount = self.web3.eth.defaultAccount;
 		}
 		debug.d(`Using callback account: ${callbackAccount}`);
 		debug.d(`Connecting to Oracle contract ...`);
@@ -260,9 +260,18 @@ const handleFindTweet = async (account, contract, query, txOpts) => {
 		from: account
 	};
 	
-	const id = query.queryId;
-	const abr = id.slice(0,8) + id.slice(id.length-9, id.length) // abridged id
-	debug.h(`Got query handle:${query.handle}, id:${query.queryId}, `);
+	const qid = query.queryId;
+	const abr = qid.slice(0,8) + qid.slice(qid.length-9, qid.length) // abridged qid
+
+	// Human readable log
+	let userData = {};
+	try {
+		userData = await twitter.getUserData(query.userId);
+	} catch (error) {
+		debug.error(error);
+	}
+
+	debug.h(`Got query ${userData.handle}:${query.userId}, queryId: ${qid}, `);
 	let tweet = await twitter.findClaimTweet(query.userId);
 	debug.name(abr, `Found tweet: ${tweet}`);
 
@@ -270,7 +279,7 @@ const handleFindTweet = async (account, contract, query, txOpts) => {
 	debug.name(abr, `Claim string: ${claimString}`);
 
 	let r = await contract.methods.__callback(
-		query.queryId,
+		qid,
 		claimString,		// query result
 		'0x0',					// proof
 	).send(opts);

@@ -47,7 +47,7 @@ export default function useClaimUser({userId, userHandle, claimStatus}) {
 		}
 	}, []);
 
-	const [error, setError] = useState(null);
+	//const [error, setError] = useState(null);
 
 	// @dev Knowledge of the state of the claimUser process can come from
 	// contract calls, new transactions sent, or contract events, depending on
@@ -70,9 +70,8 @@ export default function useClaimUser({userId, userHandle, claimStatus}) {
 				case 'twitter-event': {
 					if(action.error && state.stage < states.FOUND_TWEET) {
 						if(state.stage === states.CONFIRMED) {
-							setError('Could not find your tweet. Please refresh and try again');
-						//} else if (state.stage >  {
-						//	setError(action.error);
+							return {...state, error: 'Could not find your tweet. Please refresh and try again'}
+						} else {
 						}
 						return state;
 					}
@@ -94,7 +93,7 @@ export default function useClaimUser({userId, userHandle, claimStatus}) {
 					}
 
 					if(action.name === 'tweet-not_found' && state.stage === states.CONFIRMED) {
-						return {...state, stage: states.ERROR}
+						return {...state, stage: states.ERROR, error: action.error}
 					}
 
 					return state;
@@ -104,12 +103,11 @@ export default function useClaimUser({userId, userHandle, claimStatus}) {
 				case 'web3-event': {
 					//console.log(`\tReduce: web3-event ${action.name} with payload ${action.payload}`, action);
 
-					if(action.err) {
-						if(state.stage != states.ERROR) {
-							// Preserve existing error
-							setError(action.err);
+					if(action.error) {
+						if(state.stage == states.ERROR) {
+							return state;
 						}
-						return {...state, stage: states.ERROR}
+						return {...state, stage: states.ERROR, error: action.error}
 					}
 
 					if(action.name == 'Claimed') {
@@ -151,7 +149,8 @@ export default function useClaimUser({userId, userHandle, claimStatus}) {
 						}
 
 						case 'claim-error': {
-							return {...state, stage: states.FOUND_TWEET}
+							return {...state, stage: states.ERROR, error: action.error}
+							//return {...state, stage: states.FOUND_TWEET}
 						}
 
 						case 'fulfill': {
@@ -159,7 +158,8 @@ export default function useClaimUser({userId, userHandle, claimStatus}) {
 						}
 
 						case 'fulfill-error': {
-							return {...state, stage: states.STORED_TWEET}
+							return {...state, stage: states.ERROR, error: action.error}
+							//return {...state, stage: states.STORED_TWEET}
 						}
 					}
 					return state;
@@ -177,6 +177,7 @@ export default function useClaimUser({userId, userHandle, claimStatus}) {
 	const initialState = {
 		stage: states.READY,
 		queryId: null,
+		error: null,
 	}
 
 	const [claimState, dispatch] = useReducer(reduce, initialState);
@@ -216,8 +217,8 @@ export default function useClaimUser({userId, userHandle, claimStatus}) {
 	// 1. Gather initial contract state from events (race the contract calls)
 	useEffect(() => {
 		const gatherEventState = async () => {
-	console.log(gather.current);
-	gather.current++;
+			//console.log(gather.current);
+			gather.current++;
 			let opts = {fromBlock: 0, toBlock: 'latest'};
 
 			// Has Lodging occured?
@@ -248,24 +249,6 @@ export default function useClaimUser({userId, userHandle, claimStatus}) {
 		gatherEventState();
 	}, []);
 
-	const tweetText = useSubscribeCall('TwitterOracleMock', 'getTweetText', userId);
-	const lodgedPredicate = claimState.stage == states.LODGED;
-	useEffect(() => {
-		if(typeof tweetText == 'string' && tweetText.length >= claimString.length) {
-			console.log('Got tweet from contract: ', tweetText);
-			dispatch({type: 'web3-event', name: 'TweetStored', });
-		}
-	}, [tweetText, lodgedPredicate]);
-
-	const hasLodgedRequestPredicate = claimState.stage < states.LODGED;
-	const hasLodgedRequest = useSubscribeCall('WokeToken', 'lodgedRequest', userId);
-	useEffect(() => {
-		console.log('\thasLodgedRequest: ', hasLodgedRequest);
-		if(hasLodgedRequestPredicate && hasLodgedRequest === true) {
-			console.log('\tcontract call triggered dispatch lodge');
-			dispatch({type: 'web3-event', name: 'Lodged', source: 'useCall'});
-		}
-	}, [tweetText, hasLodgedRequest, hasLodgedRequestPredicate]);
 
 	const [claimString, setClaimString] = useState(null);
 	useEffect(() => {
@@ -332,6 +315,25 @@ export default function useClaimUser({userId, userHandle, claimStatus}) {
 		}
 
 	}, [userId, claimString, twitterClient, confirmedPredicate, claimState.stage, fetchingTweet])
+
+	const tweetText = useSubscribeCall('TwitterOracleMock', 'getTweetText', userId);
+	const lodgedPredicate = claimState.stage == states.LODGED;
+	useEffect(() => {
+		if(typeof tweetText == 'string' && tweetText.length >= claimString.length) {
+			console.log('Got tweet from contract: ', tweetText);
+			dispatch({type: 'web3-event', name: 'TweetStored', });
+		}
+	}, [tweetText, lodgedPredicate, claimString]);
+
+	const hasLodgedRequestPredicate = claimState.stage < states.LODGED;
+	const hasLodgedRequest = useSubscribeCall('WokeToken', 'lodgedRequest', userId);
+	useEffect(() => {
+		console.log('\thasLodgedRequest: ', hasLodgedRequest);
+		if(hasLodgedRequestPredicate && hasLodgedRequest === true) {
+			console.log('\tcontract call triggered dispatch lodge');
+			dispatch({type: 'web3-event', name: 'Lodged', source: 'useCall'});
+		}
+	}, [tweetText, hasLodgedRequest, hasLodgedRequestPredicate]);
 
 
 	// 3. Monitor state from events
@@ -438,8 +440,9 @@ export default function useClaimUser({userId, userHandle, claimStatus}) {
 			console.log(`sendClaimUser.status: ${sendClaimUser.status}`);
 		if(sendClaimUser.status == 'error') {
 			// Retry
-			setError('Failed to publish claim on-chain. Please refresh.');
-			//dispatch({type: 'sent-transaction', payload: 'claim-error'})
+			dispatch({type: 'sent-transaction', payload: 'claim-error',
+				error: 'Failed to publish claim on-chain. Please refresh.',
+			})
 		}
 	}, [sendClaimUser.status])
 
@@ -448,9 +451,10 @@ export default function useClaimUser({userId, userHandle, claimStatus}) {
 			console.log(`sendFulfillClaim.status: ${sendFulfillClaim.status}`);
 		if(sendFulfillClaim.status == 'error') {
 			// Retry
-			setError('Failed to complete claim on-chain. Please refresh.');
-			//dispatch({type: 'sent-transaction', payload: 'claim-error'})
-			//dispatch({type: 'sent-transaction', payload: 'fulfill-error'})
+			//setError('');
+			dispatch({type: 'sent-transaction', payload: 'fulfill-error',
+				error: 'Failed to complete claim on-chain. Please refresh.',
+			})
 		}
 	}, [sendFulfillClaim.status])
 
@@ -479,7 +483,7 @@ export default function useClaimUser({userId, userHandle, claimStatus}) {
 			sendClaimUser,
 			sendFulfillClaim
 		},
-		error
+		error: claimState.error
 	};
 }
 

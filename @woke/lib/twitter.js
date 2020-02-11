@@ -76,7 +76,6 @@ const getUserData = async (userId) => {
 	}
 
 	let userObject = await client.get('users/show', params);
-	debug.d(userObject);
 
 	return {
 		name: userObject.name,
@@ -133,7 +132,7 @@ function getBearerToken(key, secret) {
 	});
 }
 
-module.exports = {findClaimTweet, initClient}
+module.exports = {initClient, findClaimTweet, getUserData}
 
 // Example call
 if(debug.debug.enabled && require.main === module) {

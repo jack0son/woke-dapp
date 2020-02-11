@@ -1,6 +1,7 @@
 import React, { useEffect } from 'react';
 
 import Loading from './loading'
+import Error from './error'
 import ClaimLayout from '../../layouts/page-claim'
 import ContentWrapper from '../../layouts/wrapper-content'
 
@@ -79,10 +80,16 @@ export default function ClaimView (props) {
 		</Loading>
 	);
 
+	const renderError = () => (
+		<Error message={claimState.error}/>
+	);
+
 	
 	// Subsumption tree
 	let chooseRender = () => (<Loading message={'Analysing wokeness ...'}/>);
-	if(stage >= sc.CLAIMED) {
+	if(stage == sc.ERROR) {
+		chooseRender = renderError;
+	} else if(stage == sc.CLAIMED) {
 		// Shouldn't get here
 		console.warn('Claim in incorrect state: ', `${stage}: ${stageString}`);
 	} else if (stage >= sc.CONFIRMED) {
