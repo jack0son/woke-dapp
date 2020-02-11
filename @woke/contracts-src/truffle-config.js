@@ -4,7 +4,7 @@ require('dotenv').config();
 var mnemonic = "nerve marine frozen use brave brief nasty then acid remain stereo riot";
 var ropstenMnemonic = process.env.ROPSTEN_MNEMONIC;
 var infuraApiKey = process.env.INFURA_API_KEY;
-const contractEnv = process.env.CONTRACT_ENV || process.env.NODE_ENV;
+const contractEnv = process.env.ETH_ENV || process.env.NODE_ENV;
 
 module.exports = {
 	contracts_build_directory: "./build/contracts/artifacts",
@@ -49,6 +49,16 @@ module.exports = {
       network_id: "4",
 			gas: 6590000,
 			gasPrice: 21000000000,
+			skipDryRun: true,
+		},
+
+		goerli: {
+			provider:() => {
+				return new HDWalletProvider(ropstenMnemonic, `https://goerli.infura.io/v3/${infuraApiKey}`, 0, 10);
+      },
+      network_id: "5",
+			gas: 8000000,
+			gasPrice: 20000000000,
 			skipDryRun: true,
 		}
   },

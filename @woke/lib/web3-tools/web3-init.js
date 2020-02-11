@@ -1,13 +1,13 @@
 const Web3 = require('web3');
 const config = require('./web3-config');
-const network = config.web3.networks[process.env.NODE_ENV];
+const network = config.web3.networks[process.env.ETH_ENV || process.env.NODE_ENV];
 
 //const devPrivKey = '0x1aa8fa0e6762d47569b2aeb1fc53ee64ac0bc9d8070967f1c4970a35bc84ca7a';
 const devPrivKey = '0xe57d058bb90483a0ebf0ff0107a60d9250a0b9b5ab8c53d47217c9958025cce7';
 const ropstenPrivKey = process.env.ROPSTEN_PRIV_KEY;
 
 let privKey;
-switch(process.env.NODE_ENV) {
+switch(process.env.ETH_ENV) {
 	case 'development': {
 		privKey = devPrivKey;
 		break;

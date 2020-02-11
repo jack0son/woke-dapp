@@ -1,1 +1,1 @@
-sudo docker-compose up -d --build db
+docker-compose up -d --build db
