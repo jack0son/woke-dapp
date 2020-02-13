@@ -1,0 +1,22 @@
+{
+  "name": "@woke/bot",
+  "version": "0.1.0",
+  "description": "Tiny oracle for Twitter API to avoid waiting for Oraclize",
+  "private": true,
+  "main": "index.js",
+  "scripts": {
+    "test": "./node_modules/.bin/mocha",
+    "test-debug": "DEBUG=oracle:* ./node_modules/.bin/mocha",
+    "start": "NODE_ENV=production ETH_ENV=production DEBUG=oracle* node src/index.js"
+  },
+  "author": "Jackson Virgo",
+  "license": "ISC",
+  "dependencies": {
+    "@woke/contracts": "0.1.0",
+    "@woke/lib": "0.1.0"
+  },
+  "devDependencies": {
+    "minimist": "^1.2.0",
+    "mocha": "^6.2.2"
+  }
+}
