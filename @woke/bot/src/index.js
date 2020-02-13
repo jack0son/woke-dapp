@@ -42,9 +42,32 @@
 
 const { Logger } = require('@woke/lib');
 const debug = Logger();
-const sleep = (ms) => new Promise(res => setTimeout(res, ms));
 
-const actorSystem = require('./actor-system');
+const director = require('./actor-system')();
+
+const dummyActor = {
+	'print': (msg, ctx, state) => {
+		// Sent WOKENS to the top three on the leaderboard
+		console.log('DUMMY: ', msg.msg);
+	}
+}
+
+const poll = director.start_actor('poller', actors.polling);
+const dummy = start_actor(system, 'dummy', dummyActor, {});
+
+dispatch(poll, {type: 'poll',
+	target: dummy,
+	action: 'print',
+	period: 400,
+	args: {
+		msg: 'hello'
+	},
+});
+const sleep = (ms) => new Promise(res => setTimeout(res, ms));
+sleep(2000).then(() => {
+	dispatch(poll, {type: 'interupt'})
+});
+
 
 const wokenMonitor = {
 	// Monitor the WokeToken contract for unclaimed transfers

@@ -1,46 +1,56 @@
 const { dispatch } = require('nact');
 const { Logger } = require('@woke/lib');
-const debug = (msg, args) => Logger().name(`POLL:${msg.type}`, args);
+const debug = (msg, args) => Logger().name(`POLL:`, `${msg.type}>> ` + args);
 
-const pollingService = {
-	'poll': (msg, ctx, state) => {
-		const {
-			target, // target actor
-			action, // target action type
-			period, // how often to poll
-			rateLimit,
-			args
-		} = msg;
-
-		debug(msg, `Start polling {${target.name}:${action}} every ${period}ms...`);
-		dispatch(ctx.self, { type: 'perform',  target, action, args }, ctx.self);
-
-		return { ...state,
+const pollingActor = {
+	properties: {
+		initialState: {
 			halt: false,
-			period
 		}
 	},
 
-	'perform': (msg, ctx, state) => {
-		const { halt, period } = state;
-		const { target, action, args } = msg;
+	actions: {
+		'poll': (msg, ctx, state) => {
+			const {
+				target, // target actor
+				action, // target action type
+				period, // how often to poll
+				rateLimit,
+				args
+			} = msg;
 
-		if(!halt) {
-			dispatch(target, {type: action, ...args});
+			debug(msg, `Start polling {${target.name}:${action}} every ${period}ms...`);
+			dispatch(ctx.self, { type: 'perform',  target, action, args }, ctx.self);
 
-			setTimeout(() => 
-				dispatch(ctx.self, { type: 'perform',  target, action, args }),
-				period
-			);
+			return { ...state,
+				halt: false,
+				period,
+				target,
+				action,
+			}
+		},
+
+		'perform': (msg, ctx, state) => {
+			const { halt, period } = state;
+			const { target, action, args } = msg;
+
+			if(!halt) {
+				dispatch(target, {type: action, ...args});
+
+				setTimeout(() => 
+					dispatch(ctx.self, { type: 'perform',  target, action, args }),
+					period
+				);
+			}
+
+			return state;
+		},
+
+		'interupt': (msg, ctx, state) => {
+			debug(msg, `Interupting polling of {${state.target.name}:${state.action}}`);
+			return {...state, halt: true}
 		}
-
-		return state;
-	},
-
-	'interupt': (msg, ctx, state) => {
-		console.log(`Interupting polling of ${state.target}:${state.type}`);
-		return {...state, halt: true}
 	}
 }
 
-module.exports = pollingService;
+module.exports = pollingActor;

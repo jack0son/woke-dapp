@@ -2,46 +2,47 @@ const { start, dispatch, stop, spawn, spawnStateless } = require('nact');
 
 actors = require('./actors');
 
-const route_action = (module, state, msg, context) => {
-	let action = module[msg.type];
-	if (action && typeof (action) == "function") {
-		const nextState = action(msg, context, state);
-		return nextState !== undefined ? nextState : state;
-	}
-	else {
-		console.warn(`${context.name} ignored unknown message:`, msg);
-		return state;
-	}
-}
-
-const start_actor = (_parent, _name, _module, _initialState = {}) => {
+const spawn_actor = (_parent, _name, _actionsMap, _initialState = {}) => {
 	return spawn(
 		_parent,
 		(state, msg, context) => {
-			return route_action(_module, state, msg, context)
+			return route_action(_actionsMap, state, msg, context)
 		},
 		_name,
 		_initialState
 	);
 }
 
-const system = start();
-
-const dummyActor = {
-	'print': (msg, ctx, state) => {
-		// Sent WOKENS to the top three on the leaderboard
-		console.log('DUMMY: ', msg.msg);
+const route_action = (_actionsMap, _state, _msg, _context) => {
+	let action = _actionsMap[_msg.type];
+	if (action && typeof (action) == "function") {
+		const nextState = action(_msg, _context, _state);
+		return nextState !== undefined ? nextState : _state;
+	}
+	else {
+		console.warn(`${_context.name} ignored unknown message:`, _msg);
+		return _state;
 	}
 }
 
-const poll = start_actor(system, 'poller', actors.polling, {halt: false});
-const dummy = start_actor(system, 'dummy', dummyActor, {});
+const start_actor = system => (_name, _definition, _initialState) => {
+	const { actions, properties } = _definition;
+	return spawn_actor(
+		system,
+		_name,
+		actions,
+		_initialState || properties.initialState
+	);
+}
 
-dispatch(poll, {type: 'poll',
-	target: dummy,
-	action: 'print',
-	period: 1000,
-	args: {
-		msg: 'hello'
-	},
-});
+const bootstrap = () => {
+	const system = start();
+
+	return {
+		start_actor: start_actor(system),
+		stop: stop(system),
+		dispatch,
+	}
+}
+
+module.exports = bootstrap;
