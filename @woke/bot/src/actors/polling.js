@@ -19,6 +19,10 @@ const pollingActor = {
 				args
 			} = msg;
 
+			if(!period || period < 0) {
+				throw new Error('Polling period must be non-zero');
+			}
+
 			debug(msg, `Start polling {${target.name}:${action}} every ${period}ms...`);
 			dispatch(ctx.self, { type: 'perform',  target, action, args }, ctx.self);
 

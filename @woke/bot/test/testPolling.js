@@ -8,7 +8,7 @@ const actorStub = {
 	properties: {},
 	actions: {
 		'callback': (msg, ctx, state) => {
-			msg.callback();
+			msg.callback(msg, ctx, state);
 		}
 	}
 }
@@ -29,29 +29,65 @@ context('Polling', function() {
 
 	describe('#poll', function() {
 		it('should dispatch the target action after a delay', function (done) {
-			let waiting = true;
-			const delay = 10;
+			const [delay, tolerance] = [10, 2]; // ms
+			let count = 0;
+
+			const callback = () => {
+				++count;
+				if(count == 1) {
+					setTimeout(() => {
+						if(count >= 2) {
+							console.log('DONE EARLY');
+							assert(false, 'Action called too early');
+						}
+					}, delay - tolerance); 
+					setTimeout(() => {
+						if(count < 2) {
+							console.log('DONE LATE');
+							assert(false, 'Action not called in time');
+						}
+						done();
+					}, delay + tolerance); 
+				}
+			}
+
 			director.dispatch(a_polling, {type: 'poll',
 				target: a_stub,
 				action: 'callback',
 				period: delay,
-				args: {
-					callback: () => {
-						waiting = false;
-						console.log('DONE A');
-						done();
-					}
-				},
+				args: { callback }
+			});
+
+		})
+	})
+
+	describe('#interupt', function() {
+		it('should stop polling', function (done) {
+			const [delay, tolerance] = [10, 1]; // ms
+			let count = 0;
+			let maxCalls = 5;
+
+			const callback = () => {
+				++count;
+			}
+
+			director.dispatch(a_polling, {type: 'poll',
+				target: a_stub,
+				action: 'callback',
+				period: delay,
+				args: { callback }
 			});
 
 			setTimeout(() => {
-				if(waiting) {
-					assert(false, 'Action not called in time');
-				}
 				director.dispatch(a_polling, {type: 'interupt'})
+			}, delay*(maxCalls-1) - tolerance)//tolerance);
+
+			setTimeout(() => {
+				if(count > maxCalls) {
+					assert(false, 'Action called after interupt');
+				}
 				done();
-				console.log('DONE B');
-			}, delay); 
+			}, delay*maxCalls + tolerance)
 		})
 	})
 })

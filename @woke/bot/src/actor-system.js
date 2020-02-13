@@ -40,7 +40,7 @@ const bootstrap = () => {
 
 	return {
 		start_actor: start_actor(system),
-		stop: stop(system),
+		stop: () => stop(system),
 		dispatch,
 	}
 }
