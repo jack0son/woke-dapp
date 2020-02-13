@@ -53,19 +53,22 @@ const dummyActor = {
 }
 
 const poll = director.start_actor('poller', actors.polling);
-const dummy = start_actor(system, 'dummy', dummyActor, {});
+const dummy = director.start_actor('dummy', {actions: dummyActor}, {});
 
-dispatch(poll, {type: 'poll',
+const repeat = (msg, period) => director.dispatch(poll, {type: 'poll',
 	target: dummy,
 	action: 'print',
-	period: 400,
+	period,
 	args: {
-		msg: 'hello'
+		msg
 	},
 });
+
+repeat('hahahaha lolololol', 1000);
+
 const sleep = (ms) => new Promise(res => setTimeout(res, ms));
-sleep(2000).then(() => {
-	dispatch(poll, {type: 'interupt'})
+sleep(5000).then(() => {
+	director.dispatch(poll, {type: 'interupt'})
 });
 
 
@@ -84,45 +87,3 @@ const wokenAgent = {
 	'transferUnclaimed': {
 	}
 }
-
-// Drives posting to twitter
-const tweeterActor = {
-	'tweet': (msg, context, state) => {
-		// Tweet an invite
-	},
-
-	'dm': (msg, context, state) => {
-		// Direct message a user
-	}
-}
-
-// using polling service to print a wave lel
-
-// Driven by polling twitter
-// https://developer.twitter.com/en/docs/tweets/search/api-reference/get-search-tweets
-const twitterMonitor = {
-
-	'tip': (msg, ctx, state) => {
-		// Search for tipping tweets
-	},
-
-	'wokeness': (msg, ctx, state) => {
-		// Search for woke tweets and add their users into the leaderboard
-	},
-
-	'vote': (msg, ctx, state) => {
-		// Search for wokenes votes
-		// Daily leaderboard for most woke tweets
-		// Any twitter user can vote by tweeting '#WOKEVOTE'
-	},
-
-	'wokendrop': (msg, ctx, state) => {
-		// Sent WOKENS to the top three on the leaderboard
-	},
-
-	seen: {
-		'tweethash': 'tweetObject'
-	}
-}
-
-

@@ -24,7 +24,7 @@ const pollingActor = {
 			}
 
 			debug(msg, `Start polling {${target.name}:${action}} every ${period}ms...`);
-			dispatch(ctx.self, { type: 'perform',  target, action, args }, ctx.self);
+			dispatch(ctx.self, { type: 'perform',  target, period, action, args }, ctx.self);
 
 			return { ...state,
 				halt: false,
@@ -35,14 +35,14 @@ const pollingActor = {
 		},
 
 		'perform': (msg, ctx, state) => {
-			const { halt, period } = state;
-			const { target, action, args } = msg;
+			const { halt, } = state;
+			const { target, action, period, args } = msg;
 
 			if(!halt) {
 				dispatch(target, {type: action, ...args});
 
 				setTimeout(() => 
-					dispatch(ctx.self, { type: 'perform',  target, action, args }),
+					dispatch(ctx.self, { type: 'perform',  target, period, action, args }),
 					period
 				);
 			}
