@@ -4,19 +4,6 @@
 //	1. Twitter Tipping
 //	2. Woke invites 
 //
-//	Twitter tipping
-//	---------------
-//	A wokelord is able to send transactions from their wallet simply by sending
-//	a tweet that matches the transfer tweet pattern. e.g.
-//			+1000 WOKE
-//			+1000 wokens
-//			+1000W
-//			+1000 WOKENS
-//			+<integer> [#]<[woke, wokens, WOKE, WOKENS]>
-//
-//	Assumptions
-//		- Users user must have tokens in their tipping purse 
-//		- App will allocate all wokens to tipping on joining
 //
 //
 //	Woke Invites
