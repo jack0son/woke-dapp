@@ -12,11 +12,11 @@ context('Library Modules', function() {
 		})
 
 		it('should find tip tweets', async function() {
-			const expected = TwitterMock.data.tweets;
+			const expected = TwitterMock.data.tipTweets;
 
 			const tips = await twitter.findTips();
 			expected.forEach(exp =>
-				assert(tips.includes(exp), `Expected to find tip tweet "${exp}"`)
+				assert(tips.includes(exp), `Expected to find tip tweet "${exp.id_str}"`)
 			);
 		})
 	})

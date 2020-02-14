@@ -2,7 +2,13 @@ const { dispatch } = require('nact');
 const { Logger } = require('@woke/lib');
 const debug = (msg, args) => Logger().name(`POLL:`, `${msg.type}>> ` + args);
 
+const iface = {
+	poll: 'poll',
+}
+
 const pollingActor = {
+	iface, 
+
 	properties: {
 		initialState: {
 			halt: false,
@@ -10,7 +16,7 @@ const pollingActor = {
 	},
 
 	actions: {
-		'poll': (msg, ctx, state) => {
+		[iface.poll]: (msg, ctx, state) => {
 			const {
 				target, // target actor
 				action, // target action type
@@ -24,7 +30,7 @@ const pollingActor = {
 			}
 
 			debug(msg, `Start polling {${target.name}:${action}} every ${period}ms...`);
-			dispatch(ctx.self, { type: 'perform',  target, period, action, args }, ctx.self);
+			dispatch(ctx.self, { type: 'perform',  target, period, action, args }, ctx.sender);
 
 			return { ...state,
 				halt: false,
@@ -39,10 +45,10 @@ const pollingActor = {
 			const { target, action, period, args } = msg;
 
 			if(!halt) {
-				dispatch(target, {type: action, ...args});
+				dispatch(target, {type: action, ...args}, ctx.sender);
 
 				setTimeout(() => 
-					dispatch(ctx.self, { type: 'perform',  target, period, action, args }),
+					dispatch(ctx.self, { type: 'perform',  target, period, action, args }, ctx.sender),
 					period
 				);
 			}

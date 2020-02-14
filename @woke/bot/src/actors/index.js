@@ -1,6 +1,4 @@
-const polling = require('./polling');
-
 module.exports = {
-	polling,
-	twitterMonitor,
+	polling: require('./polling'),
+	TwitterMonitor: require('./twitter-monitor'),
 }

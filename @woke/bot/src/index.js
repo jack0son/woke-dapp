@@ -29,35 +29,22 @@
 
 const { Logger } = require('@woke/lib');
 const debug = Logger();
+const actors = require('./actors');
 
 const director = require('./actor-system')();
 
-const dummyActor = {
-	'print': (msg, ctx, state) => {
-		// Sent WOKENS to the top three on the leaderboard
-		console.log('DUMMY: ', msg.msg);
-	}
-}
+const TwitterStub = require('./lib/twitter-stub');
+const TwitterMock = require('../test/mocks/twitter-client');
 
-const poll = director.start_actor('poller', actors.polling);
-const dummy = director.start_actor('dummy', {actions: dummyActor}, {});
+const twitter = new TwitterStub({}, TwitterMock.MockClient);
+const tMonDefn = actors.TwitterMonitor(twitter);
 
-const repeat = (msg, period) => director.dispatch(poll, {type: 'poll',
-	target: dummy,
-	action: 'print',
-	period,
-	args: {
-		msg
-	},
+const a_tMon = director.start_actor('twitter_monitor', tMonDefn);
+const a_polling = director.start_actor('polling_service', actors.polling);
+
+dispatch(a_polling, { type: polling.iface.poll,
+	target: 
 });
-
-repeat('hahahaha lolololol', 1000);
-
-const sleep = (ms) => new Promise(res => setTimeout(res, ms));
-sleep(5000).then(() => {
-	director.dispatch(poll, {type: 'interupt'})
-});
-
 
 const wokenMonitor = {
 	// Monitor the WokeToken contract for unclaimed transfers

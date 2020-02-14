@@ -1,4 +1,5 @@
 const Twitter = require('twitter');
+const fs = require('fs');
 var request = require('request-promise-native');
 
 const debug = require('./debug')('twitter');
@@ -179,6 +180,7 @@ if(debug.debug.enabled && require.main === module) {
 					let r = await searchTweets(query ? {q: query} : undefined);
 					r = r.filter(t => t.full_text.includes('+'));
 					r.forEach(t => {
+						console.log(t);
 						console.log(t.user.screen_name);
 						console.log(t.full_text);
 						console.log(t.entities.user_mentions);
@@ -188,10 +190,19 @@ if(debug.debug.enabled && require.main === module) {
 					break;
 				}
 
-				case 'tip': {
-					const [query] = args;
-					let r = await searchTweets({q: query});
-					console.dir(r);
+				case 'tips': {
+					const [time] = args;
+					let r = await searchTweets({ q: '$woke OR $WOKE OR $WOKENS OR WOKENS'});
+					//r = r.filter(t => t.full_text.includes('+'));
+					r.forEach(t => {
+						console.log(t);
+						console.log(t.user.screen_name);
+						console.log(t.full_text);
+						console.log(t.entities.user_mentions);
+						console.log();
+					})
+
+					fs.writeFileSync('tweets-tips.json', JSON.stringify(r));
 					break;
 				}
 

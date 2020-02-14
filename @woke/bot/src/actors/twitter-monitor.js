@@ -20,54 +20,70 @@ const debug = (msg, args) => Logger().name(`TMON`, `${msg.type}>> ` + args);
 //
 //		query = "}
 
-const twitterMonitor = (twitterStub) => ({
+const iface = {
+	find_tips: 'find_tips',
+	seen_tips: 'seen_tips',
+}
+
+const TwitterMonitor = (twitterStub) => ({
+	iface,
+
 	properties: {
 		initialState: {
 			twitter: twitterStub,
 			youngest: { // date of last processed tweet
 				date: 0,
 				id: 0,
-			}
-		}
+			},
+			seenTips: {},
+		},
+
+		onCrash: (msg, error, ctx) => ctx.resume,
 	},
 
 	actions: {
-		'tip': (msg, ctx, state) => {
-			const { twitter } = state;
+		[iface.find_tips]: (msg, ctx, state) => {
+			const { twitter, seenTips } = state;
 			const {
-				time,
-				a_processor,
+				//time,
+				//a_processor,
 			} = msg;
 
 			validateTwitterStub(twitter);
-			isActor(a_processor, 'a_processor');
+			//isActor(a_processor, 'a_processor');
 
-			function parseTipTweet(tweet) {
-				// Extract sending user
-				//
-				// Extract @mentions
-				//
-				// What order are mentions in replies to tweets
-				// @note Assume OP is listed firs in mentions array
-				// Can enforce this by parsing tweet text and extracting the first or
-				// last user handle
-			}
-
-			twitter.findTips().then(tipTweets => {
-				tipTweets.forEach(tweet => {
+			return twitter.findTips().then(tipTweets => {
+				const newTips = tipTweets.filter(tweet => {
+					if(seenTips[tweet.id_str] === true) {
+						debug(msg, `Tip already seen`);
+						return false;
+					}
+					seenTips[tweet.id_str] = true;
 				});
 
-				if(a_wokenAgent) {
-					tipTweets.forEach(t => dispatch(a_wokenAgent, {type: 'tip',
-						tweet: t,
-					}));
+				dispatch(ctx.sender, { type: 'new_tips', tips: newTips }, ctx.self);
+				return {
+					...state,
+					seenTips: {...seenTips},
 				}
-			})
-			// Search for tipping tweets
+			}).catch(error => {
+				console.log('Failed to fetch tweets');
+				console.error(error);
+			});
 		},
 
-		'process_tip': (msg, ctx, state) => {
-		}
+		[iface.seen_tips]: (msg, ctx, state) => {
+			const { twitter, seenTips } = state;
+			const { tips } = msg;
+
+			console.log(tips);
+			debug(msg, `Adding ${Object.keys(tips).length} seen tweets`);
+
+			return {
+				...state,
+				tips: [...seenTips, ...tips],
+			}
+		},
 
 		'wokeness': (msg, ctx, state) => {
 			// Search for woke tweets and add their users into the leaderboard
@@ -82,10 +98,6 @@ const twitterMonitor = (twitterStub) => ({
 		'wokendrop': (msg, ctx, state) => {
 			// Sent WOKENS to the top three on the leaderboard
 		},
-
-		seen: {
-			'tweethash': 'tweetObject'
-		}
 	}
 });
 
@@ -93,8 +105,8 @@ function validateTwitterStub(stub) {
 	if(!stub) {
 		throw new Error('No stub provided');
 	}
-	if(!stub.hasCredentials()) {
-		throw new Error('Twitter stub has no credentials');
+	if(!stub.ready()) {
+		throw new Error('Twitter stub not initialised');
 	}
 }
 
@@ -104,4 +116,4 @@ function isActor(a_actor, targetName) {
 	}
 }
 
-module.exports = createTwitterMonitor;
+module.exports = TwitterMonitor;

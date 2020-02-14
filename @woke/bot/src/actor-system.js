@@ -2,21 +2,21 @@ const { start, dispatch, stop, spawn, spawnStateless } = require('nact');
 
 actors = require('./actors');
 
-const spawn_actor = (_parent, _name, _actionsMap, _initialState = {}) => {
+const spawn_actor = (_parent, _name, _actionsMap, _initialState, _properties) => {
 	return spawn(
 		_parent,
-		(state, msg, context) => {
+		(state = _initialState, msg, context) => {
 			return route_action(_actionsMap, state, msg, context)
 		},
 		_name,
-		_initialState
+		_properties,
 	);
 }
 
-const route_action = (_actionsMap, _state, _msg, _context) => {
+const route_action = async (_actionsMap, _state, _msg, _context) => {
 	let action = _actionsMap[_msg.type];
 	if (action && typeof (action) == "function") {
-		const nextState = action(_msg, _context, _state);
+		const nextState = await action(_msg, _context, _state);
 		return nextState !== undefined ? nextState : _state;
 	}
 	else {
@@ -31,7 +31,8 @@ const start_actor = system => (_name, _definition, _initialState) => {
 		system,
 		_name,
 		actions,
-		_initialState || properties.initialState
+		_initialState || properties.initialState,
+		properties
 	);
 }
 
@@ -42,6 +43,7 @@ const bootstrap = () => {
 		start_actor: start_actor(system),
 		stop: () => stop(system),
 		dispatch,
+		system,
 	}
 }
 

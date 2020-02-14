@@ -1,17 +1,15 @@
 // This should contain a sample of tweets that match the different search
 // criteria being used
-const tweets = [
-	'heres a tweet',
-	'heres a woke tweet',
-];
+
+// @TODO tests are meaninless without expanding this dataset
+const tweets = require('./tweets-tips.json');
+const tipTweets = tweets.filter(t => t.full_text.includes('+'));
 
 const sleep = (ms) => new Promise(res => setTimeout(res, ms));
 const delay = 0;
 const queryEngine = {
-	match: async (query, data) => {
-		if(delay > 0) 
-			await sleep(delay);
-		return data;
+	match: async (query) => {
+		return tweets.filter(t => t.full_text.includes('+'));
 	}
 }
 
@@ -20,14 +18,15 @@ class MockClient {
 		this.credentials = _credentials
 	}
 
-	searchTweets(_query) {
-		return queryEngine.match(_query, tweets);
+	searchTweets(_params) {
+		return queryEngine.match(_params.q);
 	}
 }
 
 module.exports = {
 	MockClient,
 	data: {
-		tweets
+		tweets,
+		tipTweets,
 	}
 }
