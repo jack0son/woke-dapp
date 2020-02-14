@@ -42,11 +42,37 @@ const tMonDefn = actors.TwitterMonitor(twitter);
 const a_tMon = director.start_actor('twitter_monitor', tMonDefn);
 const a_polling = director.start_actor('polling_service', actors.polling);
 
+const { spawnStateless, dispatch, query } = require('nact');
+const a_conduit = {
+	actions: {
+	}
+}
+
+const a_conduit = spawnStateless(
+	director.system,
+	(msg, ctx) => {
+		switch(msg.type) {
+			case 'new_tips': {
+				const { tips } = msg;
+				tips.forEach(tip => dispatch(a_woken, {type: 'tip', tip: tip}));
+			}
+
+			default: {
+				console.log(`Conduit got unknown msg ${msg}`);
+			}
+		}
+	}
+);
+
 dispatch(a_polling, { type: polling.iface.poll,
-	target: 
-});
+	target: a_tMon,
+	action: tMonDefn.iface.find_tips,
+	period: 500,
+}, a_woken);
 
 const wokenMonitor = {
+	'establishWsConnection': () => {
+	}
 	// Monitor the WokeToken contract for unclaimed transfers
 	'unclaimedTx': (msg, context, state) => {
 		// Subscribe to unclaimed transfers
@@ -56,8 +82,22 @@ const wokenMonitor = {
 	}
 }
 
+const tipAgent = {
+	'new_tip': () => {
+	}
+
+	'handle_tips': () => {
+		for each tip {
+		 dispatch(new tip)
+		}
+	}
+}
+
 const wokenAgent = {
 	// Send wokens
 	'transferUnclaimed': {
-	}
+	},
+
+	'transferClaimed': {
+	},
 }

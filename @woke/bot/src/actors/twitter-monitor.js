@@ -85,6 +85,17 @@ const TwitterMonitor = (twitterStub) => ({
 			}
 		},
 
+		'get_user_data': (msg, ctx, state) => {
+			const { twitter } = state;
+			const { userId, handle } = msg;
+
+			twitter.getUser(userId).then(user => {
+				dispatch(ctx.sender, { type: 'user_data', user }, ctx.self);
+			}).catch(error => {
+				dispatch(ctx.sender, { type: 'user_data', error }, ctx.self);
+			});
+		},
+
 		'wokeness': (msg, ctx, state) => {
 			// Search for woke tweets and add their users into the leaderboard
 		},
