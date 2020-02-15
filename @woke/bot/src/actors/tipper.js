@@ -23,7 +23,8 @@ const resetWithExponentialDelay = (factor) => {
 const resetWithMaxAttempts = (factor) => {
 }
 
-const CONTRACT_TIMEOUT = 300;
+const AVG_BLOCK_TIME = 3*1000
+const CONTRACT_TIMEOUT = 3*AVG_BLOCK_TIME;
 
 function tip_str(tip) {
 	return `@${tip.fromHandle} wishes to tip @${tip.toHandle} ${tip.amount}.WOKENS`;
@@ -90,8 +91,8 @@ const tipper = {
 
 				ctx.debug.d(msg, `Check @${tip.fromHandle} is claimed...`);
 				const userIsClaimed = await query(a_wokenContract, { type: 'call',
-					method: 'userIsClaimed',
-					args: tip.fromId
+					method: 'userClaimed',
+					args: [tip.fromId]
 				}, CONTRACT_TIMEOUT)
 
 				if(!userIsClaimed) {
@@ -99,10 +100,9 @@ const tipper = {
 					entry.error = 'unclaimed sender'
 				} else {
 
-					args = [tip.fromId, tip.toId, tip.amount];
-					dispatch(wokenContract, {type: 'send', 
+					dispatch(a_wokenContract, {type: 'send', 
 						method: 'tip',
-						args: args,
+						args: [tip.fromId, tip.toId, tip.amount],
 						meta: {
 							tip
 						}

@@ -20,7 +20,7 @@ const contractActor = {
 
 	actions: {
 		'init': async (msg, ctx, state) => {
-			const web3Instance = await query(a_web3, { type: 'get' }, 2000);
+			const { web3Instance } = await query(state.a_web3, { type: 'get' }, 2000);
 			const contract = initContract(web3Instance, contractInterface);
 
 			dispatch(ctx.sender, { type: 'contract_object', contract }, ctx.self);
@@ -28,16 +28,19 @@ const contractActor = {
 
 		'send': async (msg, ctx, state) => {
 			ctx.debug.d(msg, `Got call`, msg);
-			const web3Instance = await query(state.a_web3, { type: 'get' }, 2000);
+			const { web3Instance } = await query(state.a_web3, { type: 'get' }, 2000);
 			const contract = initContract(web3Instance, state.contractInterface);
 			const { method, args, opts} = msg;
 
+			if(!Array.isArray(args)) {
+				throw new Error(`Send expects parameter args to be Array`);
+			}
 			const sendOpts = {
 				...opts,
 			}
 
 			//try{
-			let r = await contract.methods[method].send(sendOpts);
+			let r = await contract.methods[method](...args).send(sendOpts);
 			ctx.debug.d(r);
 
 			dispatch(ctx.sender, { type: 'contract', result: r }, ctx.self);
@@ -47,16 +50,25 @@ const contractActor = {
 		},
 
 		'call': async (msg, ctx, state) => {
-			const web3Instance = await query(state.a_web3, { type: 'get' }, 2000);
+			const { web3Instance } = await query(state.a_web3, { type: 'get' }, 2000);
 			const contract = initContract(web3Instance, state.contractInterface);
 			const { method, args, opts} = msg;
 
+			if(!Array.isArray(args)) {
+				throw new Error(`Call expects parameter args to be Array`);
+			}
 			const callOpts = {
 				...opts,
 			}
 
 			//try {
-			let r = await contract.methods[method].call(callOpts);
+			let r = await contract.methods[method](...args).call(callOpts);
+			// @TODO Errors to handle
+			// -- Error: Returned values aren't valid, did it run Out of Gas? You might also see this error if you are not using the correct ABI for the contract you are retrieving data from, requesting data from a block number that does not exist, or querying a node which is not fully synced.
+			// -- TypeError: contract.methods[method] is not a function
+
+
+
 			ctx.debug.d(r);
 
 			dispatch(ctx.sender, { type: 'contract', result: r }, ctx.self);
