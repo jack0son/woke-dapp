@@ -262,7 +262,7 @@ contract WokeToken is Ownable, ERC20 {
 
 	// @notice Transfer tokens between claimed userIds
 	function _transferClaimed(string memory _fromId, string memory _toId, uint256 _amount) 
-		private
+		internal
 		onlyTipAgent
 		userIsClaimed(_toId)
 		supplyInvariant
@@ -284,9 +284,8 @@ contract WokeToken is Ownable, ERC20 {
 		emit Tx(from, to, _fromId, _toId, _amount, true);
 	}
 
-   /*
-	function tip(string memory _fromId, string memory _toId, uint256 _amount)
-		public
+	function tip(string calldata _fromId, string calldata _toId, uint256 _amount)
+		external
 		onlyTipAgent
 		userIsClaimed(_fromId)
 		returns(uint256)
@@ -312,10 +311,9 @@ contract WokeToken is Ownable, ERC20 {
 		emit Tip(_fromId, _toId, amount);
 		return amount;
 	}
-	*/
 
 	function setTipBalance(uint256 _amount)
-		public
+		external
 		hasUser
 	{
 		_setTipBalance(myUser(), _amount);
