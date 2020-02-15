@@ -25,7 +25,6 @@ const Web3Actor = (init_web3 = web3Tools.init, maxAttempts = MAX_ATTEMPTS, opts)
 	actions: {
 		'get': async (msg, ctx, state) => {
 			const { web3Instance } = state;
-			ctx.debug.d(msg, 'Get instance...');
 
 			if(!web3Instance) {
 				return forwardToInit();
@@ -53,18 +52,18 @@ const Web3Actor = (init_web3 = web3Tools.init, maxAttempts = MAX_ATTEMPTS, opts)
 			const { queue, web3Instance } = state;
 
 			if(queue.length == 0) {
-				ctx.debug.d(msg, `Triggering instantiate, with queue ${queue.length}`);
+				ctx.debug.info(msg, `Triggering instantiate, with queue ${queue.length}`);
 				dispatch(ctx.self, {type: 'instantiate'}, ctx.self);
 			}
 
-			ctx.debug.d(msg, `${queue.length} in queue`);
+			ctx.debug.info(msg, `${queue.length} in queue`);
 			if(ready === true) {
 				queue.forEach(sender => {
 					dispatch(sender, { type: 'web3', web3Instance }, ctx.self)
 				});
 				return { ...state, queue: [] };
 			} else {
-				ctx.debug.d(msg, `Adding ${ctx.sender.type} to queue`);
+				ctx.debug.info(msg, `Adding ${ctx.sender.type} to queue`);
 				return { ...state, queue: [...queue, ctx.sender] };
 			}
 		},
@@ -127,7 +126,6 @@ const Web3Actor = (init_web3 = web3Tools.init, maxAttempts = MAX_ATTEMPTS, opts)
 				if(ctx.sender != ctx.self) {
 					dispatch(ctx.self, {type: 'web3', web3Instance }, ctx.self);
 				}
-				ctx.debug.d(msg, '... Web3 connection success');
 				return { ...state, web3Instance }
 			}
 		}

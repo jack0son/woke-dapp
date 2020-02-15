@@ -11,7 +11,7 @@ const Web3Actor = Web3;
 const { delay } = require('../src/lib/utils');
 
 const TIME_OKAY = 10;
-const TIME_LONG = 400;
+const TIME_LONG = 100;
 const TIME_TIMEOUT = 500;
 
 const networks = {
@@ -60,7 +60,6 @@ const getId_fail_n = (n) => {
 	let count = 0;
 	return async () => {
 		count = count + 1;
-		console.log('COUNT  _____  ', count);
 		if(count == 2) {
 			return getId_wrong();
 		}
@@ -105,28 +104,22 @@ context('Web3Actor', function() {
 
 	describe('#get', function() {
 		it('should get an existing instance', async function() {
-
-			return;
 			// Pass web3 mock instantiator as web3_init function
 			a_web3 = director.start_actor('web3', Web3Actor(() => Web3Mock(getId_okay)));
 			await query(a_web3, { type: 'init' }, TIME_TIMEOUT)
 			const { web3Instance } =  await query(a_web3, { type: 'get' }, TIME_TIMEOUT);
 
-			expect(web3Instance).to.have.property('account');
+			return expect(web3Instance).to.have.property('account');
 		})
 
 		it('should initialise if no existing instance', async function() {
-
-			return;
 			a_web3 = director.start_actor('web3', Web3Actor(() => Web3Mock(getId_okay)));
 			const { web3Instance } =  await query(a_web3, { type: 'get' }, TIME_TIMEOUT*5);
 
-			expect(web3Instance).to.have.property('account');
+			return expect(web3Instance).to.have.property('account');
 		})
 
 		it('should handle several waiting requests', async function() {
-
-			return;
 			a_web3 = director.start_actor('web3', Web3Actor(() => Web3Mock(getId_long)));
 			const messages = await Promise.all([1,2,3,4,5].map(i => query(a_web3, { type: 'get' }, TIME_TIMEOUT*5)))
 
@@ -134,7 +127,6 @@ context('Web3Actor', function() {
 		})
 
 		it('should terminate if web3 cannot be instantiated', async function() {
-			return;
 			const RETRY_DELAY = TIME_OKAY;
 			const ATTEMPTS = 3
 			a_web3 = director.start_actor('web3', Web3Actor(
@@ -146,28 +138,9 @@ context('Web3Actor', function() {
 			));
 			return expect(query(a_web3, { type: 'get' }, TIME_OKAY*ATTEMPTS*2)).to.eventually.be.rejected;
 		})
-	})
-
-	describe('#init', function() {
-		it('should return a web3 instance', async function() {
-
-			return;
-			a_web3 = director.start_actor('web3', Web3Actor(() => Web3Mock(getId_okay)));
-			let res  = await query(a_web3, { type: 'init' }, TIME_LONG)
-			expect(res.web3Instance).to.have.property('account');
-
-			director.stop();
-			director = bootstrap();
-
-			a_web3 = director.start_actor('web3', Web3Actor(() => Web3Mock(getId_long)));
-			res = await query(a_web3, { type: 'init' }, TIME_LONG + TIME_TIMEOUT)
-			expect(res.web3Instance).to.have.property('account');
-
-		})
 
 		it('should still succeed if some attempts fail', async function() {
-
-			const RETRY_DELAY = 10;
+			const RETRY_DELAY = TIME_OKAY;
 			const ATTEMPTS = 5
 			const getId = getId_fail_n(ATTEMPTS - 1);
 			a_web3 = director.start_actor('web3', Web3Actor(
@@ -177,9 +150,41 @@ context('Web3Actor', function() {
 					retryDelay: RETRY_DELAY
 				}
 			));
-			const { web3Instance } =  await query(a_web3, { type: 'get' }, TIME_LONG*2*ATTEMPTS);
+			const { web3Instance } =  await query(a_web3, { type: 'get' }, RETRY_DELAY*ATTEMPTS*2);
 
-			expect(web3Instance).to.have.property('account');
+			return expect(web3Instance).to.have.property('account');
+		})
+	})
+
+	describe('#init', function() {
+		it('should return a web3 instance', async function() {
+			a_web3 = director.start_actor('web3', Web3Actor(() => Web3Mock(getId_okay)));
+			let res  = await query(a_web3, { type: 'init' }, TIME_LONG)
+			expect(res.web3Instance).to.have.property('account');
+
+			director.stop();
+			director = bootstrap();
+
+			a_web3 = director.start_actor('web3', Web3Actor(() => Web3Mock(getId_long)));
+			res = await query(a_web3, { type: 'init' }, TIME_LONG + TIME_TIMEOUT)
+
+			return expect(res.web3Instance).to.have.property('account');
+		})
+
+		it('should still succeed if some attempts fail', async function() {
+			const RETRY_DELAY = TIME_OKAY;
+			const ATTEMPTS = 5
+			const getId = getId_fail_n(ATTEMPTS - 1);
+			a_web3 = director.start_actor('web3', Web3Actor(
+				() => Web3Mock(getId),
+				ATTEMPTS,
+				{
+					retryDelay: RETRY_DELAY
+				}
+			));
+			const { web3Instance } =  await query(a_web3, { type: 'init' }, RETRY_DELAY*ATTEMPTS*2);
+
+			return expect(web3Instance).to.have.property('account');
 		})
 	})
 })
