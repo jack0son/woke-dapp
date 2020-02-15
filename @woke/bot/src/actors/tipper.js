@@ -1,5 +1,7 @@
 // Keep track of unsent tips
 
+const { dispatch } = require('nact');
+const { delay } = require('../lib/utils');
 const statuses = [
 	'UNSETTLED',
 	'SETTLED',
@@ -9,12 +11,11 @@ const statuses = [
 const statusEnum = {};
 statuses.forEach((s, i) => statusEnum[s] = i);
 
-const delay = ms => new Promise(res => setTimeout(res, ms));
 const resetWithExponentialDelay = (factor) => {
 	let count = 0;
 	return async (msg, error, ctx) => {
-		let delay = (2**count - 1)*factor;
-		await delay(delay);
+		let ms = (2**count - 1)*factor;
+		await delay(ms);
 		++count;
 		return ctx.reset;
 	};
@@ -28,12 +29,11 @@ const CONTRACT_TIMEOUT = 300;
 const tipActor = {
 	properties: {
 		initialState: {
-			tip,
-			status,
+			tip: null,
+			status: 'init',
 		},
 
-		onCrash: 
-		async (msg, error, ctx) => {
+		onCrash: async (msg, error, ctx) => {
 		}
 	},
 
@@ -45,7 +45,7 @@ const tipper = {
 	properties: {
 		initialState: {
 			tipRepo: {},
-			a_wokenContract,
+			a_wokenContract: null,
 		},
 
 		onCrash: (() => {
@@ -68,6 +68,7 @@ const tipper = {
 			const { tipRepo, a_wokenContract } = state;
 			const { tip } = msg;
 
+			ctx.debug.info(msg, `Received tip ${tip.id_str}`);
 			let entry = tipRepo[tip.id];
 			if(!entry) {
 				// New tip
@@ -122,6 +123,10 @@ const tipper = {
 			}
 
 			if(error) {
+				// Error scenarios
+				//	1. insufficient balance
+				//	2. unclaimed user (should be caught before sending tip)
+
 				dispatch(ctx.self, {type: 'tip_update', error, status: statusEnum.FAILED});
 				return;
 			}

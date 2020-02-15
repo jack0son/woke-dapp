@@ -1,5 +1,6 @@
 const { dispatch } = require('nact');
 const { Logger } = require('@woke/lib');
+const {inspect} = require('util');
 const debug = (msg, args) => Logger().name(`TMON`, `${msg.type}>> ` + args);
 // Driven by polling twitter
 // https://developer.twitter.com/en/docs/tweets/search/api-reference/get-search-tweets
@@ -52,14 +53,29 @@ const TwitterMonitor = (twitterStub) => ({
 			validateTwitterStub(twitter);
 			//isActor(a_processor, 'a_processor');
 
+			ctx.debug.info(msg, 'Finding tip tweets...');
 			return twitter.findTips().then(tipTweets => {
+				if(tipTweets.length > 0) {
+					ctx.debug.d(msg, `Found ${tipTweets.length} tip tweets`);
+				}
+
+				const amountRegex = /\+(\d+)\s\$/
+
 				const newTips = tipTweets.filter(tweet => {
+					//console.log(tweet);
 					if(seenTips[tweet.id_str] === true) {
-						debug(msg, `Tip already seen`);
+						ctx.debug.d(msg, `Tip already seen`);
 						return false;
 					}
 					seenTips[tweet.id_str] = true;
-				});
+					return true;
+				}).map(tweet => ({
+					fromId: tweet.user.id_str,
+					toId: tweet.in_reply_to_user_id_str,
+					amount: parseInt(tweet.full_text.match(amountRegex)[1]),
+				}));
+
+				newTips.forEach(t=>console.log(t));
 
 				dispatch(ctx.sender, { type: 'new_tips', tips: newTips }, ctx.self);
 				return {
@@ -77,7 +93,7 @@ const TwitterMonitor = (twitterStub) => ({
 			const { tips } = msg;
 
 			console.log(tips);
-			debug(msg, `Adding ${Object.keys(tips).length} seen tweets`);
+			ctx.debug.d(msg, `Adding ${Object.keys(tips).length} seen tweets`);
 
 			return {
 				...state,

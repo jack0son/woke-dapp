@@ -37,6 +37,9 @@ const route_action = async (_actionsMap, _state, _msg, _context) => {
 
 const start_actor = system => (_name, _definition, _initialState) => {
 	const { actions, properties } = _definition;
+	if(!actions) {
+		throw new Error(`No actions defined for {${_name}} actor`);
+	}
 	const { initialState } = properties ? properties : {}
 	return spawn_actor(
 		system,

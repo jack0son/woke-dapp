@@ -71,7 +71,8 @@ const a_conduit = spawnStateless(
 		switch(msg.type) {
 			case 'new_tips': {
 				const { tips } = msg;
-				tips.forEach(tip => dispatch(a_woken, {type: 'tip', tip: tip}));
+				tips.forEach(tip => dispatch(a_tipper, {type: 'tip', tip}));
+				break;
 			}
 
 			default: {
@@ -84,6 +85,6 @@ const a_conduit = spawnStateless(
 dispatch(a_polling, { type: actors.polling.iface.poll,
 	target: a_tMon,
 	action: tMonDefn.iface.find_tips,
-	period: 500,
+	period: 3000,
 }, a_conduit);
 
