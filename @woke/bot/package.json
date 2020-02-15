@@ -5,7 +5,7 @@
   "private": true,
   "main": "index.js",
   "scripts": {
-    "test": "./node_modules/.bin/mocha",
+    "test": "./node_modules/.bin/mocha ./test/test*.js",
     "test-debug": "DEBUG=oracle:* ./node_modules/.bin/mocha",
     "start": "DEBUG=* node src/index.js"
   },
@@ -17,6 +17,7 @@
   },
   "devDependencies": {
     "chai": "^4.2.0",
+    "chai-as-promised": "^7.1.1",
     "minimist": "^1.2.0",
     "mocha": "^6.2.2"
   }

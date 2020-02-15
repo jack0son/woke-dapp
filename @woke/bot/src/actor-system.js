@@ -1,12 +1,22 @@
 const { start, dispatch, stop, spawn, spawnStateless } = require('nact');
+const { Logger } = require('@woke/lib');
 
 actors = require('./actors');
 
+const DEBUG_PREFIX = 'actor';
+
 const spawn_actor = (_parent, _name, _actionsMap, _initialState, _properties) => {
+	const debug = {};
+
+	Object.entries(Logger(`${DEBUG_PREFIX}:${_name}`)).forEach(entry => {
+		const [key, func] = entry;
+		debug[key] = (msg, args) => func(`${msg.type}>> ` + args)
+	})
+
 	return spawn(
 		_parent,
 		(state = _initialState, msg, context) => {
-			return route_action(_actionsMap, state, msg, context)
+			return route_action(_actionsMap, state, msg, {...context, debug })
 		},
 		_name,
 		_properties,
