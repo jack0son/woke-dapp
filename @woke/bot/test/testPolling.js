@@ -1,8 +1,6 @@
-//const mocha = require('mocha');
 const assert = require('assert');
-
-actors = require('../src/actors');
-bootstrap = require('../src/actor-system');
+const actors = require('../src/actors');
+const bootstrap = require('../src/actor-system');
 
 const actorStub = {
 	properties: {},

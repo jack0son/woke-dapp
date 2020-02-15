@@ -1,9 +1,5 @@
 const { dispatch } = require('nact');
-const {
-	Logger,
-	twitter,
-	web3Tools,
-} = require('@woke/lib');
+const { web3Tools } = require('@woke/lib');
 const { delay } = require('../lib/utils');
 
 // @TODO define these timing constants in common lib

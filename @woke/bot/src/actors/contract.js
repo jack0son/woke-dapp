@@ -1,25 +1,9 @@
+const { dispatch } = require('nact');
+const { web3Tools } = require('@woke/lib');
 
-const socketWatchDog = {
-	'watch': () => {
-		const { isLive, reestablish, interval } = msg;
-
-		call this from polling actor?
-	}
-
-	'check': () => {
-		if(! isLive() ) {
-			reestablish();
-		}
-	}
+function initContract(web3Instance, interface) {
+	return new web3.eth.Contract(self.interface.abi, self.interface.networks[self.network.id].address);
 }
-
-	function initContract(web3, interface) {
-		return new self.web3.eth.Contract(self.interface.abi, self.interface.networks[self.network.id].address);
-	}
-
-
-
-
 
 const ContractAgent = (contract, a_web3) => ({
 	properties: {
@@ -33,61 +17,49 @@ const ContractAgent = (contract, a_web3) => ({
 
 	actions: {
 		'init': async (msg, ctx, state) => {
-			const web3Instance = await query(a_web3, { type: 'get' }, ctx.self);
-			const contract = initContract(web3Instance.web3, contractInterface);
+			const web3Instance = await query(a_web3, { type: 'get' }, 2000);
+			const contract = initContract(web3Instance, contractInterface);
 
-			dispatch(ctx.sender, { type: 'contract_object' }, ctx.self);
-			return { ...state, contract };
-		},
-
-		'contract_object': async (msg, ctx, state) => {
-			if(!(await query(a_web3, { type: 'isAlive' }))) {
-				await dispatch(ctx.self, 
-			}
-		}
-
-		'web3': async (msg, ctx, state) => {
-			const { resp } = msg;
-			// Web3 dispatches (ctx.sender, { type: 'web3', resp: {type: 'get_instance', web3Instance}}, ctx.self)
-
-			if(resp.type) {
-				return {
-					...state,
-					web3Instance,
-					contract: initContract(web3Instance.web3, contractInterface),
-				}
-			}
+			dispatch(ctx.sender, { type: 'contract_object', contract }, ctx.self);
 		},
 
 		'send': async (msg, ctx, state) => {
-			const { contract, a_web3 } = state;
+			const web3Instance = await query(state.a_web3, { type: 'get' }, 2000);
+			const contract = initContract(web3Instance, state.contractInterface);
 			const { method, args, opts} = msg;
-			
-			const callOpts = {
+
+			const sendOpts = {
 				...opts,
 			}
 
-			try{
-				let r = await contract.methods[method].send(callOpts);
-			} catch(error) {
-				debug(msg, error);
-				await query(ctx.self, { type: 'init' }, ctx.sender);
-			}
+			//try{
+			let r = await contract.methods[method].send(sendOpts);
+			ctx.debug.d(r);
+
+			dispatch(ctx.sender, { type: 'contract', result: r }, ctx.self);
+			//} catch(error) {
+			//debug(msg, error);
+			//}
 		},
 
 		'call': async (msg, ctx, state) => {
-			const { contract } = state;
+			const web3Instance = await query(state.a_web3, { type: 'get' }, 2000);
+			const contract = initContract(web3Instance, state.contractInterface);
 			const { method, args, opts} = msg;
-			
+
 			const callOpts = {
 				...opts,
 			}
 
-			try {
-				let r = await contract.methods[method].call(callOpts);
-			} catch (error) {
-				dispatch(init
-			}
+			//try {
+			let r = await contract.methods[method].call(callOpts);
+			ctx.debug.d(r);
+
+			dispatch(ctx.sender, { type: 'contract', result: r }, ctx.self);
+			//} catch(error) {
+			//} catch (error) {
+			//	dispatch(init
+			//}
 		},
 	}
 })
