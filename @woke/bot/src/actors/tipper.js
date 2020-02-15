@@ -45,7 +45,7 @@ const tipper = {
 	properties: {
 		initialState: {
 			tipRepo: {},
-			wokenContract: null,
+			a_wokenContract,
 		},
 
 		onCrash: (() => {
@@ -65,7 +65,7 @@ const tipper = {
 
 	actions: {
 		'tip': async (msg, ctx, state) => {
-			const { tipRepo, wokenContract } = state;
+			const { tipRepo, a_wokenContract } = state;
 			const { tip } = msg;
 
 			let entry = tipRepo[tip.id];

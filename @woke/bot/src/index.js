@@ -58,16 +58,11 @@ const a_wokenContract = director.start_actor('woken_contract', actors.contract, 
 	contractInterface: wokeTokenInterface,
 })
 
-const a_wokenContract = director.start_actor('woken_contract', actors.contract, {
-	a_
+const a_tipper = director.start_actor('tipper', actors.tipper, {
+	a_wokenContract
 })
 
-
 const { spawnStateless, dispatch, query } = require('nact');
-const a_conduit = {
-	actions: {
-	}
-}
 
 // Forward tips to the tipper
 const a_conduit = spawnStateless(
@@ -80,13 +75,13 @@ const a_conduit = spawnStateless(
 			}
 
 			default: {
-				console.log(`Conduit got unknown msg ${msg}`);
+				console.log(`Conduit got unknown msg `, msg);
 			}
 		}
 	}
 );
 
-dispatch(a_polling, { type: polling.iface.poll,
+dispatch(a_polling, { type: actors.polling.iface.poll,
 	target: a_tMon,
 	action: tMonDefn.iface.find_tips,
 	period: 500,

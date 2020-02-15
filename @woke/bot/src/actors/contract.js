@@ -5,11 +5,11 @@ function initContract(web3Instance, interface) {
 	return new web3.eth.Contract(self.interface.abi, self.interface.networks[self.network.id].address);
 }
 
-const ContractAgent = (contract, a_web3) => ({
+const contractActor = {
 	properties: {
 		initialState: {
-			a_web3,
-			contractInterface,
+			a_web3: undefined,
+			contractInterface: undefined,
 			//contract,
 			//web3Instance,
 		}
@@ -62,4 +62,6 @@ const ContractAgent = (contract, a_web3) => ({
 			//}
 		},
 	}
-})
+};
+
+module.exports = contractActor;

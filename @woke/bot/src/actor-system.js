@@ -37,11 +37,12 @@ const route_action = async (_actionsMap, _state, _msg, _context) => {
 
 const start_actor = system => (_name, _definition, _initialState) => {
 	const { actions, properties } = _definition;
+	const { initialState } = properties ? properties : {}
 	return spawn_actor(
 		system,
 		_name,
 		actions,
-		_initialState || properties.initialState,
+		{...(initialState ? initialState : {}), ..._initialState},
 		properties
 	);
 }
