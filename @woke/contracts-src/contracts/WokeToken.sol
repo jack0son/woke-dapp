@@ -284,6 +284,7 @@ contract WokeToken is Ownable, ERC20 {
 		emit Tx(from, to, _fromId, _toId, _amount, true);
 	}
 
+   /*
 	function tip(string memory _fromId, string memory _toId, uint256 _amount)
 		public
 		onlyTipAgent
@@ -311,6 +312,7 @@ contract WokeToken is Ownable, ERC20 {
 		emit Tip(_fromId, _toId, amount);
 		return amount;
 	}
+	*/
 
 	function setTipBalance(uint256 _amount)
 		public
