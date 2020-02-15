@@ -13,7 +13,10 @@ module.exports = {
       host: "127.0.0.1",
       port: 9545,
       network_id: "*",
-			websockets: true
+			websockets: true,
+
+			gas: 100000000,
+			gasPrice: 20000000000,
     },
 
     develop: {
@@ -21,7 +24,10 @@ module.exports = {
 				return new HDWalletProvider(mnemonic, "http://127.0.0.1:8545/", 0, 10);
       },
       network_id: "11",
-			websockets: true
+			websockets: true,
+
+			gas: 7000000,
+			gasPrice: 20000000000,
 		},
 
 		client: {

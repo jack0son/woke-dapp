@@ -16,6 +16,7 @@ import "./mocks/TwitterOracleMock.sol";
  *	Needs multisig with admin wallet that prevents spamming of claims to 
  *	large profile accounts.
  * TODO:
+ *  - more rigourous invariant modifiers
  *  - could get a multiplier based on the size of the unclaimed pool
  *  - Research how zeppelin implements escrow to avoid issues with unclaimed tokens
  *  - Abstract twitter client to generic social client for multiple social networks
@@ -35,12 +36,17 @@ contract WokeToken is Ownable, ERC20 {
 		address account;
 		uint256 followers;
 		uint256 unclaimedBalance;
+		uint256 tipBalance;
 		mapping(address => uint256) referralAmount;
 		address[] referrers;
 	}
 
 	/* CONTRACT STORAGE */
+	// Constants
+	bool DEFAULT_TIP_ALL = true;
+
 	// Protocol contracts
+	address public tippingAgent;
 	address public twitterClient;
 	byte authVersion = 0x01; // Claim string / auth token version
 	byte appId = 0x0A;		// Auth app, only twitter for now
@@ -60,16 +66,18 @@ contract WokeToken is Ownable, ERC20 {
 	uint256 private userCount;
 
 	// Safety
-	mapping(address => bool) private requestMutexes; // Requests are single threaded
+	mapping(address => bool) private requestMutexes; // Oracle requests are blocking
 	/*----------------*/
 
 	// @dev Create token with given generation parameters
-	// @param _twitterClient	Address of chainlink client contract for twitter api requests
-	// @param _maxSupply	Total supply of wokeTokens allowed to exist
-	// @param _reward		Linear coeffient for token generation curve
-	// @param _multiplier	Reward multiplier for Eth contribution
+	// @param _twitterClient	Address of provable client contract for twitter api requests
+	// @param _tippingAgent		Address of chainlink client contract for twitter api requests
+	// @param _maxSupply		Total supply of wokeTokens allowed to exist
+	// @param _reward			Linear coeffient for token generation curve
+	// @param _multiplier		Reward multiplier for Eth contribution
 	constructor(
 		address _twitterClient, 
+		address _tippingAgent, 
 		//uint32 _reward, 
 		//uint32 _multiplier, 
 		//uint32 _halving,
@@ -78,6 +86,7 @@ contract WokeToken is Ownable, ERC20 {
 	public payable
 	{
 		twitterClient = _twitterClient;
+		tippingAgent = _tippingAgent;
 		maxSupply = _maxSupply;
 		//reward = _reward;
 		//multiplier = _multiplier;
@@ -136,6 +145,10 @@ contract WokeToken is Ownable, ERC20 {
 		emit Claimed(claimer, _id, claimBonus(_id, _followers));
 		userCount += 1;
 
+		if(DEFAULT_TIP_ALL) {
+			_setTipBalance(_id, balanceOf(users[_id].account));
+		}
+
 		requester[_id] = address(0); // @fix delete this value
 	}
 
@@ -156,7 +169,7 @@ contract WokeToken is Ownable, ERC20 {
 
 		// Transfer the unclaimed amount and bonus from the token contract to the user
 		if(unclaimedBalance > 0) {
-			_transfer(address(this), user.account,unclaimedBalance); 
+			_transfer(address(this), user.account, unclaimedBalance); 
 			// @dev this conditional should always pass
 			if(user.referrers.length > 0) {
 				for(uint i = 0; i < user.referrers.length; i++) {
@@ -195,20 +208,39 @@ contract WokeToken is Ownable, ERC20 {
 	function transferUnclaimed(string memory _toId, uint256 _amount)
 		public
 		hasUser
-		userNotClaimed(_toId)
 	{
 		require(_amount > 0, 'Cannot send 0 tokens');
 
+		_transferUnclaimed(myUser(), _toId, _amount);
+
+		//emit Tx(userIds[msg.sender], _toId, userIds[msg.sender], _toId, _amount, false);
+		//emit Tx(msg.sender, users[_toId].account, userIds[msg.sender], _toId, _amount, false);
+	}
+
+	// @notice Trans
+	function _transferUnclaimed(string memory _fromId, string memory _toId, uint256 _amount)
+		private
+		userIsClaimed(_fromId)
+		userNotClaimed(_toId)
+		supplyInvariant
+	{
+		require(_amount > 0, 'Cannot send 0 tokens');
+
+		address from = users[_fromId].account;
+
 		// 1. Transfer the amount from the the sender to the token contract
-		_transfer(msg.sender, address(this), _amount); // @dev Use safe math
+		// @TODO naughty naughty
+		//approve(tippingAgent, _amount);
+		//transferFrom(from, address(this), _amount); // @dev Use safe math
+		_transfer(from, address(this), _amount); // @dev Use safe math
 
 		// 2. Set the unclaimed balance for the receiving user
 		users[_toId].unclaimedBalance += _amount;
-		users[_toId].referralAmount[msg.sender] = _amount;
-		users[_toId].referrers.push(msg.sender);
+		users[_toId].referralAmount[from] = _amount;
+		users[_toId].referrers.push(from);
 
-		emit Tx(msg.sender, users[_toId].account, userIds[msg.sender], _toId, _amount, false);
 		//emit Tx(userIds[msg.sender], _toId, userIds[msg.sender], _toId, _amount, false);
+		emit Tx(from, users[_toId].account, _fromId, _toId, _amount, false);
 	}
 
 	// @notice Transfer tokens between claimed userIds
@@ -216,12 +248,82 @@ contract WokeToken is Ownable, ERC20 {
 		public
 		hasUser
 		userIsClaimed(_toId)
+		supplyInvariant
+	{
+		transfer(users[_toId].account, _amount);
+
+		if(DEFAULT_TIP_ALL) {
+			_setTipBalance(_toId, balanceOf(users[_toId].account));
+		}
+
+		//emit Tx(userIds[msg.sender], _toId, userIds[msg.sender], _toId, _amount, true);
+		emit Tx(msg.sender, users[_toId].account, userIds[msg.sender], _toId, _amount, true);
+	}
+
+	// @notice Transfer tokens between claimed userIds
+	function _transferClaimed(string memory _fromId, string memory _toId, uint256 _amount) 
+		private
+		onlyTipAgent
+		userIsClaimed(_toId)
+		supplyInvariant
 	{
 		require(_amount > 0, 'Cannot send 0 tokens');
 
-		transfer(users[_toId].account, _amount);
-		emit Tx(msg.sender, users[_toId].account, userIds[msg.sender], _toId, _amount, true);
+		address from = users[_fromId].account;
+		address to = users[_toId].account;
+		// @TODO naughty naughty
+		//approve(tippingAgent, _amount);
+		//transferFrom(from, to, _amount);
+		_transfer(from, to, _amount);
+
+		if(DEFAULT_TIP_ALL) {
+			_setTipBalance(_toId, balanceOf(users[_toId].account));
+		}
+
 		//emit Tx(userIds[msg.sender], _toId, userIds[msg.sender], _toId, _amount, true);
+		emit Tx(from, to, _fromId, _toId, _amount, true);
+	}
+
+	function tip(string memory _fromId, string memory _toId, uint256 _amount)
+		public
+		onlyTipAgent
+		userIsClaimed(_fromId)
+		returns(uint256)
+	{
+
+		// @TODO should perform this check off chain
+		if(_amount == 0) {
+			return 0;
+		}
+
+		uint256 tipBalance = users[_toId].tipBalance;
+		uint256 amount = _amount > tipBalance ? tipBalance : _amount;
+
+		if(userClaimed(_toId)) {
+			_transferClaimed(_fromId, _toId, amount);
+		} else {
+			_transferUnclaimed(_fromId, _toId, amount);
+		}
+
+		users[_toId].tipBalance -= amount;
+		require(tipBalance - amount == users[_toId].tipBalance, "Tip balance invariant violated");
+
+		emit Tip(_fromId, _toId, amount);
+		return amount;
+	}
+
+	function setTipBalance(uint256 _amount)
+		public
+		hasUser
+	{
+		_setTipBalance(myUser(), _amount);
+	}
+
+	function _setTipBalance(string memory _userId, uint256 _amount)
+		private
+	{
+		uint256 amount = _amount > balanceOf(msg.sender) ? balanceOf(msg.sender) : _amount;
+		users[_userId].tipBalance = amount;
 	}
 
 	/* TOKEN GENERATION PARAMETERS */
@@ -398,6 +500,17 @@ contract WokeToken is Ownable, ERC20 {
 		_;
 	}
 
+	modifier onlyTipAgent() {
+		require(msg.sender == tippingAgent, "Sender is not tipping agent");
+		_;
+	}
+
+	modifier supplyInvariant() {
+		uint256 supply = totalSupply();
+		_;
+		require(totalSupply() == supply);
+	}
+
 	/* EVENTS */
 	event TraceString(string m, string v);
 	event TraceUint256(string m, uint256 v);
@@ -408,6 +521,7 @@ contract WokeToken is Ownable, ERC20 {
 	// @param claimed: recipient is claimed
 	//event Tx(string fromId, string toId, string indexed fromId_ind, string indexed toId_ind, uint256 amount, bool claimed);
 	event Tx(address indexed from, address indexed to, string fromId, string toId, uint256 amount, bool claimed);
+	event Tip(string fromId, string toId, uint256 amount);
 
 	event Claimed (address indexed account, string userId, uint256 amount);
 	event Reward (address indexed claimer, address indexed referrer, string claimerId, string referrerId, uint256 amount);

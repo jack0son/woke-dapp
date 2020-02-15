@@ -41,7 +41,7 @@ const contractActor = {
 
 			//try{
 			let r = await contract.methods[method](...args).send(sendOpts);
-			ctx.debug.d(r);
+			ctx.debug.d(msg, r);
 
 			dispatch(ctx.sender, { type: 'contract', result: r }, ctx.self);
 			//} catch(error) {
@@ -69,7 +69,7 @@ const contractActor = {
 
 
 
-			ctx.debug.d(r);
+			ctx.debug.d(msg, r);
 
 			dispatch(ctx.sender, { type: 'contract', result: r }, ctx.self);
 			//} catch(error) {

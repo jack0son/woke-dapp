@@ -232,6 +232,10 @@ contract('WokeToken', (accounts) => {
 			describe('#transferUnclaimed', () => {
 
 			})
+
+			describe('#tip', () => {
+
+			})
 		})
 	})
 })

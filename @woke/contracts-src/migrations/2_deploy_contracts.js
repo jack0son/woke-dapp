@@ -10,6 +10,7 @@ const doDeploy = async (deployer, network, accounts) => {
 	const [defaultAccount, owner, oracleCallback, ...rest] = accounts;
 	const maxSupply = 10000000;
 
+	console.log('Using network: ', network);
 	console.log('Deploy account: ', defaultAccount);
 	console.log('Callback account: ', oracleCallback);
 
@@ -30,7 +31,7 @@ const doDeploy = async (deployer, network, accounts) => {
 	await deployer.deploy(ECDSA);
 	await deployer.link(Strings, Token);
 	await deployer.link(ECDSA, Token);
-	return await deployer.deploy(Token, oracleInstance.address, maxSupply, opts);
+	return await deployer.deploy(Token, oracleInstance.address, oracleInstance.address, maxSupply, opts);
 }
 
 module.exports = function(deployer, network, accounts) {
