@@ -6,11 +6,13 @@ const {
 const { delay } = '../lib/utils'
 const debug = (msg, args) => Logger().name(`WEB3`, `${msg.type}>> ` + args);
 
-const web3Actor = {
+// Provide a web3 instance to other actors
+// When the connection fails, re-instantiate
+const Web3Actor = (init_web3 = web3Tools.init, web3Instance) => ({
 	properties: {
 		initialState: {
-			web3Instance,
-			waiting,
+			//web3Instance,
+			queue: [],
 		}
 	},
 
@@ -43,7 +45,7 @@ const web3Actor = {
 	},
 
 	'init': async (msg, ctx, state) => {
-		const { queue } = state;
+		const { queue, instance } = state;
 
 		// Add this caller to the queue
 		dispatch(ctx.self, {type: 'wait', ready: true }, ctx.sender);
@@ -63,7 +65,7 @@ const web3Actor = {
 
 			while(!connected) {
 				++attempts
-				web3Instance = web3Tools.init();
+				web3Instance = init_web3();
 
 				if(attempts == 1) {
 					console.dir(web3Instance.network);
@@ -109,4 +111,6 @@ const web3Actor = {
 			}
 		}
 	}
-}
+})
+
+module.exports = Web3Actor;
