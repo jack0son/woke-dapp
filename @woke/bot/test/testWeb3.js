@@ -167,7 +167,6 @@ context('Web3Actor', function() {
 
 		it('should still succeed if some attempts fail', async function() {
 
-			return;
 			const RETRY_DELAY = 10;
 			const ATTEMPTS = 5
 			const getId = getId_fail_n(ATTEMPTS - 1);
