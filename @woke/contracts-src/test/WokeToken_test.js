@@ -57,7 +57,7 @@ contract('WokeToken', (accounts) => {
 				{from: owner, value: web3.utils.toWei('0.1', 'ether')}
 			);
 
-			wt = await WokeToken.new(to.address, max_supply, {from: owner})
+			wt = await WokeToken.new(to.address, to.address, max_supply, {from: owner})
 		});
 
 		describe('WokeToken.sol', () => {
