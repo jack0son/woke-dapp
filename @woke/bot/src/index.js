@@ -39,8 +39,29 @@ const TwitterMock = require('../test/mocks/twitter-client');
 const twitter = new TwitterStub({}, TwitterMock.MockClient);
 const tMonDefn = actors.TwitterMonitor(twitter);
 
+const artifacts = require('@woke/contracts');
+const wokeTokenInterface = artifacts[process.env.NODE_ENV !== 'development' ? 'production' : 'development'].WokeToken; 
+
 const a_tMon = director.start_actor('twitter_monitor', tMonDefn);
 const a_polling = director.start_actor('polling_service', actors.polling);
+
+// Initialise Web3
+const MAX_ATTEMPTS = 5;
+const RETRY_DELAY = 400;
+const a_web3 = director.start_actor('web3', actors.Web3(undefined, MAX_ATTEMPTS, {
+	retryDelay: RETRY_DELAY,
+}));
+
+// Initialise Woken Contract agent
+const a_wokenContract = director.start_actor('woken_contract', actors.contract, {
+	a_web3, 
+	contractInterface: wokeTokenInterface,
+})
+
+const a_wokenContract = director.start_actor('woken_contract', actors.contract, {
+	a_
+})
+
 
 const { spawnStateless, dispatch, query } = require('nact');
 const a_conduit = {
@@ -48,6 +69,7 @@ const a_conduit = {
 	}
 }
 
+// Forward tips to the tipper
 const a_conduit = spawnStateless(
 	director.system,
 	(msg, ctx) => {
@@ -68,36 +90,5 @@ dispatch(a_polling, { type: polling.iface.poll,
 	target: a_tMon,
 	action: tMonDefn.iface.find_tips,
 	period: 500,
-}, a_woken);
+}, a_conduit);
 
-const wokenMonitor = {
-	'establishWsConnection': () => {
-	}
-	// Monitor the WokeToken contract for unclaimed transfers
-	'unclaimedTx': (msg, context, state) => {
-		// Subscribe to unclaimed transfers
-	},
-
-	'claimedTx': (msg, context, state) => {
-	}
-}
-
-const tipAgent = {
-	'new_tip': () => {
-	}
-
-	'handle_tips': () => {
-		for each tip {
-		 dispatch(new tip)
-		}
-	}
-}
-
-const wokenAgent = {
-	// Send wokens
-	'transferUnclaimed': {
-	},
-
-	'transferClaimed': {
-	},
-}

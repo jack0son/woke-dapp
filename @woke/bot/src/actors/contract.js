@@ -10,7 +10,7 @@ const ContractAgent = (contract, a_web3) => ({
 		initialState: {
 			a_web3,
 			contractInterface,
-			constract,
+			//contract,
 			//web3Instance,
 		}
 	},

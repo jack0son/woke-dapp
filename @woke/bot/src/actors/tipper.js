@@ -20,6 +20,9 @@ const resetWithExponentialDelay = (factor) => {
 	};
 }
 
+const resetWithMaxAttempts = (factor) => {
+}
+
 const CONTRACT_TIMEOUT = 300;
 
 const tipActor = {
@@ -29,6 +32,9 @@ const tipActor = {
 			status,
 		},
 
+		onCrash: 
+		async (msg, error, ctx) => {
+		}
 	},
 
 	actions: {
@@ -147,3 +153,5 @@ const tipper = {
 		}
 	}
 }
+
+module.exports = tipper;
