@@ -11,7 +11,7 @@ function App() {
 		<div className="App">
 			<header className="App-header">
 			</header>
-			<Root/>
+				<Root/>
 		</div>
 	);
 }

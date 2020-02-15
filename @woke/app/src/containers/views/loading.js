@@ -6,8 +6,21 @@ import ContentWrapper from '../../layouts/wrapper-content';
 import CentreHolder from '../../layouts/holder-centre';
 import Logo from '../../components/images/logo';
 
+// View hooks
+// @TODO views should not contain app state
+import { useRootContext } from '../../hooks/root-context'
+
+
 export default function LoadingView(props) {
 	const theme = useTheme();
+	const {setLoading} = useRootContext();
+
+	useEffect(() => {
+		setLoading(true);
+		return () => {
+			setLoading(false);
+		}
+	}, [])
 
 	return (
 		<CentreHolder>

@@ -22,6 +22,23 @@ const rinkeby = {
 	},
 }
 
+const goerli = {
+	id: 5,
+	protocol: 'wss',
+	host: `goerli.infura.io/ws/v3/${infuraApiKey}`,
+	gasPrice: 20*GWei,
+	gasLimit:  '8000000',
+	defaultCommon: {
+		customChain: {
+			name: 'goerli',
+			networkId: 5,
+			chainId: 5,
+		},
+		baseChain: 'goerli', 
+		//hardfork: 'petersburg',
+	},
+}
+
 module.exports = {
 	web3: {
 		networks: {
@@ -51,9 +68,11 @@ module.exports = {
 				gasLimit: '8000000',
 			},
 
-			rinkeby: rinkeby,
+			rinkeby,
 
-			production: rinkeby,
+			goerli,
+
+			production: goerli,
 		},
 	},
 

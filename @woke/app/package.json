@@ -20,15 +20,16 @@
     "request-promise-native": "^1.0.7",
     "twitter": "^1.7.1",
     "typeface-inconsolata": "0.0.72",
-    "web3": "^1.2.1",
-    "web3-provider-engine": "^15.0.3"
+    "web3": "^1.2.5"
   },
-  "devDependencies": {
-    "@woke/contracts": "0.1.0"
-  },
+  "devDependencies": {},
   "scripts": {
     "start": "react-scripts start",
+    "remote": "REACT_APP_SERVER_ENV=production react-scripts start",
+    "remote:rinkeby": "REACT_APP_SERVER_ENV=production REACT_APP_ETH_NETWORK=rinkeby react-scripts start",
+    "remote:goerli": "REACT_APP_SERVER_ENV=production REACT_APP_ETH_NETWORK=goerli react-scripts start",
     "rinkeby": "REACT_APP_ETH_NETWORK=rinkeby react-scripts start",
+    "goerli": "REACT_APP_ETH_NETWORK=goerli react-scripts start",
     "design": "REACT_APP_DEV_MODE=design react-scripts start",
     "build": "react-scripts build",
     "test": "react-scripts test",

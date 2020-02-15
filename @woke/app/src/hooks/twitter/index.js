@@ -11,8 +11,8 @@ import useUserSignin from './use-user-signin'
 import { useUsers } from './use-app-data'
 import { createUseFriends } from './use-user-data'
 
-export const useTwitterContext = () => useContext(Context);
 const Context = createContext();
+export const useTwitterContext = () => useContext(Context);
 
 export default function TwitterContextProvider({children}) {
 	const userSignin = useUserSignin();

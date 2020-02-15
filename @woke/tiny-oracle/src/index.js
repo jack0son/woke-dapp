@@ -3,14 +3,10 @@ const {
 	twitter,
 	web3Tools,
 } = require('@woke/lib');
-const Web3 = require('web3');
+const artifacts = require('@woke/contracts');
 const debug = Logger('oracle');
 
-
-const oracleMockInterface = process.env.NODE_ENV == 'production' ? 
-	require('../../app/src/contracts/TwitterOracleMock.json') :
-	require('@woke/contracts').TwitterOracleMock;
-
+const oracleMockInterface = artifacts[process.env.NODE_ENV !== 'development' ? 'production' : 'development'].TwitterOracleMock; 
 
 function timeoutPromise(ms) {
 	return new Promise((resolve, reject) => setTimeout(() => {
@@ -61,8 +57,8 @@ class TinyOracle {
 				connected = true;
 
 			} catch (error) {
-				debug.err('Encountered error trying to instantiate new Web3 instance ...');
-				debug.err('... ', error);
+				debug.error('Encountered error trying to instantiate new Web3 instance ...');
+				debug.error('... ', error);
 			}
 
 			if(!connected) {
@@ -124,7 +120,7 @@ class TinyOracle {
 		await self.initWeb3();
 		let callbackAccount = self.address;
 		if(!callbackAccount) {
-			callbackAccount = web3.eth.defaultAccount;
+			callbackAccount = self.web3.eth.defaultAccount;
 		}
 		debug.d(`Using callback account: ${callbackAccount}`);
 		debug.d(`Connecting to Oracle contract ...`);
@@ -140,15 +136,17 @@ class TinyOracle {
 
 		const handleQuery = async (query) => {
 			let success = false;
-			while(!success) {
+			let attempts = 3;
+			while(!success && attempts > 0) {
 				try {
 					await handleFindTweet(callbackAccount, self.oracle, query, txOpts);
 					success = true;
 				} catch(error) {
-					debug.err('Failed to handle query: ', error);
+					debug.error('Failed to handle query: ', error);
 				}
 
 				if(!success) {
+					--attempts;
 					// Reinstantiate web3
 					await self.initWeb3();
 					self.initContract();
@@ -212,7 +210,7 @@ class TinyOracle {
 				//debug.ei(`${eventName}:`, eventObj)
 				handleFunc(eventObj);
 			} else {
-				debug.err(error);
+				debug.error(error);
 			}
 		}
 
@@ -229,7 +227,7 @@ class TinyOracle {
 				debug.d(`... resubscribed ${eventName}`)
 				self.subscribedEvents[eventName].subscribe(handleUpdate);
 			});
-		}, 10*60*1000);
+		}, 5*60*1000);
 
 		debug.name('Subscriber', `Subscribed to ${eventName}.`);
 	}
@@ -262,9 +260,18 @@ const handleFindTweet = async (account, contract, query, txOpts) => {
 		from: account
 	};
 	
-	const id = query.queryId;
-	const abr = id.slice(0,8) + id.slice(id.length-9, id.length) // abridged id
-	debug.h(`Got query handle:${query.handle}, id:${query.queryId}, `);
+	const qid = query.queryId;
+	const abr = qid.slice(0,8) + qid.slice(qid.length-9, qid.length) // abridged qid
+
+	// Human readable log
+	let userData = {};
+	try {
+		userData = await twitter.getUserData(query.userId);
+	} catch (error) {
+		debug.error(error);
+	}
+
+	debug.h(`Got query ${userData.handle}:${query.userId}, queryId: ${qid}, `);
 	let tweet = await twitter.findClaimTweet(query.userId);
 	debug.name(abr, `Found tweet: ${tweet}`);
 
@@ -272,7 +279,7 @@ const handleFindTweet = async (account, contract, query, txOpts) => {
 	debug.name(abr, `Claim string: ${claimString}`);
 
 	let r = await contract.methods.__callback(
-		query.queryId,
+		qid,
 		claimString,		// query result
 		'0x0',					// proof
 	).send(opts);

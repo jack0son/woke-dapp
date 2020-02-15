@@ -1,6 +1,7 @@
 import React, { useEffect } from 'react';
 
 import Loading from './loading'
+import Error from './error'
 import ClaimLayout from '../../layouts/page-claim'
 import ContentWrapper from '../../layouts/wrapper-content'
 
@@ -26,17 +27,19 @@ export default function ClaimView (props) {
 
 	const stageMap = claimState.stageMap;
 	const sc = claimState.stageMap;
+	const stage = claimState.stage;
 	const stageString = claimState.stageList[claimState.stage]; // stage string
 
 	// Share intent url
 	const renderTweetClaim = () => {
+			const intentUrl = createShareIntentUrl(claimState.claimString);
 			return (
 				<ClaimLayout
 					instructionText={[`To securely claim any `, <WokeSpan key="WokeSpan">WOKENs</WokeSpan>, ` you've already been sent, we need to tweet a signed message.`]}
 					button={TweetButton}
 					buttonProps={{
-						href: createShareIntentUrl(claimState.claimString),
-						onClick: handleTweeted,
+						href: intentUrl,
+						onClick: handleTweeted
 					}}
 					buttonMessage="Don't alter the message"
 				/>
@@ -72,23 +75,33 @@ export default function ClaimView (props) {
 		>
 			<LinearProgress 
 				stageList={claimState.stageList.slice(sc.CONFIRMED,sc.CLAIMED + 1)}
-				stage={claimState.stage - sc.CONFIRMED}
+				labelList={claimState.stageLabels}
+				stage={stage - sc.CONFIRMED}
 			/>
 		</Loading>
+	);
+
+	const renderError = () => (
+		<Error/> //message={claimState.error}/>
 	);
 
 	
 	// Subsumption tree
 	let chooseRender = () => (<Loading message={'Analysing wokeness ...'}/>);
-	if(claimState.stage >= sc.CLAIMED) {
+	if(stage == sc.ERROR) {
+		chooseRender = renderError;
+	} else if(stage == sc.CLAIMED) {
 		// Shouldn't get here
-	} else if (claimState.stage >= sc.CONFIRMED) {
+		console.warn('Claim in incorrect state: ', `${stage}: ${stageString}`);
+	} else if (stage >= sc.CONFIRMED) {
 		chooseRender = renderClaiming;
-	} else if (claimState.stage >= sc.TWEETED) {
+	} else if (stage >= sc.TWEETED) {
 		chooseRender = renderConfirmTweeted;
-	} else if (claimState.stage >= sc.READY) {
+	} else if (stage >= sc.READY) {
 		chooseRender = renderTweetClaim;
-	} 
+	} else {
+		console.warn('Claim in undefined state: ', `${stage}: ${stageString}`);
+	}
 	const claimStatus = claimState.transactions.sendClaimUser.pending;
 	const fulfillStatus = claimState.transactions.sendFulfillClaim.pending;
 

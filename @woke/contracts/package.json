@@ -1,7 +1,7 @@
 {
   "name": "@woke/contracts",
   "version": "0.1.0",
-  "description": "Testing set up for Oraclize's computation resource url-requests",
+  "description": "Smart-contract artifacts",
   "private": true,
   "main": "index.js",
   "directories": {
@@ -12,38 +12,5 @@
     "url": "git+https://github.com/n/a.git"
   },
   "author": "Jackson Virgo",
-  "license": "MIT",
-  "bugs": {
-    "url": "https://github.com/n/a/issues"
-  },
-  "homepage": "https://github.com/n/a#readme",
-  "dependencies": {
-    "dotenv": "^8.1.0",
-    "ethereum-bridge": "^0.6.2",
-    "openzeppelin-solidity": "^2.3.0",
-    "truffle-flattener": "^1.4.2",
-    "truffle-hdwallet-provider": "^1.0.17"
-  },
-  "devDependencies": {
-    "@truffle/hdwallet-provider": "^1.0.18",
-    "chalk": "^2.4.2",
-    "debug": "^4.1.1",
-    "supports-color": "^7.0.0",
-    "truffle": "^5.0.27",
-    "truffle-assertions": "^0.9.1"
-  },
-  "scripts": {
-    "migrate:client": "./node_modules/.bin/truffle migrate --network client --reset",
-    "migrate:ropsten": "./node_modules/.bin/truffle migrate --network ropsten --reset",
-    "migrate:rinkeby": "./node_modules/.bin/truffle migrate --network rinkeby --reset",
-    "migrate": "./node_modules/.bin/truffle migrate --network rinkeby",
-    "bridge": "npx ethereum-bridge -a 9 -H 127.0.0.1 -p 9545 --dev",
-    "ganache:dev": "ganache-cli -i 11 -p 8545 -m 'nerve marine frozen use brave brief nasty then acid remain stereo riot'",
-    "ganache:test": "ganache-cli -i 10 -p 9545 -m 'nerve marine frozen use brave brief nasty then acid remain stereo riot'",
-    "ganache:client": "ganache-cli -i 12 -p 8545 --blockTime 1 -m 'nerve marine frozen use brave brief nasty then acid remain stereo riot'",
-    "ganache:slow": "ganache-cli -i 12 -p 8545 --blockTime 3 -m 'nerve marine frozen use brave brief nasty then acid remain stereo riot'",
-    "test": "truffle test",
-    "test:debug": "DEBUG=t:* truffle test",
-    "test:verbose": "DEBUG=t:* truffle test --show-events"
-  }
+  "license": "MIT"
 }

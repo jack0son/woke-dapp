@@ -1,5 +1,4 @@
 import Web3 from "web3";
-import getProviderEngine from './engine/web3-provider';
 import { getWeb3Network, getCurrentRpcUrl} from './web3-config.js'
 
 
@@ -35,7 +34,7 @@ export async function makeWeb3({wallet}) {
 
 export function makeWalletProvider(wallet) {
 	console.log('Loading wallet provider ...')
-	const lightProvider = getProviderEngine(wallet);
+	const lightProvider = null //getProviderEngine(wallet);
 	return lightProvider;
 }
 
