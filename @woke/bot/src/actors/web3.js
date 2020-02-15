@@ -52,11 +52,12 @@ const Web3Actor = (init_web3 = web3Tools.init, maxAttempts = MAX_ATTEMPTS, opts)
 				dispatch(ctx.self, {type: 'instantiate'}, ctx.self);
 			}
 
-			ctx.debug.info(msg, `${queue.length} in queue`);
+			//ctx.debug.info(msg, `${queue.length} in queue`);
 			if(ready === true) {
 				queue.forEach(sender => {
 					dispatch(sender, { type: 'web3', web3Instance }, ctx.self)
 				});
+				ctx.debug.info(msg, `Responded to ${queue.length} queue members`);
 				return { ...state, queue: [] };
 			} else {
 				ctx.debug.info(msg, `Adding ${ctx.sender.type} to queue`);

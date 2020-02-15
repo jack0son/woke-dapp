@@ -7,7 +7,8 @@
   "scripts": {
     "test": "./node_modules/.bin/mocha ./test/test*.js",
     "test-debug": "DEBUG=oracle:* ./node_modules/.bin/mocha",
-    "start": "DEBUG=* node src/index.js"
+    "start": "DEBUG=*,-*info node src/index.js",
+    "dev": "NODE_ENV=development DEBUG=* node src/index.js"
   },
   "author": "Jackson Virgo",
   "license": "ISC",

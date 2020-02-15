@@ -70,12 +70,15 @@ const TwitterMonitor = (twitterStub) => ({
 					seenTips[tweet.id_str] = true;
 					return true;
 				}).map(tweet => ({
+					id: tweet.id_str,
 					fromId: tweet.user.id_str,
+					fromHandle: tweet.user.screen_name,
 					toId: tweet.in_reply_to_user_id_str,
+					toHandle: tweet.entities.user_mentions[0].screen_name,
 					amount: parseInt(tweet.full_text.match(amountRegex)[1]),
 				}));
 
-				newTips.forEach(t=>console.log(t));
+				//newTips.forEach(t=>console.log(t));
 
 				dispatch(ctx.sender, { type: 'new_tips', tips: newTips }, ctx.self);
 				return {

@@ -1,6 +1,5 @@
 // Keep track of unsent tips
-
-const { dispatch } = require('nact');
+const { dispatch, query } = require('nact');
 const { delay } = require('../lib/utils');
 const statuses = [
 	'UNSETTLED',
@@ -25,6 +24,10 @@ const resetWithMaxAttempts = (factor) => {
 }
 
 const CONTRACT_TIMEOUT = 300;
+
+function tip_str(tip) {
+	return `@${tip.fromHandle} wishes to tip @${tip.toHandle} ${tip.amount}.WOKENS`;
+}
 
 const tipActor = {
 	properties: {
@@ -51,6 +54,7 @@ const tipper = {
 		onCrash: (() => {
 			reset = resetWithExponentialDelay(1)
 			return (msg, error, ctx) => {
+				console.log(msg);
 				switch(msg.type) {
 					case 'tip': {
 					}
@@ -61,6 +65,7 @@ const tipper = {
 				}
 			}
 		})(),
+		onCrash: undefined,
 	},
 
 	actions: {
@@ -68,7 +73,13 @@ const tipper = {
 			const { tipRepo, a_wokenContract } = state;
 			const { tip } = msg;
 
-			ctx.debug.info(msg, `Received tip ${tip.id_str}`);
+			if(!a_wokenContract) {
+				ctx.debug.error(msg, 'Must have reference to wokenContract actor');
+				throw new Error(`Must have reference to wokenContract actor`);
+			}
+
+			//ctx.debug.info(msg, `Received tip ${tip.id}`);
+			ctx.debug.d(msg, tip_str(tip));
 			let entry = tipRepo[tip.id];
 			if(!entry) {
 				// New tip
@@ -77,6 +88,7 @@ const tipper = {
 					error: null,
 				}
 
+				ctx.debug.d(msg, `Check @${tip.fromHandle} is claimed...`);
 				const userIsClaimed = await query(a_wokenContract, { type: 'call',
 					method: 'userIsClaimed',
 					args: tip.fromId

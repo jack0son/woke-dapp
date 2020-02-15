@@ -59,7 +59,7 @@ const a_wokenContract = director.start_actor('woken_contract', actors.contract, 
 })
 
 const a_tipper = director.start_actor('tipper', actors.tipper, {
-	a_wokenContract
+	a_wokenContract,
 })
 
 const { spawnStateless, dispatch, query } = require('nact');
@@ -82,9 +82,12 @@ const a_conduit = spawnStateless(
 	}
 );
 
+dispatch(a_web3, {type: 'init'})
+
+const TIP_POLLING_INTERVAL = 10000;
 dispatch(a_polling, { type: actors.polling.iface.poll,
 	target: a_tMon,
 	action: tMonDefn.iface.find_tips,
-	period: 3000,
+	period: TIP_POLLING_INTERVAL,
 }, a_conduit);
 

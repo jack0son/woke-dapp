@@ -1,8 +1,11 @@
-const { dispatch } = require('nact');
+const { dispatch, query } = require('nact');
 const { web3Tools } = require('@woke/lib');
 
 function initContract(web3Instance, interface) {
-	return new web3.eth.Contract(self.interface.abi, self.interface.networks[self.network.id].address);
+	return new web3Instance.web3.eth.Contract(
+		interface.abi,
+		interface.networks[web3Instance.network.id].address
+	);
 }
 
 const contractActor = {
@@ -24,6 +27,7 @@ const contractActor = {
 		},
 
 		'send': async (msg, ctx, state) => {
+			ctx.debug.d(msg, `Got call`, msg);
 			const web3Instance = await query(state.a_web3, { type: 'get' }, 2000);
 			const contract = initContract(web3Instance, state.contractInterface);
 			const { method, args, opts} = msg;
