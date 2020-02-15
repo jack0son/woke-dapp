@@ -17,20 +17,34 @@ const socketWatchDog = {
 		return new self.web3.eth.Contract(self.interface.abi, self.interface.networks[self.network.id].address);
 	}
 
+
+
+
+
 const ContractAgent = (contract, a_web3) => ({
 	properties: {
 		initialState: {
 			a_web3,
 			contractInterface,
-			web3Instance,
+			constract,
+			//web3Instance,
 		}
 	},
 
 	actions: {
 		'init': async (msg, ctx, state) => {
-			//const web3Instance = await query(a_web3, { type: 'get_instance' }, ctx.self);
-			dispatch(a_web3, { type: 'get_instance' }, ctx.self);
+			const web3Instance = await query(a_web3, { type: 'get' }, ctx.self);
+			const contract = initContract(web3Instance.web3, contractInterface);
+
+			dispatch(ctx.sender, { type: 'contract_object' }, ctx.self);
+			return { ...state, contract };
 		},
+
+		'contract_object': async (msg, ctx, state) => {
+			if(!(await query(a_web3, { type: 'isAlive' }))) {
+				await dispatch(ctx.self, 
+			}
+		}
 
 		'web3': async (msg, ctx, state) => {
 			const { resp } = msg;
@@ -53,9 +67,11 @@ const ContractAgent = (contract, a_web3) => ({
 				...opts,
 			}
 
-			if(await query(a_web3, { type: 'isAlive' })) {
+			try{
 				let r = await contract.methods[method].send(callOpts);
-			} else {
+			} catch(error) {
+				debug(msg, error);
+				await query(ctx.self, { type: 'init' }, ctx.sender);
 			}
 		},
 
@@ -67,7 +83,11 @@ const ContractAgent = (contract, a_web3) => ({
 				...opts,
 			}
 
-			let r = await contract.methods[method].call(callOpts);
+			try {
+				let r = await contract.methods[method].call(callOpts);
+			} catch (error) {
+				dispatch(init
+			}
 		},
 	}
 })
