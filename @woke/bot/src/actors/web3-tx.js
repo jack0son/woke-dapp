@@ -21,7 +21,7 @@ function dispatchSinks(msg, ctx, state) {
 	const status = resolveStatus(state.tx);
 	if(status !== resolveStatus(prevState.tx)) {
 		sinks.forEach(sink => 
-			dispatch(sink, {tx, txStatus, txState}, ctx.self)
+			dispatch(sink, {type: 'tx', tx, txStatus, txState}, ctx.self)
 		);
 	}
 }
@@ -36,6 +36,28 @@ function resolveStatus(txState) {
 	} else {
 		return 'UNDEFINED'
 	}
+}
+
+const onCrash = (msg, ctx, state) => {
+	switch(msg.type) {
+		case 'send': {
+			// if the error was a block timeout we could handle and retry
+			handleOnChainError();
+		}
+
+		default: {
+			return ctx.stop()
+		}
+	}
+}
+
+function handleOffChainError(error) {
+	// Want the tx actor to crash'
+	throw new Error(``)
+}
+
+function handleOnChainError(error) {
+	// do some recovery
 }
 
 const actions = {
@@ -76,18 +98,20 @@ const actions = {
 	})(dispatchSinks),
 
 	'send': async (msg, ctx, state) => {
-		const { sendOpts } = state
+		const { tx } = msg; 
+		const { sendOpts } = state;
 
 		const opts = {
 			...sendOpts,
-			...msg.opts,
+			...tx.opts,
 		}
 
-		await contract.myMethod(...args).send(opts)
+		await contract.myMethod(...tx.args).send(opts)
 			.on('transactionHash', hash => {
 				reduce({
 					tx: {...tx, hash}
 				}, ctx);
+				dispatch(ctx.sender, {type: 'tx', hash }, ctx.self)
 			})
 			.on('confirmation', (confNumber, receipt) => {
 				// @note not using this for now
@@ -112,6 +136,8 @@ const actions = {
 				console.log(error);
 				console.log(receipt);
 			});
+
+		dispatch(ctx.sender, {type: 'tx', txStatus: 'sent' }, ctx.self)
 	}
 }
 

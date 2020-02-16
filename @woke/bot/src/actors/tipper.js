@@ -90,25 +90,34 @@ const tipper = {
 				}
 
 				ctx.debug.d(msg, `Check @${tip.fromHandle} is claimed...`);
+				try {
 				const userIsClaimed = await query(a_wokenContract, { type: 'call',
 					method: 'userClaimed',
 					args: [tip.fromId]
 				}, CONTRACT_TIMEOUT)
+				} catch (error) {
+					throw new Error(`Call to userIsClaimed timed out`);
+					// if error is query timeout
+				}
 
-				if(!userIsClaimed) {
+				if(userIsClaimed === false) {
 					entry.status = statusEnum.INVALID;
 					entry.error = 'unclaimed sender'
-				} else {
+				} else if(userIsClaimed === true) {
 
 					dispatch(a_wokenContract, {type: 'send', 
 						method: 'tip',
 						args: [tip.fromId, tip.toId, tip.amount],
 						meta: {
 							tip
-						}
+						},
+						sinks: ctx.self
 					}, ctx.self)
 
 					entry.status = statusEnum.UNSETTLED;
+				} else if(!userIsClaimed) {
+					// Oh yes, this happens sometimes!
+					throw new Error(`User unclaimed is ${userIsClaimed}`)
 				}
 
 				return {
@@ -125,28 +134,34 @@ const tipper = {
 			}
 		},
 
-		'contract': (msg, ctx, state) => {
-			const { result, error, meta } = msg;
+		'tx': (msg, ctx, state) => {
+			const { txStatus, tx, txState } = msg;
+			const tip = tx.meta.tip;
 			ctx.debug.d(msg, msg);
 
 			if(!meta.tip) {
 				ctx.debug.error(msg, `Got unknown contract result, msg: ${msg}`)
 				return;
 			}
+			ctx.debug.d(`tip:${tip.id} Got tx update ${txStatus}`);
+			switch(txStatus) {
+				case 'success': {
+					ctx.debug.d(`tip:${tip.id} confirmed on chain`);
+					dispatch(ctx.self, {type: 'tip_update', error, status: statusEnum.FAILED});
+					break
+				}
 
-			if(error) {
-				// Error scenarios
-				//	1. insufficient balance
-				//	2. unclaimed user (should be caught before sending tip)
+				case 'error': {
+					ctx.debug.error(`tip:${tip.id} failed with error: ${txState.error}`);
+					dispatch(ctx.self, {type: 'tip_update', status: statusEnum.FAILED});
+					break;
+				}
 
-				dispatch(ctx.self, {type: 'tip_update', error, status: statusEnum.FAILED});
-				return;
+				default: {
+					ctx.debug.d(`... do nothing`);
+				}
 			}
-
-			if(result.receipt) {
-				dispatch(ctx.self, {type: 'tip_update', status: statusEnum.FAILED});
-			}
-
+			return;
 		},
 
 		'tip_update': (msg, ctx, state) => {

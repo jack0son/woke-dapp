@@ -1,11 +1,34 @@
 const { dispatch, query } = require('nact');
+const { start_actor } = require('../actor-system');
 const { web3Tools } = require('@woke/lib');
+
+const txActor = require('./actors');
 
 function initContract(web3Instance, interface) {
 	return new web3Instance.web3.eth.Contract(
 		interface.abi,
 		interface.networks[web3Instance.network.id].address
 	);
+}
+
+function SpawnTx() {
+	let idx = 0;
+	return function spawn_tx(){
+	}
+}
+
+let idx = 0;
+const spawn_tx = function SpawnTx(_parent) {
+		return start_actor(
+			_parent,
+			txActor,
+			`_tx-${idx++}`,
+			{
+				initialState: {
+					sinks: [ctx.sender], // forward the sender to this tx
+				}
+			}
+		);
 }
 
 const contractActor = {
@@ -15,7 +38,17 @@ const contractActor = {
 			contractInterface: undefined,
 			//contract,
 			//web3Instance,
-		}
+		},
+
+		onCrash: {
+			// Crash reasons
+			// -- web3 cannot eventuall connect --> FATAL
+
+			// Options
+			// 1. if waiting for web3 ...
+		},
+
+		onCrash: undefined
 	},
 
 	actions: {
@@ -40,11 +73,15 @@ const contractActor = {
 				from: web3Instance.web3.eth.accounts[0],
 			}
 
-			//try{
-			let r = await contract.methods[method](...args).send(sendOpts);
-			ctx.debug.d(msg, r);
+			const a_tx = spawn_tx(ctx.self)( // parent is me
+			dispatch(a_tx, {type: 'send', tx: { method, args, opts}}, ctx.self));
 
-			dispatch(ctx.sender, { type: 'contract', result: r }, ctx.self);
+			ctx.debug.d(msg, r);
+			// 1. spawn a transaction actor
+			//try{
+			//let r = await contract.methods[method](...args).send(sendOpts);
+
+			//dispatch(ctx.sender, { type: 'contract', result: r }, ctx.self);
 			//} catch(error) {
 			//debug(msg, error);
 			//}

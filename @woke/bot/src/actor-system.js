@@ -60,6 +60,7 @@ const start_actor = system => (_name, _definition, _initialState) => {
 	);
 }
 
+// @TODO Interface surface unccessarily large
 const bootstrap = () => {
 	const system = start();
 
@@ -72,8 +73,11 @@ const bootstrap = () => {
 	}
 }
 
-module.exports = bootstrap;
-
+module.exports = {
+	bootstrap,
+	spawn_actor,
+	start_actor,
+}
 
 /*
 function Block(parent) {
