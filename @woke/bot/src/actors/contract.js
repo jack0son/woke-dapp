@@ -37,6 +37,7 @@ const contractActor = {
 			}
 			const sendOpts = {
 				...opts,
+				from: web3Instance.web3.eth.accounts[0],
 			}
 
 			//try{
@@ -59,6 +60,7 @@ const contractActor = {
 			}
 			const callOpts = {
 				...opts,
+				from: web3Instance.web3.eth.accounts[0],
 			}
 
 			//try {

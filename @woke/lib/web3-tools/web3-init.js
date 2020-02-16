@@ -30,6 +30,8 @@ module.exports = () => {
 	let wallet = null;
 	if(!privKey) {
 		console.log('WARNING: web3 has no local unlocked account');
+		// If using ganache, unlock the accounts
+
 	} else {
 		let wallet = web3.eth.accounts.wallet.add(privKey);
 		web3.eth.defaultAccount = wallet.address;
@@ -40,5 +42,6 @@ module.exports = () => {
 		web3,
 		network,
 		account: wallet ? wallet.address : null,
+		//accounts: web3.eth.accounts,
 	}
 }

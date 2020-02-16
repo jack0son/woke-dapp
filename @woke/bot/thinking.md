@@ -31,3 +31,7 @@
     - request-repy
     - publish-subscribe
     - pipeline
+
+Side effect performance
+   - track second and third order effects
+   - rate of effects produced

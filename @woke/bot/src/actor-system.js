@@ -5,6 +5,15 @@ actors = require('./actors');
 
 const DEBUG_PREFIX = 'actor';
 
+const INFINITE_WAIT = 10*1000; //ms
+const block = async (recipient, msg) => {
+	try {
+	 return await query(recipient, INFINITE_WAIT);
+	} catch(error) {
+		throw new Error(`APPLICATION HANG: blocking query timed out. Are you sure you want to couple actor execution?`); 
+	}
+}
+
 const spawn_actor = (_parent, _name, _actionsMap, _initialState, _properties) => {
 	const debug = {};
 
@@ -57,9 +66,47 @@ const bootstrap = () => {
 	return {
 		start_actor: start_actor(system),
 		stop: () => stop(system),
+		block,
 		dispatch,
 		system,
 	}
 }
 
 module.exports = bootstrap;
+
+
+/*
+function Block(parent) {
+	let idx = 0;
+
+	return function block(producer, msg) {
+		const blocker = spawn(
+			_parent,
+			blockActor
+			`_blocker-${idx++}`,
+			{
+				initialState: {
+					consumer,
+				}
+			}
+		);
+	}
+}
+
+// Example query(
+
+const blockActor = (msg, ctx, state) => {
+	switch(msg.blocking) {
+		case 'open': (msg, ctx, state) => {
+			dispatch(
+		},
+
+		case 'close': (msg, ctx, state) => {
+		},
+
+		default: {
+			throw new Error(`Blocking actor always expects message property 'blocking'`)
+		}
+	}
+}
+*/
