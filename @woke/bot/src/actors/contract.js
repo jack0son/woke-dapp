@@ -63,6 +63,8 @@ const contractActor = {
 				from: web3Instance.web3.eth.accounts[0],
 			}
 
+			// 1. spawn a transaction actor
+
 			//try {
 			let r = await contract.methods[method](...args).call(callOpts);
 			// @TODO Errors to handle
