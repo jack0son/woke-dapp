@@ -4,6 +4,7 @@ import "openzeppelin-solidity/contracts/ownership/Ownable.sol";
 import "openzeppelin-solidity/contracts/token/ERC20/ERC20.sol";
 import "./libraries/Strings.sol";
 import "./libraries/ECDSA.sol";
+import "./libraries/Helpers.sol";
 
 import "./mocks/TwitterOracleMock.sol";
 
@@ -274,10 +275,10 @@ contract WokeToken is Ownable, ERC20 {
 		// @TODO naughty naughty
 		//approve(tippingAgent, _amount);
 		//transferFrom(from, to, _amount);
-		_transfer(from, to, _amount);
+		//_transfer(from, to, _amount);
 
 		if(DEFAULT_TIP_ALL) {
-			_setTipBalance(_toId, balanceOf(users[_toId].account));
+			_setTipBalance(_toId, balanceOf(to));
 		}
 
 		//emit Tx(userIds[msg.sender], _toId, userIds[msg.sender], _toId, _amount, true);
@@ -300,9 +301,9 @@ contract WokeToken is Ownable, ERC20 {
 		uint256 amount = _amount > tipBalance ? tipBalance : _amount;
 
 		if(userClaimed(_toId)) {
-			_transferClaimed(_fromId, _toId, amount);
+			//_transferClaimed(_fromId, _toId, amount);
 		} else {
-			//_transferUnclaimed(_fromId, _toId, amount);
+			_transferUnclaimed(_fromId, _toId, amount);
 		}
 
 		users[_toId].tipBalance -= amount;
@@ -375,7 +376,7 @@ contract WokeToken is Ownable, ERC20 {
 		bytes32 msgHash = ECDSA.messageHash(hash);
 
 		// Extract signature from claim string
-		(bytes memory sigHex, byte _authVersion) = parseClaim(bytes(_claimString));
+		(bytes memory sigHex, byte _authVersion) = Helpers.parseClaim(bytes(_claimString));
 		bytes memory sig = Strings.fromHex(sigHex);
 
 		require(_authVersion == authVersion, 'invalid auth version');
@@ -389,21 +390,6 @@ contract WokeToken is Ownable, ERC20 {
 		return result;
 	}
 
-	// @param cs claim string
-	function parseClaim(bytes memory _cs) internal
-	returns (bytes memory, byte)
-	{
-		byte version = _cs[_cs.length - 1];
-		//uint prefixLen = _cs.length - 67; // [prefix][sig],<version>
-		bytes memory sig = new bytes(130);
-
-		// @fix replace loop with mload to save gas
-		for(uint i = 0; i < 130; i++) {
-			sig[129 - i] = _cs[_cs.length - 3 - i];
-		}
-
-		return (sig, byte(Strings.fromHexChar(uint8(version))));
-	}
 	/*-----------------------------*/
 
 

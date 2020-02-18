@@ -1,6 +1,7 @@
 //const oracle = artifacts.require("TwitterOracle.sol");
 var OracleMock = artifacts.require("TwitterOracleMock.sol");
 var Token = artifacts.require("WokeToken.sol");
+var Helpers = artifacts.require("Helpers.sol");
 var Strings = artifacts.require("Strings.sol");
 var ECDSA = artifacts.require("ECDSA.sol");
 
@@ -30,12 +31,18 @@ const doDeploy = async (deployer, network, accounts) => {
 	let oracleInstance = await OracleMock.deployed();
 	console.log(`OracleMock deployed at ${oracleInstance.address}`);
 
+
 	console.log('Deploying Strings...');
 	await deployer.deploy(Strings);
+	await deployer.link(Strings, Helpers);
+	await deployer.link(Strings, Token);
+
+	console.log('Deploying Helpers...');
+	await deployer.deploy(Helpers);
+	await deployer.link(Helpers, Token);
 
 	console.log('Deploying ECDSA...');
 	await deployer.deploy(ECDSA);
-	await deployer.link(Strings, Token);
 	await deployer.link(ECDSA, Token);
 
 	console.log('Deploying WokeToken...')

@@ -45,6 +45,6 @@
     "test": "truffle test",
     "test:debug": "DEBUG=t:* truffle test",
     "test:verbose": "DEBUG=t:* truffle test --show-events",
-    "stat:bytecode": "bash ./scrips/bytecode-size.sh"
+    "stat:bytecode": "bash ./scripts/bytecode-size.sh"
   }
 }
