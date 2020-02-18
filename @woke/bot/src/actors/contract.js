@@ -2,7 +2,7 @@ const { dispatch, query } = require('nact');
 const { start_actor } = require('../actor-system');
 const { web3Tools } = require('@woke/lib');
 
-const txActor = require('./actors');
+const txActor = require('./web3-tx');
 
 function initContract(web3Instance, interface) {
 	return new web3Instance.web3.eth.Contract(
@@ -19,10 +19,9 @@ function SpawnTx() {
 
 let idx = 0;
 const spawn_tx = function SpawnTx(_parent) {
-		return start_actor(
-			_parent,
-			txActor,
+		return start_actor(_parent)(
 			`_tx-${idx++}`,
+			txActor,
 			{
 				initialState: {
 					sinks: [ctx.sender], // forward the sender to this tx

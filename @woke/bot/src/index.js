@@ -34,19 +34,23 @@
 
 const { Logger } = require('@woke/lib');
 const debug = Logger();
+
+const { spawnStateless, dispatch, query } = require('nact');
 const actors = require('./actors');
 
-const director = require('./actor-system')();
+const actorSystem = require('./actor-system');
 
 const TwitterStub = require('./lib/twitter-stub');
 const TwitterMock = require('../test/mocks/twitter-client');
 
-const twitter = new TwitterStub({}, TwitterMock.MockClient);
+const twitter = new TwitterStub({}, TwitterMock.createMockClient(1));
 const tMonDefn = actors.TwitterMonitor(twitter);
 
 const artifacts = require('@woke/contracts');
 const wokeTokenInterface = artifacts[process.env.NODE_ENV !== 'development' ? 'production' : 'development'].WokeToken; 
 
+// Init Actors wooooooweee
+const director = actorSystem.bootstrap();
 const a_tMon = director.start_actor('twitter_monitor', tMonDefn);
 const a_polling = director.start_actor('polling_service', actors.polling);
 
@@ -67,7 +71,6 @@ const a_tipper = director.start_actor('tipper', actors.tipper, {
 	a_wokenContract,
 })
 
-const { spawnStateless, dispatch, query } = require('nact');
 
 // Forward tips to the tipper
 const a_conduit = spawnStateless(
@@ -87,7 +90,7 @@ const a_conduit = spawnStateless(
 	}
 );
 
-dispatch(a_web3, {type: 'init'})
+//dispatch(a_web3, {type: 'init'})
 
 const TIP_POLLING_INTERVAL = 10000;
 dispatch(a_polling, { type: actors.polling.iface.poll,

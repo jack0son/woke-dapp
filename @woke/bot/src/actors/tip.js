@@ -1,4 +1,5 @@
-const { tip_str } = require('utils');
+const { dispatch } = require('nact');
+const { tip_str } = require('../lib/utils');
 
 const properties = {
 	initialState: {
@@ -8,39 +9,20 @@ const properties = {
 	onCrash: undefined,
 }
 
-// FSM will be map of actions states, states to actions or both
-
-const template_eventsTable = {
-	'a_event': {
-		// action 1
-		state_1: {
-			effect: () => ()
-			next: 'state_3'
-		},
-
-		// action 2
-		state_2: {
-		},
-	}
-}
-
 const eventsTable = {
-	'call-check_claim-start': {
-		'init': {
+	'start': {
+		'INIT': {
 			effect: (msg, ctx, state) => {
 				const { tip } = state;
+				//console.log(state);
 				ctx.debug.d(msg, `Check @${tip.fromHandle} is claimed...`);
 				dispatch(state.a_wokenContract, { type: 'call',
 					method: 'userClaimed',
 					args: [tip.fromId]
 				}, ctx.self)
 
-				return {
-					...state,
-					stage: 'calling-check_claim',
-				}
+				return {...state, stage: 'calling-check_claim' }
 			},
-			//next: 'calling-check_claim',
 		},
 	},
 
@@ -93,17 +75,17 @@ const eventsTable = {
 				let nextStage;
 				if(tx.meta.tip.id !== tip.id) {
 					const errMsg = `${ctx.name} expects tip ${tip.id}, got ${tx.meta.tip.id}`;
-					debug.ctx.error(msg, errMsg);
+					ctx.debug.error(msg, errMsg);
 					throw new Error(errMsg);
 				}
 
-				ctx.debug.d(`tip:${tip.id} Got tx update ${txStatus}`);
+				ctx.debug.d(msg, `tip:${tip.id} Got tx update ${txStatus}`);
 				switch(txStatus) {
 					case 'success': {
-						ctx.debug.d(`tip:${tip.id} confirmed on chain`);
+						ctx.debug.d(msg, `tip:${tip.id} confirmed on chain`);
 						tip.status = 'SETTLED';
 						dispatch(ctx.parent, { type: 'tip_update', tip }, ctx.self);
-						reduce({ event: 'settled' });
+						message.reduce({ event: 'settled' });
 
 						return {
 							...state,
@@ -116,7 +98,7 @@ const eventsTable = {
 						const errMsg = `tip:${tip.id} failed with error: ${txState.error}`;
 						ctx.debug.error(errMsg);
 						dispatch(ctx.self, {type: 'tip_update', status: statusEnum.FAILED});
-						reduce({ event: 'send-tx-failed', error: errMsg });
+						message.reduce({ event: 'send-tx-failed', error: errMsg });
 						return {
 							...state,
 							nextStage: 'error',
@@ -125,7 +107,7 @@ const eventsTable = {
 					}
 
 					default: {
-						ctx.debug.d(`... do nothing`);
+						ctx.debug.d(msg, `... do nothing`);
 					}
 				}
 			}
@@ -144,24 +126,30 @@ function reduceEvent(msg, ctx, state) {
 	const { stage } = state;
 	const { event } = msg;
 
+	ctx.debug.info(msg, `Got <${event}> in stage ╢${stage}╟`);
 	const applicableStages = eventsTable[event];
 
 	if(!applicableStages) {
-		debug.ctx.d(`No applicable stages for event <${event}>`);
+		ctx.debug.d(msg, `No applicable stages for event <${event}>`);
 		return state;
 	}
 
-	const action = applicableStates[stage];
+	const action = applicableStages[stage];
 	if(!action) {
-		debug.ctx.d(`No actions for event <${event}> in stage ╢${stage}╟`);
+		ctx.debug.d(msg, `No actions for event <${event}> in stage ╢${stage}╟`);
 		return state;
 	}
+
+	// @fix
+	const reduce = (_msg) => dispatch_reduce({ ...msg, ..._msg }, ctx);
+	msg.reduce = reduce;
 
 	const nextState = {...state, ...action.effect(msg, ctx, state)};
 	return nextState;
 }
 
-function reduce(msg, ctx, state) {
+// @TODO include in context as ctx.reduce
+function dispatch_reduce(msg, ctx) {
 	msg.type = 'reduce'
 	dispatch(ctx.self, msg, ctx.self);
 }
@@ -170,16 +158,27 @@ const actions = {
 	// --- Source Actions
 	'reduce': reduceEvent,
 
-	'tip': async (msg, ctx, state) => {
+	'tip': (msg, ctx, state) => {
+		const reduce = (_msg) => dispatch_reduce({ ...msg, ..._msg }, ctx);
+
 		const { a_wokenContract } = state;
 		const { tip } = msg;
 
 		ctx.debug.d(msg, tip_str(tip));
 
+		reduce({ event: 'start' });
+
+		return {
+			...state,
+			stage: 'INIT',
+			tip,
+		}
 	},
 
 	// --- Sink Actions
 	'tx': (msg, ctx, state) => {
+		const reduce = (_msg) => dispatch_reduce({ ...msg, ..._msg }, ctx);
+
 		const { tx } = msg;
 		switch(tx.method) {
 			case 'userClaimed': {

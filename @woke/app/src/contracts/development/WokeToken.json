@@ -4592,7 +4592,7 @@
                                   "name": "this",
                                   "nodeType": "Identifier",
                                   "overloadedDeclarations": [],
-                                  "referencedDeclaration": 9897,
+                                  "referencedDeclaration": 9911,
                                   "src": "5313:4:2",
                                   "typeDescriptions": {
                                     "typeIdentifier": "t_contract$_WokeToken_$1698",
@@ -6852,7 +6852,7 @@
                             "name": "this",
                             "nodeType": "Identifier",
                             "overloadedDeclarations": [],
-                            "referencedDeclaration": 9897,
+                            "referencedDeclaration": 9911,
                             "src": "7155:4:2",
                             "typeDescriptions": {
                               "typeIdentifier": "t_contract$_WokeToken_$1698",
@@ -10974,7 +10974,7 @@
                             "name": "this",
                             "nodeType": "Identifier",
                             "overloadedDeclarations": [],
-                            "referencedDeclaration": 9897,
+                            "referencedDeclaration": 9911,
                             "src": "10051:4:2",
                             "typeDescriptions": {
                               "typeIdentifier": "t_contract$_WokeToken_$1698",
@@ -22317,7 +22317,7 @@
                                   "name": "this",
                                   "nodeType": "Identifier",
                                   "overloadedDeclarations": [],
-                                  "referencedDeclaration": 9897,
+                                  "referencedDeclaration": 9911,
                                   "src": "5313:4:2",
                                   "typeDescriptions": {
                                     "typeIdentifier": "t_contract$_WokeToken_$1698",
@@ -24577,7 +24577,7 @@
                             "name": "this",
                             "nodeType": "Identifier",
                             "overloadedDeclarations": [],
-                            "referencedDeclaration": 9897,
+                            "referencedDeclaration": 9911,
                             "src": "7155:4:2",
                             "typeDescriptions": {
                               "typeIdentifier": "t_contract$_WokeToken_$1698",
@@ -28699,7 +28699,7 @@
                             "name": "this",
                             "nodeType": "Identifier",
                             "overloadedDeclarations": [],
-                            "referencedDeclaration": 9897,
+                            "referencedDeclaration": 9911,
                             "src": "10051:4:2",
                             "typeDescriptions": {
                               "typeIdentifier": "t_contract$_WokeToken_$1698",
@@ -37488,7 +37488,7 @@
     }
   },
   "schemaVersion": "3.0.20",
-  "updatedAt": "2020-02-15T12:10:36.154Z",
+  "updatedAt": "2020-02-18T03:07:07.602Z",
   "networkType": "ethereum",
   "devdoc": {
     "methods": {

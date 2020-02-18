@@ -124,12 +124,12 @@ const actions = {
 
 	'send': async (msg, ctx, state) => {
 		const { tx } = msg; 
-		const { method, args, opts} = tx;
+		const { method, args } = tx;
 		const { sendOpts } = state;
 
 		const opts = {
 			...sendOpts,
-			...opts,
+			...tx.opts,
 		}
 
 		tx.type = 'send';
