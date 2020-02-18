@@ -1,6 +1,6 @@
 // Keep track of unsent tips
 const { dispatch, query } = require('nact');
-const { delay } = require('../lib/utils');
+const { delay, tip_str } = require('../lib/utils');
 const statuses = [
 	'UNSETTLED',
 	'SETTLED',
@@ -26,9 +26,6 @@ const resetWithMaxAttempts = (factor) => {
 const AVG_BLOCK_TIME = 3*1000
 const CONTRACT_TIMEOUT = 3*AVG_BLOCK_TIME;
 
-function tip_str(tip) {
-	return `@${tip.fromHandle} wishes to tip @${tip.toHandle} ${tip.amount}.WOKENS`;
-}
 
 const tipActor = {
 	properties: {
@@ -72,6 +69,8 @@ const tipper = {
 	actions: {
 		'tip': async (msg, ctx, state) => {
 			const { tipRepo, a_wokenContract } = state;
+
+			const { tipRepo, a_wokenContract } = state;
 			const { tip } = msg;
 
 			if(!a_wokenContract) {
@@ -82,42 +81,17 @@ const tipper = {
 			//ctx.debug.info(msg, `Received tip ${tip.id}`);
 			ctx.debug.d(msg, tip_str(tip));
 			let entry = tipRepo[tip.id];
+			spawn_tip(
+				{
+					tip: {...entry}
+				}
+			)
+
 			if(!entry) {
 				// New tip
 				entry = {
 					status: statusEnum.UNSETTLED,
 					error: null,
-				}
-
-				ctx.debug.d(msg, `Check @${tip.fromHandle} is claimed...`);
-				try {
-				const userIsClaimed = await query(a_wokenContract, { type: 'call',
-					method: 'userClaimed',
-					args: [tip.fromId]
-				}, CONTRACT_TIMEOUT)
-				} catch (error) {
-					throw new Error(`Call to userIsClaimed timed out`);
-					// if error is query timeout
-				}
-
-				if(userIsClaimed === false) {
-					entry.status = statusEnum.INVALID;
-					entry.error = 'unclaimed sender'
-				} else if(userIsClaimed === true) {
-
-					dispatch(a_wokenContract, {type: 'send', 
-						method: 'tip',
-						args: [tip.fromId, tip.toId, tip.amount],
-						meta: {
-							tip
-						},
-						sinks: ctx.self
-					}, ctx.self)
-
-					entry.status = statusEnum.UNSETTLED;
-				} else if(!userIsClaimed) {
-					// Oh yes, this happens sometimes!
-					throw new Error(`User unclaimed is ${userIsClaimed}`)
 				}
 
 				return {

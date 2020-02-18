@@ -3,7 +3,12 @@ const { withEffect } = require('./effects');
 
 const properties = {
 	initialState: {
-		sinks: []
+		sinks: [],
+
+		opts: {
+			call: null,
+			send: null,
+		}
 	}
 }
 
@@ -60,6 +65,16 @@ function handleOnChainError(error) {
 	// do some recovery
 }
 
+function reduce(msg, ctx, state) {
+	msg.type = 'reduce';
+	dispatch(ctx.self, msg, ctx.self);
+}
+
+const INFINITE_WAIT = 1000*1000; // ms
+const block = (_consumer, _msg) => {
+	return query(_consumer, _msg, INFINITE_WAIT);
+}
+
 const actions = {
 	'get_status': (msg, ctx, state) => {
 		dispatch(ctx.sender, { status: resolveStatus(ctx.txState), txState }, ctx.self);
@@ -79,15 +94,15 @@ const actions = {
 
 	'reduce': withEffect((msg, ctx, state) => {
 		ctx.onlySelf()
-		const { tx, sinks, txState } = state;
+		const { tx, sinks, txState, sent } = msg;
 		const prevStatus = resolveStatus(txState);
 
 		dispatch(ctx.sink, {msg}, ctx.self)
 
 		const nextState = {
 			...state,
-			stage: msg.stage,
-			error: msg.error,
+			sent: sent ? sent : state.sent,
+			error: {...error, error},
 			tx: {
 				...state.tx,
 				...msg.tx,
@@ -97,21 +112,37 @@ const actions = {
 
 	})(dispatchSinks),
 
+	// Sender responses addressed to self
+	'tx': async (msg, ctx, state) => {
+		const { txStatus } = msg;
+
+		if(txStatus == 'success') {
+			ctx.debug.d(`Complete. Stopping...`);
+			return ctx.stop();
+		}
+	},
+
 	'send': async (msg, ctx, state) => {
 		const { tx } = msg; 
+		const { method, args, opts} = tx;
 		const { sendOpts } = state;
 
 		const opts = {
 			...sendOpts,
-			...tx.opts,
+			...opts,
 		}
 
-		await contract.myMethod(...tx.args).send(opts)
+		tx.type = 'send';
+
+		const { web3Instance } = await block(state.a_web3, { type: 'get' });
+		const contract = initContract(web3Instance, state.contractInterface);
+
+		contract.myMethod(...tx.args).send(opts)
 			.on('transactionHash', hash => {
 				reduce({
 					tx: {...tx, hash}
 				}, ctx);
-				dispatch(ctx.sender, {type: 'tx', hash }, ctx.self)
+				//dispatch(ctx.sender, {type: 'tx', hash }, ctx.self)
 			})
 			.on('confirmation', (confNumber, receipt) => {
 				// @note not using this for now
@@ -137,36 +168,42 @@ const actions = {
 				console.log(receipt);
 			});
 
-		dispatch(ctx.sender, {type: 'tx', txStatus: 'sent' }, ctx.self)
+
+		dispatch(ctx.sender, {type: 'tx', txStatus: 'submitted', tx }, ctx.self);
+		return {
+			sent: true,
+			error: null,
+			tx,
+		};
 	}
 }
 
 module.exports = { actions, properties };
 
 class DomainError extends Error {
-  constructor(message) {
-    super(message);
-    this.name = this.constructor.name;
-    Error.captureStackTrace(this, this.constructor);
-  }
+	constructor(message) {
+		super(message);
+		this.name = this.constructor.name;
+		Error.captureStackTrace(this, this.constructor);
+	}
 }
 
 class OnChainError extends DomainError {
-  constructor(error, reciept) { // and tx data?
-    super(`Transactions ${tx.hash} failed.`);
+	constructor(error, reciept) { // and tx data?
+		super(`Transactions ${tx.hash} failed.`);
 		this.data = { receipt, error }
-  }
+	}
 }
 
 class RevertError extends DomainError {
-  constructor(tx) {
+	constructor(tx) {
 		if(tx.reason) {
 			super(`Transaction reverted '${tx.reason}`);
 		} else {
 			super(`No reason given`);
 		}
 		this.data = { tx }
-  }
+	}
 }
 
 //
@@ -189,8 +226,8 @@ function affectStatusSinks(msg, ctx, state) {
 	}
 }
 
-	// Add the sender to the list of sinks for a given tx status
-	// -- simplify this, just sink to any status update
+// Add the sender to the list of sinks for a given tx status
+// -- simplify this, just sink to any status update
 	'sink_a_status': (msg, ctx, state) => {
 		const { sinks } = state;
 		const { status } = msg;
@@ -203,4 +240,4 @@ function affectStatusSinks(msg, ctx, state) {
 			}
 		}
 	},
-*/
+	*/

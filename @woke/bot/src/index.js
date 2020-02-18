@@ -26,6 +26,11 @@
 //		- WokeToken monitor
 //		- Twitter monitor
 //		- Tweeter
+//
+//
+// Message rules
+//	Responses:
+//		-- msg = { type: ACTOR_DEFN_NAME }
 
 const { Logger } = require('@woke/lib');
 const debug = Logger();
