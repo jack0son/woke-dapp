@@ -89,8 +89,12 @@ const eventsTable = {
 					case 'success': {
 						ctx.debug.d(msg, `tip:${tip.id} confirmed on chain`);
 						tip.status = 'SETTLED';
+						const { receipt } = msg;
+						const tipEvent = receipt.events.Tip.returnValues;
+						tip.amount = tipEvent.amount;
+						console.log();
 						dispatch(ctx.parent, { type: 'tip_update', tip }, ctx.self);
-						message.reduce({ event: 'settled' });
+						msg.reduce({ event: 'settled' });
 
 						return {
 							...state,
@@ -103,7 +107,7 @@ const eventsTable = {
 						const errMsg = `tip:${tip.id} failed with error: ${txState.error}`;
 						ctx.debug.error(errMsg);
 						dispatch(ctx.self, {type: 'tip_update', status: statusEnum.FAILED});
-						message.reduce({ event: 'send-tx-failed', error: errMsg });
+						msg.reduce({ event: 'send-tx-failed', error: errMsg });
 						return {
 							...state,
 							nextStage: 'error',
@@ -112,7 +116,7 @@ const eventsTable = {
 					}
 
 					default: {
-						ctx.debug.info(msg, `... do nothing`);
+						//ctx.debug.info(msg, `... do nothing`);
 					}
 				}
 			}

@@ -190,6 +190,9 @@ const actions = {
 		const { tx, web3Instance } = msg; 
 
 		const opts = {
+			gas: web3Instance.network.gasLimit,
+			gasPrice: web3Instance.network.gasPrice,
+			common: web3Instance.network.defaultCommon,
 			...sendOpts,
 			...tx.opts,
 		}
@@ -225,7 +228,7 @@ const actions = {
 				}
 			})
 			.then( receipt => {
-				console.log('GOT RECEIPT -- REEEEEEEE');
+				//console.log('GOT RECEIPT -- REEEEEEEE');
 				dispatch(ctx.sender, {type: 'tx', txStatus: 'success', tx, receipt }, ctx.self);
 			})
 			.catch( (error, receipt) => {

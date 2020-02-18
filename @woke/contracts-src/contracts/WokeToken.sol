@@ -301,13 +301,14 @@ contract WokeToken is Ownable, ERC20 {
 		uint256 amount = _amount > tipBalance ? tipBalance : _amount;
 
 		if(userClaimed(_toId)) {
+			return 0;
 			//_transferClaimed(_fromId, _toId, amount);
 		} else {
 			_transferUnclaimed(_fromId, _toId, amount);
 		}
 
-		users[_toId].tipBalance = tipBalance - amount;
-		require(tipBalance - amount == users[_toId].tipBalance, "Tip balance invariant violated");
+		users[_fromId].tipBalance = tipBalance - amount;
+		require(tipBalance - amount == users[_fromId].tipBalance, "Tip balance invariant violated");
 
 		emit Tip(_fromId, _toId, amount);
 		return amount;

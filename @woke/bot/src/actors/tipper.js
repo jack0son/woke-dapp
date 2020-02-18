@@ -79,7 +79,8 @@ const tipper = {
 			}
 
 			//ctx.debug.info(msg, `Received tip ${tip.id}`);
-			ctx.debug.d(msg, tip_str(tip));
+			//ctx.debug.d(msg, tip_str(tip));
+			console.log(tip_str(tip));
 			let entry = tipRepo[tip.id];
 			console.log(entry);
 
@@ -121,6 +122,10 @@ const tipper = {
 				ctx.debug.error(msg, `Tip ${tip.id} from ${tip.fromHandle} error: ${tip.error}`)
 			}
 			ctx.debug.d(msg, `Updated tip:${tip.id} to ⊰ ${tip.status} ⊱`)
+
+			if(tip.status === 'SETTLED') {
+				console.log(`\n@${tip.fromHandle} tipped @${tip.toHandle} ${tip.amount} WOKENS\n`)
+			}
 
 			tipRepo[tip.id] = {
 				...tipRepo[tip.id],
