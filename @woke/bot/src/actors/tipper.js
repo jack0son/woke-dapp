@@ -89,8 +89,7 @@ const tipper = {
 					error: null,
 				}
 
-			//ctx.debug.info(msg, `Received tip ${tip.id}`);
-				ctx.debug.d(msg, `Spawning tip actor...`);
+				ctx.debug.info(msg, `Spawning tip actor...`);
 				const a_tip = spawn_tip(ctx.self, tip, a_wokenContract);
 
 				dispatch(a_tip, { type: 'tip', tip }, ctx.self);
@@ -116,10 +115,17 @@ const tipper = {
 			const { tipRepo, wokenContract } = state;
 			const { tip, status, error} = msg;
 
+			console.log(tip);
+			if(tip.error) {
+				ctx.debug.error(msg, `Tip ${tip.id} from ${tip.fromHandle} error: ${tip.error}`)
+			}
+			ctx.debug.d(msg, `Updated tip:${tip.id} to ⊰ ${tip.status} ⊱`)
+
 			tipRepo[tip.id] = {
 				...tipRepo[tip.id],
-				status,
-				error,
+				...tip,
+				//status,
+				//error,
 			}
 
 			return {

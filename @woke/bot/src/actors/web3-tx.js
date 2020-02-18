@@ -1,5 +1,12 @@
-const { dispatch } = require('nact');
+const { dispatch, query } = require('nact');
 const { withEffect } = require('./effects');
+
+function initContract(web3Instance, interface) {
+	return new web3Instance.web3.eth.Contract(
+		interface.abi,
+		interface.networks[web3Instance.network.id].address
+	);
+}
 
 const properties = {
 	initialState: {
@@ -127,18 +134,20 @@ const actions = {
 		const { method, args } = tx;
 		const { callOpts } = state;
 
-		tx.type = 'send';
+		tx.type = 'call';
 		const { web3Instance } = await block(state.a_web3, { type: 'get' });
 		const opts = {
 			...callOpts,
 			...tx.opts,
 		}
-		opts.from = web3Instance.web3.eth.accounts[0];
+		if(web3Instance.account) {
+			opts.from = web3Instance.account;
+		}
 
 		const contract = initContract(web3Instance, state.contractInterface);
-		const result = await contract.myMethod(...tx.args).send(opts)
+		const result = await contract.methods[method](...tx.args).call(opts)
 
-		dispatch(ctx.sender, { type: 'tx', tx }, ctx.parent);
+		dispatch(ctx.sender, { type: 'tx', tx, result }, ctx.parent);
 	},
 
 	'send': async (msg, ctx, state) => {
@@ -152,9 +161,12 @@ const actions = {
 			...sendOpts,
 			...tx.opts,
 		}
+		if(web3Instance.account) {
+			opts.from = web3Instance.account;
+		}
 
 		const contract = initContract(web3Instance, state.contractInterface);
-		contract.myMethod(...tx.args).send(opts)
+		contract.methods[method](...tx.args).send(opts)
 			.on('transactionHash', hash => {
 				reduce({
 					tx: {...tx, hash}

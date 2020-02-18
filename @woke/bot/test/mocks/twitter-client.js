@@ -14,7 +14,9 @@ const createMockClient = (_sampleSize, _data) => {
 	let data = _data ? _data : tipTweets;
 
 	if(_sampleSize) {
-		data = data.slice(0, _sampleSize);
+		const start = 2;
+		const end = start + data.length;
+		data = data.slice(start, end > data.length ? data.length : end);
 	}
 
 	const queryEngine = {

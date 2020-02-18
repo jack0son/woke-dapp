@@ -26,11 +26,14 @@ const eventsTable = {
 		},
 	},
 
-	'call-check_claim-recv': {
+	'check_claim-recv': {
 		'calling-check_claim': {
 			effect: (msg, ctx, state) => {
 				const { tip, a_wokenContract } = state;
+				const { tx, result } = msg;
 				let nextStage;
+				const userIsClaimed = result;
+				ctx.debug.d(msg, `userIsClaimed: ${userIsClaimed}`);
 				if(userIsClaimed === false) {
 					tip.status = 'INVALID';
 					tip.error = 'unclaimed sender'
@@ -66,7 +69,7 @@ const eventsTable = {
 		}
 	},
 
-	'send-tip-recv': {
+	'send_tip-recv': {
 		'sending-tip': {
 			effect: (msg, ctx, state) => {
 				const { tip } = state;
@@ -182,12 +185,12 @@ const actions = {
 		const { tx } = msg;
 		switch(tx.method) {
 			case 'userClaimed': {
-				reduce({ event: 'call-check_claim-recv', userIsClaimed});
+				reduce({ event: 'check_claim-recv'});
 				break;
 			}
 
 			case 'tip': {
-				reduce({ event: 'send-tip-recv',  ...msg});
+				reduce({ event: 'send_tip-recv',  ...msg});
 				break;
 			}
 
