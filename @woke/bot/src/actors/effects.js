@@ -18,7 +18,7 @@ const withEffect = (msg, ctx, state) => (action_a) => (action_b) => {
 	const state_a = action_a(msg, ctx, state);
 	const nextState = state_a ? state_a : state;
 
-	const state_b = actoin_b(msg, ctx, nextState);
+	const state_b = action_b(msg, ctx, nextState);
 	return state_b ? state_b : nextState;
 }
 

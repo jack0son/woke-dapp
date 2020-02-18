@@ -1,5 +1,6 @@
 const { dispatch, query } = require('nact');
 const { withEffect } = require('./effects');
+//const web3Errors = require('web3-core-helpers').errors;
 
 function initContract(web3Instance, interface) {
 	return new web3Instance.web3.eth.Contract(
@@ -54,6 +55,9 @@ const onCrash = (msg, ctx, state) => {
 	switch(msg.type) {
 		case 'send': {
 			// if the error was a block timeout we could handle and retry
+			if(error instanceof OnChainError) {
+				throw error;
+			}
 			handleOnChainError();
 		}
 
@@ -74,6 +78,8 @@ function handleOnChainError(error) {
 
 function reduce(msg, ctx, state) {
 	msg.type = 'reduce';
+	console.log(ctx.self);
+	console.log(msg);
 	dispatch(ctx.self, msg, ctx.self);
 }
 
@@ -99,25 +105,28 @@ const actions = {
 		}
 	},
 
-	'reduce': withEffect((msg, ctx, state) => {
-		ctx.onlySelf()
-		const { tx, sinks, txState, sent } = msg;
-		const prevStatus = resolveStatus(txState);
+	'reduce': (msg, ctx, state) => {
+		return withEffect(msg, ctx, state)((msg, ctx, state) => {
+			//ctx.onlySelf()
+			const { error, tx, sinks, txState, sent } = msg;
 
-		dispatch(ctx.sink, {msg}, ctx.self)
-
-		const nextState = {
-			...state,
-			sent: sent ? sent : state.sent,
-			error: {...error, error},
-			tx: {
-				...state.tx,
-				...msg.tx,
+			if(error) {
+				console.dir(error);
+				//throw error;
 			}
-		}
-		return nextState;
 
-	})(dispatchSinks),
+			const nextState = {
+				...state,
+				sent: sent ? sent : state.sent,
+				error: {...error, error},
+				tx: {
+					...state.tx,
+					...msg.tx,
+				}
+			}
+			return nextState;
+		})(dispatchSinks)
+	},
 
 	// Sender responses addressed to self
 	'tx': async (msg, ctx, state) => {
@@ -140,9 +149,6 @@ const actions = {
 			...callOpts,
 			...tx.opts,
 		}
-		if(web3Instance.account) {
-			opts.from = web3Instance.account;
-		}
 
 		const contract = initContract(web3Instance, state.contractInterface);
 		const result = await contract.methods[method](...tx.args).call(opts)
@@ -152,11 +158,35 @@ const actions = {
 
 	'send': async (msg, ctx, state) => {
 		const { tx } = msg; 
-		const { method, args } = tx;
-		const { sendOpts } = state;
 
 		tx.type = 'send';
 		const { web3Instance } = await block(state.a_web3, { type: 'get' });
+
+		if(web3Instance.account) {
+			tx.opts.from = web3Instance.account;
+		} else {
+			let account = (await web3Instance.web3.eth.personal.getAccounts())[0];
+			tx.opts = {...tx.opts, from: account};
+		}
+
+		dispatch(ctx.self, { type: '_send', tx, web3Instance }, ctx.sender);
+		//dispatch(ctx.sender, {type: 'tx', txStatus: 'submitted', tx }, ctx.self);
+		return {
+			...state,
+			sent: true,
+			error: null,
+			tx,
+		};
+	},
+
+	// @fix TODO: temporary work around
+	//	-- errors from web3 promi-event don't get caught by the actor when called
+	//	inside an async action without await
+	'_send': (msg, ctx, state) => {
+		// ctx.onlySelf();
+		const { sendOpts } = state;
+		const { tx, web3Instance } = msg; 
+
 		const opts = {
 			...sendOpts,
 			...tx.opts,
@@ -165,13 +195,14 @@ const actions = {
 			opts.from = web3Instance.account;
 		}
 
+		opts.from = null;
+
 		const contract = initContract(web3Instance, state.contractInterface);
-		contract.methods[method](...tx.args).send(opts)
+		contract.methods[tx.method](...tx.args).send(opts)
 			.on('transactionHash', hash => {
 				reduce({
 					tx: {...tx, hash}
 				}, ctx);
-				//dispatch(ctx.sender, {type: 'tx', hash }, ctx.self)
 			})
 			.on('confirmation', (confNumber, receipt) => {
 				// @note not using this for now
@@ -183,28 +214,21 @@ const actions = {
 					error: null,
 				}, ctx);
 			})
-			.on('error', (error, receipt) => {
+			.then( receipt => {
+				dispatch(ctx.sender, {type: 'tx', txStatus: 'success', tx, receipt }, ctx.self);
+			})
+			.catch( (error, receipt) => {
 				if(receipt) {
 					// If receipt is provided web3js specifies tx was rejected on chain
-					ctx.debug.error(`OnChainError: ${error}`);
-					reduce({
-						error: new OnChainError(error, receipt),
-						receipt: receipt,
-					})
+					const onChainError = new OnChainError(error, tx, receipt);
+					reduce({ error: onChainError }, ctx);
+				} else {
+					const paramError = new ParamError(error, tx);
+					reduce({ error: paramError }, ctx);
 				}
-				ctx.debug.error(`TxError: ${error}`);
-				console.log(error);
-				console.log(receipt);
-			});
-
-
-		dispatch(ctx.sender, {type: 'tx', txStatus: 'submitted', tx }, ctx.self);
-		return {
-			sent: true,
-			error: null,
-			tx,
-		};
-	}
+				//console.log('✂ ✂ ✂ ✂ ✂ ✂');
+			})
+	},
 }
 
 module.exports = { actions, properties };
@@ -217,9 +241,16 @@ class DomainError extends Error {
 	}
 }
 
+class ParamError extends DomainError {
+	constructor(error, tx) { // and tx data?
+		super(`Transaction '${tx.method}' failed due to invalid parameters.`);
+		this.data = { error, tx };
+	}
+}
+
 class OnChainError extends DomainError {
-	constructor(error, reciept) { // and tx data?
-		super(`Transactions ${tx.hash} failed.`);
+	constructor(error, tx, receipt) { // and tx data?
+		super(`Transactions ${receipt.transactionHash} failed.`);
 		this.data = { receipt, error }
 	}
 }

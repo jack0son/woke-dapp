@@ -33,7 +33,7 @@ const eventsTable = {
 				const { tx, result } = msg;
 				let nextStage;
 				const userIsClaimed = result;
-				ctx.debug.d(msg, `userIsClaimed: ${userIsClaimed}`);
+				ctx.debug.info(msg, `userIsClaimed: ${userIsClaimed}`);
 				if(userIsClaimed === false) {
 					tip.status = 'INVALID';
 					tip.error = 'unclaimed sender'
@@ -76,13 +76,15 @@ const eventsTable = {
 				const { txStatus, tx, txState } = msg;
 
 				let nextStage;
-				if(tx.meta.tip.id !== tip.id) {
-					const errMsg = `${ctx.name} expects tip ${tip.id}, got ${tx.meta.tip.id}`;
-					ctx.debug.error(msg, errMsg);
-					throw new Error(errMsg);
-				}
 
-				ctx.debug.d(msg, `tip:${tip.id} Got tx update ${txStatus}`);
+				// Should not need to include tip as tx meta data
+				//if(tx.meta.tip.id !== tip.id) {
+				//	const errMsg = `${ctx.name} expects tip ${tip.id}, got ${tx.meta.tip.id}`;
+				//	ctx.debug.error(msg, errMsg);
+				//	throw new Error(errMsg);
+				//}
+
+				ctx.debug.info(msg, `tip:${tip.id} Got tx status ${txStatus}`);
 				switch(txStatus) {
 					case 'success': {
 						ctx.debug.d(msg, `tip:${tip.id} confirmed on chain`);
@@ -110,7 +112,7 @@ const eventsTable = {
 					}
 
 					default: {
-						ctx.debug.d(msg, `... do nothing`);
+						ctx.debug.info(msg, `... do nothing`);
 					}
 				}
 			}

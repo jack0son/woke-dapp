@@ -53,30 +53,15 @@ const contractActor = {
 		},
 
 		'send': async (msg, ctx, state) => {
-			ctx.debug.d(msg, `Got call`, msg);
-			//const { web3Instance } = await query(state.a_web3, { type: 'get' }, 2000);
-			const contract = initContract(web3Instance, state.contractInterface);
+			const { method, args, opts} = msg;
 
 			if(!Array.isArray(args)) {
 				throw new Error(`Send expects parameter args to be Array`);
 			}
-			const sendOpts = {
-				...opts,
-				from: web3Instance.web3.eth.accounts[0],
-			}
 
-			const a_tx = spawn_tx(ctx); // parent is me
-			dispatch(a_tx, {type: 'send', tx: { method, args, opts}}, ctx.self);
+			const a_tx = spawn_tx(ctx, state); // parent is me
+			dispatch(a_tx, {type: 'send', tx: { method, args, opts}}, ctx.sender);
 
-			//ctx.debug.d(msg, r);
-			// 1. spawn a transaction actor
-			//try{
-			//let r = await contract.methods[method](...args).send(sendOpts);
-
-			//dispatch(ctx.sender, { type: 'contract', result: r }, ctx.self);
-			//} catch(error) {
-			//debug(msg, error);
-			//}
 		},
 
 		'call': async (msg, ctx, state) => {

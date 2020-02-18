@@ -13,8 +13,8 @@ export default {
 		networks: {
 			development: {
 				protocol: 'ws',
-				//host: 'localhost',
-				host: '192.168.1.185',
+				host: 'localhost',
+				//host: '192.168.1.185',
 				port: 8545,
 				id: 12,
 			},
@@ -71,8 +71,8 @@ export default {
 	twitter: {
 		development: {
 			api: twitterApi,
-			//hostUrl: 'http://localhost:3000/',
-			hostUrl: 'http://192.168.1.185:3000/',
+			hostUrl: 'http://localhost:3000/',
+			//hostUrl: 'http://192.168.1.185:3000/',
 		},
 
 		production: {

@@ -15,7 +15,7 @@ const createMockClient = (_sampleSize, _data) => {
 
 	if(_sampleSize) {
 		const start = 2;
-		const end = start + data.length;
+		const end = start + _sampleSize;
 		data = data.slice(start, end > data.length ? data.length : end);
 	}
 

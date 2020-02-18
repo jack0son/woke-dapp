@@ -92,7 +92,7 @@ const a_conduit = spawnStateless(
 
 //dispatch(a_web3, {type: 'init'})
 
-const TIP_POLLING_INTERVAL = 10000;
+const TIP_POLLING_INTERVAL = 100*1000;
 dispatch(a_polling, { type: actors.polling.iface.poll,
 	target: a_tMon,
 	action: tMonDefn.iface.find_tips,
