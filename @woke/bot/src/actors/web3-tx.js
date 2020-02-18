@@ -122,21 +122,38 @@ const actions = {
 		}
 	},
 
+	'call': async (msg, ctx, state) => {
+		const { tx } = msg; 
+		const { method, args } = tx;
+		const { callOpts } = state;
+
+		tx.type = 'send';
+		const { web3Instance } = await block(state.a_web3, { type: 'get' });
+		const opts = {
+			...callOpts,
+			...tx.opts,
+		}
+		opts.from = web3Instance.web3.eth.accounts[0];
+
+		const contract = initContract(web3Instance, state.contractInterface);
+		const result = await contract.myMethod(...tx.args).send(opts)
+
+		dispatch(ctx.sender, { type: 'tx', tx }, ctx.parent);
+	},
+
 	'send': async (msg, ctx, state) => {
 		const { tx } = msg; 
 		const { method, args } = tx;
 		const { sendOpts } = state;
 
+		tx.type = 'send';
+		const { web3Instance } = await block(state.a_web3, { type: 'get' });
 		const opts = {
 			...sendOpts,
 			...tx.opts,
 		}
 
-		tx.type = 'send';
-
-		const { web3Instance } = await block(state.a_web3, { type: 'get' });
 		const contract = initContract(web3Instance, state.contractInterface);
-
 		contract.myMethod(...tx.args).send(opts)
 			.on('transactionHash', hash => {
 				reduce({

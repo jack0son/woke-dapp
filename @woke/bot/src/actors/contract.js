@@ -18,16 +18,15 @@ function SpawnTx() {
 }
 
 let idx = 0;
-const spawn_tx = function SpawnTx(_parent) {
-		return start_actor(_parent)(
-			`_tx-${idx++}`,
-			txActor,
-			{
-				initialState: {
-					sinks: [ctx.sender], // forward the sender to this tx
-				}
-			}
-		);
+function spawn_tx(ctx) {
+	console.log(txActor);
+	return start_actor(ctx.self)(
+		`_tx-${idx++}`,
+		txActor,
+		{
+			sinks: [ctx.sender], // forward the sender to this tx
+		}
+	);
 }
 
 const contractActor = {
@@ -71,8 +70,8 @@ const contractActor = {
 				from: web3Instance.web3.eth.accounts[0],
 			}
 
-			const a_tx = spawn_tx(ctx.self)( // parent is me
-			dispatch(a_tx, {type: 'send', tx: { method, args, opts}}, ctx.self));
+			const a_tx = spawn_tx(ctx)( // parent is me
+				dispatch(a_tx, {type: 'send', tx: { method, args, opts}}, ctx.self));
 
 			ctx.debug.d(msg, r);
 			// 1. spawn a transaction actor
@@ -91,14 +90,10 @@ const contractActor = {
 			if(!Array.isArray(args)) {
 				throw new Error(`Call expects parameter args to be Array`);
 			}
-			const callOpts = {
-				...opts,
-				from: web3Instance.web3.eth.accounts[0],
-			}
 
 			// 1. spawn a transaction actor
 			const a_tx = spawn_tx(ctx.self)( // parent is me
-			dispatch(a_tx, {type: 'call', tx: { method, args, opts}}, ctx.self));
+				dispatch(a_tx, {type: 'call', tx: { method, args, opts}}, ctx.sender));
 
 			//try {
 			//let r = await contract.methods[method](...args).call(callOpts);
@@ -110,7 +105,7 @@ const contractActor = {
 
 			ctx.debug.d(msg, r);
 
-			dispatch(ctx.sender, { type: 'contract', result: r }, ctx.self);
+			//dispatch(ctx.sender, { type: 'contract', result: r }, ctx.self);
 			//} catch(error) {
 			//} catch (error) {
 			//	dispatch(init
