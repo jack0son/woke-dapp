@@ -146,6 +146,7 @@ contract WokeToken is Ownable, ERC20 {
 		emit Claimed(claimer, _id, claimBonus(_id, _followers));
 		userCount += 1;
 
+		emit TraceUint256('balanceClaimed', balanceOf(users[_id].account));
 		if(DEFAULT_TIP_ALL) {
 			_setTipBalance(_id, balanceOf(users[_id].account));
 		}
@@ -275,7 +276,7 @@ contract WokeToken is Ownable, ERC20 {
 		// @TODO naughty naughty
 		//approve(tippingAgent, _amount);
 		//transferFrom(from, to, _amount);
-		//_transfer(from, to, _amount);
+		_transfer(from, to, _amount);
 
 		if(DEFAULT_TIP_ALL) {
 			_setTipBalance(_toId, balanceOf(to));
@@ -291,13 +292,12 @@ contract WokeToken is Ownable, ERC20 {
 		userIsClaimed(_fromId)
 		returns(uint256)
 	{
-
 		// @TODO should perform this check off chain
 		if(_amount == 0) {
 			return 0;
 		}
 
-		uint256 tipBalance = users[_toId].tipBalance;
+		uint256 tipBalance = users[_fromId].tipBalance;
 		uint256 amount = _amount > tipBalance ? tipBalance : _amount;
 
 		if(userClaimed(_toId)) {
@@ -306,7 +306,7 @@ contract WokeToken is Ownable, ERC20 {
 			_transferUnclaimed(_fromId, _toId, amount);
 		}
 
-		users[_toId].tipBalance -= amount;
+		users[_toId].tipBalance = tipBalance - amount;
 		require(tipBalance - amount == users[_toId].tipBalance, "Tip balance invariant violated");
 
 		emit Tip(_fromId, _toId, amount);
@@ -510,7 +510,7 @@ contract WokeToken is Ownable, ERC20 {
 
 	/* EVENTS */
 	event TraceString(string m, string v);
-	//event TraceUint256(string m, uint256 v);
+	event TraceUint256(string m, uint256 v);
 	event TraceBytes32(string m, bytes32 v);
 	//event TraceBytes(string m, bytes v);
 	//event TraceByte(string m, byte v);

@@ -53,11 +53,11 @@ contract('WokeToken', (accounts) => {
 	context('Using mock TwitterOracle', () => {
 		beforeEach(async () => {
 			debug.t('context 1: before each');
-			to = await MockTwitterOracle.new(oraclize_cb, 
+			to = await MockTwitterOracle.new(oraclize_cb,
 				{from: owner, value: web3.utils.toWei('0.1', 'ether')}
 			);
 
-			wt = await WokeToken.new(to.address, to.address, max_supply, {from: owner})
+			wt = await WokeToken.new(to.address, owner, max_supply, {from: owner})
 		});
 
 		describe('WokeToken.sol', () => {
@@ -229,7 +229,19 @@ contract('WokeToken', (accounts) => {
 
 			})
 
-			describe('#transferUnclaimed', () => {
+			context('#transferUnclaimed', () => {
+				beforeEach(async function() {
+						wt.claimUser(getwoketoke_id, {from: claimer});
+						let {returnValues: {queryId: queryId}} = await waitForEvent(wt.Lodged);
+
+						let claimString = await genClaimString(claimer, getwoketoke_id);
+						await to.__callback(queryId, claimString, '0x0', {from: oraclize_cb});
+						await wt._fulfillClaim(getwoketoke_id);
+				})
+
+				it('should be able to tip an unclaimed user', async function () {
+					let r = await wt.tip(getwoketoke_id, another_user_id, 1, {from: owner});
+				});
 
 			})
 
