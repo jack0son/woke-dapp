@@ -29,15 +29,17 @@ const doDeploy = async (deployer, network, accounts) => {
 	await deployer.deploy(OracleMock, oracleCallback, opts);
 	let oracleInstance = await OracleMock.deployed();
 	console.log(`OracleMock deployed at ${oracleInstance.address}`);
+
 	console.log('Deploying Strings...');
 	await deployer.deploy(Strings);
+
 	console.log('Deploying ECDSA...');
-	await deployer.deploy(Strings);
 	await deployer.deploy(ECDSA);
 	await deployer.link(Strings, Token);
 	await deployer.link(ECDSA, Token);
+
 	console.log('Deploying WokeToken...')
-	return await deployer.deploy(Token, oracleInstance.address, oracleInstance.address, maxSupply, opts)
+	return await deployer.deploy(Token, oracleInstance.address, owner, maxSupply, opts)
 		.then(tokenInsance => {
 			console.log(`WokeToken deployed at ${tokenInsance.address}`);
 			return tokenInsance;

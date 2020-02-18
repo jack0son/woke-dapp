@@ -53,6 +53,7 @@ const tipper = {
 		onCrash: (() => {
 			reset = resetWithExponentialDelay(1)
 			return (msg, error, ctx) => {
+				console.log('CASH --- ', ctx.name);
 				console.log(msg);
 				switch(msg.type) {
 					case 'tip': {

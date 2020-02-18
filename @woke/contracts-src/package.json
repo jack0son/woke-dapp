@@ -44,6 +44,7 @@
     "ganache:slow": "ganache-cli -i 12 -p 8545 --blockTime 3 -m 'nerve marine frozen use brave brief nasty then acid remain stereo riot'",
     "test": "truffle test",
     "test:debug": "DEBUG=t:* truffle test",
-    "test:verbose": "DEBUG=t:* truffle test --show-events"
+    "test:verbose": "DEBUG=t:* truffle test --show-events",
+    "stat:bytecode": "bash ./scrips/bytecode-size.sh"
   }
 }

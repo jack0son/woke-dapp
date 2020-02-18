@@ -30,11 +30,13 @@ const properties = {
 function dispatchSinks(msg, ctx, state) {
 	const { sinks } = state;
 	const prevState = state._state;
-	// modifiers.isEffect()
+
+	const { tx, txStatus, txState } = msg;
+
 	const status = resolveStatus(state.tx);
 	if(status !== resolveStatus(prevState.tx)) {
 		sinks.forEach(sink => 
-			dispatch(sink, {type: 'tx', tx, txStatus, txState}, ctx.self)
+			dispatch(sink, {type: 'tx', tx, txStatus: status, txState}, ctx.self)
 		);
 	}
 }
@@ -78,8 +80,6 @@ function handleOnChainError(error) {
 
 function reduce(msg, ctx, state) {
 	msg.type = 'reduce';
-	console.log(ctx.self);
-	console.log(msg);
 	dispatch(ctx.self, msg, ctx.self);
 }
 
@@ -111,8 +111,10 @@ const actions = {
 			const { error, tx, sinks, txState, sent } = msg;
 
 			if(error) {
-				console.dir(error);
-				//throw error;
+				if(error.data && error.data.tx) {
+					console.log(error.data.tx);
+				}
+				throw error;
 			}
 
 			const nextState = {
@@ -165,7 +167,7 @@ const actions = {
 		if(web3Instance.account) {
 			tx.opts.from = web3Instance.account;
 		} else {
-			let account = (await web3Instance.web3.eth.personal.getAccounts())[0];
+			let account = (await web3Instance.web3.eth.personal.getAccounts())[1];
 			tx.opts = {...tx.opts, from: account};
 		}
 
@@ -195,8 +197,6 @@ const actions = {
 			opts.from = web3Instance.account;
 		}
 
-		opts.from = null;
-
 		const contract = initContract(web3Instance, state.contractInterface);
 		contract.methods[tx.method](...tx.args).send(opts)
 			.on('transactionHash', hash => {
@@ -214,10 +214,7 @@ const actions = {
 					error: null,
 				}, ctx);
 			})
-			.then( receipt => {
-				dispatch(ctx.sender, {type: 'tx', txStatus: 'success', tx, receipt }, ctx.self);
-			})
-			.catch( (error, receipt) => {
+			.on('error', (error, receipt) => {
 				if(receipt) {
 					// If receipt is provided web3js specifies tx was rejected on chain
 					const onChainError = new OnChainError(error, tx, receipt);
@@ -226,7 +223,13 @@ const actions = {
 					const paramError = new ParamError(error, tx);
 					reduce({ error: paramError }, ctx);
 				}
-				//console.log('✂ ✂ ✂ ✂ ✂ ✂');
+			})
+			.then( receipt => {
+				console.log('GOT RECEIPT -- REEEEEEEE');
+				dispatch(ctx.sender, {type: 'tx', txStatus: 'success', tx, receipt }, ctx.self);
+			})
+			.catch( (error, receipt) => {
+				// Caught by promi-event error listener
 			})
 	},
 }
@@ -251,7 +254,7 @@ class ParamError extends DomainError {
 class OnChainError extends DomainError {
 	constructor(error, tx, receipt) { // and tx data?
 		super(`Transactions ${receipt.transactionHash} failed.`);
-		this.data = { receipt, error }
+		this.data = { receipt, tx, error }
 	}
 }
 

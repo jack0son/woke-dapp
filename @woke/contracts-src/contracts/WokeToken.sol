@@ -219,7 +219,7 @@ contract WokeToken is Ownable, ERC20 {
 
 	// @notice Trans
 	function _transferUnclaimed(string memory _fromId, string memory _toId, uint256 _amount)
-		private
+		internal
 		userIsClaimed(_fromId)
 		userNotClaimed(_toId)
 		supplyInvariant
@@ -302,7 +302,7 @@ contract WokeToken is Ownable, ERC20 {
 		if(userClaimed(_toId)) {
 			_transferClaimed(_fromId, _toId, amount);
 		} else {
-			_transferUnclaimed(_fromId, _toId, amount);
+			//_transferUnclaimed(_fromId, _toId, amount);
 		}
 
 		users[_toId].tipBalance -= amount;
@@ -322,8 +322,11 @@ contract WokeToken is Ownable, ERC20 {
 	function _setTipBalance(string memory _userId, uint256 _amount)
 		private
 	{
-		uint256 amount = _amount > balanceOf(msg.sender) ? balanceOf(msg.sender) : _amount;
-		users[_userId].tipBalance = amount;
+		//uint256 userBalance = balanceOf(users[_userId].account);
+		//uint256 amount = _amount > balanceOf(users[_userId].account) ? balanceOf(users[_userId].account) : _amount;
+		
+		users[_userId].tipBalance = _amount > balanceOf(users[_userId].account) ? balanceOf(users[_userId].account) : _amount;
+		//users[_userId].tipBalance = amount;
 	}
 
 	/* TOKEN GENERATION PARAMETERS */
@@ -441,6 +444,14 @@ contract WokeToken is Ownable, ERC20 {
 		}
 		return false;
 	}
+
+	/*
+	function getTipBalance(string memory _userId) public view
+	returns (uint256)
+	{
+		return users[_userId].tipBalance;
+	}
+	*/
 	/*---------*/
 
 	/* MODIFIERS */
@@ -513,10 +524,10 @@ contract WokeToken is Ownable, ERC20 {
 
 	/* EVENTS */
 	event TraceString(string m, string v);
-	event TraceUint256(string m, uint256 v);
+	//event TraceUint256(string m, uint256 v);
 	event TraceBytes32(string m, bytes32 v);
-	event TraceBytes(string m, bytes v);
-	event TraceByte(string m, byte v);
+	//event TraceBytes(string m, bytes v);
+	//event TraceByte(string m, byte v);
 
 	// @param claimed: recipient is claimed
 	//event Tx(string fromId, string toId, string indexed fromId_ind, string indexed toId_ind, uint256 amount, bool claimed);
