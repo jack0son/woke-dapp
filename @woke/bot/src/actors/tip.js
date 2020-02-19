@@ -46,9 +46,6 @@ const eventsTable = {
 					dispatch(a_wokenContract, {type: 'send', 
 						method: 'tip',
 						args: [tip.fromId, tip.toId, tip.amount],
-						meta: {
-							tip
-						},
 						sinks: ctx.self
 					}, ctx.self)
 
@@ -76,12 +73,6 @@ const eventsTable = {
 				const { txStatus, tx, txState } = msg;
 
 				let nextStage;
-				// Should not need to include tip as tx meta data
-				//if(tx.meta.tip.id !== tip.id) {
-				//	const errMsg = `${ctx.name} expects tip ${tip.id}, got ${tx.meta.tip.id}`;
-				//	ctx.debug.error(msg, errMsg);
-				//	throw new Error(errMsg);
-				//}
 
 				ctx.debug.info(msg, `tip:${tip.id} Got tx status ${txStatus}`);
 				switch(txStatus) {
@@ -105,10 +96,7 @@ const eventsTable = {
 						msg.reduce({ event: 'settled' });
 						nextState = 'confirmed';
 
-						return {
-							...state,
-							nextStage: 'confirmed',
-						}
+						return { ...state, nextStage: 'confirmed', }
 						break;
 					}
 
@@ -118,27 +106,35 @@ const eventsTable = {
 						ctx.debug.error(errMsg);
 						dispatch(ctx.self, {type: 'tip_update', status: statusEnum.FAILED});
 						msg.reduce({ event: 'send-tx-failed', error: errMsg });
-						return {
-							...state,
-							nextStage: 'error',
-						}
+
+						return { ...state, nextStage: 'failed', }
 						break;
 					}
 
 					default: {
+						// Other tx status
 						//ctx.debug.info(msg, `... do nothing`);
 					}
 				}
+
 			}
 		}
 	},
 
 	'settled': {
 		'confirmed': {
+			effect: (msg, ctx, state) => {
+				return ctx.stop();
+			}
 		}
 	},
 
 	'error': {
+		'confirmed': {
+			effect: (msg, ctx, state) => {
+				return ctx.stop();
+			}
+		}
 	},
 }
 

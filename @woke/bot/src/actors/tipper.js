@@ -42,10 +42,13 @@ function spawn_tip(_parent, tip, a_wokenContract) {
 }
 
 // Send tip to WokeToken contract
+// @returns tip actor
 function settle_tip(msg, ctx, state) {
 	ctx.debug.info(msg, `Spawning tip actor...`);
 	const a_tip = spawn_tip(ctx.self, msg.tip, state.a_wokenContract);
 	dispatch(a_tip, { type: 'tip', tip }, ctx.self);
+	
+	return a_tip;
 }
 
 const tipper = {
@@ -107,9 +110,12 @@ const tipper = {
 						// Duplicate actor will crash tipper
 						entry.a_tip = settle_tip(msg, ctx, state);
 					}
+
+					default: {
+						return;
+					}
 				}
 				return { ...state, tipRepo: { ...tipRepo, [tip.id]: entry } }
-
 			}
 		},
 
@@ -123,6 +129,7 @@ const tipper = {
 			}
 			ctx.debug.d(msg, `Updated tip:${tip.id} to ⊰ ${tip.status} ⊱`)
 
+			// FSM effects
 			switch(tip.status) {
 				case 'SETTLED': {
 					console.log(`\n@${tip.fromHandle} tipped @${tip.toHandle} ${tip.amount} WOKENS\n`)
@@ -137,13 +144,9 @@ const tipper = {
 			tipRepo[tip.id] = {
 				...tipRepo[tip.id],
 				...tip,
-				//status,
-				//error,
 			}
 
-			return {
-				...tipRepo
-			};
+			return { ...state, tipRepo }
 		},
 
 		'distribute': (msg, ctx, state) => {
