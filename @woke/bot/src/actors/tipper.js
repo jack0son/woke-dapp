@@ -4,7 +4,7 @@ const { start_actor } = require('../actor-system');
 const tipActor = require('./tip');
 const { delay, tip_str } = require('../lib/utils');
 
-
+// Each tip is a simple linear state machine
 const statuses = [
 	'UNSETTLED',
 	'SETTLED',
@@ -39,6 +39,13 @@ function spawn_tip(_parent, tip, a_wokenContract) {
 				tip,
 			}
 		);
+}
+
+// Send tip to WokeToken contract
+function settle_tip(msg, ctx, state) {
+	ctx.debug.info(msg, `Spawning tip actor...`);
+	const a_tip = spawn_tip(ctx.self, msg.tip, state.a_wokenContract);
+	dispatch(a_tip, { type: 'tip', tip }, ctx.self);
 }
 
 const tipper = {
@@ -77,39 +84,32 @@ const tipper = {
 				ctx.debug.error(msg, 'Must have reference to wokenContract actor');
 				throw new Error(`Must have reference to wokenContract actor`);
 			}
-
-			//ctx.debug.info(msg, `Received tip ${tip.id}`);
-			//ctx.debug.d(msg, tip_str(tip));
-			console.log(tip_str(tip));
 			let entry = tipRepo[tip.id];
 			console.log(entry);
 
 			if(!entry) {
 				// New tip
+				console.log(tip_str(tip));
 				entry = {
+					id: tip.id,
 					status: statusEnum.UNSETTLED,
 					error: null,
 				}
-
-				ctx.debug.info(msg, `Spawning tip actor...`);
-				const a_tip = spawn_tip(ctx.self, tip, a_wokenContract);
-
-				dispatch(a_tip, { type: 'tip', tip }, ctx.self);
-
-				entry.a_tip = a_tip;
-				tipRepo[tip.id] = entry;
-				return {
-					...state,
-					tipRepo: { ...tipRepo }
-				}
+				entry.a_tip = settle_tip(msg, ctx, state);
+				return { ...state, tipRepo: { ...tipRepo, [tip.id]: entry } }
 
 			} else {
 				ctx.debug.d(msg, `Got existing tip ${tip.id}`);
-				// Existing tip
+				console.log(`Settling existing tip ${tip_str(tip)}...`);
 				switch(entry.status) {
 					case statusEnum.UNSETTLED: {
+						// @TODO
+						// Duplicate actor will crash tipper
+						entry.a_tip = settle_tip(msg, ctx, state);
 					}
 				}
+				return { ...state, tipRepo: { ...tipRepo, [tip.id]: entry } }
+
 			}
 		},
 
@@ -123,8 +123,15 @@ const tipper = {
 			}
 			ctx.debug.d(msg, `Updated tip:${tip.id} to ⊰ ${tip.status} ⊱`)
 
-			if(tip.status === 'SETTLED') {
-				console.log(`\n@${tip.fromHandle} tipped @${tip.toHandle} ${tip.amount} WOKENS\n`)
+			switch(tip.status) {
+				case 'SETTLED': {
+					console.log(`\n@${tip.fromHandle} tipped @${tip.toHandle} ${tip.amount} WOKENS\n`)
+					dispatch(ctx.self, { type: 'notify', tip }, ctx.self);
+					break;
+				}
+
+				default: {
+				}
 			}
 
 			tipRepo[tip.id] = {

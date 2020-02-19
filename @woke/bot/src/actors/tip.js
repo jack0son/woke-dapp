@@ -76,7 +76,6 @@ const eventsTable = {
 				const { txStatus, tx, txState } = msg;
 
 				let nextStage;
-
 				// Should not need to include tip as tx meta data
 				//if(tx.meta.tip.id !== tip.id) {
 				//	const errMsg = `${ctx.name} expects tip ${tip.id}, got ${tx.meta.tip.id}`;
@@ -87,23 +86,34 @@ const eventsTable = {
 				ctx.debug.info(msg, `tip:${tip.id} Got tx status ${txStatus}`);
 				switch(txStatus) {
 					case 'success': {
+						// Scenarios
+						//		-- non zero tip amount
+						//		-- zero tip balance
+
+						// Extract transaction receipt
 						ctx.debug.d(msg, `tip:${tip.id} confirmed on chain`);
 						tip.status = 'SETTLED';
 						const { receipt } = msg;
 						const tipEvent = receipt.events.Tip.returnValues;
 						tip.amount = tipEvent.amount;
+
+						if(tip.amount == 0) {
+						}
 						console.log();
+
 						dispatch(ctx.parent, { type: 'tip_update', tip }, ctx.self);
 						msg.reduce({ event: 'settled' });
+						nextState = 'confirmed';
 
 						return {
 							...state,
-							nextStage: 'settled',
+							nextStage: 'confirmed',
 						}
 						break;
 					}
 
 					case 'error': {
+						// For the moment, if web3 fails, the tip just fails
 						const errMsg = `tip:${tip.id} failed with error: ${txState.error}`;
 						ctx.debug.error(errMsg);
 						dispatch(ctx.self, {type: 'tip_update', status: statusEnum.FAILED});
@@ -124,6 +134,8 @@ const eventsTable = {
 	},
 
 	'settled': {
+		'confirmed': {
+		}
 	},
 
 	'error': {
@@ -164,9 +176,10 @@ function dispatch_reduce(msg, ctx) {
 }
 
 const actions = {
-	// --- Source Actions
+	// --- Internal
 	'reduce': reduceEvent,
 
+	// --- Source Actions
 	'tip': (msg, ctx, state) => {
 		const reduce = (_msg) => dispatch_reduce({ ...msg, ..._msg }, ctx);
 
