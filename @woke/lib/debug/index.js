@@ -12,6 +12,7 @@ const Logger = (prefix = 'm') => {
 		d: debug(`${prefix}`),
 		inspect: wrapInspect(debug(`${prefix}:obj`)),
 		error: debug(`${prefix}:err`),// errors
+		warn: debug(`${prefix}:warn`),// errors
 		ei: (m, obj) => {e(m), i(obj)}, // error with inspect object
 		h: debug(`${prefix}:handler`),		// helpers
 		info: debug(`${prefix}:info`),		// helpers

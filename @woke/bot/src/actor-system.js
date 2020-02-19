@@ -1,9 +1,11 @@
 const {
 	start,
 	dispatch,
+	query,
 	stop,
 	spawn,
 	spawnStateless,
+	configurePersistence,
 	spawnPersistent
 } = require('nact');
 actors = require('./actors');
@@ -13,11 +15,9 @@ const DEBUG_PREFIX = 'actor';
 const FATAL_HANG_TIME = 1000*1000; //ms
 
 const block = async (_consumer, _msg) => {
-	try {
-	 return await query(_consumer, _msg, FATAL_HANG_TIME);
-	} catch(error) {
+	return await query(_consumer, _msg, FATAL_HANG_TIME).catch( error => {
 		throw new Error(`APPLICATION HANG: blocking query timed out (${FATAL_HANG_TIME}ms). Are you sure you want temporally couple actors?`); 
-	}
+	});
 }
 
 const spawn_actor = (_parent, _name, _actionsMap, _initialState, _properties) => {
@@ -75,6 +75,9 @@ const route_action = async (_actionsMap, _state, _msg, _context) => {
 }
 
 const start_actor = _parent => (_name, _definition, _initialState) => {
+	if(!_parent && _parent.name) {
+		throw new Error(`Parent actor must be provided`);
+	}
 	const { actions, properties } = _definition;
 	const { initialState, ...otherProperties} = properties;
 	if(!actions) {
@@ -90,7 +93,10 @@ const start_actor = _parent => (_name, _definition, _initialState) => {
 	);
 }
 
-const start_peristent = _persistentSystem => (_name, _definition, _initialState) => {
+const start_persistent = _persistentSystem => (_name, _definition, _initialState) => {
+	if(!_parent && _parent.name) {
+		throw new Error(`Parent actor must be provided`);
+	}
 	const { actions, properties } = _definition;
 	const { initialState, ...otherProperties} = properties;
 	if(!actions) {

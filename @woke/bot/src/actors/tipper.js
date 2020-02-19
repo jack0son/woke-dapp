@@ -46,7 +46,7 @@ function spawn_tip(_parent, tip, a_wokenContract) {
 function settle_tip(msg, ctx, state) {
 	ctx.debug.info(msg, `Spawning tip actor...`);
 	const a_tip = spawn_tip(ctx.self, msg.tip, state.a_wokenContract);
-	dispatch(a_tip, { type: 'tip', tip }, ctx.self);
+	dispatch(a_tip, { type: 'tip', tip: msg.tip }, ctx.self);
 	
 	return a_tip;
 }
@@ -121,7 +121,7 @@ const tipper = {
 			}
 		},
 
-		'tip_update': (msg, ctx, state) => {
+		'tip_update': async (msg, ctx, state) => {
 			const { tipRepo, wokenContract } = state;
 			const { tip, status, error} = msg;
 
