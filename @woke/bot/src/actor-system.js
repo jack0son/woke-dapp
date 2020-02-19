@@ -6,18 +6,17 @@ const {
 	spawnStateless,
 	spawnPersistent
 } = require('nact');
+actors = require('./actors');
 const { Logger } = require('@woke/lib');
 
-actors = require('./actors');
-
 const DEBUG_PREFIX = 'actor';
+const FATAL_HANG_TIME = 1000*1000; //ms
 
-const INFINITE_WAIT = 10*1000; //ms
-const block = async (recipient, msg) => {
+const block = async (_consumer, _msg) => {
 	try {
-	 return await query(recipient, INFINITE_WAIT);
+	 return await query(_consumer, _msg, FATAL_HANG_TIME);
 	} catch(error) {
-		throw new Error(`APPLICATION HANG: blocking query timed out. Are you sure you want to couple actor execution?`); 
+		throw new Error(`APPLICATION HANG: blocking query timed out (${FATAL_HANG_TIME}ms). Are you sure you want temporally couple actors?`); 
 	}
 }
 
@@ -120,51 +119,14 @@ const bootstrap = (_persistenceEngine) => {
 		start_actor: start_actor(system),
 		start_persistent: _persistenceEngine ? start_persistent(system) : undefined,
 		stop: () => stop(system),
-		block,
-		dispatch,
 		system,
 	}
 }
 
 module.exports = {
 	bootstrap,
+	block,
 	spawn_actor,
 	start_actor,
 	start_persistent,
 }
-
-/*
-function Block(parent) {
-	let idx = 0;
-
-	return function block(producer, msg) {
-		const blocker = spawn(
-			_parent,
-			blockActor
-			`_blocker-${idx++}`,
-			{
-				initialState: {
-					consumer,
-				}
-			}
-		);
-	}
-}
-
-// Example query(
-
-const blockActor = (msg, ctx, state) => {
-	switch(msg.blocking) {
-		case 'open': (msg, ctx, state) => {
-			dispatch(
-		},
-
-		case 'close': (msg, ctx, state) => {
-		},
-
-		default: {
-			throw new Error(`Blocking actor always expects message property 'blocking'`)
-		}
-	}
-}
-*/

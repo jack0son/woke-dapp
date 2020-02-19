@@ -1,4 +1,5 @@
 const { dispatch, query } = require('nact');
+const { block } = require('../actor-system');
 const { withEffect } = require('./effects');
 //const web3Errors = require('web3-core-helpers').errors;
 
@@ -81,11 +82,6 @@ function handleOnChainError(error) {
 function reduce(msg, ctx, state) {
 	msg.type = 'reduce';
 	dispatch(ctx.self, msg, ctx.self);
-}
-
-const INFINITE_WAIT = 1000*1000; // ms
-const block = (_consumer, _msg) => {
-	return query(_consumer, _msg, INFINITE_WAIT);
 }
 
 const actions = {
