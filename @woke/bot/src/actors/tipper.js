@@ -60,6 +60,8 @@ const tipper = {
 			a_wokenContract: null,
 		},
 
+		persistenceKey: 'tipper', // only ever 1, static key OK
+
 		onCrash: (() => {
 			reset = resetWithExponentialDelay(1)
 			return (msg, error, ctx) => {
@@ -123,6 +125,8 @@ const tipper = {
 			const { tipRepo, wokenContract } = state;
 			const { tip, status, error} = msg;
 
+			if(!ctx.recovering) { await ctx.persist(msg); }
+
 			console.log(tip);
 			if(tip.error) {
 				ctx.debug.error(msg, `Tip ${tip.id} from ${tip.fromHandle} error: ${tip.error}`)
@@ -147,6 +151,10 @@ const tipper = {
 			}
 
 			return { ...state, tipRepo }
+		},
+
+		'resume': (msg, ctx, state) => {
+			// Find unsettled tips and attempt to settle them
 		},
 
 		'distribute': (msg, ctx, state) => {
