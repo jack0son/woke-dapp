@@ -94,6 +94,7 @@ const tipper = {
 			if(!entry) {
 				// New tip
 				console.log(tip_str(tip));
+				console.log(`Tweet: ${tip.full_text}`);
 				entry = {
 					id: tip.id,
 					status: statusEnum.UNSETTLED,

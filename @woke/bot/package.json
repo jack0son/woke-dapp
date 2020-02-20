@@ -11,7 +11,9 @@
     "start": "DEBUG_RECOVERY=true NODE_ENV=production DEBUG=actor*,-*:twitter_monitor*,-*:_tip-*:info node src/index.js",
     "dev:verbose": "DEBUG_RECOVERY=false NODE_ENV=development DEBUG=* node src/index.js",
     "dev": "DEBUG_RECOVERY=true NODE_ENV=development DEBUG=actor*,-*:twitter_monitor*,-*:_tip-*:info node src/index.js",
-    "dev:recovery": "DEBUG_RECOVERY=true NODE_ENV=development DEBUG=* node src/index.js"
+    "dev:recovery": "DEBUG_RECOVERY=true NODE_ENV=development DEBUG=* node src/index.js",
+    "mock:tipper": "DEBUG_RECOVERY=true NODE_ENV=development DEBUG=actor*,-*:twitter_monitor*,-*:_tip-*:info node src/use-mock-twitter.js"
+
   },
   "author": "Jackson Virgo",
   "license": "ISC",

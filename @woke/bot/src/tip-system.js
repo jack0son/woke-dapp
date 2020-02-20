@@ -1,14 +1,16 @@
 const { spawnStateless, dispatch, query } = require('nact');
-const { bootstrap, start_actor} = require('./actor-system');
+const { bootstrap, start_actor } = require('./actor-system');
 const PersistenceEngine = require('./persistence-engine');
 const { tipper, TwitterMonitor, polling, contract, Web3 } = require('./actors');
 
 // Lib
 const TwitterStub = require('./lib/twitter-stub');
+const twitterMock = require('../test/mocks/twitter-client');
 const loadContract = require('./lib/contracts').load;
 const debug = require('@woke/lib').Logger('sys_tip');
 
 function TwitterClient() {
+	return twitterMock.createMockClient(3);
 }
 
 // Will be initialised by bot system and passed a common wokenContract actor
@@ -19,7 +21,7 @@ class TipSystem {
 		this.config = {
 			TWITTER_POLLING_INTERVAL: pollingInterval || 100*1000,
 		};
-		this.twitterStub = opts.twitterStub || TwitterStub(TwitterClient())
+		this.twitterStub = opts.twitterStub || new TwitterStub(TwitterClient())
 
 		if(this.persist) {
 			debug.d(`Using persistence...`);
@@ -116,6 +118,9 @@ if(debug.control.enabled && require.main === module) {
 	var argv = process.argv.slice(2);
 	const [persist, ...args] = argv;
 
-	const tipSystem = new TipSystem(undefined, { persist });
-	tipSystem.start();
+	(async () => {
+		const twitterStub = new TwitterStub(TwitterClient());
+		const tipSystem = new TipSystem(undefined, { persist: false });
+		tipSystem.start();
+	})()
 }

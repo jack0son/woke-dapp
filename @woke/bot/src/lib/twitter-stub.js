@@ -28,7 +28,7 @@ class TwitterStub {
 			tweetMode: 'extended',
 		}
 
-		const amountRegex = /\+(\d+)\s\$/
+		const amountRegex = /\+(\d+)\s*\$/
 		try {
 			const tips = await client.searchTweets(params)
 			return tips.filter(t =>

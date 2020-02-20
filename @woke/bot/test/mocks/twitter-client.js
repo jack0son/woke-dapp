@@ -14,7 +14,7 @@ const createMockClient = (_sampleSize, _data) => {
 	let data = _data ? _data : tipTweets;
 
 	if(_sampleSize) {
-		const start = 2;
+		const start = 0;
 		const end = start + _sampleSize;
 		data = data.slice(start, end > data.length ? data.length : end);
 	}
@@ -35,7 +35,7 @@ const createMockClient = (_sampleSize, _data) => {
 		}
 	}
 
-	return MockClient;
+	return new MockClient();
 }
 
 module.exports = {

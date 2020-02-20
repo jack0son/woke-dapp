@@ -42,8 +42,6 @@ const actorSystem = require('./actor-system');
 const TipSystem = require('./tip-system');
 
 const TwitterStub = require('./lib/twitter-stub');
-const TwitterMock = require('../test/mocks/twitter-client');
-//const twitterStub = new TwitterStub({}, TwitterMock.createMockClient(1));
 
 const bootstrap = async () => {
 	await twitter.initClient();
@@ -51,7 +49,7 @@ const bootstrap = async () => {
 
 	const tipSystem = new TipSystem(undefined, {
 		twitterStub: twitterStub,
-		persist: true,
+		persist: false,
 		pollingInterval: 5*1000,
 	});
 	return tipSystem.start();

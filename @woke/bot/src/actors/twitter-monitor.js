@@ -76,6 +76,7 @@ const TwitterMonitor = (twitterStub) => ({
 					fromHandle: tweet.user.screen_name,
 					toId: tweet.in_reply_to_user_id_str,
 					toHandle: tweet.entities.user_mentions[0].screen_name,
+					full_text: tweet.full_text,
 					amount: tweet.tip_amount,
 				}));
 

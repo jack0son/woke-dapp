@@ -72,8 +72,6 @@ const eventsTable = {
 				const { tip } = state;
 				const { txStatus, tx, txState } = msg;
 
-				let nextStage;
-
 				ctx.debug.info(msg, `tip:${tip.id} Got tx status ${txStatus}`);
 				switch(txStatus) {
 					case 'success': {
@@ -92,7 +90,7 @@ const eventsTable = {
 							tip.error = errMsg;
 							tip.status = 'FAILED';
 							dispatch(ctx.parent, {type: 'tip_update', tip});
-							msg.reduce({ event: 'settled', error: errMsg });
+							ctx.reduce({ event: 'settled', error: errMsg });
 
 							return { ...state, nextStage: 'FAILED', }
 						}
@@ -105,7 +103,7 @@ const eventsTable = {
 						console.log();
 
 						dispatch(ctx.parent, { type: 'tip_update', tip }, ctx.self);
-						msg.reduce({ event: 'settled' });
+						ctx.reduce({ event: 'settled' });
 						nextState = 'CONFIRMED';
 
 						return { ...state, nextStage: 'CONFIRMED', }
@@ -119,7 +117,7 @@ const eventsTable = {
 						tip.error = errMsg;
 						tip.status = 'FAILED'
 						dispatch(ctx.parent, {type: 'tip_update', tip});
-						msg.reduce({ event: 'send-tx-failed', error: errMsg });
+						ctx.reduce({ event: 'send-tx-failed', error: txState.error});
 
 						return { ...state, nextStage: 'FAILED', }
 						break;
@@ -150,7 +148,7 @@ const eventsTable = {
 	},
 
 	'error': {
-		'CONFIRMED': {
+		'FAILED': {
 			effect: (msg, ctx, state) => {
 				return ctx.stop();
 			}
@@ -167,19 +165,19 @@ function reduceEvent(msg, ctx, state) {
 	const applicableStages = eventsTable[event];
 
 	if(!applicableStages) {
-		ctx.debug.d(msg, `No applicable stages for event <${event}>`);
+		ctx.debug.warn(msg, `No applicable stages for event <${event}>`);
 		return state;
 	}
 
 	const action = applicableStages[stage];
 	if(!action) {
-		ctx.debug.d(msg, `No actions for event <${event}> in stage ╢ ${stage} ╟`);
+		ctx.debug.warn(msg, `No actions for event <${event}> in stage ╢ ${stage} ╟`);
 		return state;
 	}
 
-	// @fix
+	// @fix reduce sh
 	const reduce = (_msg) => dispatch_reduce({ ...msg, ..._msg }, ctx);
-	msg.reduce = reduce;
+	ctx.reduce = reduce;
 
 	const nextState = {...state, ...action.effect(msg, ctx, state)};
 	return nextState;
@@ -189,6 +187,11 @@ function reduceEvent(msg, ctx, state) {
 function dispatch_reduce(msg, ctx) {
 	msg.type = 'reduce'
 	dispatch(ctx.self, msg, ctx.self);
+}
+
+// @
+const middleware = (msg, ctx, state) => {
+	// Attach reduce function
 }
 
 const actions = {
