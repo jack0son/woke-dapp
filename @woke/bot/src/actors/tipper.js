@@ -139,8 +139,9 @@ const tipper = {
 			// FSM effects
 			switch(tip.status) {
 				case 'SETTLED': {
-					console.log(`\n@${tip.fromHandle} tipped @${tip.toHandle} ${tip.amount} WOKENS\n`)
-					dispatch(ctx.self, { type: 'notify', tip }, ctx.self);
+					if(!ctx.recovering)
+						console.log(`\n@${tip.fromHandle} tipped @${tip.toHandle} ${tip.amount} WOKENS\n`)
+					//dispatch(ctx.self, { type: 'notify', tip }, ctx.self);
 					break;
 				}
 

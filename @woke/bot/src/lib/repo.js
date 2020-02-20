@@ -3,7 +3,7 @@ const defaults = {
 	PWD: 'woke_bot',
 	DB: 'bot_db',
 	HOST: 'localhost',
-	PORT: 5432,
+	PORT: 5433,
 };
 
 const conf = {};

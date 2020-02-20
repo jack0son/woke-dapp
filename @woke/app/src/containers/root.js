@@ -18,7 +18,7 @@ import HedgehogWallet from '../lib/wallet/wallet'
 const wallet = new HedgehogWallet(); 
 
 // @TODO move to env
-const appVersion = '0.2a';
+const appVersion = '0.2b';
 
 export default function RootContainer(props) {
 	const hedgehog = useHedgehog(wallet);
