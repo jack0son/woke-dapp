@@ -85,6 +85,18 @@ const eventsTable = {
 						ctx.debug.d(msg, `tip:${tip.id} confirmed on chain`);
 						tip.status = 'SETTLED';
 						const { receipt } = msg;
+						if(!receipt.events.Tip) {
+							// No Tip event emitted
+							// Amount was 0, or attempted to tip existing user
+							const errMsg = `tip:${tip.id} returned 0 tip amount`;
+							tip.error = errMsg;
+							tip.status = 'FAILED';
+							dispatch(ctx.parent, {type: 'tip_update', tip});
+							msg.reduce({ event: 'settled', error: errMsg });
+
+							return { ...state, nextStage: 'FAILED', }
+						}
+
 						const tipEvent = receipt.events.Tip.returnValues;
 						tip.amount = tipEvent.amount;
 
@@ -104,7 +116,9 @@ const eventsTable = {
 						// For the moment, if web3 fails, the tip just fails
 						const errMsg = `tip:${tip.id} failed with error: ${txState.error}`;
 						ctx.debug.error(errMsg);
-						dispatch(ctx.self, {type: 'tip_update', status: statusEnum.FAILED});
+						tip.error = errMsg;
+						tip.status = 'FAILED'
+						dispatch(ctx.parent, {type: 'tip_update', tip});
 						msg.reduce({ event: 'send-tx-failed', error: errMsg });
 
 						return { ...state, nextStage: 'FAILED', }
@@ -126,6 +140,12 @@ const eventsTable = {
 			effect: (msg, ctx, state) => {
 				return ctx.stop();
 			}
+		},
+
+		'FAILED': {
+			effect: (msg, ctx, state) => {
+				return ctx.stop();
+			},
 		}
 	},
 

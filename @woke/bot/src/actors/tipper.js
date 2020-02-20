@@ -140,7 +140,7 @@ const tipper = {
 			switch(tip.status) {
 				case 'SETTLED': {
 					if(!ctx.recovering)
-						console.log(`\n@${tip.fromHandle} tipped @${tip.toHandle} ${tip.amount} WOKENS\n`)
+					console.log(`\nTip settled: @${tip.fromHandle} tipped @${tip.toHandle} ${tip.amount} WOKENS\n`)
 					//dispatch(ctx.self, { type: 'notify', tip }, ctx.self);
 					break;
 				}

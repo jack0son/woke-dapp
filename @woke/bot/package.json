@@ -7,8 +7,10 @@
   "scripts": {
     "test": "./node_modules/.bin/mocha ./test/test*.js",
     "test:debug": "DEBUG=oracle:* ./node_modules/.bin/mocha",
-    "start": "DEBUG_RECOVERY=true DEBUG=*,-*info node src/index.js",
-    "dev": "DEBUG_RECOVERY=false NODE_ENV=development DEBUG=* node src/index.js",
+    "start:verbose": "DEBUG_RECOVERY=true NODE_ENV=production DEBUG=*,-*info node src/index.js",
+    "start": "DEBUG_RECOVERY=true NODE_ENV=production DEBUG=actor*,-*:twitter_monitor*,-*:_tip-*:info node src/index.js",
+    "dev:verbose": "DEBUG_RECOVERY=false NODE_ENV=development DEBUG=* node src/index.js",
+    "dev": "DEBUG_RECOVERY=true NODE_ENV=development DEBUG=actor*,-*:twitter_monitor*,-*:_tip-*:info node src/index.js",
     "dev:recovery": "DEBUG_RECOVERY=true NODE_ENV=development DEBUG=* node src/index.js"
   },
   "author": "Jackson Virgo",

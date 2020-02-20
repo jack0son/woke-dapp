@@ -65,7 +65,7 @@ const TwitterMonitor = (twitterStub) => ({
 				const newTips = tipTweets.filter(tweet => {
 					//console.log(tweet);
 					if(seenTips[tweet.id_str] === true) {
-						ctx.debug.d(msg, `Tip already seen`);
+						ctx.debug.info(msg, `Tip already seen`);
 						return false;
 					}
 					seenTips[tweet.id_str] = true;
