@@ -85,6 +85,10 @@ const getUserData = async (userId) => {
 	}
 }
 
+function statusUrl(status) {
+	return `https://twitter.com/${status.user.id_str}/status/${status.id_str}`
+}
+
 const searchTweets = (params) => { // claimString = `@getwoketoke 0xWOKE:${userId},${sig},1`;
 	const searchParams = {
 		q: '$woke OR $WOKE OR $WOKENS OR WOKENS',
@@ -93,7 +97,6 @@ const searchTweets = (params) => { // claimString = `@getwoketoke 0xWOKE:${userI
 		count: 10,
 		...params,
 	};
-	console.dir(searchParams);
 
 	return client.get('search/tweets', searchParams).then(r => {
 		debug.d(`Found ${r.statuses.length || 0} tweets for query '${searchParams.q}'`);
@@ -152,7 +155,7 @@ function getBearerToken(key, secret) {
 	});
 }
 
-module.exports = {initClient, findClaimTweet, getUserData}
+module.exports = {initClient, findClaimTweet, getUserData, searchTweets}
 
 // Example call
 if(debug.control.enabled && require.main === module) {
@@ -178,12 +181,14 @@ if(debug.control.enabled && require.main === module) {
 				case 'search': {
 					const [query] = args;
 					let r = await searchTweets(query ? {q: query} : undefined);
-					r = r.filter(t => t.full_text.includes('+'));
+					r = r.filter(t => t.retweeted_status);
 					r.forEach(t => {
-						console.log(t);
+						console.log(statusUrl(t));
 						console.log(t.user.screen_name);
 						console.log(t.full_text);
 						console.log(t.entities.user_mentions);
+						console.log('retweeted', t.retweeted_status);
+						//console.log(t);
 						console.log();
 					})
 					//console.dir(r);
@@ -193,12 +198,11 @@ if(debug.control.enabled && require.main === module) {
 				case 'tips': {
 					const [time] = args;
 					let r = await searchTweets({ q: '$woke OR $WOKE OR $WOKENS OR WOKENS'});
-					//r = r.filter(t => t.full_text.includes('+'));
+					r = r.filter(t => t.full_text.includes('+'));
 					r.forEach(t => {
-						console.log(t);
-						console.log(t.user.screen_name);
+						console.log(statusUrl(t));
+						console.log('handle: ', t.user.screen_name);
 						console.log(t.full_text);
-						console.log(t.entities.user_mentions);
 						console.log();
 					})
 

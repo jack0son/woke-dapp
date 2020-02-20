@@ -61,7 +61,6 @@ const TwitterMonitor = (twitterStub) => ({
 
 				// @TODO sorting through tweets for valid tips belongs in the twitter
 				// stub
-				const amountRegex = /\+(\d+)\s\$/
 
 				const newTips = tipTweets.filter(tweet => {
 					//console.log(tweet);
@@ -77,7 +76,7 @@ const TwitterMonitor = (twitterStub) => ({
 					fromHandle: tweet.user.screen_name,
 					toId: tweet.in_reply_to_user_id_str,
 					toHandle: tweet.entities.user_mentions[0].screen_name,
-					amount: parseInt(tweet.full_text.match(amountRegex)[1]),
+					amount: tweet.tip_amount,
 				}));
 
 				//newTips.forEach(t=>console.log(t));

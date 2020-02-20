@@ -59,11 +59,13 @@ const spawn_persistent = (_parent, _name, _actionsMap, _initialState, _propertie
 	let recovering = false;
 	const f = debug.control.enabledByApp ? 
 		(state = _initialState, msg, context) => {
-			if(context.recovering && !recovering) {
-				recovering = true;
-				debug.log(`----- Recovering persisted state...`);
-				if(!DEBUG_RECOVERY) {
+			if(context.recovering) {
+				if(!recovering) {
+					recovering = true;
+					debug.log(`----- Recovering persisted state...`);
+					if(!DEBUG_RECOVERY) {
 						debug.control.disable();
+					}
 				}
 			} else if(recovering) {
 				recovering = false;

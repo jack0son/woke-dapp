@@ -1,7 +1,8 @@
 class TwitterStub {
-	constructor(_credentials, _Client) {
+	constructor(_client, _credentials) {
 		const self = this;
-		self.client = new _Client(_credentials);
+		self.client = _client;
+		//self.client = new _Client(_credentials);
 	}
 
 	async ready() {
@@ -27,13 +28,23 @@ class TwitterStub {
 			tweetMode: 'extended',
 		}
 
+		const amountRegex = /\+(\d+)\s\$/
 		try {
 			const tips = await client.searchTweets(params)
 			return tips.filter(t =>
+				notRetweet(t) &&
 				t.full_text.includes('+') && // @TODO replace with regex
 				t.in_reply_to_user_id_str != null  &&
 				nonEmptyArray(t.entities.user_mentions)
-			);
+			).filter(t => {
+				const matches = t.full_text.match(amountRegex);
+				const amount = matches && matches[1] ? parseInt(matches[1]) : false;
+				if(amount && amount !== NaN && amount > 0) {
+					t.tip_amount = amount;
+					return true
+				}
+				return false;
+			});
 		
 		} catch (error) {
 			// Squash the error
@@ -44,6 +55,11 @@ class TwitterStub {
 
 		return [];
 	}
+}
+
+function notRetweet(tweet) {
+	const rt = tweet.retweeted_status;
+	return rt == undefined || rt == null || rt == false;
 }
 
 function nonEmptyArray(arr) {

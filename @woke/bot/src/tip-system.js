@@ -88,14 +88,6 @@ function create_woken_contract_actor(director) {
 	return a_wokenContract;
 }
 
-// Mock tip system
-if(debug.control.enabled && require.main === module) {
-	var argv = process.argv.slice(2);
-	const [persist, ...args] = argv;
-
-	const tipSystem = new TipSystem(undefined, { persist });
-	tipSystem.start();
-}
 
 // Forward tips to the tipper
 function spawn_tweet_forwarder(parent, a_tipper) {
@@ -118,3 +110,12 @@ function spawn_tweet_forwarder(parent, a_tipper) {
 }
 
 module.exports = TipSystem;
+
+// Mock tip system
+if(debug.control.enabled && require.main === module) {
+	var argv = process.argv.slice(2);
+	const [persist, ...args] = argv;
+
+	const tipSystem = new TipSystem(undefined, { persist });
+	tipSystem.start();
+}

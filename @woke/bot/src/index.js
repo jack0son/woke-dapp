@@ -32,7 +32,7 @@
 //	Responses:
 //		-- msg = { type: ACTOR_DEFN_NAME }
 
-const { Logger } = require('@woke/lib');
+const { Logger, twitter } = require('@woke/lib');
 const debug = Logger();
 
 const { spawnStateless, dispatch, query } = require('nact');
@@ -43,14 +43,19 @@ const TipSystem = require('./tip-system');
 
 const TwitterStub = require('./lib/twitter-stub');
 const TwitterMock = require('../test/mocks/twitter-client');
-const twitter = new TwitterStub({}, TwitterMock.createMockClient(1));
-const tMonDefn = actors.TwitterMonitor(twitter);
+//const twitterStub = new TwitterStub({}, TwitterMock.createMockClient(1));
 
-const tipSystem = new TipSystem(undefined, {
-	twitterStub: twitter,
-	persist: true,
-	pollingInterval: 1000*1000,
-});
+const bootstrap = async () => {
+	await twitter.initClient();
+	twitterStub = new TwitterStub(twitter);
 
-tipSystem.start().catch(console.log);
+	const tipSystem = new TipSystem(undefined, {
+		twitterStub: twitterStub,
+		persist: true,
+		pollingInterval: 1000*1000,
+	});
+	return tipSystem.start();
+}
+
+bootstrap().catch(console.log);
 
