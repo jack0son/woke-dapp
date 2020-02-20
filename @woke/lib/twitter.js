@@ -155,7 +155,7 @@ function getBearerToken(key, secret) {
 module.exports = {initClient, findClaimTweet, getUserData}
 
 // Example call
-if(debug.debug.enabled && require.main === module) {
+if(debug.control.enabled && require.main === module) {
 	//var argv = require('minimist')(process.argv.slice(2));
 	var argv = process.argv.slice(2);
 	const [command, ...args] = argv;

@@ -104,10 +104,10 @@ const tipper = {
 
 			} else {
 				ctx.debug.d(msg, `Got existing tip ${tip.id}`);
-				console.log(entry);
-				console.log(`Settling existing tip ${tip_str(tip)}...`);
+				//console.log(entry);
 				switch(entry.status) {
 					case statusEnum.UNSETTLED: {
+						console.log(`Settling existing tip ${tip_str(tip)}...`);
 						// @TODO
 						// Duplicate actor will crash tipper
 						entry.a_tip = settle_tip(msg, ctx, state);
@@ -127,9 +127,10 @@ const tipper = {
 			const { tipRepo, wokenContract } = state;
 			const { tip, status, error} = msg;
 
-			if(ctx.persist && !ctx.recovering) { await ctx.persist(msg); }
+			if(ctx.persist && !ctx.recovering) {
+				await ctx.persist(msg);
+			}
 
-			console.log(tip);
 			if(tip.error) {
 				ctx.debug.error(msg, `Tip ${tip.id} from ${tip.fromHandle} error: ${tip.error}`)
 			}

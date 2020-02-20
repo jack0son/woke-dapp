@@ -13,6 +13,7 @@ const { Logger } = require('@woke/lib');
 
 const DEBUG_PREFIX = 'actor';
 const FATAL_HANG_TIME = 1000*1000; //ms
+const DEBUG_RECOVERY= process.env.DEBUG_RECOVERY =='true' ? true : false
 
 const block = async (_consumer, _msg) => {
 	return await query(_consumer, _msg, FATAL_HANG_TIME).catch( error => {
@@ -20,19 +21,26 @@ const block = async (_consumer, _msg) => {
 	});
 }
 
-const spawn_actor = (_parent, _name, _actionsMap, _initialState, _properties) => {
+function create_debug(_name) {
 	const debug = {};
-
 	// Remap debugger functions to prefix each with message type
 	Object.entries(Logger(`${DEBUG_PREFIX}:${_name}`)).forEach(entry => {
-		const [key, func] = entry;
-		debug[key] = (msg, args) => func(`${msg.type}>> ` + args)
+		const [key, val] = entry;
+		if(key == 'control' || key == 'log') {
+			debug[key] = val;
+		} else {
+			debug[key] = (msg, args) => val(`${msg.type}>> ` + args)
+		}
 	})
+	return debug;
+}
+
+const spawn_actor = (_parent, _name, _actionsMap, _initialState, _properties) => {
 
 	return spawn(
 		_parent,
 		(state = _initialState, msg, context) => {
-			return route_action(_actionsMap, state, msg, {...context, debug })
+			return route_action(_actionsMap, state, msg, {...context, debug: create_debug(_name) })
 		},
 		_name,
 		_properties,
@@ -44,18 +52,34 @@ const spawn_persistent = (_parent, _name, _actionsMap, _initialState, _propertie
 		throw new Error(`Persistent actor must define key property`);
 	}
 	const { persistenceKey, ...otherProperties } = _properties;
-	const debug = {};
 
-	Object.entries(Logger(`${DEBUG_PREFIX}:${_name}`)).forEach(entry => {
-		const [key, func] = entry;
-		debug[key] = (msg, args) => func(`${msg.type}>> ` + args)
-	})
+	const debug = create_debug(_name);
+	debug.control.enabledByApp = debug.control.enabled();
+
+	let recovering = false;
+	const f = debug.control.enabledByApp ? 
+		(state = _initialState, msg, context) => {
+			if(context.recovering && !recovering) {
+				recovering = true;
+				debug.log(`----- Recovering persisted state...`);
+				if(!DEBUG_RECOVERY) {
+						debug.control.disable();
+				}
+			} else if(recovering) {
+				recovering = false;
+				debug.control.enable();
+				debug.log(`----- ... recovery complete.`);
+			}
+
+			return route_action(_actionsMap, state, msg, {...context, debug })
+		} :
+		(state = _initialState, msg, context) => {
+			return route_action(_actionsMap, state, msg, {...context, debug })
+		};
 
 	return spawnPersistent(
 		_parent,
-		(state = _initialState, msg, context) => {
-			return route_action(_actionsMap, state, msg, {...context, debug })
-		},
+		f,
 		persistenceKey,
 		_name,
 		_properties,

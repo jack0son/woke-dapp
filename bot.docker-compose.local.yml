@@ -19,7 +19,7 @@ services:
     ports:
       - '3001:3001'
     environment:
-      WAIT_HOSTS: db:5432
+      WAIT_HOSTS: bot-db:5432
       POSTGRES_HOST: bot-db,
       POSTGRES_PORT: 5432,
 

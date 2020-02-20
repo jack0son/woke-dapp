@@ -7,10 +7,11 @@
   "author": "Jackson Virgo",
   "license": "ISC",
   "dependencies": {
-    "web3": "^1.2.5",
-    "twitter": "^1.7.1",
+    "debug": "^4.1.1",
+    "dotenv": "^8.2.0",
     "request-promise-native": "^1.0.8",
-    "dotenv": "^8.2.0"
+    "twitter": "^1.7.1",
+    "web3": "^1.2.5"
   },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"

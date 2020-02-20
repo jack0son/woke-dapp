@@ -24,6 +24,8 @@ class TipSystem {
 		if(this.persist) {
 			debug.d(`Using persistence...`);
 			this.persistenceEngine = PersistenceEngine()
+		} else {
+			debug.warn(`Persistence not enabled.`);
 		}
 
 		this.director = this.persist ? bootstrap(this.persistenceEngine) : bootstrap();
@@ -86,7 +88,7 @@ function create_woken_contract_actor(director) {
 }
 
 // Mock tip system
-if(debug.debug.enabled && require.main === module) {
+if(debug.control.enabled && require.main === module) {
 	var argv = process.argv.slice(2);
 	const [persist, ...args] = argv;
 
