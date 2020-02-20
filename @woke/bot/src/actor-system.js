@@ -67,7 +67,9 @@ const spawn_persistent = (_parent, _name, _actionsMap, _initialState, _propertie
 				}
 			} else if(recovering) {
 				recovering = false;
-				debug.control.enable();
+				if(!debug.control.enabled()) {
+					debug.control.enable();
+				}
 				debug.log(`----- ... recovery complete.`);
 			}
 

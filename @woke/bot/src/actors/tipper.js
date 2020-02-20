@@ -157,6 +157,19 @@ const tipper = {
 		},
 
 		'resume': (msg, ctx, state) => {
+			const { tipRepo } = state;
+
+			const unsettledIds = Object.keys(tipRepo)
+				.filter(id => tipRepo[id].status == 'UNSETTLED');
+
+			ctx.debug.d(msg, `Settling ${unsettledIds.length} unsettled tips...`);
+			unsettledIds.forEach(id => {
+				const tip = tipRepo[id];
+				if(tip.status == 'UNSETTLED') {
+					dispatch(ctx.self, { type: 'tip', tip }, ctx.self);
+				}
+			});
+
 			// Find unsettled tips and attempt to settle them
 		},
 

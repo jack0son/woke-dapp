@@ -50,7 +50,6 @@ class TipSystem {
 
 	async start() {
 		const self = this;
-		const { a_wokenContract, director } = self;
 
 		if(self.persist) {
 			try {
@@ -59,6 +58,8 @@ class TipSystem {
 				throw error;
 			}
 		}
+
+		dispatch(self.a_tipper, { type: 'resume' });
 
 		dispatch(self.a_polling, { type: 'poll',
 			target: self.a_tMon,
