@@ -1,7 +1,7 @@
 const defaults = {
-	USER: 'postgres',
-	PWD: 'postgres',
-	DB: 'db',
+	USER: 'woke_bot',
+	PWD: 'woke_bot',
+	DB: 'bot_db',
 	HOST: 'localhost',
 	PORT: 5432,
 };

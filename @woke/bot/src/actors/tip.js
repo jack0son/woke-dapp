@@ -21,13 +21,13 @@ const eventsTable = {
 					args: [tip.fromId]
 				}, ctx.self)
 
-				return {...state, stage: 'calling-check_claim' }
+				return {...state, stage: 'CALLING-CHECK_CLAIM' }
 			},
 		},
 	},
 
 	'check_claim-recv': {
-		'calling-check_claim': {
+		'CALLING-CHECK_CLAIM': {
 			effect: (msg, ctx, state) => {
 				const { tip, a_wokenContract } = state;
 				const { tx, result } = msg;
@@ -50,7 +50,7 @@ const eventsTable = {
 					}, ctx.self)
 
 					tip.status = 'UNSETTLED';
-					nextStage = 'sending-tip';
+					nextStage = 'SENDING-TIP';
 
 				} else if(!userIsClaimed) {
 					// Oh yes, this happens sometimes!
@@ -67,7 +67,7 @@ const eventsTable = {
 	},
 
 	'send_tip-recv': {
-		'sending-tip': {
+		'SENDING-TIP': {
 			effect: (msg, ctx, state) => {
 				const { tip } = state;
 				const { txStatus, tx, txState } = msg;
@@ -94,9 +94,9 @@ const eventsTable = {
 
 						dispatch(ctx.parent, { type: 'tip_update', tip }, ctx.self);
 						msg.reduce({ event: 'settled' });
-						nextState = 'confirmed';
+						nextState = 'CONFIRMED';
 
-						return { ...state, nextStage: 'confirmed', }
+						return { ...state, nextStage: 'CONFIRMED', }
 						break;
 					}
 
@@ -107,7 +107,7 @@ const eventsTable = {
 						dispatch(ctx.self, {type: 'tip_update', status: statusEnum.FAILED});
 						msg.reduce({ event: 'send-tx-failed', error: errMsg });
 
-						return { ...state, nextStage: 'failed', }
+						return { ...state, nextStage: 'FAILED', }
 						break;
 					}
 
@@ -122,7 +122,7 @@ const eventsTable = {
 	},
 
 	'settled': {
-		'confirmed': {
+		'CONFIRMED': {
 			effect: (msg, ctx, state) => {
 				return ctx.stop();
 			}
@@ -130,7 +130,7 @@ const eventsTable = {
 	},
 
 	'error': {
-		'confirmed': {
+		'CONFIRMED': {
 			effect: (msg, ctx, state) => {
 				return ctx.stop();
 			}
@@ -143,7 +143,7 @@ function reduceEvent(msg, ctx, state) {
 	const { stage } = state;
 	const { event } = msg;
 
-	ctx.debug.info(msg, `Got <${event}> in stage ╢${stage}╟`);
+	ctx.debug.info(msg, `Got <${event}> in stage ╢ ${stage} ╟`);
 	const applicableStages = eventsTable[event];
 
 	if(!applicableStages) {
@@ -153,7 +153,7 @@ function reduceEvent(msg, ctx, state) {
 
 	const action = applicableStages[stage];
 	if(!action) {
-		ctx.debug.d(msg, `No actions for event <${event}> in stage ╢${stage}╟`);
+		ctx.debug.d(msg, `No actions for event <${event}> in stage ╢ ${stage} ╟`);
 		return state;
 	}
 

@@ -59,6 +59,8 @@ const TwitterMonitor = (twitterStub) => ({
 					ctx.debug.d(msg, `Found ${tipTweets.length} tip tweets`);
 				}
 
+				// @TODO sorting through tweets for valid tips belongs in the twitter
+				// stub
 				const amountRegex = /\+(\d+)\s\$/
 
 				const newTips = tipTweets.filter(tweet => {

@@ -39,8 +39,8 @@ const spawn_actor = (_parent, _name, _actionsMap, _initialState, _properties) =>
 	);
 }
 
-const spawn_peristent = (_parent, _name, _actionsMap, _initialState, _properties) => {
-	if(!_properites || !_properties.persistenceKey) {
+const spawn_persistent = (_parent, _name, _actionsMap, _initialState, _properties) => {
+	if(!_properties || !_properties.persistenceKey) {
 		throw new Error(`Persistent actor must define key property`);
 	}
 	const { persistenceKey, ...otherProperties } = _properties;
@@ -94,8 +94,8 @@ const start_actor = _parent => (_name, _definition, _initialState) => {
 }
 
 const start_persistent = _persistentSystem => (_name, _definition, _initialState) => {
-	if(!_parent && _parent.name) {
-		throw new Error(`Parent actor must be provided`);
+	if(!_persistentSystem && _persistentSystem.name) {
+		throw new Error(`Persistent system must be provided`);
 	}
 	const { actions, properties } = _definition;
 	const { initialState, ...otherProperties} = properties;

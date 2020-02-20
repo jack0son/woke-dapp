@@ -48,9 +48,9 @@ const tMonDefn = actors.TwitterMonitor(twitter);
 
 const tipSystem = new TipSystem(undefined, {
 	twitterStub: twitter,
-	persist: false,
+	persist: true,
 	pollingInterval: 1000*1000,
 });
 
-tipSystem.start();
+tipSystem.start().catch(console.log);
 

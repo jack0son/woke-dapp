@@ -65,7 +65,7 @@ const tipper = {
 		onCrash: (() => {
 			reset = resetWithExponentialDelay(1)
 			return (msg, error, ctx) => {
-				console.log('CASH --- ', ctx.name);
+				console.log('CRASH --- ', ctx.name);
 				console.log(msg);
 				switch(msg.type) {
 					case 'tip': {
@@ -90,7 +90,6 @@ const tipper = {
 				throw new Error(`Must have reference to wokenContract actor`);
 			}
 			let entry = tipRepo[tip.id];
-			console.log(entry);
 
 			if(!entry) {
 				// New tip
@@ -105,6 +104,7 @@ const tipper = {
 
 			} else {
 				ctx.debug.d(msg, `Got existing tip ${tip.id}`);
+				console.log(entry);
 				console.log(`Settling existing tip ${tip_str(tip)}...`);
 				switch(entry.status) {
 					case statusEnum.UNSETTLED: {
@@ -121,11 +121,13 @@ const tipper = {
 			}
 		},
 
+		// @TODO state not clearly encapsulated here
+		//		-- is it tip or tipper that is responsible for tip.status?
 		'tip_update': async (msg, ctx, state) => {
 			const { tipRepo, wokenContract } = state;
 			const { tip, status, error} = msg;
 
-			if(!ctx.recovering) { await ctx.persist(msg); }
+			if(ctx.persist && !ctx.recovering) { await ctx.persist(msg); }
 
 			console.log(tip);
 			if(tip.error) {
