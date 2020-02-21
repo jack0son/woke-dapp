@@ -149,17 +149,17 @@ const eventsTable = {
 				ctx.debug.info(msg, `tip:${tip.id} Got tx status ${txStatus}`);
 				switch(txStatus) {
 					case 'success': {
-						// Scenarios
-						//		-- non zero tip amount
-						//		-- zero tip balance
-
-						// Extract transaction receipt
-						ctx.debug.d(msg, `tip:${tip.id} confirmed on chain`);
-						tip.status = 'SETTLED';
 						const { receipt } = msg;
+						ctx.debug.d(msg, `tip:${tip.id} confirmed on chain`);
+						tip.tx_hash = receipt.transactionHash;
+
 						if(!receipt.events.Tip) {
 							// No Tip event emitted
 							// Amount was 0, or attempted to tip existing user
+							// Scenarios
+							//		-- non zero tip amount
+							//		-- zero tip balance
+
 							const errMsg = `tip:${tip.id} returned 0 tip amount`;
 							tip.error = errMsg;
 							tip.status = 'FAILED';
@@ -172,11 +172,12 @@ const eventsTable = {
 						const tipEvent = receipt.events.Tip.returnValues;
 						tip.amount = tipEvent.amount;
 
-						attach the tx hash so that the invite system can reply with a tweet
-
+						// attach the tx hash so that the invite system can reply with a tweet
 						if(tip.amount == 0) {
+							tip.status = 'FAILED';
+						} else {
+							tip.status = 'SETTLED';
 						}
-						console.log();
 
 						dispatch(ctx.parent, { type: 'tip_update', tip }, ctx.self);
 						ctx.reduce({ event: 'settled' });
