@@ -60,6 +60,16 @@ const tipper = {
 			a_wokenContract: null,
 		},
 
+		// HOF that makes various utility functions available to the
+		// action handlers. Binds these functions to the current message context
+		receivers: (msg, ctx, state) => ({
+		}),
+
+		// Like a receiver but guaranteed to behave like an action
+		// i.e. it takes in msg, ctx, state and returns newState
+		middleware: (msg, ctx, state) => {
+		},
+
 		persistenceKey: 'tipper', // only ever 1, static key OK
 
 		onCrash: (() => {
@@ -80,6 +90,7 @@ const tipper = {
 		onCrash: undefined,
 	},
 
+	// Message 'type' handlers
 	actions: {
 		'tip': async (msg, ctx, state) => {
 			const { tipRepo, a_wokenContract } = state;

@@ -21,7 +21,7 @@ const block = async (_consumer, _msg) => {
 	});
 }
 
-function create_debug(_name) {
+function remap_debug(_name) {
 	const debug = {};
 	// Remap debugger functions to prefix each with message type
 	Object.entries(Logger(`${DEBUG_PREFIX}:${_name}`)).forEach(entry => {
@@ -40,7 +40,7 @@ const spawn_actor = (_parent, _name, _actionsMap, _initialState, _properties) =>
 	return spawn(
 		_parent,
 		(state = _initialState, msg, context) => {
-			return route_action(_actionsMap, state, msg, {...context, debug: create_debug(_name) })
+			return route_action(_actionsMap, state, msg, {...context, debug: remap_debug(_name) })
 		},
 		_name,
 		_properties,
@@ -53,7 +53,7 @@ const spawn_persistent = (_parent, _name, _actionsMap, _initialState, _propertie
 	}
 	const { persistenceKey, ...otherProperties } = _properties;
 
-	const debug = create_debug(_name);
+	const debug = remap_debug(_name);
 	debug.control.enabledByApp = debug.control.enabled();
 
 	let recovering = false;
@@ -102,6 +102,8 @@ const route_action = async (_actionsMap, _state, _msg, _context) => {
 	}
 }
 
+// Spawn an actor instance using an actor definition
+// @returns actor instance
 const start_actor = _parent => (_name, _definition, _initialState) => {
 	if(!_parent && _parent.name) {
 		throw new Error(`Parent actor must be provided`);
@@ -121,6 +123,8 @@ const start_actor = _parent => (_name, _definition, _initialState) => {
 	);
 }
 
+// Spawn a persistent actor
+// @returns persistant actor instance
 const start_persistent = _persistentSystem => (_name, _definition, _initialState) => {
 	if(!_persistentSystem && _persistentSystem.name) {
 		throw new Error(`Persistent system must be provided`);
@@ -140,8 +144,9 @@ const start_persistent = _persistentSystem => (_name, _definition, _initialState
 	);
 }
 
-// @TODO Interface surface unccessarily large
-const bootstrap = (_persistenceEngine) => {
+// Start a nact actor system
+// @returns nact actor system and bound methods
+function bootstrap(_persistenceEngine) {
 	let system;
 	if(_persistenceEngine) {
 		system = start(configurePersistence(_persistenceEngine));
