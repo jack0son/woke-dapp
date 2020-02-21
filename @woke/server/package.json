@@ -5,6 +5,9 @@
   "private": true,
   "scripts": {
     "start": "NODE_ENV=production ETH_ENV=production DEBUG=server:* node ./bin/www",
+    "db": "docker-compose -f ../../server.docker-compose.local.yaml up -d --build db",
+    "down": "docker-compose -f ../../server.docker-compose.local.yaml down",
+    "reset": "docker-compose -f ../../server.docker-compose.local.yaml down -v",
     "dev": "NODE_ENV=development ETH_ENV=development DEBUG=server:* node ./bin/www",
     "ropsten": "NODE_ENV=development ETH_ENV=ropsten DEBUG=server:* node ./bin/www",
     "rinkeby": "NODE_ENV=development ETH_ENV=rinkeby DEBUG=server:* node ./bin/www",

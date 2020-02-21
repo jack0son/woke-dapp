@@ -6,7 +6,81 @@ const properties = {
 		stage: 'INIT',
 	},
 
+	receivers: (msg, state, ctx) => ({
+		reduce: (_msg) => {
+			msg.type = 'reduce';
+			dispatch(ctx.self, {...msg, ..._msg}, ctx.self);
+		}
+	}),
+
 	onCrash: undefined,
+}
+
+// FSM engine. FSM table defined in events table.
+function reduceEvent(msg, ctx, state) {
+	const { stage } = state;
+	const { event } = msg;
+
+	ctx.debug.info(msg, `Got <${event}> in stage ╢ ${stage} ╟`);
+	const applicableStages = eventsTable[event];
+
+	if(!applicableStages) {
+		ctx.debug.warn(msg, `No applicable stages for event <${event}>`);
+		return state;
+	}
+
+	const action = applicableStages[stage];
+	if(!action) {
+		ctx.debug.warn(msg, `No actions for event <${event}> in stage ╢ ${stage} ╟`);
+		return state;
+	}
+
+	ctx.reduce = ctx.receivers.reduce; // convenience
+
+	const nextState = {...state, ...action.effect(msg, ctx, state)};
+	return nextState;
+}
+
+const actions = {
+	// --- Internal
+	'reduce': reduceEvent,
+
+	// --- Source Actions
+	'tip': (msg, ctx, state) => {
+		const { a_wokenContract } = state;
+		const { tip } = msg;
+
+		ctx.debug.d(msg, tip_str(tip));
+
+		ctx.receivers.reduce({ event: 'start' });
+
+		return {
+			...state,
+			stage: 'INIT',
+			tip,
+		}
+	},
+
+	// --- Sink Actions
+	'tx': (msg, ctx, state) => {
+		const { tx } = msg;
+		switch(tx.method) {
+			case 'userClaimed': {
+				ctx.receivers.reduce({ event: 'check_claim-recv'});
+				break;
+			}
+
+			case 'tip': {
+				ctx.receivers.reduce({ event: 'send_tip-recv',  ...msg});
+				break;
+			}
+
+			default: {
+				ctx.debug.warn(msg, `sink:tx: ${tx.method} has no sink action`)
+				return;
+			}
+		}
+	},
 }
 
 const eventsTable = {
@@ -98,6 +172,8 @@ const eventsTable = {
 						const tipEvent = receipt.events.Tip.returnValues;
 						tip.amount = tipEvent.amount;
 
+						attach the tx hash so that the invite system can reply with a tweet
+
 						if(tip.amount == 0) {
 						}
 						console.log();
@@ -151,90 +227,6 @@ const eventsTable = {
 		'FAILED': {
 			effect: (msg, ctx, state) => {
 				return ctx.stop();
-			}
-		}
-	},
-}
-
-// Event reducer
-function reduceEvent(msg, ctx, state) {
-	const { stage } = state;
-	const { event } = msg;
-
-	ctx.debug.info(msg, `Got <${event}> in stage ╢ ${stage} ╟`);
-	const applicableStages = eventsTable[event];
-
-	if(!applicableStages) {
-		ctx.debug.warn(msg, `No applicable stages for event <${event}>`);
-		return state;
-	}
-
-	const action = applicableStages[stage];
-	if(!action) {
-		ctx.debug.warn(msg, `No actions for event <${event}> in stage ╢ ${stage} ╟`);
-		return state;
-	}
-
-	// @fix reduce sh
-	const reduce = (_msg) => dispatch_reduce({ ...msg, ..._msg }, ctx);
-	ctx.reduce = reduce;
-
-	const nextState = {...state, ...action.effect(msg, ctx, state)};
-	return nextState;
-}
-
-// @TODO include in context as ctx.reduce
-function dispatch_reduce(msg, ctx) {
-	msg.type = 'reduce'
-	dispatch(ctx.self, msg, ctx.self);
-}
-
-// @
-const middleware = (msg, ctx, state) => {
-	// Attach reduce function
-}
-
-const actions = {
-	// --- Internal
-	'reduce': reduceEvent,
-
-	// --- Source Actions
-	'tip': (msg, ctx, state) => {
-		const reduce = (_msg) => dispatch_reduce({ ...msg, ..._msg }, ctx);
-
-		const { a_wokenContract } = state;
-		const { tip } = msg;
-
-		ctx.debug.d(msg, tip_str(tip));
-
-		reduce({ event: 'start' });
-
-		return {
-			...state,
-			stage: 'INIT',
-			tip,
-		}
-	},
-
-	// --- Sink Actions
-	'tx': (msg, ctx, state) => {
-		const reduce = (_msg) => dispatch_reduce({ ...msg, ..._msg }, ctx);
-
-		const { tx } = msg;
-		switch(tx.method) {
-			case 'userClaimed': {
-				reduce({ event: 'check_claim-recv'});
-				break;
-			}
-
-			case 'tip': {
-				reduce({ event: 'send_tip-recv',  ...msg});
-				break;
-			}
-
-			default: {
-				ctx.debug.warn(msg, `sink:tx: ${tx.method} has no sink action`)
-				return;
 			}
 		}
 	},
