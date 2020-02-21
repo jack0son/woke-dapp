@@ -19,13 +19,12 @@ The contract artifacts which are built by truffle contain the compiled contract
 binaries, method interfaces, and the migration configuration.
 
 Migration configuration is essentially the contract address and network
-information for each chain the the contract has been deployed to.
-
-Truffle will continually update this build file as you migrate so a contract
+information for each chain the the contract has been deployed to. Truffle
+will continually update this build file as you migrate so a contract
 residing on multiple networks can be interacted with using one artifact.
 
 Unfortunately a clean method of importing the contract artifacts without
-commiting them to the repo on each migration isn't in place yet. Plan is pull
+commiting them to the repo on each migration isn't in place yet. Plan is to pull
 them from an S3 bucket.
 
 ### @woke/contracts-src
@@ -112,5 +111,7 @@ npm run start
 # View only
 npm run design
 ```
-**todo**
-Dev env for testing on mobile.
+*Readme TODO*
+[] Dev env for testing on mobile.
+[] Bot readme
+
