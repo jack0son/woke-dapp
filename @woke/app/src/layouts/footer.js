@@ -6,7 +6,6 @@ import { makeStyles } from '@material-ui/styles';
 const useStyles = makeStyles(theme => ({
 	footer: {
 		position: 'absolute',
-		bottom: 0,
 		width: '100%',
 		height: 'auto',
 		display: 'flex',
