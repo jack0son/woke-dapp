@@ -1,0 +1,27 @@
+version: '3'
+services:
+  bot-db:
+    image: postgres:11.1
+    environment:
+      POSTGRES_USER: woke_bot
+      POSTGRES_PASSWORD: woke_bot
+      POSTGRES_DB: bot_db
+    volumes:
+      - bot-postgres_data:/var/lib/postgresql/data/
+    ports:
+      - '5433:5432'
+  bot:
+    build:
+      context: ./
+      dockerfile: bot.Dockerfile
+    depends_on:
+      - bot-db
+    ports:
+      - '3001:3001'
+    environment:
+      WAIT_HOSTS: bot-db:5432
+      POSTGRES_HOST: bot-db,
+      POSTGRES_PORT: 5432,
+
+volumes:
+  bot-postgres_data:

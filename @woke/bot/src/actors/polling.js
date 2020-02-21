@@ -1,0 +1,66 @@
+const { dispatch } = require('nact');
+const { Logger } = require('@woke/lib');
+const debug = (msg, args) => Logger().name(`POLL:`, `${msg.type}>> ` + args);
+
+const iface = {
+	poll: 'poll',
+}
+
+const pollingActor = {
+	iface, 
+
+	properties: {
+		initialState: {
+			halt: false,
+		}
+	},
+
+	actions: {
+		[iface.poll]: (msg, ctx, state) => {
+			const {
+				target, // target actor
+				action, // target action type
+				period, // how often to poll
+				rateLimit,
+				args
+			} = msg;
+
+			if(!period || period < 0) {
+				throw new Error('Polling period must be non-zero');
+			}
+
+			debug(msg, `Start polling {${target.name}:${action}} every ${period}ms...`);
+			dispatch(ctx.self, { type: 'perform',  target, period, action, args }, ctx.sender);
+
+			return { ...state,
+				halt: false,
+				period,
+				target,
+				action,
+			}
+		},
+
+		'perform': (msg, ctx, state) => {
+			const { halt, } = state;
+			const { target, action, period, args } = msg;
+
+			if(!halt) {
+				dispatch(target, {type: action, ...args}, ctx.sender);
+
+				setTimeout(() => 
+					dispatch(ctx.self, { type: 'perform',  target, period, action, args }, ctx.sender),
+					period
+				);
+			}
+
+			return state;
+		},
+
+		'interupt': (msg, ctx, state) => {
+			debug(msg, `Interupting polling of {${state.target.name}:${state.action}}`);
+			return {...state, halt: true}
+		}
+	}
+}
+
+module.exports = pollingActor;

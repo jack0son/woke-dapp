@@ -12,7 +12,7 @@ services:
   auth-server:
     build:
       context: ./
-      dockerfile: Dockerfile.server
+      dockerfile: server.Dockerfile
     depends_on:
       - db
     ports:

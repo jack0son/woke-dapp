@@ -1,0 +1,31 @@
+{
+  "name": "@woke/bot",
+  "version": "0.1.0",
+  "description": "Tiny oracle for Twitter API to avoid waiting for Oraclize",
+  "private": true,
+  "main": "index.js",
+  "scripts": {
+    "test": "./node_modules/.bin/mocha ./test/test*.js",
+    "test:debug": "DEBUG=oracle:* ./node_modules/.bin/mocha",
+    "start:verbose": "DEBUG_RECOVERY=true NODE_ENV=production DEBUG=*,-*info node src/index.js",
+    "start": "DEBUG_RECOVERY=true NODE_ENV=production DEBUG=actor*,-*:twitter_monitor*,-*:_tip-*:info node src/index.js",
+    "dev:verbose": "DEBUG_RECOVERY=false NODE_ENV=development DEBUG=* node src/index.js",
+    "dev": "DEBUG_RECOVERY=true NODE_ENV=development DEBUG=actor*,-*:twitter_monitor*,-*:_tip-*:info node src/index.js",
+    "dev:recovery": "DEBUG_RECOVERY=true NODE_ENV=development DEBUG=* node src/index.js",
+    "mock:tipper": "DEBUG_RECOVERY=true NODE_ENV=development DEBUG=actor*,-*:twitter_monitor*,-*:_tip-*:info node src/use-mock-twitter.js"
+
+  },
+  "author": "Jackson Virgo",
+  "license": "ISC",
+  "dependencies": {
+    "@woke/contracts": "0.1.0",
+    "@woke/lib": "0.1.0",
+    "nact-persistence-postgres": "^7.3.1"
+  },
+  "devDependencies": {
+    "chai": "^4.2.0",
+    "chai-as-promised": "^7.1.1",
+    "minimist": "^1.2.0",
+    "mocha": "^6.2.2"
+  }
+}
