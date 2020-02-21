@@ -35,17 +35,25 @@ function remap_debug(_name) {
 	return debug;
 }
 
-const spawn_actor = (_parent, _name, _actionsMap, _initialState, _properties) => {
+// Make receiver functions available to the actions
+// @returns Map string -> function
+const bind_receivers = (receivers, msg, state, ctx) => receivers ?
+	receivers(msg, state, ctx)
+	: undefined;
 
-	return spawn(
+const spawn_actor = (_parent, _name, _actionsMap, _initialState, _properties) =>
+	spawn(
 		_parent,
 		(state = _initialState, msg, context) => {
-			return route_action(_actionsMap, state, msg, {...context, debug: remap_debug(_name) })
+			return route_action(_actionsMap, state, msg, {
+				...context,
+				debug: remap_debug(_name),
+				receivers: bind_receivers(_properties.receivers, msg, state, context),
+			})
 		},
 		_name,
 		_properties,
 	);
-}
 
 const spawn_persistent = (_parent, _name, _actionsMap, _initialState, _properties) => {
 	if(!_properties || !_properties.persistenceKey) {
@@ -90,6 +98,8 @@ const spawn_persistent = (_parent, _name, _actionsMap, _initialState, _propertie
 	);
 }
 
+// Pass message to action handler
+// @returns next actor state
 const route_action = async (_actionsMap, _state, _msg, _context) => {
 	let action = _actionsMap[_msg.type];
 	if (action && typeof (action) == "function") {
