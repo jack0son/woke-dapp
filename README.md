@@ -5,13 +5,16 @@ Mono repo for the woke dApp client, smart-contracts, and back-end services.
 ## Repo Structure
 Packages `@woke/PACKAGE`
 
+### @woke/app
+React app.
+
 ### @woke/lib
 Web3 init, twitter client, utils.
 
 ### @woke/bot
 Tipping, twitter notifications, leaderboard, token distribution. 
 
-### Contract Artifacts
+### @woke/contracts 
 The contract artifacts which are built by truffle contain the compiled contract
 binaries, method interfaces, and the migration configuration.
 
@@ -21,6 +24,12 @@ information for each chain the the contract has been deployed to.
 Truffle will continually update this build file as you migrate so a contract
 residing on multiple networks can be interacted with using one artifact.
 
+Unfortunately a clean method of importing the contract artifacts without
+commiting them to the repo on each migration isn't in place yet. Plan is pull
+them from an S3 bucket.
+
+### @woke/contracts-src
+Solidity source code and truffle based tests.
 
 # Deployment
 The dApp client is currently deployed on netlify whilst all the back end
@@ -37,7 +46,7 @@ Deploy process
 
 Deployment branches must always be downstream of develop.
 
-## App Services
+## Hosting
 ### Netlify
 Because of the more limited build options available on netlify, it was simplest
 to avoid using any lerna dependencies and simply copy the contract artifacts
@@ -53,13 +62,17 @@ guides you through running Docker Compose in a container on a
 Container-Optimized OS instance.
 
 ## Ethereum
-Rinkby is the testnet being used at the moment. 
-
-### Faucets
+Goerli is the testnet. Also configured for Rinkeby. Goerli appears to be more
+reliable and less congested atm (so fresh).
 
 # Development
-No automation yet to get up and running locally: run the following series of
-commands.
+No automation yet. Use these commands to set up a local dev environment.
+
+**Nodejs:** 
+Using version 10. Just use [nvm](https://github.com/nvm-sh/nvm#installing-and-updating).
+```
+nvm install 10.17.0
+```
 
 **Monorepo setup:**
 ```
@@ -101,9 +114,3 @@ npm run design
 ```
 **todo**
 Dev env for testing on mobile.
-
-
-
-
-
-
