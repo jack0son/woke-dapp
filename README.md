@@ -3,6 +3,13 @@ Mono repo for the woke dApp client, smart-contracts, and back-end services.
 
 
 ## Repo Structure
+Packages `@woke/PACKAGE`
+
+### @woke/lib
+Web3 init, twitter client, utils.
+
+### @woke/bot
+Tipping, twitter notifications, leaderboard, token distribution. 
 
 ### Contract Artifacts
 The contract artifacts which are built by truffle contain the compiled contract
@@ -86,8 +93,14 @@ npm run dev
 
 **App:**
 ```
+# Local instance
 npm run start
+
+# View only
+npm run design
 ```
+**todo**
+Dev env for testing on mobile.
 
 
 
