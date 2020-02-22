@@ -20,8 +20,11 @@ services:
       - '3001:3001'
     environment:
       WAIT_HOSTS: bot-db:5432
-      POSTGRES_HOST: bot-db,
-      POSTGRES_PORT: 5432,
+      POSTGRES_HOST: bot-db
+      POSTGRES_PORT: 5432
+      NODE_ENV: 'development'
+      PERSIST: 'true'
+      DEBUG_RECOVERY: 'true'
 
 volumes:
   bot-postgres_data:
