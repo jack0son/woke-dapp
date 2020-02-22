@@ -28,7 +28,8 @@ commiting them to the repo on each migration isn't in place yet. Plan is to pull
 them from an S3 bucket.
 
 ### @woke/contracts-src
-Solidity source code and truffle based tests.
+* Solidity source code and truffle based tests.
+* Ethereum testchain,  (ganache), and deployment configuration.
 
 # Deployment
 The dApp client is currently deployed on netlify whilst all the back end
@@ -40,8 +41,8 @@ Deploy process
 2. Merge into `develop`
 3. Merge into `deploy`
 4. Merge into hooked branch
-..+ Netlify: `deploy-netlify`
-..+ GCloud: `deploy-gcloud`
+.. + Netlify: `deploy-netlify`
+.. + GCloud: `deploy-gcloud`
 
 Deployment branches must always be downstream of develop.
 
@@ -72,8 +73,18 @@ Using version 10. Just use [nvm](https://github.com/nvm-sh/nvm#installing-and-up
 ```
 nvm install 10.17.0
 ```
+
+**Monorepo setup:**
+```
+# In project root dir
+npm install -g lerna
+lerna bootstrap
+```
+
 **App:**
 To make changes to the app view you don't need any of the back-end services.
+To test the app's ethereum functionality you must be running the server and
+oracle.
 
 ```
 # View only
@@ -84,28 +95,36 @@ npm run start
 
 ```
 
-**Monorepo setup:**
-```
-# In project root dir
-npm install -g lerna
-lerna bootstrap
-```
-
 **Mock ethereum blockchain:**
 ```
 cd @woke/contracts
 npm run ganache:client
 
 # New terminal
+cd @woke/contracts
+./migrate.sh development
+# if this command doesn't work try
+bash migrate.sh development
+# OR
+sh migrate.sh development
+
+# OR if you aren't on unix (god help you)
 npm run migrate:client
+# Then copy build/contracts/[WokeToken.json, TwitterOracleMock.json] to
+@woke/contracts/development/
 ```
 
 **Server:**
-Make sure docker is running.
+
 ```
-# Run server DB in docker container
+# Make sure docker is running.
 dockerd
-./scripts/start-server-db.sh
+# you'll have to use sudo dockerd if you haven't followed the docker
+post-install instructions
+
+# Run server DB in docker container
+cd @woke/server
+npm run db
 npm run dev
 ```
 
@@ -113,6 +132,22 @@ npm run dev
 ```
 npm run dev
 ```
+
+**Bot:**
+Not dependency of app.
+```
+npm run db
+npm run dev
+```
+
+## Docker
+1. You could use this naughty install script, but it's generally a bad idea to
+  sudo run scripts from the internet.
+	** HEED THE [warnings](https://docs.docker.com/install/linux/linux-postinstall/)
+2. OR [Ubuntu installation](https://docs.docker.com/install/linux/docker-ce/ubuntu/)
+* [Run docker commands from user land (without
+  sudo)](https://docs.docker.com/install/linux/linux-postinstall/)
+
 
 *Readme TODO*
 [] Dev env for testing on mobile.
