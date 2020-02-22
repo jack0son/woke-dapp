@@ -52,13 +52,13 @@ to avoid using any lerna dependencies and simply copy the contract artifacts
 into the `@woke/app/src` on every production migration.
 
 ### Google Cloud
-[Container Optimized
-OS](https://cloud.google.com/container-optimized-os/docs/concepts/features-and-benefits)
 
 **Configuring docker-compose for container optimized OS**
+
 This [tutorial](https://cloud.google.com/community/tutorials/docker-compose-on-container-optimized-os)
-guides you through running Docker Compose in a container on a
-Container-Optimized OS instance.
+guides you through running Docker Compose in a container on a [Container Optimized
+OS](https://cloud.google.com/container-optimized-os/docs/concepts/features-and-benefits) 
+instance.
 
 ## Ethereum
 Goerli is the testnet. Also configured for Rinkeby. Goerli appears to be more
@@ -71,6 +71,17 @@ No automation yet. Use these commands to set up a local dev environment.
 Using version 10. Just use [nvm](https://github.com/nvm-sh/nvm#installing-and-updating).
 ```
 nvm install 10.17.0
+```
+**App:**
+To make changes to the app view you don't need any of the back-end services.
+
+```
+# View only
+npm run design
+
+# Local instance with blockchain
+npm run start
+
 ```
 
 **Monorepo setup:**
@@ -103,14 +114,6 @@ npm run dev
 npm run dev
 ```
 
-**App:**
-```
-# Local instance
-npm run start
-
-# View only
-npm run design
-```
 *Readme TODO*
 [] Dev env for testing on mobile.
 [] Bot readme
