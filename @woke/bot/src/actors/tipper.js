@@ -139,6 +139,8 @@ const tipper = {
 			const { tipRepo, wokenContract } = state;
 			const { tip, status, error} = msg;
 
+			const log = (...args) => { if(!ctx.recovering) console.log(...args) }
+
 			if(ctx.persist && !ctx.recovering) {
 				await ctx.persist(msg);
 			}
@@ -151,9 +153,16 @@ const tipper = {
 			// FSM effects
 			switch(tip.status) {
 				case 'SETTLED': {
-					if(!ctx.recovering)
-					console.log(`\nTip settled: @${tip.fromHandle} tipped @${tip.toHandle} ${tip.amount} WOKENS\n`)
+						log(`\nTip settled: @${tip.fromHandle} tipped @${tip.toHandle} ${tip.amount} WOKENS\n`)
 					//dispatch(ctx.self, { type: 'notify', tip }, ctx.self);
+					break;
+				}
+
+				case 'FAILED': {
+					if(tip.reason) {
+						//ctx.debug.error(msg, `Tip ${tip.id} from ${tip.fromHandle} error: ${tip.error}`)
+						log(`\nTip failed: ${tip.reason}`);
+					}
 					break;
 				}
 
