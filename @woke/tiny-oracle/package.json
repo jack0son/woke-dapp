@@ -14,7 +14,8 @@
     "rinkeby": "NODE_ENV=development ETH_ENV=rinkeby DEBUG=oracle*,twitter node src/index.js",
     "goerli": "NODE_ENV=development ETH_ENV=goerli DEBUG=oracle*,twitter node src/index.js",
     "dev:with_client": "DEBUG=oracle:* node src/lib/client.js",
-    "tweet": "DEBUG=twitter* node ../lib/twitter.js"
+    "tweet": "DEBUG=twitter* node ../lib/twitter.js",
+    "cli": "DEBUG=* node src/cli.js"
   },
   "author": "Jackson Virgo",
   "license": "ISC",
