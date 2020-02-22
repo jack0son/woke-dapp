@@ -96,11 +96,11 @@ npm run start
 
 **Mock ethereum blockchain:**
 ```
-cd @woke/contracts
+cd @woke/contracts-src
 npm run ganache:client
 
 # New terminal
-cd @woke/contracts
+cd @woke/contracts-src
 ./migrate.sh development
 # if this command doesn't work try
 bash migrate.sh development
@@ -109,7 +109,7 @@ sh migrate.sh development
 
 # OR if you aren't on unix (god help you)
 npm run migrate:client
-# Then copy build/contracts/[WokeToken.json, TwitterOracleMock.json] to @woke/contracts/development/
+# Then copy @woke/contracts-src/build/contracts/[WokeToken.json, TwitterOracleMock.json] to @woke/contracts/development/
 ```
 
 **Server:**
