@@ -7,7 +7,7 @@
   "author": "Jackson Virgo",
   "license": "ISC",
   "dependencies": {
-    "debug": "^4.1.1",
+    "debug": ">=4.1",
     "dotenv": "^8.2.0",
     "request-promise-native": "^1.0.8",
     "twitter": "^1.7.1",

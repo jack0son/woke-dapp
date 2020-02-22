@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 
 // View containers
 import Claim from '../views/claim';
@@ -18,7 +18,10 @@ export default function ClaimContainer (props) {
 	const dummyClaimState = useLinearStages({stageList: statesList, initialStage: states.ERROR});
 	const {dispatchNext, dummyAsyncJob} = dummyClaimState;
 	const rootContext = useRootContext();
+	const [error, setError] = useState();
 
+
+	// Pass claim stage up to the state selector
 	useEffect(() => {
 		rootContext.setEscapeHatch({
 			items: statesList,
@@ -35,6 +38,7 @@ export default function ClaimContainer (props) {
 					sendFulfillClaim: {
 					},
 				},
+				error: error,
 				stageLabels: statesLabels,
 				...dummyClaimState
 			}}
@@ -68,6 +72,12 @@ export default function ClaimContainer (props) {
 	useEffect(() => {
 		if(dummyClaimState.stage == states.CLAIMED) {
 			props.handleComplete();
+		}
+
+		if(dummyClaimState.stage == states.ERROR) {
+			setError('Hint: Scroll down to use the state selector. Start at ready.');
+		} else {
+			setError(null);
 		}
 	}, [dummyClaimState.stage])
 
