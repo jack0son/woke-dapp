@@ -29,14 +29,14 @@ them from an S3 bucket.
 
 ### @woke/contracts-src
 * Solidity source code and truffle based tests.
-* Ethereum testchain,  (ganache), and deployment configuration.
+* Ethereum testchain (ganache), and deployment configuration.
 
 # Deployment
 The dApp client is currently deployed on netlify whilst all the back end
 services are deployed on google cloud compute engine.
 
 ### Deployment branches
-Deploy process
+Deploy procedure:
 1. Make changes on feature branch
 2. Merge into `develop`
 3. Merge into `deploy`
@@ -83,7 +83,7 @@ lerna bootstrap
 
 **App:**
 To make changes to the app view you don't need any of the back-end services.
-To test the app's ethereum functionality you must be running the server and
+To test with local ethereum functionality you must be running the server and
 oracle.
 
 ```
@@ -110,8 +110,7 @@ sh migrate.sh development
 
 # OR if you aren't on unix (god help you)
 npm run migrate:client
-# Then copy build/contracts/[WokeToken.json, TwitterOracleMock.json] to
-@woke/contracts/development/
+# Then copy build/contracts/[WokeToken.json, TwitterOracleMock.json] to @woke/contracts/development/
 ```
 
 **Server:**
@@ -143,13 +142,12 @@ npm run dev
 ## Docker
 1. You could use this naughty install script, but it's generally a bad idea to
   sudo run scripts from the internet.
-	** HEED THE [warnings](https://docs.docker.com/install/linux/linux-postinstall/)
+* HEED THE [WARNINGS](https://docs.docker.com/install/linux/linux-postinstall/)
 2. OR [Ubuntu installation](https://docs.docker.com/install/linux/docker-ce/ubuntu/)
 * [Run docker commands from user land (without
   sudo)](https://docs.docker.com/install/linux/linux-postinstall/)
 
 
-*Readme TODO*
-[] Dev env for testing on mobile.
-[] Bot readme
-
+**Readme TODO**
+* [] Dev env for testing on mobile.
+* [] Bot readme
