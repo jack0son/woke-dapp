@@ -1,7 +1,6 @@
 # woke-dapp
 Mono repo for the woke dApp client, smart-contracts, and back-end services. 
 
-
 ## Repo Structure
 Packages `@woke/PACKAGE`
 
@@ -142,7 +141,7 @@ npm run dev
 ## Docker
 1. You could use this naughty install script, but it's generally a bad idea to
   sudo run scripts from the internet.
-* HEED THE [WARNINGS](https://docs.docker.com/install/linux/linux-postinstall/)
+* HEED THE [WARNINGS](https://docs.docker.com/install/linux/docker-ce/ubuntu/#install-using-the-convenience-script)
 2. OR [Ubuntu installation](https://docs.docker.com/install/linux/docker-ce/ubuntu/)
 * [Run docker commands from user land (without
   sudo)](https://docs.docker.com/install/linux/linux-postinstall/)
