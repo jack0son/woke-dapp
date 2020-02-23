@@ -9,6 +9,10 @@ class TwitterStub {
 		return true //this.client.hasCredentials();
 	}
 
+	async dm() {
+		return true;
+	}
+
 	// Best practice
 	// -- Limit your searches to 10 keywords and operators.
 	// -- 

@@ -35,7 +35,8 @@ function remap_debug(_name) {
 	return debug;
 }
 
-// Make receiver functions available to the actions
+// Make receiver functions available to the actions by binding them to the
+// message bundle.
 // @returns Map string -> function
 const bind_receivers = (receivers, msg, state, ctx) => receivers ?
 	receivers(msg, state, ctx)
@@ -98,7 +99,7 @@ const spawn_persistent = (_parent, _name, _actionsMap, _initialState, _propertie
 	);
 }
 
-// Pass message to action handler
+// Pass message bundle to action handler
 // @returns next actor state
 const route_action = async (_actionsMap, _state, _msg, _context) => {
 	let action = _actionsMap[_msg.type];
@@ -154,7 +155,7 @@ const start_persistent = _persistentSystem => (_name, _definition, _initialState
 	);
 }
 
-// Start a nact actor system
+// Instantiate a nact actor system
 // @returns nact actor system and bound methods
 function bootstrap(_persistenceEngine) {
 	let system;
