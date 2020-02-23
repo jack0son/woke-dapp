@@ -9,6 +9,9 @@ class TwitterStub {
 		return true //this.client.hasCredentials();
 	}
 
+	// Errors: 
+	// [ { code: 220, message: 'Your credentials do not allow access to this resource.' } ]
+
 	async dm() {
 		return true;
 	}

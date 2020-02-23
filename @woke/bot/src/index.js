@@ -47,6 +47,7 @@ const TwitterStub = require('./lib/twitter-stub');
 const PERSIST_TIPS = process.env.PERSIST_TIPS;
 const persist = PERSIST_TIPS ? parse_bool(PERSIST_TIPS) : true;
 
+console.log('Persist? ', persist);
 const bootstrap = async () => {
 	await twitter.initClient();
 	twitterStub = new TwitterStub(twitter);

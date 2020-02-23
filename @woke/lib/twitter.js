@@ -8,11 +8,15 @@ require('dotenv').config();
 const consumerKey = process.env.TWITTER_CONSUMER_KEY;
 const consumerSecret = process.env.TWITTER_CONSUMER_SECRET;
 
+const accessKey = process.env.TWITTER_ACCESS_KEY;
+const accessSecret = process.env.TWITTER_ACCESS_SECRET;
+
 var client;
 
 const initClient = async () => {
 	let bearerToken = process.env.TWITTER_BEARER_TOKEN;
 
+	console.log(bearerToken)
 	if(bearerToken == undefined) {
 		try {
 			bearerToken = await getBearerToken(consumerKey, consumerSecret);
@@ -26,8 +30,12 @@ const initClient = async () => {
 	client = new Twitter({
 		consumer_key: consumerKey, 
 		consumer_secret: consumerSecret,
-		bearer_token: bearerToken, 
+		access_token_key: accessKey, 
+		access_token_secret: accessSecret,
+//		bearer_token: bearerToken, 
 	});
+
+	console.log(client);
 
 	return;
 }
@@ -87,6 +95,36 @@ const getUserData = async (userId) => {
 
 function statusUrl(status) {
 	return `https://twitter.com/${status.user.id_str}/status/${status.id_str}`
+}
+
+// Rate limit: 1000 per user; 15000 per app
+const directMessage = (recipientId, text) => { // claimString = `@getwoketoke 0xWOKE:${userId},${sig},1`;
+	if(!recipientId) {
+		throw new Error('Must provide a recipient ID');
+	}
+
+	if(!text) {
+		throw new Error('Must provide message text');
+	}
+
+	const event = {
+		type: 'message_create',
+		message_create: {
+			target: {
+				recipient_id: recipientId,
+			},
+			message_data: {
+				text: text,
+			}
+		},
+	};
+
+	const params = { event };
+
+	return client.post('direct_messages/events/new', params).then(r => {
+		console.log(r);
+		return r;
+	});
 }
 
 const searchTweets = (params) => { // claimString = `@getwoketoke 0xWOKE:${userId},${sig},1`;
@@ -207,6 +245,15 @@ if(debug.control.enabled && require.main === module) {
 					})
 
 					fs.writeFileSync('tweets-tips.json', JSON.stringify(r));
+					break;
+				}
+
+				case 'dm': {
+					const [recipient, text] = args;
+					const defaultText = 'test dm';
+
+					let r = await directMessage(recipient, text ? text : defaultText);
+					console.log(r);
 					break;
 				}
 
