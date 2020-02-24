@@ -62,7 +62,10 @@ const twitterPost = {
 
 	actions: {
 		'dm': async (msg, ctx, state) => {
-			const { recipient, text } = msg;
+			const { recipient, text, type } = msg;
+			if(type == 'welcome') {
+				// Send welcome message
+			}
 
 		},
 
