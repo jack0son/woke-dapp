@@ -102,7 +102,6 @@ const tipper = {
 				throw new Error(`Must have reference to wokenContract actor`);
 			}
 			let entry = tipRepo[tip.id];
-			console.log(tip);
 
 			if(!entry) {
 				// New tip

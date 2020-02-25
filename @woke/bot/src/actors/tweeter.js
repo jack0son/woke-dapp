@@ -14,7 +14,7 @@ function tip_success_message(tip) {
 }
 
 function tip_failure_message(tip) {
-	return `Your Wokenation of ${tip.amount} failed. Are you woke yet? Join with a tweet at https://getwoke.me`;
+	return `Your Wokenation of ${tip.amount} WOKENS failed. Are you woke yet? Join with a tweet at https://getwoke.me`;
 }
 
 // Drives posting to twitter

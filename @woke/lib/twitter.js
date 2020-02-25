@@ -141,7 +141,7 @@ const updateStatus = (text, _params) => { // claimString = `@getwoketoke 0xWOKE:
 
   // While not rate limited by the API, a user is limited in the number of Tweets they can create at a time. If the number of updates posted by the user reaches the current allowed limit this method will return an HTTP 403 error.
 	return client.post('statuses/update', params).then(r => {
-		console.log(r);
+		//console.log(r);
 		return r;
 	});
 }
@@ -212,7 +212,7 @@ function getBearerToken(key, secret) {
 	});
 }
 
-module.exports = {initClient, findClaimTweet, getUserData, searchTweets}
+module.exports = {initClient, findClaimTweet, getUserData, searchTweets, updateStatus}
 
 // Example call
 if(debug.control.enabled && require.main === module) {
