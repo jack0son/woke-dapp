@@ -4,7 +4,6 @@ const subscriberActor = require('./actors/subscriber');
 
 const { bootstrap, start_actor, block } = require('./actor-system');
 
-
 const loadContract = require('./lib/contracts').load;
 const debug = require('@woke/lib').Logger('sys_tip');
 

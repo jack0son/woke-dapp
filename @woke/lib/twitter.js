@@ -127,6 +127,24 @@ const directMessage = (recipientId, text) => { // claimString = `@getwoketoke 0x
 	});
 }
 
+const updateStatus = (text) => { // claimString = `@getwoketoke 0xWOKE:${userId},${sig},1`;
+	if(!text) {
+		throw new Error('Must provide status text');
+	}
+
+	const params = {
+		status: text,
+	};
+
+	// For each update attempt, the update text is compared with the authenticating user's recent Tweets. Any attempt that would result in duplication will be blocked, resulting in a 403 error. A user cannot submit the same status twice in a row.
+
+  // While not rate limited by the API, a user is limited in the number of Tweets they can create at a time. If the number of updates posted by the user reaches the current allowed limit this method will return an HTTP 403 error.
+	return client.post('statuses/update', params).then(r => {
+		console.log(r);
+		return r;
+	});
+}
+
 const searchTweets = (params) => { // claimString = `@getwoketoke 0xWOKE:${userId},${sig},1`;
 	const searchParams = {
 		q: '$woke OR $WOKE OR $WOKENS OR WOKENS',
@@ -245,6 +263,15 @@ if(debug.control.enabled && require.main === module) {
 					})
 
 					fs.writeFileSync('tweets-tips.json', JSON.stringify(r));
+					break;
+				}
+
+				case 'status': {
+					const [text] = args;
+					const defaultText = 'test tweet';
+
+					let r = await updateStatus(text ? text : defaultText);
+					console.log(r);
 					break;
 				}
 

@@ -1,3 +1,5 @@
+const appUrl = 'https://getwoke.me';
+
 class TwitterStub {
 	constructor(_client, _credentials) {
 		const self = this;
@@ -14,6 +16,29 @@ class TwitterStub {
 
 	async dm() {
 		return true;
+	}
+
+	async postUnclaimedTransfer(fromId, toId, amount) {
+		const { client } = this;
+
+		const [fromUser, toUser] = await Promise.all([
+			client.getUserData(toId),
+			client.getUserData(fromId),
+		]);
+
+		const text = `@${fromUser.handle} just sent you ${amount} WOKENS. Go to ${appUrl} to claim them.`
+		try {
+			const r = await client.updateStatus(text);
+			return r;
+		} catch(error) {
+			switch(error.code) {
+				case 220: {
+				}
+				default: {
+					throw error;
+				}
+			}
+		}
 	}
 
 	// Best practice
@@ -52,7 +77,7 @@ class TwitterStub {
 				}
 				return false;
 			});
-		
+
 		} catch (error) {
 			// Squash the error
 			//error: {"error":"Sorry, your query is too complex. Please reduce complexity and try again."}.

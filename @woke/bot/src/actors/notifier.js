@@ -5,6 +5,22 @@ const states = [
 	'UNSETTLED',// waiting for notifiaction to send
 ];
 
+const spawn_tweet_promise = (log, _ctx) => {
+	return spawnStateless(ctx.self, 
+		(msg, ctx) => {
+			const { success, tweet} = msg;
+			if(type == 'tweet_unclaimed_transfer') {
+				if(success) {
+					dispatch(ctx.self, { type: 'log_update', log: {...log, stage: 'SETTLED', statusId: tweet.id_str }}, ctx.self);
+				} else {
+					dispatch(ctx.self, { type: 'log_update', log: {...log, stage: 'FAILED' }}, ctx.self);
+				}
+			}
+		},
+		'tweet_promise',
+	);
+}
+
 const blockchainNotifer = {
 	properties: {
 		initialState: {
@@ -41,10 +57,11 @@ const blockchainNotifer = {
 
 			switch(entry.stage) {
 				case 'UNSETTLED': {
+					const a_promise = spawn_tweet_promise(log, ctx);
 					dispatch(a_tweeter, { type: 'tweet',
 						toId: log.event.toId,
 						text: `Hey @toId, you have been sent ${log.event.amount} WOKENS by @fromId`,
-					}, ctx.self);
+					}, a_promise);
 					break;
 				}
 
