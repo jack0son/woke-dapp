@@ -23,20 +23,32 @@ const properties = {
 // Behaves like an effect, with state.status as a dependency
 // @param _state: original state
 function dispatchSinks(msg, ctx, state) {
-	const { sinks } = state;
 	const prevState = state._state;
+	const prevStatus = resolveStatus({...prevState.tx, error: prevState.error})
 
-	const { tx, txStatus, txState } = msg;
+	const { tx, error, sinks } = state;
+	//console.log(sinks);
 
-	const status = resolveStatus(state.tx);
-	if(status !== resolveStatus(prevState.tx)) {
-		sinks.forEach(sink => 
-			dispatch(sink, {type: 'tx', tx, txStatus: status, txState}, ctx.self)
-		);
+	const status = resolveStatus({...tx, error});
+	//console.log(prevStatus);
+	//console.log(status);
+	if(status != prevStatus ) {
+		//sinks.forEach(sink => console.log(sink));
+		sinks.forEach(sink => {
+			dispatch(sink, {type: 'tx', tx: state.tx, error, txStatus: status}, ctx.self)
+		});
+		ctx.debug.info(msg, `${prevStatus} => ${status}`);
+
+		if(status == 'success') {
+			dispatch(ctx.self, {type: 'tx', txStatus: status }, ctx.self);
+		}
 	}
+
+	return state;
 }
 
 function resolveStatus(txState) {
+	//console.log(txState);
 	if(txState.error) {
 		return 'error';
 	} else if(txState.receipt){
@@ -95,30 +107,30 @@ const actions = {
 		}
 	},
 
-	'reduce': (msg, ctx, state) => {
-		return withEffect(msg, ctx, state)((msg, ctx, state) => {
+	'reduce': (msg, ctx, state) => withEffect(msg, ctx, state)(
+		(msg, ctx, state) => {
 			//ctx.onlySelf()
-			const { error, tx, sinks, txState, sent } = msg;
+			const { error, tx } = msg;
 
 			if(error) {
-				if(error.data && error.data.tx) {
+				if(error instanceof OnChainError) {
+
+				} else if(error.data && error.data.tx) {
 					console.log(error.data.tx);
+					throw error;
 				}
-				throw error;
 			}
 
 			const nextState = {
 				...state,
-				sent: sent ? sent : state.sent,
-				error: {...error, error},
+				error,
 				tx: {
 					...state.tx,
-					...msg.tx,
+					...tx,
 				}
 			}
 			return nextState;
-		})(dispatchSinks)
-	},
+		})(dispatchSinks),
 
 	// Sender responses addressed to self
 	'tx': async (msg, ctx, state) => {
@@ -126,7 +138,7 @@ const actions = {
 
 		if(txStatus == 'success') {
 			ctx.debug.d(`Complete. Stopping...`);
-			return ctx.stop();
+			return ctx.stop;
 		}
 	},
 
@@ -146,6 +158,7 @@ const actions = {
 		const result = await contract.methods[method](...tx.args).call(opts)
 
 		dispatch(ctx.sender, { type: 'tx', tx, result }, ctx.parent);
+		return ctx.stop;
 	},
 
 	'send': async (msg, ctx, state) => {
@@ -194,7 +207,7 @@ const actions = {
 		contract.methods[tx.method](...tx.args).send(opts)
 			.on('transactionHash', hash => {
 				reduce({
-					tx: {...tx, hash}
+					tx: { hash }
 				}, ctx);
 			})
 			.on('confirmation', (confNumber, receipt) => {
@@ -203,7 +216,7 @@ const actions = {
 			})
 			.on('receipt', receipt => {
 				reduce({
-					receipt: receipt,
+					tx: { receipt },
 					error: null,
 				}, ctx);
 			})
@@ -218,8 +231,10 @@ const actions = {
 				}
 			})
 			.then( receipt => {
+				//reduce({ tx: { receipt }, tx }, ctx);
 				//console.log('GOT RECEIPT -- REEEEEEEE');
-				dispatch(ctx.sender, {type: 'tx', txStatus: 'success', tx, receipt }, ctx.self);
+				//dispatch(ctx.sender, {type: 'tx', txStatus: 'success', tx, receipt }, ctx.self);
+				//dispatch(ctx.self, {type: 'tx', txStatus: 'success', tx, receipt }, ctx.self);
 			})
 			.catch( (error, receipt) => {
 				// Caught by promi-event error listener
@@ -261,39 +276,3 @@ class RevertError extends DomainError {
 		this.data = { tx }
 	}
 }
-
-//
-//
-// Copying react reconciliation
-//state.effects.forEach(effect => {
-//	if(!deepEqual(nextState[effect.key], kkk
-//});
-
-/*
-function statusHasSinks(status, sinks) {
-	return sinks && Array.isArray(sinks[status]) ? sinks[status] : []
-}
-
-function affectStatusSinks(msg, ctx, state) {
-	if(status !== prevStatus) {
-		statusHasSinks(status, sinks).forEach(sink => 
-			dispatch(sink, {tx, txStatus, txState}, ctx.self)
-		);
-	}
-}
-
-// Add the sender to the list of sinks for a given tx status
-// -- simplify this, just sink to any status update
-	'sink_a_status': (msg, ctx, state) => {
-		const { sinks } = state;
-		const { status } = msg;
-
-		return {
-			...state,
-			sinks: {
-				...sinks,
-				[status]: [...sinks.status, ctx.sender]
-			}
-		}
-	},
-	*/

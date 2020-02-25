@@ -38,9 +38,10 @@ const TweeterActor = (twitterStub) => ({
 
 		'tweet_tip_confirmed': async (msg, ctx, state) => {
 			const { twitter } = state;
-			const { fromId, toId, amount } = msg;
+			const { tip } = msg;
 
-			const tweet = await twitter.postTweet(tip_success_tweet_text(tip), {in_reply_to_status_id: tip.id})
+			ctx.debug.d(msg, `tweeting ${tip.id} success...`);
+			const tweet = await twitter.postTweet(tip_success_tweet_text(tip), tip.id)
 
 			dispatch(ctx.sender, { type: msg.type, tweet }, ctx.self);
 			// Tweet an invite
@@ -48,9 +49,10 @@ const TweeterActor = (twitterStub) => ({
 
 		'tweet_tip_failed': async (msg, ctx, state) => {
 			const { twitter } = state;
-			const { fromId, toId, amount } = msg;
+			const { tip } = msg;
 
-			const tweet = await twitter.postTweet(tip_failure_message(tip), {in_reply_to_status_id: tip.id})
+			ctx.debug.d(msg, `tweeting ${tip.id} failure...`);
+			const tweet = await twitter.postTweet(tip_failure_message(tip), tip.id)
 
 			dispatch(ctx.sender, { type: msg.type, tweet }, ctx.self);
 			// Tweet an invite

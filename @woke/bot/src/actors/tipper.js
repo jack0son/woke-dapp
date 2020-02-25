@@ -113,7 +113,7 @@ const tipper = {
 					status: statusEnum.UNSETTLED,
 					error: null,
 				}
-				const a_tip = settle_tip(msg, ctx, state);
+				settle_tip(msg, ctx, state);
 
 			} else {
 				ctx.debug.d(msg, `Got existing tip ${tip.id}`);
@@ -123,7 +123,7 @@ const tipper = {
 						console.log(`Settling existing tip ${tip_str(tip)}...`);
 						// @TODO
 						// Duplicate actor will crash tipper
-						const a_tip = settle_tip(msg, ctx, state);
+						settle_tip(msg, ctx, state);
 					}
 
 					default: {

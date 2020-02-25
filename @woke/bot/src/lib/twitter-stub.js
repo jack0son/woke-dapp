@@ -41,6 +41,24 @@ class TwitterStub {
 		}
 	}
 
+	async postTweetReply(text, replyStatusId) {
+		const { client } = this;
+
+
+		try {
+			const r = await client.updateStatus(text, {in_reply_to_status_id: replyStatusId});
+			return r;
+		} catch(error) {
+			switch(error.code) {
+				case 220: {
+				}
+				default: {
+					throw error;
+				}
+			}
+		}
+	}
+
 	// Best practice
 	// -- Limit your searches to 10 keywords and operators.
 	// -- 

@@ -8,7 +8,7 @@ const properties = {
 
 	receivers: (msg, state, ctx) => ({
 		reduce: (_msg) => {
-			msg.type = 'reduce';
+			_msg.type = 'reduce';
 			dispatch(ctx.self, {...msg, ..._msg}, ctx.self);
 		}
 	}),
@@ -63,7 +63,8 @@ const actions = {
 
 	// --- Sink Actions
 	'tx': (msg, ctx, state) => {
-		const { tx } = msg;
+		const { tx, txStatus} = msg;
+
 		switch(tx.method) {
 			case 'userClaimed': {
 				ctx.receivers.reduce({ event: 'check_claim-recv'});
@@ -120,7 +121,7 @@ const eventsTable = {
 					dispatch(a_wokenContract, {type: 'send', 
 						method: 'tip',
 						args: [tip.fromId, tip.toId, tip.amount],
-						sinks: ctx.self
+						sinks: [ctx.self],
 					}, ctx.self)
 
 					tip.status = 'UNSETTLED';
@@ -144,7 +145,7 @@ const eventsTable = {
 		'SENDING-TIP': {
 			effect: (msg, ctx, state) => {
 				const { tip } = state;
-				const { txStatus, tx, txState } = msg;
+				const { txStatus, tx, error } = msg;
 
 				ctx.debug.info(msg, `tip:${tip.id} Got tx status ${txStatus}`);
 				switch(txStatus) {
@@ -189,18 +190,20 @@ const eventsTable = {
 
 					case 'error': {
 						// For the moment, if web3 fails, the tip just fails
-						const errMsg = `tip:${tip.id} failed with error: ${txState.error}`;
-						ctx.debug.error(errMsg);
+						const errMsg = `tip:${tip.id} failed with error: ${error}`;
+						ctx.debug.error(msg, errMsg);
 						tip.error = errMsg;
 						tip.status = 'FAILED'
 						dispatch(ctx.parent, {type: 'tip_update', tip});
-						ctx.reduce({ event: 'send-tx-failed', error: txState.error});
+						ctx.reduce({ event: 'send-tx-failed', error: error});
 
 						return { ...state, nextStage: 'FAILED', }
 						break;
 					}
 
 					default: {
+						console.log(msg);
+						return;
 						// Other tx status
 						//ctx.debug.info(msg, `... do nothing`);
 					}

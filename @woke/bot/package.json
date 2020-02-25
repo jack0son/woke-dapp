@@ -13,6 +13,7 @@
     "dev": "NODE_ENV=development DEBUG=actor*,-*:twitter_monitor*,-*:_tip-*:info node src/index.js",
     "dev:recovery": "PERSIST=true DEBUG_RECOVERY=true NODE_ENV=development DEBUG=* node src/index.js",
     "mock:tipper": "DEBUG_RECOVERY=true NODE_ENV=development DEBUG=actor*,-*:twitter_monitor*,-*:_tip-*:info node src/use-mock-twitter.js",
+    "mock:tipper:verbose": "DEBUG_RECOVERY=true NODE_ENV=development DEBUG=actor*,-*:twitter_monitor* node src/use-mock-twitter.js",
     "db": "docker-compose -f ../../bot.docker-compose.local.yml up -d --build bot-db",
     "down": "docker-compose -f ../../bot.docker-compose.local.yml down",
     "reset": "docker-compose -f ../../bot.docker-compose.local.yml down -v"
