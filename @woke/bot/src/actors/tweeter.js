@@ -41,7 +41,7 @@ const TweeterActor = (twitterStub) => ({
 			const { tip } = msg;
 
 			ctx.debug.d(msg, `tweeting ${tip.id} success...`);
-			const tweet = await twitter.postTweet(tip_success_tweet_text(tip), tip.id)
+			const tweet = await twitter.postTweetReply(tip_success_tweet_text(tip), tip.id);
 
 			dispatch(ctx.sender, { type: msg.type, tweet }, ctx.self);
 			// Tweet an invite
@@ -52,7 +52,7 @@ const TweeterActor = (twitterStub) => ({
 			const { tip } = msg;
 
 			ctx.debug.d(msg, `tweeting ${tip.id} failure...`);
-			const tweet = await twitter.postTweet(tip_failure_message(tip), tip.id)
+			const tweet = await twitter.postTweetReply(tip_failure_message(tip), tip.id);
 
 			dispatch(ctx.sender, { type: msg.type, tweet }, ctx.self);
 			// Tweet an invite

@@ -202,8 +202,6 @@ const eventsTable = {
 					}
 
 					default: {
-						console.log(msg);
-						return;
 						// Other tx status
 						//ctx.debug.info(msg, `... do nothing`);
 					}
