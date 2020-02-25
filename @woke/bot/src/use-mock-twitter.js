@@ -57,6 +57,7 @@ const bootstrap = async () => {
 		twitterStub: twitterStub,
 		persist: false,
 		pollingInterval: 1000*1000,
+		notify: true,
 	});
 	return tipSystem.start();
 }

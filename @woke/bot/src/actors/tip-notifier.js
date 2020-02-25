@@ -5,16 +5,6 @@ const properties = {
 function spawn_post() {
 }
 
-const tx_etherscan_url = tip => `https://goerli.etherscan.io/tx/${tip.tx_hash}`;
-const tip_tweet_url = tip =>  `https://twitter.com/${tip.fromId}/status/${tip.id}`;
-
-function tip_success_message(tip) {
-	return `Your Wokenation of ${tip.amount} was confirmed on chain: ${tx_etherscan_url(tip)}.\n\nTransaction auth tweet ${tip_tweet_url(tip)}`;
-}
-
-function tip_failure_message(tip) {
-	return `Your Wokenation of ${tip.amount} failed. Are you woke yet? Join with a tweet at https://getwoke.me`;
-}
 
 
 const notifier = {

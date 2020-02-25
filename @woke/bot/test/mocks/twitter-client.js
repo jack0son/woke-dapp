@@ -60,7 +60,7 @@ const createMockClient = (_sampleSize, _data) => {
 			return user ? user : dummyUsers['0'];
 		}
 
-		async updateStatus(text) {
+		async updateStatus(text, params) {
 			console.log(`TWITTER_MOCK:updateStatus: ${text}`);
 			return dummyStatus;
 		}

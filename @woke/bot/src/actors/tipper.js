@@ -60,6 +60,7 @@ const tipper = {
 		initialState: {
 			tipRepo: {},
 			a_wokenContract: null,
+			a_tweeter: null,
 		},
 
 		// HOF that makes various utility functions available to the
@@ -82,7 +83,7 @@ const tipper = {
 					}
 
 					default: {
-						return reset(msg, error, ctx);
+						return reset;
 					}
 				}
 			}
@@ -112,7 +113,7 @@ const tipper = {
 					status: statusEnum.UNSETTLED,
 					error: null,
 				}
-				entry.a_tip = settle_tip(msg, ctx, state);
+				const a_tip = settle_tip(msg, ctx, state);
 
 			} else {
 				ctx.debug.d(msg, `Got existing tip ${tip.id}`);
@@ -122,7 +123,7 @@ const tipper = {
 						console.log(`Settling existing tip ${tip_str(tip)}...`);
 						// @TODO
 						// Duplicate actor will crash tipper
-						entry.a_tip = settle_tip(msg, ctx, state);
+						const a_tip = settle_tip(msg, ctx, state);
 					}
 
 					default: {
@@ -154,8 +155,8 @@ const tipper = {
 			// FSM effects
 			switch(tip.status) {
 				case 'SETTLED': {
-						log(`\nTip settled: @${tip.fromHandle} tipped @${tip.toHandle} ${tip.amount} WOKENS\n`)
-					//dispatch(ctx.self, { type: 'notify', tip }, ctx.self);
+					log(`\nTip settled: @${tip.fromHandle} tipped @${tip.toHandle} ${tip.amount} WOKENS\n`)
+					dispatch(ctx.self, { type: 'notify', tip }, ctx.self);
 					break;
 				}
 
@@ -164,6 +165,8 @@ const tipper = {
 						//ctx.debug.error(msg, `Tip ${tip.id} from ${tip.fromHandle} error: ${tip.error}`)
 						log(`\nTip failed: ${tip.reason}`);
 					}
+
+					dispatch(ctx.self, { type: 'notify', tip }, ctx.self);
 					break;
 				}
 
@@ -177,6 +180,19 @@ const tipper = {
 			}
 
 			return { ...state, tipRepo }
+		},
+
+		'notify': (msg, ctx, state) => {
+			const { a_tweeter } = state;
+			const { tip } = msg;
+
+			if(a_tweeter) {
+				if(tip.status == 'SETTLED') {
+					dispatch(a_tweeter, { type: 'tweet_tip_confirmed', tip })//, ctx.self);
+				} else if (tip.status == 'FAILED') {
+					dispatch(a_tweeter, { type: 'tweet_tip_failed', tip })//, ctx.self);
+				}
+			}
 		},
 
 		'resume': (msg, ctx, state) => {

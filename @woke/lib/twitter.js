@@ -127,12 +127,13 @@ const directMessage = (recipientId, text) => { // claimString = `@getwoketoke 0x
 	});
 }
 
-const updateStatus = (text) => { // claimString = `@getwoketoke 0xWOKE:${userId},${sig},1`;
+const updateStatus = (text, _params) => { // claimString = `@getwoketoke 0xWOKE:${userId},${sig},1`;
 	if(!text) {
 		throw new Error('Must provide status text');
 	}
 
 	const params = {
+		..._params,
 		status: text,
 	};
 

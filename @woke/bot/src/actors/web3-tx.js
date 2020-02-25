@@ -53,9 +53,9 @@ const onCrash = (msg, ctx, state) => {
 		case 'send': {
 			// if the error was a block timeout we could handle and retry
 			if(error instanceof OnChainError) {
+				//return handleOnChainError(error);
 				throw error;
 			}
-			handleOnChainError();
 		}
 
 		default: {

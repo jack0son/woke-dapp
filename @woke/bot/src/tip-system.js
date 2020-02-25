@@ -1,7 +1,7 @@
 const { spawnStateless, dispatch, query } = require('nact');
 const { bootstrap, start_actor } = require('./actor-system');
 const PersistenceEngine = require('./persistence-engine');
-const { tipper, TwitterMonitor, polling, contract, Web3 } = require('./actors');
+const { tipper, TwitterMonitor, polling, contract, Web3, Tweeter } = require('./actors');
 
 // Lib
 const TwitterStub = require('./lib/twitter-stub');
@@ -16,13 +16,14 @@ function TwitterClient() {
 // Will be initialised by bot system and passed a common wokenContract actor
 class TipSystem {
 	constructor(a_wokenContract, opts) {
-		const { twitterStub, persist, pollingInterval} = opts;
+		const { twitterStub, persist, pollingInterval, notify} = opts;
 		this.persist = persist ? true : false;
 		this.config = {
 			TWITTER_POLLING_INTERVAL: pollingInterval || 100*1000,
 		};
 		this.twitterStub = opts.twitterStub || new TwitterStub(TwitterClient())
 
+		// Persistence
 		if(this.persist) {
 			debug.d(`Using persistence...`);
 			this.persistenceEngine = PersistenceEngine()
@@ -35,12 +36,17 @@ class TipSystem {
 
 		// Actors
 		this.a_wokenContract = a_wokenContract || create_woken_contract_actor(director);
+		if(notify) {
+			this.a_tweeter = director.start_actor('tweeter', Tweeter(this.twitterStub));
+		}
 		this.a_tipper = this.persist ? 
 			director.start_persistent('tipper', tipper, {
 				a_wokenContract: this.a_wokenContract,
+				a_tweeter: this.a_tweeter,
 			}) :
 			director.start_actor('tipper', tipper, {
 				a_wokenContract: this.a_wokenContract,
+				a_tweeter: this.a_tweeter,
 			});
 
 		this.a_tMon = director.start_actor('twitter_monitor', TwitterMonitor(this.twitterStub));
