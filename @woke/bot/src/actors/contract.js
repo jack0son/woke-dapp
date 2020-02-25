@@ -4,6 +4,12 @@ const { web3Tools } = require('@woke/lib');
 
 const txActor = require('./web3-tx');
 
+function initContract(web3Instance, interface) {
+	return new web3Instance.web3.eth.Contract(
+		interface.abi,
+		interface.networks[web3Instance.network.id].address
+	);
+}
 
 function SpawnTx() {
 	let idx = 0;
@@ -11,10 +17,10 @@ function SpawnTx() {
 	}
 }
 
-let idx = 0;
+let tx_idx = 0;
 function spawn_tx(ctx, state) {
 	return start_actor(ctx.self)(
-		`_tx-${idx++}`,
+		`_tx-${tx_idx++}`,
 		txActor,
 		{
 			sinks: [ctx.sender], // forward the sender to this tx
@@ -24,11 +30,27 @@ function spawn_tx(ctx, state) {
 	);
 }
 
+let sub_idx = 0;
+function spawn_sub(msg, ctx, state) {
+	return start_actor(ctx.self)(
+		`_sub-${sub_idx++}-${msg.contractName}-${msg.eventName}`,
+		subscription,
+		{
+			contractName: msg.contractName,
+			eventName: msg.eventName,
+			contractInterface: msg.contractInterface,
+			subscribers: [ctx.sender], // forward the sender to this tx
+			a_web3: state.a_web3,
+		}
+	);
+}
+
 const contractActor = {
 	properties: {
 		initialState: {
 			a_web3: undefined,
 			contractInterface: undefined,
+			logSubscriptions: undefined,
 			//contract,
 			//web3Instance,
 		},
@@ -79,6 +101,21 @@ const contractActor = {
 			// @TODO Errors to handle
 			// -- Error: Returned values aren't valid, did it run Out of Gas? You might also see this error if you are not using the correct ABI for the contract you are retrieving data from, requesting data from a block number that does not exist, or querying a node which is not fully synced.
 			// -- TypeError: contract.methods[method] is not a function
+		},
+
+		'subscribe_log': async (msg, ctx, state) => {
+			const { eventName } = msg;
+			const { logSubscriptions } = state;
+			const a_sub = spawn_sub({contractName, eventName, contractInterface}, ctx, state);
+			dispatch(ctx.sender, { type: 'new_sub', a_sub}, ctx.self);
+
+			logSubscriptions.push(a_sub);
+			return  { ...state, logSubscriptions };
+		},
+
+		'unsubscribe_log': async (msg, ctx, state) => {
+			const { logSubscriptions } = state;
+			logSubscriptions.forEach(a_sub => dispatch(a_sub, { type: 'stop' }, ctx.self));
 		},
 	}
 };

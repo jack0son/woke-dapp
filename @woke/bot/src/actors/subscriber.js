@@ -1,47 +1,12 @@
 const { dispatch, query } = require('nact');
-const { start_actor } = require('../actor-system');
-
-let idx = 0;
-function spawn_sub(ctx, state) {
-	return start_actor(ctx.self)(
-		`_sub-${idx++}`,
-		subscription,
-		{
-			subscribers: [ctx.sender], // forward the sender to this tx
-			a_web3: state.a_web3,
-		}
-	);
-}
-
-const subscriber = {
-	properties: {
-		initialState: {
-		a_web3: undefined,
-		subscriptions: [],
-		}
-	},
-
-	actions: {
-		'subscribe': async (msg, ctx, state) => {
-
-			const a_sub = spawn_sub();
-			dispatch(a_sub, { type: 'start'}, ctx.sender);
-
-			subcriptions.push(subscription);
-		},
-
-		'stop': async (msg, ctx, state) => {
-			const { subscriptions } = state;
-			subscriptions.forEach(sub => dispatch(ctx.self, { type: 'stop' }, ctx.self));
-		}
-	}
-}
+const { start_actor, block } = require('../actor-system');
 
 const subscription = {
 	properties: {
 		initialState: {
 			subscription: null,
 			subscribers: [],
+			contractInterface: null,
 		},
 
 		onCrash: (msg, ctx, state) => {
@@ -51,12 +16,12 @@ const subscription = {
 				}
 
 				case 'start': {
-					return ctx.stop();
+					return ctx.stop;
 					break;
 				}
 
 				default: {
-					return ctx.stop();
+					return ctx.stop;
 					break;
 				}
 			}
@@ -64,13 +29,19 @@ const subscription = {
 	},
 
 	actions: {
-		'start': (msg, ctx, state) => {
-			const {contractInterface, eventName, subscribers, resubscribe} = msg;
+		'start': async (msg, ctx, state) => {
+			const {contractInterface, eventName, subscribers} = state;
 			const { web3Instance } = await block(state.a_web3, { type: 'get' });
 
-			const callback = (error, result) => {
+			console.log(contractInterface.options);
+
+			if(state.subscription) {
+				return;
+			}
+
+			const callback = (error, event) => {
 				// Seperate subcription init from handling into distinict messages
-				dipsatch(ctx.self,  { type: 'handle', error, result }, ctx.self);
+				dipsatch(ctx.self,  { type: 'handle', error, event }, ctx.self);
 			}
 
 			const subscription = makeLogEventSubscription(web3Instance.web3)(
@@ -82,11 +53,7 @@ const subscription = {
 				}
 			);
 
-			let subscriberActors = subscribers;
-			if(!subscriberActors || !subscriberActors.length) {
-				subscriberActors = [ctx.sender];
-			}
-
+			subscription.start();
 			/*
 			if(resubscribe) {
 				setInterval(() => {
@@ -125,16 +92,16 @@ const subscription = {
 }
 
 
-const makeLogEventSubscription = web3 => (contractInterface, eventName, handleFunc, opts) => {
+const makeLogEventSubscription = web3 => (contract, eventName, handleFunc, opts) => {
 	let subscription = null;
 	const start = () => {
 		const eventJsonInterface = web3.utils._.find(
-			contractInterface._jsonInterface,
+			contract._jsonInterface,
 			o => o.name === eventName && o.type === 'event',
 		);
 		const newSub = web3.eth.subscribe('logs', {
 			...opts,
-			address: contractInterface.options.address,
+			address: contract.options.address,
 			topics: [eventJsonInterface.signature],
 		}, (error, result) => {
 			let event = result ? web3.eth.abi.decodeLog(
@@ -186,4 +153,4 @@ class SubscriptionError extends DomainError {
 	}
 }
 
-module.exports = subscriber;
+module.exports = subscription;
