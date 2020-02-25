@@ -1,72 +1,85 @@
 // Subscribe to blockchain logs and notify users on twitter
+// Manages notifications in a transactional fashion
+const { start_actor, block } = require('../actor-system');
+const { spawnStateless, dispatch } = require('nact');
 
 const states = [
 	'SETTLED',	// notification sent
 	'UNSETTLED',// waiting for notifiaction to send
+	'FAILED',		// could not post notification
 ];
 
+// Temporary actor to wait for twitter requests to complete
+let idx = 0;
 const spawn_tweet_promise = (log, _ctx) => {
-	return spawnStateless(ctx.self, 
+	return spawnStateless(_ctx.self, 
 		(msg, ctx) => {
-			const { success, tweet} = msg;
+			const {type, tweet} = msg;
 			if(type == 'tweet_unclaimed_transfer') {
-				if(success) {
-					dispatch(ctx.self, { type: 'log_update', log: {...log, stage: 'SETTLED', statusId: tweet.id_str }}, ctx.self);
+				if(tweet) {
+					dispatch(_ctx.self, { type: 'update_log', log: {...log, status: 'SETTLED', statusId: tweet.id_str }}, ctx.self);
 				} else {
-					dispatch(ctx.self, { type: 'log_update', log: {...log, stage: 'FAILED' }}, ctx.self);
+					dispatch(_ctx.self, { type: 'update_log', log: {...log, status: 'FAILED' }}, ctx.self);
 				}
 			}
 		},
-		'tweet_promise',
+		`tweet_promise-${idx++}`,
 	);
 }
 
-const blockchainNotifer = {
+const notifier = {
 	properties: {
+		persistenceKey: 'notifier', // only ever 1, static key OK
+
 		initialState: {
 			a_wokenContract: null,
 			a_tweeter: null,
 			logRepo: {},
 		},
-
-		receivers: (msg, state, ctx) => ({
-			reduce: (_msg) => {
-				msg.type = 'reduce';
-				dispatch(ctx.self, {...msg, ..._msg}, ctx.self);
-			}
-		}),
 	},
 
 	actions: {
 		'init': async (msg, ctx, state) => {
 			const { a_wokenContract } = state;
 
-			// Subscribed to unclaimed transfers
-			const a_unclaimed_tx_sub = await block(a_wokenContract, { type: 'subscribe_log', eventName, filter });
+			// Subscribe to unclaimed transfers
+
+			let response = await block(a_wokenContract, {
+				type: 'subscribe_log',
+				eventName: 'Tx',
+				filter: e => e.claimed == false,
+			});
+			const a_unclaimed_tx_sub = response.a_sub;
+
 			dispatch(a_unclaimed_tx_sub,  {type: 'start'}, ctx.self);
 		},
 
+		// -- Source actions
 		'unclaimed_tx': (msg, ctx, state) => {
-			const { a_tweeter } = state;
+			const { logRepo, a_tweeter } = state;
 			const { log } = msg;
-			const entry = logRepo[log.transactionHash];
 
+			//console.log(msg);
+
+			let entry = logRepo[log.transactionHash];
 			if(!entry) {
-				entry = { stage: 'UNSETTLED' };
+				entry = { status: 'UNSETTLED' };
 			}
 
-			switch(entry.stage) {
+			switch(entry.status) {
 				case 'UNSETTLED': {
+					ctx.debug.info(msg, `Settling ${log.transactionHash}...`);
 					const a_promise = spawn_tweet_promise(log, ctx);
-					dispatch(a_tweeter, { type: 'tweet',
+					dispatch(a_tweeter, { type: 'tweet_unclaimed_transfer',
 						toId: log.event.toId,
-						text: `Hey @toId, you have been sent ${log.event.amount} WOKENS by @fromId`,
+						fromId: log.event.fromId,
+						amount: log.event.amount,
 					}, a_promise);
 					break;
 				}
 
 				case 'SETTLED': {
-					ctx.debug.info(`Already notified unclaimed transfer ${log.transactionHash}.`);
+					ctx.debug.info(msg, `Already notified unclaimed transfer ${log.transactionHash}.`);
 				}
 
 				default: {
@@ -77,8 +90,9 @@ const blockchainNotifer = {
 			return { ...state, logRepo: { ...logRepo, [log.transactionHash]: entry } };
 		},
 
-		'update_log': (msg, ctx, state) => {
-			const { log, stage} = msg;
+		'update_log': async (msg, ctx, state) => {
+			const { log, status} = msg;
+			const { logRepo } = state;
 			const entry = logRepo[log.transactionHash];
 
 			const console_log = (...args) => { if(!ctx.recovering) console.log(...args) }
@@ -87,11 +101,13 @@ const blockchainNotifer = {
 				await ctx.persist(msg);
 			}
 
+			ctx.debug.d(msg, `Updated log:${log.transactionHash} to ⊰ ${log.status} ⊱`)
+
 			return {
 				...state,
 				logRepo: {
 					...logRepo,
-					[log.transactionHash]: { ...entry, stage },
+					[log.transactionHash]: { ...entry, status },
 				}
 			}
 		},
@@ -101,13 +117,20 @@ const blockchainNotifer = {
 			const { eventName } = msg;
 			switch(eventName) {
 				case 'Tx': {
-					dispatch(ctx.self, { type: 'unclaimed_tx', ...msg}, ctx.self);
+					dispatch(ctx.self, { ...msg, type: 'unclaimed_tx' }, ctx.self);
+					break;
 				}
 
 				default: {
-					ctx.debug.info(`No action defined for subscription to '${eventName}' events`);
+					ctx.debug.info(msg, `No action defined for subscription to '${eventName}' events`);
 				}
 			}
+		},
+
+		'a_tweeter': (msg, ctx, state) => {
+			const { eventName } = msg;
 		}
 	},
 }
+
+module.exports = notifier;

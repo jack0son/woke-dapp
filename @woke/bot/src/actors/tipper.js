@@ -55,6 +55,8 @@ const tipper = {
 	statusEnum,
 
 	properties: {
+		persistenceKey: 'tipper', // only ever 1, static key OK
+
 		initialState: {
 			tipRepo: {},
 			a_wokenContract: null,
@@ -69,8 +71,6 @@ const tipper = {
 		// i.e. it takes in msg, ctx, state and returns newState
 		middleware: (msg, ctx, state) => {
 		},
-
-		persistenceKey: 'tipper', // only ever 1, static key OK
 
 		onCrash: (() => {
 			reset = resetWithExponentialDelay(1)
@@ -101,6 +101,7 @@ const tipper = {
 				throw new Error(`Must have reference to wokenContract actor`);
 			}
 			let entry = tipRepo[tip.id];
+			console.log(tip);
 
 			if(!entry) {
 				// New tip

@@ -35,7 +35,7 @@ const spawn_sub = (msg, ctx, state) => {
 			eventName: msg.eventName,
 			filter: msg.filter,
 			contractInterface: msg.contractInterface,
-			subscribers: [ctx.sender], // forward the sender to this tx
+			subscribers: [], // forward the sender to this tx
 			a_web3: state.a_web3,
 		}
 	);

@@ -22,11 +22,11 @@ class TwitterStub {
 		const { client } = this;
 
 		const [fromUser, toUser] = await Promise.all([
-			client.getUserData(toId),
 			client.getUserData(fromId),
+			client.getUserData(toId),
 		]);
 
-		const text = `@${fromUser.handle} just sent you ${amount} WOKENS. Go to ${appUrl} to claim them.`
+		const text = `Hey @${toUser.handle}! @${fromUser.handle} just sent you ${amount} WOKENS.\nGo to ${appUrl} to claim them.`
 		try {
 			const r = await client.updateStatus(text);
 			return r;

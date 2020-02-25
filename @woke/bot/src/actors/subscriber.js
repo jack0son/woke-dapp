@@ -72,7 +72,8 @@ const subscriptionActor= {
 			if(log && filter ? filter(log.event) : true) {
 				//console.log(event);
 				subscribers.forEach(a_subscriber => {
-					console.log('Subscriber: ', a_subscriber.name ? a_subscriber.name : a_subscriber.system.name)
+					//console.log(log.transactionHash);
+					//console.log(`${subscribers.length}: Subscriber: `, a_subscriber.name ? a_subscriber.name : a_subscriber.system.name)
 					dispatch(a_subscriber, { type: 'a_sub',
 						contractName: contractInterface.contractName,
 						eventName,
