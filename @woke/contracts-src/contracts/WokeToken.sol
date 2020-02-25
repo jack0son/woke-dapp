@@ -2,6 +2,7 @@ pragma solidity ^0.5.0;
 
 import "openzeppelin-solidity/contracts/ownership/Ownable.sol";
 import "openzeppelin-solidity/contracts/token/ERC20/ERC20.sol";
+import "openzeppelin-solidity/contracts/math/SafeMath.sol";
 import "./libraries/Strings.sol";
 import "./libraries/ECDSA.sol";
 import "./libraries/Helpers.sol";
@@ -10,7 +11,7 @@ import "./mocks/TwitterOracleMock.sol";
 
 /*
  * @title WokeToken ERC20 Contract
- * @notice Deployed by dev team to set the parameters for token distribution and transfer.
+ * @notice Registers and stores user IDs and manages token transfers.
  */
 
 /*
@@ -19,16 +20,8 @@ import "./mocks/TwitterOracleMock.sol";
  * TODO:
  *  - more rigourous invariant modifiers
  *  - could get a multiplier based on the size of the unclaimed pool
- *  - Research how zeppelin implements escrow to avoid issues with unclaimed tokens
- *  - Abstract twitter client to generic social client for multiple social networks
- *  - fix context and mutator modifiers
- *  - confirm use of public vs external
- *  - separate unclaimed token pool from main token supply
- *  - fix redundancy in user validity modifiers
- *  - separate social network validation into 
- *  - fix data types for gen parameters and transfers
  *  - replace @notice tag with something clearer
- *  - Evaluate neccessity of sending userID with transaction with user is alread claimed
+ *  - Neccessity of sending userID with transaction with user is alread claimed?
  *  - look into replace 'Claimed' terminology with roles
  */
 
@@ -121,11 +114,9 @@ contract WokeToken is Ownable, ERC20 {
 	// @notice Receive claimer data from client and action claim
 	// @param _id user id
 	// @param _claimString tweet text which should contain a signed claim string
-	//function _fulfillClaim(string memory _id, string memory _claimString) public
 	function _fulfillClaim(string memory _id) public
-		//	onlyClient
-		userNotClaimed(_id)
-		requestLocked(requester[_id])
+	userNotClaimed(_id)
+	requestLocked(requester[_id])
 	{
 		TwitterOracleMock client = TwitterOracleMock(twitterClient);
 		string memory claimString = client.getTweetText(_id);
