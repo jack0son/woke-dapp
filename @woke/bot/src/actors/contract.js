@@ -1,16 +1,10 @@
 const { dispatch, query } = require('nact');
-const { start_actor } = require('../actor-system');
+const { start_actor, block } = require('../actor-system');
+const { initContract } = require('../lib/web3');
 const { web3Tools } = require('@woke/lib');
 
 const txActor = require('./web3-tx');
 const subActor = require('./subscriber');
-
-function initContract(web3Instance, interface) {
-	return new web3Instance.web3.eth.Contract(
-		interface.abi,
-		interface.networks[web3Instance.network.id].address
-	);
-}
 
 let tx_idx = 0;
 function spawn_tx(ctx, state) {
@@ -64,7 +58,7 @@ const contractActor = {
 
 	actions: {
 		'init': async (msg, ctx, state) => {
-			const { web3Instance } = await query(state.a_web3, { type: 'get' }, 2000);
+			const { web3Instance } = await block(state.a_web3, { type: 'get' }, 2000);
 			const contract = initContract(web3Instance, contractInterface);
 
 			dispatch(ctx.sender, { type: 'contract_object', contract }, ctx.self);
