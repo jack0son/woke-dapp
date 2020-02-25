@@ -41,9 +41,9 @@ const subscriptionActor= {
 				return;
 			}
 
-			const callback = (error, event) => {
+			const callback = (error, log) => {
 				// Seperate subcription init from handling into distinict messages
-				dispatch(ctx.self,  { type: 'handle', error, event }, ctx.self);
+				dispatch(ctx.self,  { type: 'handle', error, log }, ctx.self);
 			}
 
 			const subscription = makeLogEventSubscription(web3Instance.web3)(
@@ -63,20 +63,20 @@ const subscriptionActor= {
 
 		'handle': (msg, ctx, state) => {
 			const {eventName, contractInterface, subscribers, filter} = state;
-			const { error, event } = msg;
+			const { error, log} = msg;
 
 			if(error) {
 				throw new SubscriptionError(error, eventName);
 			}
 
-			if(event && filter ? filter(event) : true) {
+			if(log && filter ? filter(log.event) : true) {
 				//console.log(event);
 				subscribers.forEach(a_subscriber => {
 					console.log('Subscriber: ', a_subscriber.name ? a_subscriber.name : a_subscriber.system.name)
 					dispatch(a_subscriber, { type: 'a_sub',
 						contractName: contractInterface.contractName,
 						eventName,
-						event,
+						log,
 					}, ctx.self)
 				})
 			}
@@ -123,7 +123,7 @@ const makeLogEventSubscription = web3 => (contract, eventName, handleFunc, opts)
 					result.data,
 					result.topics.slice(1)
 			) : result;
-			handleFunc(error, event)
+			handleFunc(error, {...result, event})
 		})
 
 		console.log(`... Subscribed to ${eventName}.`);

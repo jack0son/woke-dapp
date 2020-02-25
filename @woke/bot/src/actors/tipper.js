@@ -112,7 +112,6 @@ const tipper = {
 					error: null,
 				}
 				entry.a_tip = settle_tip(msg, ctx, state);
-				return { ...state, tipRepo: { ...tipRepo, [tip.id]: entry } }
 
 			} else {
 				ctx.debug.d(msg, `Got existing tip ${tip.id}`);
@@ -129,8 +128,9 @@ const tipper = {
 						return;
 					}
 				}
-				return { ...state, tipRepo: { ...tipRepo, [tip.id]: entry } }
 			}
+
+			return { ...state, tipRepo: { ...tipRepo, [tip.id]: entry } }
 		},
 
 		// @TODO state not clearly encapsulated here

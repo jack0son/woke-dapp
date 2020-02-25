@@ -1,77 +1,96 @@
+// Subscribe to blockchain logs and notify users on twitter
 
-const properties = {
-}
+const states = [
+	'SETTLED',	// notification sent
+	'UNSETTLED',// waiting for notifiaction to send
+];
 
-function spawn_post() {
-}
-
-const tx_etherscan_url = tip => `https://goerli.etherscan.io/tx/${tip.tx_hash}`;
-const tip_tweet_url = tip =>  `https://twitter.com/${tip.fromId}/status/${tip.id}`;
-
-function tip_success_message(tip) {
-	return `Your Wokenation of ${tip.amount} was confirmed on chain: ${tx_etherscan_url(tip)}.\n\nTransaction auth tweet ${tip_tweet_url(tip)}`;
-}
-
-function tip_failure_message(tip) {
-	return `Your Wokenation of ${tip.amount} failed. Are you woke yet? Join with a tweet at https://getwoke.me`;
-}
-
-
-const notifier = {
+const blockchainNotifer = {
 	properties: {
 		initialState: {
-			twitterStub: null
-		}
+			a_wokenContract: null,
+			a_tweeter: null,
+			logRepo: {},
+		},
+
+		receivers: (msg, state, ctx) => ({
+			reduce: (_msg) => {
+				msg.type = 'reduce';
+				dispatch(ctx.self, {...msg, ..._msg}, ctx.self);
+			}
+		}),
 	},
 
 	actions: {
-		'tip': (msg, ctx, state) => {
-			const { tip } = msg;
+		'init': async (msg, ctx, state) => {
+			const { a_wokenContract } = state;
 
-			switch(tip.status) {
-				case 'settled': {
-					const a_post = spawn_post(twitterStub);
-					dispatch(a_post, { type: 'dm',
-						recipient: tip.fromId,
-						text: tip_success_message(tip),
+			// Subscribed to unclaimed transfers
+			const a_unclaimed_tx_sub = await block(a_wokenContract, { type: 'subscribe_log', eventName, filter });
+			dispatch(a_unclaimed_tx_sub,  {type: 'start'}, ctx.self);
+		},
+
+		'unclaimed_tx': (msg, ctx, state) => {
+			const { a_tweeter } = state;
+			const { log } = msg;
+			const entry = logRepo[log.transactionHash];
+
+			if(!entry) {
+				entry = { stage: 'UNSETTLED' };
+			}
+
+			switch(entry.stage) {
+				case 'UNSETTLED': {
+					dispatch(a_tweeter, { type: 'tweet',
+						toId: log.event.toId,
+						text: `Hey @toId, you have been sent ${log.event.amount} WOKENS by @fromId`,
 					}, ctx.self);
 					break;
 				}
 
-				case 'failed': {
-					const a_post = spawn_post(twitterStub);
-					dispatch(a_post, { type: 'dm',
-						recipient: tip.fromId,
-						text: tip_failure_message(tip),
-					}, ctx.self);
+				case 'SETTLED': {
+					ctx.debug.info(`Already notified unclaimed transfer ${log.transactionHash}.`);
+				}
+
+				default: {
 					break;
 				}
 			}
-			// Post notification to twitter
+
+			return { ...state, logRepo: { ...logRepo, [log.transactionHash]: entry } };
 		},
 
-		'new_user': (msg, ctx, state) => {
-		},
-	}
-}
+		'update_log': (msg, ctx, state) => {
+			const { log, stage} = msg;
+			const entry = logRepo[log.transactionHash];
 
-// Stateless
-const twitterPost = {
-	properties: {
-	},
+			const console_log = (...args) => { if(!ctx.recovering) console.log(...args) }
 
-	actions: {
-		'dm': async (msg, ctx, state) => {
-			const { recipient, text, type } = msg;
-			if(type == 'welcome') {
-				// Send welcome message
+			if(ctx.persist && !ctx.recovering) {
+				await ctx.persist(msg);
 			}
 
+			return {
+				...state,
+				logRepo: {
+					...logRepo,
+					[log.transactionHash]: { ...entry, stage },
+				}
+			}
 		},
 
-		'status': (msg, ctx, state) => {
-			const { text } = msg;
-		}
-	}
-}
+		// -- Sink actions
+		'a_sub': (msg, ctx, state) => {
+			const { eventName } = msg;
+			switch(eventName) {
+				case 'Tx': {
+					dispatch(ctx.self, { type: 'unclaimed_tx', ...msg}, ctx.self);
+				}
 
+				default: {
+					ctx.debug.info(`No action defined for subscription to '${eventName}' events`);
+				}
+			}
+		}
+	},
+}
