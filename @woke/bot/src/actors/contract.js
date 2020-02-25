@@ -3,18 +3,13 @@ const { start_actor } = require('../actor-system');
 const { web3Tools } = require('@woke/lib');
 
 const txActor = require('./web3-tx');
+const subActor = require('./subscriber');
 
 function initContract(web3Instance, interface) {
 	return new web3Instance.web3.eth.Contract(
 		interface.abi,
 		interface.networks[web3Instance.network.id].address
 	);
-}
-
-function SpawnTx() {
-	let idx = 0;
-	return function spawn_tx(){
-	}
 }
 
 let tx_idx = 0;
@@ -31,10 +26,10 @@ function spawn_tx(ctx, state) {
 }
 
 let sub_idx = 0;
-function spawn_sub(msg, ctx, state) {
+const spawn_sub = (msg, ctx, state) => {
 	return start_actor(ctx.self)(
 		`_sub-${sub_idx++}-${msg.contractName}-${msg.eventName}`,
-		subscription,
+		subActor,
 		{
 			contractName: msg.contractName,
 			eventName: msg.eventName,
@@ -50,7 +45,7 @@ const contractActor = {
 		initialState: {
 			a_web3: undefined,
 			contractInterface: undefined,
-			logSubscriptions: undefined,
+			logSubscriptions: [],
 			//contract,
 			//web3Instance,
 		},
@@ -105,8 +100,8 @@ const contractActor = {
 
 		'subscribe_log': async (msg, ctx, state) => {
 			const { eventName } = msg;
-			const { logSubscriptions } = state;
-			const a_sub = spawn_sub({contractName, eventName, contractInterface}, ctx, state);
+			const { logSubscriptions, contractInterface } = state;
+			const a_sub = spawn_sub({eventName, contractInterface}, ctx, state);
 			dispatch(ctx.sender, { type: 'new_sub', a_sub}, ctx.self);
 
 			logSubscriptions.push(a_sub);

@@ -1,14 +1,8 @@
 const { dispatch, query } = require('nact');
 const { block } = require('../actor-system');
 const { withEffect } = require('./effects');
+const { initContract } = require('../lib/web3');
 //const web3Errors = require('web3-core-helpers').errors;
-
-function initContract(web3Instance, interface) {
-	return new web3Instance.web3.eth.Contract(
-		interface.abi,
-		interface.networks[web3Instance.network.id].address
-	);
-}
 
 const properties = {
 	initialState: {

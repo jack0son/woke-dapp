@@ -1,4 +1,4 @@
-const artifacts = require('@woke/contracts')[process.env.NODE_ENV !== 'development' ? 'production' : 'development'];
+const artifacts = require('@woke/contracts')[process.env.NODE_ENV !== 'production' ? 'development' : 'production'];
 
 function load(name) {
 	const a = artifacts[name];

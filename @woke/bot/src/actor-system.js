@@ -115,23 +115,25 @@ const route_action = async (_actionsMap, _state, _msg, _context) => {
 
 // Spawn an actor instance using an actor definition
 // @returns actor instance
-const start_actor = _parent => (_name, _definition, _initialState) => {
-	if(!_parent && _parent.name) {
-		throw new Error(`Parent actor must be provided`);
-	}
-	const { actions, properties } = _definition;
-	const { initialState, ...otherProperties} = properties;
-	if(!actions) {
-		throw new Error(`No actions defined for {${_name}} actor`);
-	}
+function start_actor(_parent) {
+	return (_name, _definition, _initialState) => {
+		if(!_parent && _parent.name) {
+			throw new Error(`Parent actor must be provided`);
+		}
+		const { actions, properties } = _definition;
+		const { initialState, ...otherProperties} = properties;
+		if(!actions) {
+			throw new Error(`No actions defined for {${_name}} actor`);
+		}
 
-	return spawn_actor(
-		_parent,
-		_name,
-		actions,
-		{...(initialState ? initialState : {}), ..._initialState},
-		otherProperties,
-	);
+		return spawn_actor(
+			_parent,
+			_name,
+			actions,
+			{...(initialState ? initialState : {}), ..._initialState},
+			otherProperties,
+		);
+	}
 }
 
 // Spawn a persistent actor

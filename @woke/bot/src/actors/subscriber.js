@@ -1,7 +1,8 @@
 const { dispatch, query } = require('nact');
 const { start_actor, block } = require('../actor-system');
+const { initContract } = require('../lib/web3');
 
-const subscription = {
+const subscriptionActor= {
 	properties: {
 		initialState: {
 			subscription: null,
@@ -31,9 +32,9 @@ const subscription = {
 	actions: {
 		'start': async (msg, ctx, state) => {
 			const {contractInterface, eventName, subscribers} = state;
-			const { web3Instance } = await block(state.a_web3, { type: 'get' });
 
-			console.log(contractInterface.options);
+			const { web3Instance } = await block(state.a_web3, { type: 'get' });
+			const contract = initContract(web3Instance, contractInterface);
 
 			if(state.subscription) {
 				return;
@@ -41,11 +42,11 @@ const subscription = {
 
 			const callback = (error, event) => {
 				// Seperate subcription init from handling into distinict messages
-				dipsatch(ctx.self,  { type: 'handle', error, event }, ctx.self);
+				dispatch(ctx.self,  { type: 'handle', error, event }, ctx.self);
 			}
 
 			const subscription = makeLogEventSubscription(web3Instance.web3)(
-				contractInterface,
+				contract,
 				eventName,
 				callback,
 				{
@@ -54,6 +55,34 @@ const subscription = {
 			);
 
 			subscription.start();
+
+			return { ...state, subscription};
+		},
+
+
+		'handle': (msg, ctx, state) => {
+			const {eventName, contractInterface, subscribers} = state;
+			const { error, event } = msg;
+
+			if(error) {
+				throw new SubscriptionError(error, eventName);
+			}
+
+			if(event) {
+				console.log(event);
+				subscribers.forEach(a_subscriber => {
+					dispatch(a_subscriber, { type: 'a_sub',
+						contractName: contractInterface.contractName,
+						eventName,
+						event,
+					}, ctx.parent)
+				})
+			}
+		},
+
+		'resubscribe': async (msg, ctx, state) => {
+			const contract = initContract(web3Instance, state.contractInterface);
+			const { web3Instance } = await block(state.a_web3, { type: 'get' });
 			/*
 			if(resubscribe) {
 				setInterval(() => {
@@ -64,23 +93,6 @@ const subscription = {
 				}, 5*60*1000);
 			}
 			*/
-
-			return { ...state, subscription, subscribers: subscriberActors};
-		},
-
-		'handle': (msg, ctx, state) => {
-			const { subscribers } = state;
-			const { error, event } = msg;
-
-			if(error) {
-				throw new SubscriptionError(error, eventName);
-			}
-
-			if(event) {
-				subscribers.forEach(a_subscriber => {
-					dispatch(a_subscriber, { type: 'a_sub', contract, eventName, event }, ctx.parent)
-				})
-			}
 		},
 
 		'stop': (msg, ctx, state) => {
@@ -109,10 +121,11 @@ const makeLogEventSubscription = web3 => (contract, eventName, handleFunc, opts)
 					result.data,
 					result.topics.slice(1)
 			) : result;
-			handleFunc(errror, event)
+			handleFunc(error, event)
 		})
 
-		console.log('Subscriber', `Subscribed to ${eventName}.`);
+		console.log(`... Subscribed to ${eventName}.`);
+		//console.log(newSub);
 		subscription = newSub;
 		subscription.on("data", log => console.log);
 	}
@@ -153,4 +166,4 @@ class SubscriptionError extends DomainError {
 	}
 }
 
-module.exports = subscription;
+module.exports = subscriptionActor;
