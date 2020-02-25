@@ -42,13 +42,17 @@ const filter = e => e.claimed == false;
 const director = bootstrap();
 const a_wokenContract = create_woken_contract_actor(director);
 
-(async () => {
-	const { a_sub } = await query(a_wokenContract, { type: 'subscribe_log', eventName }, 10*1000);
-	//console.log(a_sub);
+const a_catch_logs = spawnStateless(director.system,
+	(msg, ctx) => {
+		console.log(msg);
+	},
+	'logs',
+);
 
-	while(true) {
-		const e = await block(a_sub,  {type: 'start'});
-		console.log('got e')
-	}
+(async () => {
+	const filter = (event) => event.claimed == false;
+	const { a_sub } = await query(a_wokenContract, { type: 'subscribe_log', eventName, filter }, 10*1000);
+	//console.log(a_sub);
+	dispatch(a_sub,  {type: 'start'}, a_catch_logs);
 })()
 

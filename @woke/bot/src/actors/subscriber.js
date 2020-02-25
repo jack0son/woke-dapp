@@ -5,6 +5,7 @@ const { initContract } = require('../lib/web3');
 const subscriptionActor= {
 	properties: {
 		initialState: {
+			filter: e => e,
 			subscription: null,
 			subscribers: [],
 			contractInterface: null,
@@ -56,26 +57,27 @@ const subscriptionActor= {
 
 			subscription.start();
 
-			return { ...state, subscription};
+			return { ...state, subscription, subscribers: [...subscribers, ctx.sender]};
 		},
 
 
 		'handle': (msg, ctx, state) => {
-			const {eventName, contractInterface, subscribers} = state;
+			const {eventName, contractInterface, subscribers, filter} = state;
 			const { error, event } = msg;
 
 			if(error) {
 				throw new SubscriptionError(error, eventName);
 			}
 
-			if(event) {
-				console.log(event);
+			if(event && filter ? filter(event) : true) {
+				//console.log(event);
 				subscribers.forEach(a_subscriber => {
+					console.log('Subscriber: ', a_subscriber.name ? a_subscriber.name : a_subscriber.system.name)
 					dispatch(a_subscriber, { type: 'a_sub',
 						contractName: contractInterface.contractName,
 						eventName,
 						event,
-					}, ctx.parent)
+					}, ctx.self)
 				})
 			}
 		},

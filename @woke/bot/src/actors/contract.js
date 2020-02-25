@@ -33,6 +33,7 @@ const spawn_sub = (msg, ctx, state) => {
 		{
 			contractName: msg.contractName,
 			eventName: msg.eventName,
+			filter: msg.filter,
 			contractInterface: msg.contractInterface,
 			subscribers: [ctx.sender], // forward the sender to this tx
 			a_web3: state.a_web3,
@@ -99,9 +100,9 @@ const contractActor = {
 		},
 
 		'subscribe_log': async (msg, ctx, state) => {
-			const { eventName } = msg;
+			const { eventName, filter } = msg;
 			const { logSubscriptions, contractInterface } = state;
-			const a_sub = spawn_sub({eventName, contractInterface}, ctx, state);
+			const a_sub = spawn_sub({eventName, contractInterface, filter }, ctx, state);
 			dispatch(ctx.sender, { type: 'new_sub', a_sub}, ctx.self);
 
 			logSubscriptions.push(a_sub);
