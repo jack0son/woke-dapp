@@ -110,7 +110,7 @@ contract('WokeToken', (accounts) => {
 
 						assert.strictEqual(claimed.account, claimer);
 						assert.strictEqual(claimed.userId, getwoketoke_id);
-						assert.strictEqual(claimed.amount, '10');
+						assert.strictEqual(claimed.amount, '50');
 						assert(await wt.getUserCount.call(), 1);
 					})
 
@@ -179,7 +179,7 @@ contract('WokeToken', (accounts) => {
 
 						assert.strictEqual(claimed.account, c.address);
 						assert.strictEqual(claimed.userId, c.id);
-						assert.strictEqual(claimed.amount.toNumber(), 10); // if using
+						assert.strictEqual(claimed.amount.toNumber(), 50); // if using
 
 						assert(await wt.getUserCount.call(), cases.indexOf(c) + 1);
 					}
@@ -268,9 +268,10 @@ contract('WokeToken', (accounts) => {
 })
 
 const bindClaimUser = (wt, to, oracleAddress) => async (claimAddress, userId) => {
-	wt.claimUser(userId, {from: claimAddress});
-	let {returnValues: {queryId: queryId}} = await waitForEvent(wt.Lodged);
-
+	let r = await wt.claimUser(userId, {from: claimAddress});
+	// let bn = r.receipt.blockNumber;
+	let queryId = r.logs[r.logs.length-1].args.queryId;
+	debug.t('Claim queryId: ', queryId);
 	const claimString = await genClaimString( claimAddress, userId);
 	await to.__callback(queryId, claimString, '0x0', {from: oracleAddress});
 	await wt._fulfillClaim(userId, {from: claimAddress});
