@@ -1,3 +1,6 @@
+const appUrl = 'https://getwoke.me';
+const emojis = require('./emojis');
+
 class TwitterStub {
 	constructor(_client, _credentials) {
 		const self = this;
@@ -7,6 +10,54 @@ class TwitterStub {
 
 	async ready() {
 		return true //this.client.hasCredentials();
+	}
+
+	// Errors: 
+	// [ { code: 220, message: 'Your credentials do not allow access to this resource.' } ]
+
+	async dm() {
+		return true;
+	}
+
+	async postUnclaimedTransfer(fromId, toId, amount) {
+		const { client } = this;
+
+		const [fromUser, toUser] = await Promise.all([
+			client.getUserData(fromId),
+			client.getUserData(toId),
+		]);
+
+		const text = `${emojis.folded_hands} @${fromUser.handle} just sent you ${amount} $WOKE.\nGo to ${appUrl} to claim it! @${toUser.handle}`
+		try {
+			const r = await client.updateStatus(text);
+			return r;
+		} catch(error) {
+			switch(error.code) {
+				case 220: {
+				}
+				default: {
+					throw error;
+				}
+			}
+		}
+	}
+
+	async postTweetReply(text, replyStatusId) {
+		const { client } = this;
+
+
+		try {
+			const r = await client.updateStatus(text, {in_reply_to_status_id: replyStatusId});
+			return r;
+		} catch(error) {
+			switch(error.code) {
+				case 220: {
+				}
+				default: {
+					throw error;
+				}
+			}
+		}
 	}
 
 	// Best practice
@@ -24,7 +75,7 @@ class TwitterStub {
 			query: '$woke OR $WOKE OR $WOKENS OR WOKENS',
 			result_type: 'recent',
 			entities: 'false',
-			count: 15,
+			count: 100,
 			tweetMode: 'extended',
 		}
 
@@ -45,7 +96,7 @@ class TwitterStub {
 				}
 				return false;
 			});
-		
+
 		} catch (error) {
 			// Squash the error
 			//error: {"error":"Sorry, your query is too complex. Please reduce complexity and try again."}.

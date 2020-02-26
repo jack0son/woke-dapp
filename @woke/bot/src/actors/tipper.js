@@ -55,9 +55,12 @@ const tipper = {
 	statusEnum,
 
 	properties: {
+		persistenceKey: 'tipper', // only ever 1, static key OK
+
 		initialState: {
 			tipRepo: {},
 			a_wokenContract: null,
+			a_tweeter: null,
 		},
 
 		// HOF that makes various utility functions available to the
@@ -70,8 +73,6 @@ const tipper = {
 		middleware: (msg, ctx, state) => {
 		},
 
-		persistenceKey: 'tipper', // only ever 1, static key OK
-
 		onCrash: (() => {
 			reset = resetWithExponentialDelay(1)
 			return (msg, error, ctx) => {
@@ -82,7 +83,7 @@ const tipper = {
 					}
 
 					default: {
-						return reset(msg, error, ctx);
+						return reset;
 					}
 				}
 			}
@@ -111,8 +112,7 @@ const tipper = {
 					status: statusEnum.UNSETTLED,
 					error: null,
 				}
-				entry.a_tip = settle_tip(msg, ctx, state);
-				return { ...state, tipRepo: { ...tipRepo, [tip.id]: entry } }
+				settle_tip(msg, ctx, state);
 
 			} else {
 				ctx.debug.d(msg, `Got existing tip ${tip.id}`);
@@ -122,15 +122,16 @@ const tipper = {
 						console.log(`Settling existing tip ${tip_str(tip)}...`);
 						// @TODO
 						// Duplicate actor will crash tipper
-						entry.a_tip = settle_tip(msg, ctx, state);
+						settle_tip(msg, ctx, state);
 					}
 
 					default: {
 						return;
 					}
 				}
-				return { ...state, tipRepo: { ...tipRepo, [tip.id]: entry } }
 			}
+
+			return { ...state, tipRepo: { ...tipRepo, [tip.id]: entry } }
 		},
 
 		// @TODO state not clearly encapsulated here
@@ -153,16 +154,28 @@ const tipper = {
 			// FSM effects
 			switch(tip.status) {
 				case 'SETTLED': {
-						log(`\nTip settled: @${tip.fromHandle} tipped @${tip.toHandle} ${tip.amount} WOKENS\n`)
-					//dispatch(ctx.self, { type: 'notify', tip }, ctx.self);
+					log(`\nTip settled: @${tip.fromHandle} tipped @${tip.toHandle} ${tip.amount} WOKENS\n`)
+					dispatch(ctx.self, { type: 'notify', tip }, ctx.self);
+					break;
+				}
+
+				case 'INVALID': {
+					if(tip.reason) {
+						//ctx.debug.error(msg, `Tip ${tip.id} from ${tip.fromHandle} error: ${tip.error}`)
+						log(`\nTip invalid: ${tip.reason}`);
+					}
+
+					dispatch(ctx.self, { type: 'notify', tip }, ctx.self);
 					break;
 				}
 
 				case 'FAILED': {
-					if(tip.reason) {
+					if(tip.error) {
 						//ctx.debug.error(msg, `Tip ${tip.id} from ${tip.fromHandle} error: ${tip.error}`)
-						log(`\nTip failed: ${tip.reason}`);
+						log(`\nTip failed: ${tip.error}`);
 					}
+
+					dispatch(ctx.self, { type: 'notify', tip }, ctx.self);
 					break;
 				}
 
@@ -178,6 +191,22 @@ const tipper = {
 			return { ...state, tipRepo }
 		},
 
+		'notify': (msg, ctx, state) => {
+			const { a_tweeter } = state;
+			const { tip } = msg;
+
+			if(a_tweeter) {
+				if(tip.status == 'SETTLED') {
+					dispatch(a_tweeter, { type: 'tweet_tip_confirmed', tip })//, ctx.self);
+				} else if (tip.status == 'INVALID') {
+					dispatch(a_tweeter, { type: 'tweet_tip_invalid', tip })//, ctx.self);
+				} else if (tip.status == 'FAILED') {
+					dispatch(a_tweeter, { type: 'tweet_tip_failed', tip })//, ctx.self);
+				}
+			}
+		},
+
+		// Find unsettled tips and attempt to settle them
 		'resume': (msg, ctx, state) => {
 			const { tipRepo } = state;
 
@@ -192,7 +221,6 @@ const tipper = {
 				}
 			});
 
-			// Find unsettled tips and attempt to settle them
 		},
 
 		'distribute': (msg, ctx, state) => {

@@ -76,7 +76,7 @@ module.exports = {
 			version: '0.5.15',
 			optimizer: {
 				enabled: true,
-				runs: 1,
+				runs: 100,
 			},
 		}
 	}

@@ -15,8 +15,8 @@ const DEBUG_PREFIX = 'actor';
 const FATAL_HANG_TIME = 1000*1000; //ms
 const DEBUG_RECOVERY= process.env.DEBUG_RECOVERY =='true' ? true : false
 
-const block = async (_consumer, _msg) => {
-	return await query(_consumer, _msg, FATAL_HANG_TIME).catch( error => {
+const block = (_consumer, _msg) => {
+	return query(_consumer, _msg, FATAL_HANG_TIME).catch( error => {
 		throw new Error(`APPLICATION HANG: blocking query timed out (${FATAL_HANG_TIME}ms). Are you sure you want temporally couple actors?`); 
 	});
 }
@@ -35,7 +35,8 @@ function remap_debug(_name) {
 	return debug;
 }
 
-// Make receiver functions available to the actions
+// Make receiver functions available to the actions by binding them to the
+// message bundle.
 // @returns Map string -> function
 const bind_receivers = (receivers, msg, state, ctx) => receivers ?
 	receivers(msg, state, ctx)
@@ -98,7 +99,7 @@ const spawn_persistent = (_parent, _name, _actionsMap, _initialState, _propertie
 	);
 }
 
-// Pass message to action handler
+// Pass message bundle to action handler
 // @returns next actor state
 const route_action = async (_actionsMap, _state, _msg, _context) => {
 	let action = _actionsMap[_msg.type];
@@ -114,23 +115,25 @@ const route_action = async (_actionsMap, _state, _msg, _context) => {
 
 // Spawn an actor instance using an actor definition
 // @returns actor instance
-const start_actor = _parent => (_name, _definition, _initialState) => {
-	if(!_parent && _parent.name) {
-		throw new Error(`Parent actor must be provided`);
-	}
-	const { actions, properties } = _definition;
-	const { initialState, ...otherProperties} = properties;
-	if(!actions) {
-		throw new Error(`No actions defined for {${_name}} actor`);
-	}
+function start_actor(_parent) {
+	return (_name, _definition, _initialState) => {
+		if(!_parent && _parent.name) {
+			throw new Error(`Parent actor must be provided`);
+		}
+		const { actions, properties } = _definition;
+		const { initialState, ...otherProperties} = properties;
+		if(!actions) {
+			throw new Error(`No actions defined for {${_name}} actor`);
+		}
 
-	return spawn_actor(
-		_parent,
-		_name,
-		actions,
-		{...(initialState ? initialState : {}), ..._initialState},
-		otherProperties,
-	);
+		return spawn_actor(
+			_parent,
+			_name,
+			actions,
+			{...(initialState ? initialState : {}), ..._initialState},
+			otherProperties,
+		);
+	}
 }
 
 // Spawn a persistent actor
@@ -154,7 +157,7 @@ const start_persistent = _persistentSystem => (_name, _definition, _initialState
 	);
 }
 
-// Start a nact actor system
+// Instantiate a nact actor system
 // @returns nact actor system and bound methods
 function bootstrap(_persistenceEngine) {
 	let system;

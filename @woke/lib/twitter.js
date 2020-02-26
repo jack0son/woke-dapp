@@ -8,6 +8,9 @@ require('dotenv').config();
 const consumerKey = process.env.TWITTER_CONSUMER_KEY;
 const consumerSecret = process.env.TWITTER_CONSUMER_SECRET;
 
+const accessKey = process.env.TWITTER_ACCESS_KEY;
+const accessSecret = process.env.TWITTER_ACCESS_SECRET;
+
 var client;
 
 const initClient = async () => {
@@ -26,8 +29,12 @@ const initClient = async () => {
 	client = new Twitter({
 		consumer_key: consumerKey, 
 		consumer_secret: consumerSecret,
-		bearer_token: bearerToken, 
+		access_token_key: accessKey, 
+		access_token_secret: accessSecret,
+//		bearer_token: bearerToken, 
 	});
+
+	//console.log(client);
 
 	return;
 }
@@ -88,6 +95,67 @@ const getUserData = async (userId) => {
 function statusUrl(status) {
 	return `https://twitter.com/${status.user.id_str}/status/${status.id_str}`
 }
+
+// Rate limit: 1000 per user; 15000 per app
+const directMessage = (recipientId, text) => { // claimString = `@getwoketoke 0xWOKE:${userId},${sig},1`;
+	if(!recipientId) {
+		throw new Error('Must provide a recipient ID');
+	}
+
+	if(!text) {
+		throw new Error('Must provide message text');
+	}
+
+	const event = {
+		type: 'message_create',
+		message_create: {
+			target: {
+				recipient_id: recipientId,
+			},
+			message_data: {
+				text: text,
+			}
+		},
+	};
+
+	const params = { event };
+
+	return client.post('direct_messages/events/new', params).then(r => {
+		console.log(r);
+		return r;
+	});
+}
+
+const updateStatus = (text, _params) => { // claimString = `@getwoketoke 0xWOKE:${userId},${sig},1`;
+	if(!text) {
+		throw new Error('Must provide status text');
+	}
+
+	const params = {
+		..._params,
+		status: text,
+	};
+
+	// For each update attempt, the update text is compared with the authenticating user's recent Tweets. Any attempt that would result in duplication will be blocked, resulting in a 403 error. A user cannot submit the same status twice in a row.
+
+  // While not rate limited by the API, a user is limited in the number of Tweets they can create at a time. If the number of updates posted by the user reaches the current allowed limit this method will return an HTTP 403 error.
+	return client.post('statuses/update', params).then(r => {
+		//console.log(r);
+		return r;
+	});
+}
+
+const getStatus = (id, _params) => { // claimString = `@getwoketoke 0xWOKE:${userId},${sig},1`;
+
+	const params = {
+		..._params,
+		id,
+	};
+	return client.get('statuses/show', params).then(r => {
+		return r;
+	});
+}
+
 
 const searchTweets = (params) => { // claimString = `@getwoketoke 0xWOKE:${userId},${sig},1`;
 	const searchParams = {
@@ -155,7 +223,7 @@ function getBearerToken(key, secret) {
 	});
 }
 
-module.exports = {initClient, findClaimTweet, getUserData, searchTweets}
+module.exports = {initClient, findClaimTweet, getUserData, searchTweets, updateStatus}
 
 // Example call
 if(debug.control.enabled && require.main === module) {
@@ -178,10 +246,18 @@ if(debug.control.enabled && require.main === module) {
 					break;
 				}
 
+				case 'get': {
+					const [tweetId] = args;
+					let r = await getStatus(tweetId);
+					//r = r.filter(t => t.retweeted_status);
+					console.dir(r, {depth: 10});
+					break;
+				}
+
 				case 'search': {
 					const [query] = args;
 					let r = await searchTweets(query ? {q: query} : undefined);
-					r = r.filter(t => t.retweeted_status);
+					//r = r.filter(t => t.retweeted_status);
 					r.forEach(t => {
 						console.log(statusUrl(t));
 						console.log(t.user.screen_name);
@@ -207,6 +283,24 @@ if(debug.control.enabled && require.main === module) {
 					})
 
 					fs.writeFileSync('tweets-tips.json', JSON.stringify(r));
+					break;
+				}
+
+				case 'status': {
+					const [text] = args;
+					const defaultText = 'test tweet';
+
+					let r = await updateStatus(text ? text : defaultText);
+					console.log(r);
+					break;
+				}
+
+				case 'dm': {
+					const [recipient, text] = args;
+					const defaultText = 'test dm';
+
+					let r = await directMessage(recipient, text ? text : defaultText);
+					console.log(r);
 					break;
 				}
 

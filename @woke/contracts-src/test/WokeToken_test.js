@@ -1,13 +1,12 @@
 const TwitterOracle = artifacts.require('TwitterOracle.sol')
 const debug = require('./debug/WokeToken_test');
-const {inspect} = require('./debug/common');
-const {waitForEvent, waitForEventOld} = require('./utils');
+const { waitForEvent } = require('./utils');
 const truffleAssert = require('truffle-assertions');
 
 const printEvents = truffleAssert.prettyPrintEmittedEvents;
 
 const {fromAscii, toWei} = web3.utils;
-const BN = web3.BN;
+const BN = require('bignumber.js');
 
 //const Web3 = require('web3')
 //const web3ws = new Web3(new Web3.providers.WebsocketProvider('ws://localhost:9545'))
@@ -41,14 +40,15 @@ const WokeToken = artifacts.require('WokeToken.sol')
 const MockTwitterOracle = artifacts.require('mocks/TwitterOracleMock.sol')
 
 const getwoketoke_id = '932596541822419000';
-const another_user_id = '12345';
+const stranger_id = '12345';
 
 contract('WokeToken', (accounts) => {
-	const [defaultAccount, owner, oraclize_cb, claimer, stranger, cB, cC, ...rest] = accounts;
+	const [defaultAccount, owner, oraclize_cb, claimer, tipAgent, stranger, cB, cC, ...rest] = accounts;
 
 	// Token Generation params
 	const max_supply = 100000000;
 	let wt, to;
+	let claimUser;
 
 	context('Using mock TwitterOracle', () => {
 		beforeEach(async () => {
@@ -57,7 +57,7 @@ contract('WokeToken', (accounts) => {
 				{from: owner, value: web3.utils.toWei('0.1', 'ether')}
 			);
 
-			wt = await WokeToken.new(to.address, owner, max_supply, {from: owner})
+			wt = await WokeToken.new(to.address, tipAgent, max_supply, {from: owner})
 		});
 
 		describe('WokeToken.sol', () => {
@@ -70,7 +70,7 @@ contract('WokeToken', (accounts) => {
 				})
 			})
 
-			describe('User ID claiming', () => {
+			describe('#claimUser', () => {
 				context('with a single valid claim', () => {
 					it('should submit a tweet request', async () => {
 
@@ -110,7 +110,7 @@ contract('WokeToken', (accounts) => {
 
 						assert.strictEqual(claimed.account, claimer);
 						assert.strictEqual(claimed.userId, getwoketoke_id);
-						assert.strictEqual(claimed.amount, '10');
+						assert.strictEqual(claimed.amount, '50');
 						assert(await wt.getUserCount.call(), 1);
 					})
 
@@ -127,11 +127,11 @@ contract('WokeToken', (accounts) => {
 						// Attempt to claim the user again
 						await truffleAssert.reverts(
 							wt.claimUser(getwoketoke_id, {from: claimer}),
-							"Sender already has a user ID"
+							"sender already has user ID"
 						);
 						await truffleAssert.reverts(
 							wt.claimUser(getwoketoke_id, {from: stranger}),
-							"User is already claimed"
+							"user already claimed"
 						);
 					})
 
@@ -142,13 +142,15 @@ contract('WokeToken', (accounts) => {
 						// Attempt second request before Oracale __callback() called
 						await truffleAssert.reverts(
 							wt.claimUser(getwoketoke_id, {from: claimer}),
-							"Sender already has a request pending"
+							"sender already has a request pending"
 						);
 					})
 
+					it('should fail if no oracle response has been received', async () => {
+					})
 				})
 
-				it('should claim several users old event waiting', async () => {
+				it('should claim several users', async () => {
 					const cases = [
 						{address: cB, id: '212312122', handle: 'jack'},
 						{address: cC, id: '3313322', handle: 'realdonaldtrump'},
@@ -177,7 +179,7 @@ contract('WokeToken', (accounts) => {
 
 						assert.strictEqual(claimed.account, c.address);
 						assert.strictEqual(claimed.userId, c.id);
-						assert.strictEqual(claimed.amount.toNumber(), 10); // if using
+						assert.strictEqual(claimed.amount.toNumber(), 50); // if using
 
 						assert(await wt.getUserCount.call(), cases.indexOf(c) + 1);
 					}
@@ -229,70 +231,114 @@ contract('WokeToken', (accounts) => {
 
 			})
 
-			context('#transferUnclaimed', () => {
+			context('#tip', function() {
 				beforeEach(async function() {
-						wt.claimUser(getwoketoke_id, {from: claimer});
-						let {returnValues: {queryId: queryId}} = await waitForEvent(wt.Lodged);
-
-						let claimString = await genClaimString(claimer, getwoketoke_id);
-						await to.__callback(queryId, claimString, '0x0', {from: oraclize_cb});
-						await wt._fulfillClaim(getwoketoke_id);
+					claimUser = bindClaimUser(wt, to, oraclize_cb);
+					await claimUser(claimer, getwoketoke_id)
 				})
 
 				it('should be able to tip an unclaimed user', async function () {
-					let r = await wt.tip(getwoketoke_id, another_user_id, 1, {from: owner});
-				});
+					let r = await wt.tip(getwoketoke_id, stranger_id, 1, {from: tipAgent});
+				})
 
-			})
+				it('should be able to tip a claimed user', async function () {
+					await claimUser(stranger, stranger_id)
+					let r = await wt.tip(getwoketoke_id, stranger_id, 1, {from: tipAgent});
+				})
 
-			describe('#tip', () => {
+				it('should revert if sender is not tip agent', async function () {
+					await truffleAssert.reverts(
+						wt.tip(getwoketoke_id, stranger_id, 1, {from: claimer}),
+						"sender not tip agent"
+					);
+
+					await truffleAssert.reverts(
+						wt.tip(getwoketoke_id, stranger_id, 1, {from: stranger}),
+						"sender not tip agent"
+					);
+				})
+
+				it('should revert if tip amount is zero', async function () {
+					await truffleAssert.reverts(
+						wt.tip(getwoketoke_id, stranger_id, 0, {from: tipAgent}),
+						"cannot tip 0 tokens",
+					)
+				})
+
+				it('should revert if senders balance is zero', async function () {
+					const balance = (await wt.balanceOf.call(claimer)).toNumber();
+					await wt.transferUnclaimed(stranger_id, balance, {from: claimer}); // Empty balance
+					//await wt.tip(getwoketoke_id, stranger_id, 5, {from: tipAgent});
+					await truffleAssert.reverts(
+						wt.tip(getwoketoke_id, stranger_id, 5, {from: tipAgent}),
+						"cannot tip 0 tokens",
+					)
+				})
+
+				it('should succeed if tip amount is greater than users balance', async function () {
+					const balance = (await wt.balanceOf.call(claimer)).toNumber();
+					let r = await wt.tip(getwoketoke_id, stranger_id, balance + 4, {from: tipAgent}); // Empty balance
+					const tipLog = r.logs[r.logs.length - 1];
+					const tipAmount = tipLog.args.amount.toNumber();
+					assert.strictEqual(balance, tipAmount);
+				})
 
 			})
 		})
 	})
 })
 
+const bindClaimUser = (wt, to, oracleAddress) => async (claimAddress, userId) => {
+	let r = await wt.claimUser(userId, {from: claimAddress});
+	// let bn = r.receipt.blockNumber;
+	let queryId = r.logs[r.logs.length-1].args.queryId;
+	debug.t('Claim queryId: ', queryId);
+	const claimString = await genClaimString( claimAddress, userId);
+	await to.__callback(queryId, claimString, '0x0', {from: oracleAddress});
+	await wt._fulfillClaim(userId, {from: claimAddress});
+}
 
-	// Generate Woke Auth Token
-	const example = '@getwoketoke 0xwoke:1224421374322,0x12312377134319222222312,1'
-	// message_to_sign = <address><userId><appId>
-	// token = '@getwoketoke 0xwoke:<userId>,<signature>,
-	async function genClaimString(signatory, userId, app = 'twitter') {
-		const appId = {
-			'default' : 0,
-			'twitter' : 10,
-			'youtube' : 20,
-			'reddit' : 30
-		}
 
-		let msgHash = web3.utils.soliditySha3(
-			{t: 'uint256', v: signatory}, 
-			{t: 'string', v: userId},
-			{t: 'uint8', v: appId[app]}
-		).toString('hex');
-		//debug.h('msgHash: ', msgHash);
-
-		const sig = await web3.eth.sign(msgHash, signatory);
-
-		//debug.h(`Signature for ${signatory}, uid ${userId}\n${sig}`);
-
-		let str = `@getwoketoke 0xWOKE:${userId},${sig},1`;
-		debug.h(`Gen. claim string: ${str}`);
-		return str;
+// Generate Woke Auth Token
+const example = '@getwoketoke 0xwoke:1224421374322,0x12312377134319222222312,1'
+// message_to_sign = <address><userId><appId>
+// token = '@getwoketoke 0xwoke:<userId>,<signature>,
+async function genClaimString(signatory, userId, app = 'twitter') {
+	const appId = {
+		'default' : 0,
+		'twitter' : 10,
+		'youtube' : 20,
+		'reddit' : 30
 	}
 
-	function signOrder(amount, nonce, callback) {
-		var hash = "0x" + ethereumjs.ABI.soliditySHA3(
-			["address", "uint256", "uint256"],
-			[web3.eth.defaultAccount, amount, nonce]
-		).toString("hex");
-		web3.personal.sign(hash, web3.eth.defaultAccount, callback);
-	}
+	let msgHash = web3.utils.soliditySha3(
+		{t: 'uint256', v: signatory}, 
+		{t: 'string', v: userId},
+		{t: 'uint8', v: appId[app]}
+	).toString('hex');
+	//debug.h('msgHash: ', msgHash);
 
-	const sign = (address, dataToSign) => {
-		return new Promise((resolve, reject) => {
-			;
-		});
-	}
+	const sig = await web3.eth.sign(msgHash, signatory);
 
-	//web3.eth.sign(address, dataToSign, [, callback])
+	//debug.h(`Signature for ${signatory}, uid ${userId}\n${sig}`);
+
+	let str = `@getwoketoke 0xWOKE:${userId},${sig},1`;
+	debug.h(`Gen. claim string: ${str}`);
+	return str;
+}
+
+function signOrder(amount, nonce, callback) {
+	var hash = "0x" + ethereumjs.ABI.soliditySHA3(
+		["address", "uint256", "uint256"],
+		[web3.eth.defaultAccount, amount, nonce]
+	).toString("hex");
+	web3.personal.sign(hash, web3.eth.defaultAccount, callback);
+}
+
+const sign = (address, dataToSign) => {
+	return new Promise((resolve, reject) => {
+		;
+	});
+}
+
+//web3.eth.sign(address, dataToSign, [, callback])

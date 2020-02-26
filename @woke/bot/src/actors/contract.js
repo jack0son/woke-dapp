@@ -1,20 +1,15 @@
 const { dispatch, query } = require('nact');
-const { start_actor } = require('../actor-system');
+const { start_actor, block } = require('../actor-system');
+const { initContract } = require('../lib/web3');
 const { web3Tools } = require('@woke/lib');
 
 const txActor = require('./web3-tx');
+const subActor = require('./subscriber');
 
-
-function SpawnTx() {
-	let idx = 0;
-	return function spawn_tx(){
-	}
-}
-
-let idx = 0;
+let tx_idx = 0;
 function spawn_tx(ctx, state) {
 	return start_actor(ctx.self)(
-		`_tx-${idx++}`,
+		`_tx-${tx_idx++}`,
 		txActor,
 		{
 			sinks: [ctx.sender], // forward the sender to this tx
@@ -24,11 +19,28 @@ function spawn_tx(ctx, state) {
 	);
 }
 
+let sub_idx = 0;
+const spawn_sub = (msg, ctx, state) => {
+	return start_actor(ctx.self)(
+		`_sub-${sub_idx++}-${msg.contractName}-${msg.eventName}`,
+		subActor,
+		{
+			contractName: msg.contractName,
+			eventName: msg.eventName,
+			filter: msg.filter,
+			contractInterface: msg.contractInterface,
+			subscribers: [], // forward the sender to this tx
+			a_web3: state.a_web3,
+		}
+	);
+}
+
 const contractActor = {
 	properties: {
 		initialState: {
 			a_web3: undefined,
 			contractInterface: undefined,
+			logSubscriptions: [],
 			//contract,
 			//web3Instance,
 		},
@@ -46,7 +58,7 @@ const contractActor = {
 
 	actions: {
 		'init': async (msg, ctx, state) => {
-			const { web3Instance } = await query(state.a_web3, { type: 'get' }, 2000);
+			const { web3Instance } = await block(state.a_web3, { type: 'get' }, 2000);
 			const contract = initContract(web3Instance, contractInterface);
 
 			dispatch(ctx.sender, { type: 'contract_object', contract }, ctx.self);
@@ -79,6 +91,21 @@ const contractActor = {
 			// @TODO Errors to handle
 			// -- Error: Returned values aren't valid, did it run Out of Gas? You might also see this error if you are not using the correct ABI for the contract you are retrieving data from, requesting data from a block number that does not exist, or querying a node which is not fully synced.
 			// -- TypeError: contract.methods[method] is not a function
+		},
+
+		'subscribe_log': async (msg, ctx, state) => {
+			const { eventName, filter } = msg;
+			const { logSubscriptions, contractInterface } = state;
+			const a_sub = spawn_sub({eventName, contractInterface, filter }, ctx, state);
+			dispatch(ctx.sender, { type: 'new_sub', a_sub}, ctx.self);
+
+			logSubscriptions.push(a_sub);
+			return  { ...state, logSubscriptions };
+		},
+
+		'unsubscribe_log': async (msg, ctx, state) => {
+			const { logSubscriptions } = state;
+			logSubscriptions.forEach(a_sub => dispatch(a_sub, { type: 'stop' }, ctx.self));
 		},
 	}
 };

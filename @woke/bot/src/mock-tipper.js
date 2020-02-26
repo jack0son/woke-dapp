@@ -1,4 +1,5 @@
-// @woke/bot // Bot is the interface between the woke network and twitter.
+// @woke/bot
+// Bot is the interface between the woke network and twitter.
 // It performs the following major roles:
 //	1. Twitter Tipping
 //	2. Woke invites 
@@ -42,20 +43,20 @@ const TipSystem = require('./tip-system');
 const { parse_bool } = require('./lib/utils');
 
 const TwitterStub = require('./lib/twitter-stub');
-
+const twitterMock = require('../test/mocks/twitter-client');
 
 const PERSIST_TIPS = process.env.PERSIST_TIPS;
-const persist = parse_bool(PERSIST_TIPS);
+const persist = PERSIST_TIPS ? parse_bool(PERSIST_TIPS) : true;
 
 console.log('Persist? ', persist);
 const bootstrap = async () => {
-	await twitter.initClient();
-	twitterStub = new TwitterStub(twitter);
+	//await twitter.initClient();
+	const twitterStub = new TwitterStub(twitterMock.createMockClient(1));
 
 	const tipSystem = new TipSystem(undefined, {
-		twitterStub,
-		persist,
-		pollingInterval: 5*1000,
+		twitterStub: twitterStub,
+		persist: false,
+		pollingInterval: 1000*1000,
 		notify: true,
 	});
 	return tipSystem.start();

@@ -8,7 +8,7 @@ const properties = {
 
 	receivers: (msg, state, ctx) => ({
 		reduce: (_msg) => {
-			msg.type = 'reduce';
+			_msg.type = 'reduce';
 			dispatch(ctx.self, {...msg, ..._msg}, ctx.self);
 		}
 	}),
@@ -63,10 +63,16 @@ const actions = {
 
 	// --- Sink Actions
 	'tx': (msg, ctx, state) => {
-		const { tx } = msg;
+		const { tx, txStatus} = msg;
+
 		switch(tx.method) {
 			case 'userClaimed': {
 				ctx.receivers.reduce({ event: 'check_claim-recv'});
+				break;
+			}
+
+			case 'userBalance': {
+				ctx.receivers.reduce({ event: 'check_bal-recv'});
 				break;
 			}
 
@@ -110,21 +116,21 @@ const eventsTable = {
 				ctx.debug.info(msg, `userIsClaimed: ${userIsClaimed}`);
 				if(userIsClaimed === false) {
 					tip.status = 'INVALID';
-					tip.error = 'unclaimed sender'
+					tip.reason = 'unclaimed'
 					//entry.status = statusEnum.INVALID;
 					//entry.error = 'unclaimed sender'
 					dispatch(ctx.parent, { type: 'tip_update', tip }, ctx.self);
 					nextStage = 'invalid';
 
 				} else if(userIsClaimed === true) {
-					dispatch(a_wokenContract, {type: 'send', 
-						method: 'tip',
-						args: [tip.fromId, tip.toId, tip.amount],
-						sinks: ctx.self
+					dispatch(a_wokenContract, {type: 'call', 
+						method: 'userBalance',
+						args: [tip.fromId],
+						sinks: [ctx.self],
 					}, ctx.self)
 
 					tip.status = 'UNSETTLED';
-					nextStage = 'SENDING-TIP';
+					nextStage = 'CALLING-CHECK-BALANCE';
 
 				} else if(!userIsClaimed) {
 					// Oh yes, this happens sometimes!
@@ -140,16 +146,56 @@ const eventsTable = {
 		}
 	},
 
+	'check_bal-recv': {
+		'CALLING-CHECK-BALANCE': {
+			effect: (msg, ctx, state) => {
+				const { tip, a_wokenContract } = state;
+				const { tx, result } = msg;
+				let nextStage;
+				const balance = parseInt(result);
+				ctx.debug.info(msg, `balance: ${balance}`);
+				if(balance == 0) {
+					tip.status = 'INVALID';
+					tip.reason = 'broke'
+					//entry.status = statusEnum.INVALID;
+					//entry.error = 'unclaimed sender'
+					dispatch(ctx.parent, { type: 'tip_update', tip }, ctx.self);
+					nextStage = 'invalid';
+
+				} else if(balance > 0) {
+					dispatch(a_wokenContract, {type: 'send', 
+						method: 'tip',
+						args: [tip.fromId, tip.toId, tip.amount],
+						sinks: [ctx.self],
+					}, ctx.self)
+
+					tip.status = 'UNSETTLED';
+					nextStage = 'SENDING-TIP';
+
+				} else if(!balance || balance == NaN) {
+					// Oh yes, this happens sometimes!
+					throw new Error(`Result from balance call ${balance}`)
+				}
+
+				return {
+					...state,
+					stage: nextStage,
+					tip,
+				};
+			}
+		}
+	},
+
 	'send_tip-recv': {
 		'SENDING-TIP': {
 			effect: (msg, ctx, state) => {
 				const { tip } = state;
-				const { txStatus, tx, txState } = msg;
+				const { txStatus, tx, error } = msg;
 
 				ctx.debug.info(msg, `tip:${tip.id} Got tx status ${txStatus}`);
 				switch(txStatus) {
 					case 'success': {
-						const { receipt } = msg;
+						const { tx: { receipt: receipt } } = msg;
 						ctx.debug.d(msg, `tip:${tip.id} confirmed on chain`);
 						tip.tx_hash = receipt.transactionHash;
 
@@ -189,12 +235,12 @@ const eventsTable = {
 
 					case 'error': {
 						// For the moment, if web3 fails, the tip just fails
-						const errMsg = `tip:${tip.id} failed with error: ${txState.error}`;
-						ctx.debug.error(errMsg);
+						const errMsg = `tip:${tip.id} failed with error: ${error}`;
+						ctx.debug.error(msg, errMsg);
 						tip.error = errMsg;
 						tip.status = 'FAILED'
 						dispatch(ctx.parent, {type: 'tip_update', tip});
-						ctx.reduce({ event: 'send-tx-failed', error: txState.error});
+						ctx.reduce({ event: 'send-tx-failed', error: error});
 
 						return { ...state, nextStage: 'FAILED', }
 						break;
