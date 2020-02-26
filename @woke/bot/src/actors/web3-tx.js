@@ -168,10 +168,13 @@ const actions = {
 		const { web3Instance } = await block(state.a_web3, { type: 'get' });
 
 		if(web3Instance.account) {
-			tx.opts.from = web3Instance.account;
+			tx.opts.account = web3Instance.account;
+		} else if(process.env.NODE_ENV == 'development') {
+			tx.opts.account = (await web3Instance.web3.eth.personal.getAccounts())[1];
 		} else {
-			let account = (await web3Instance.web3.eth.personal.getAccounts())[1];
-			tx.opts = {...tx.opts, from: account};
+			console.log(web3Instance.network);
+			console.log(`Account: `, web3Instance.account);
+			throw new Error(`No account defined for web3Instance`);
 		}
 
 		dispatch(ctx.self, { type: '_send', tx, web3Instance }, ctx.sender);

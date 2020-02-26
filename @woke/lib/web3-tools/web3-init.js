@@ -33,7 +33,7 @@ module.exports = () => {
 		// If using ganache, unlock the accounts
 
 	} else {
-		let wallet = web3.eth.accounts.wallet.add(privKey);
+		wallet = web3.eth.accounts.wallet.add(privKey);
 		web3.eth.defaultAccount = wallet.address;
 		web3.eth.defaultCommon = network.defaultCommon;
 	}
