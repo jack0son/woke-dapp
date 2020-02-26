@@ -3,8 +3,9 @@ services:
   bot-db:
     image: postgres:11.1
     environment:
-      POSTGRES_USER: postgres
-      POSTGRES_DB: woke_dapp 
+      POSTGRES_USER: woke_bot
+      POSTGRES_PWD: woke_bot
+      POSTGRES_DB: bot_db
     volumes:
       - bot_postgres_data:/var/lib/postgresql/data/
     ports:
@@ -14,9 +15,12 @@ services:
     depends_on:
       - bot-db
     environment:
-      WAIT_HOSTS: db:5432
+      POSTGRES_USER: woke_bot
+      POSTGRES_PWD: woke_bot
+      POSTGRES_DB: bot_db
       POSTGRES_HOST: bot-db
       POSTGRES_PORT: 5432
+      WAIT_HOSTS: bot-db:5432
       NODE_ENV: 'production'
       PERSIST: 'true'
       DEBUG_RECOVERY: 'true'
@@ -26,9 +30,12 @@ services:
     depends_on:
       - bot-db
     environment:
-      WAIT_HOSTS: db:5432
+      POSTGRES_USER: woke_bot
+      POSTGRES_PWD: woke_bot
+      POSTGRES_DB: bot_db
       POSTGRES_HOST: bot-db
       POSTGRES_PORT: 5432
+      WAIT_HOSTS: bot-db:5432
       NODE_ENV: 'production'
       PERSIST: 'true'
       DEBUG_RECOVERY: 'true'
