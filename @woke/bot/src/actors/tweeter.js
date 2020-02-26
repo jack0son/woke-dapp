@@ -1,4 +1,5 @@
 const { dispatch } = require('nact');
+const emojis = require('../lib/emojis');
 const { Logger } = require('@woke/lib');
 const debug = (msg, args) => Logger().name(`TWEET`, `${msg.type}>> ` + args);
 
@@ -22,11 +23,6 @@ function tip_broke_message(tip) {
 	//return `${emojis.no} You're broke, not woke. Spread some enlightenment @${tip.fromHandle}...`;
 }
 
-const emojis = {
-	sleep_face: '😴',
-	folded_hands: '🙏',
-	no: '🙅',
-}
 
 // Drives posting to twitter
 const TweeterActor = (twitterStub) => ({

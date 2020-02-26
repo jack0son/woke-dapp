@@ -1,4 +1,5 @@
 const appUrl = 'https://getwoke.me';
+const emojis = require('./emojis');
 
 class TwitterStub {
 	constructor(_client, _credentials) {
@@ -26,7 +27,7 @@ class TwitterStub {
 			client.getUserData(toId),
 		]);
 
-		const text = `Hey @${toUser.handle}! @${fromUser.handle} just sent you ${amount} WOKENS.\nGo to ${appUrl} to claim them.`
+		const text = `${emojis.folded_hands} @${fromUser.handle} just sent you ${amount} WOKENS.\nGo to ${appUrl} to claim them. @${toUser.handle}!`
 		try {
 			const r = await client.updateStatus(text);
 			return r;
