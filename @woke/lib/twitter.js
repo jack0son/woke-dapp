@@ -146,6 +146,18 @@ const updateStatus = (text, _params) => { // claimString = `@getwoketoke 0xWOKE:
 	});
 }
 
+const getStatus = (id, _params) => { // claimString = `@getwoketoke 0xWOKE:${userId},${sig},1`;
+
+	const params = {
+		..._params,
+		id,
+	};
+	return client.get('statuses/show', params).then(r => {
+		return r;
+	});
+}
+
+
 const searchTweets = (params) => { // claimString = `@getwoketoke 0xWOKE:${userId},${sig},1`;
 	const searchParams = {
 		q: '$woke OR $WOKE OR $WOKENS OR WOKENS',
@@ -235,10 +247,18 @@ if(debug.control.enabled && require.main === module) {
 					break;
 				}
 
+				case 'get': {
+					const [tweetId] = args;
+					let r = await getStatus(tweetId);
+					//r = r.filter(t => t.retweeted_status);
+					console.dir(r, {depth: 10});
+					break;
+				}
+
 				case 'search': {
 					const [query] = args;
 					let r = await searchTweets(query ? {q: query} : undefined);
-					r = r.filter(t => t.retweeted_status);
+					//r = r.filter(t => t.retweeted_status);
 					r.forEach(t => {
 						console.log(statusUrl(t));
 						console.log(t.user.screen_name);

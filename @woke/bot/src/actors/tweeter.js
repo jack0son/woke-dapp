@@ -6,7 +6,7 @@ const tx_etherscan_url = tip => `https://goerli.etherscan.io/tx/${tip.tx_hash}`;
 const tip_tweet_url = tip =>  `https://twitter.com/${tip.fromId}/status/${tip.id}`;
 
 function tip_success_tweet_text(tip) {
-	return `${emojis.folded_hands} Wokeness confirmed : ${tx_etherscan_url(tip)}.\n\nSent @${tip.toHandle} ${tip.amount} WOKENS`;
+	return `${emojis.folded_hands} Wokeness confirmed : ${tx_etherscan_url(tip)}.\n\n@${tip.fromHandle} Sent @${tip.toHandle} ${tip.amount} $WOKE`;
 }
 
 function tip_success_message(tip) {
@@ -14,11 +14,12 @@ function tip_success_message(tip) {
 }
 
 function tip_failure_message(tip) {
-	return `${emojis.sleep_face} You need to be woke to send $WOKENS. Join with a tweet at https://getwoke.me`;
+	return `${emojis.sleep_face} You need to be woke to send $WOKE. Join with a tweet at https://getwoke.me @${tip.fromHandle}`;
 }
 
 function tip_broke_message(tip) {
-	return `${emojis.no} You're broke, not woke. Spread some enlightenment...`;
+	return `${emojis.no} Broke. Spread some $WOKE @${tip.fromHandle}...`;
+	//return `${emojis.no} You're broke, not woke. Spread some enlightenment @${tip.fromHandle}...`;
 }
 
 const emojis = {
