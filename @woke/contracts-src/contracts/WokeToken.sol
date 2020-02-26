@@ -76,9 +76,7 @@ contract WokeToken is Ownable, ERC20 {
 		//uint32 _multiplier, 
 		//uint32 _halving,
 		uint32 _maxSupply
-	) 
-	public payable
-	{
+	) public payable {
 		twitterClient = _twitterClient;
 		tippingAgent = _tippingAgent;
 		maxSupply = _maxSupply;
@@ -90,9 +88,9 @@ contract WokeToken is Ownable, ERC20 {
 	// @notice Connect a wallet to a Twitter user ID and claim any unclaimed TXs  
 	// @returns Provable query ID
 	function claimUser(string memory _user) public payable
-	hasNoUser
-	userNotClaimed(_user)
-	requestUnlocked
+		hasNoUser
+		userNotClaimed(_user)
+		requestUnlocked
 	returns (bytes32)
 	{
 		requester[_user] = msg.sender;
@@ -115,15 +113,15 @@ contract WokeToken is Ownable, ERC20 {
 	// @param _id user id
 	// @param _claimString tweet text which should contain a signed claim string
 	function _fulfillClaim(string memory _id) public
-	userNotClaimed(_id)
-	requestLocked(requester[_id])
+		userNotClaimed(_id)
+		requestLocked(requester[_id])
 	{
 		TwitterOracleMock client = TwitterOracleMock(twitterClient);
 		string memory claimString = client.getTweetText(_id);
-		require(bytes(claimString).length > 0, 'claim string not stored');
+		require(bytes(claimString).length > 0, "claim string not stored");
 
 		address claimer = requester[_id];
-		require(verifyClaimString(claimer, _id, claimString), 'invalid claim string');
+		require(verifyClaimString(claimer, _id, claimString), "invalid claim string");
 
 		uint256 _followers = 1; // change to function argument
 
@@ -146,6 +144,8 @@ contract WokeToken is Ownable, ERC20 {
 	}
 
 	// @notice Transfer a new userId's bonus to their account
+	// @param _id			User ID
+	// @param _followers	Number of follwers
 	// @returns Total amount claimed
 	function claimBonus(string memory _id, uint256 _followers)
 		private
@@ -205,9 +205,6 @@ contract WokeToken is Ownable, ERC20 {
 		require(_amount > 0, 'Cannot send 0 tokens');
 
 		_transferUnclaimed(myUser(), _toId, _amount);
-
-		//emit Tx(userIds[msg.sender], _toId, userIds[msg.sender], _toId, _amount, false);
-		//emit Tx(msg.sender, users[_toId].account, userIds[msg.sender], _toId, _amount, false);
 	}
 
 	// @notice Trans
@@ -292,8 +289,7 @@ contract WokeToken is Ownable, ERC20 {
 		uint256 amount = _amount > tipBalance ? tipBalance : _amount;
 
 		if(userClaimed(_toId)) {
-			return 0;
-			//_transferClaimed(_fromId, _toId, amount);
+			_transferClaimed(_fromId, _toId, amount);
 		} else {
 			_transferUnclaimed(_fromId, _toId, amount);
 		}
@@ -413,6 +409,7 @@ contract WokeToken is Ownable, ERC20 {
 		return true;
 	}
 
+
 	// @TODO rename to hasLodgedRequest
 	function lodgedRequest(string memory _userId) public view
 	returns (bool)
@@ -433,47 +430,70 @@ contract WokeToken is Ownable, ERC20 {
 	/*---------*/
 
 	/* MODIFIERS */
-	modifier userNotClaimed(string memory _user) {
-		require(userClaimed(_user) == false, "User is already claimed");
+	// @note using internal functions inside of modifiers reduces the amount of
+	// code inlined, thus reducing bytecode for small increase in gas usage.
+	modifier userNotClaimed(string memory _userId) {
+		_userNotClaimed(_userId);
 		_;
 	}
+	function _userNotClaimed(string memory _userId) internal view
+	{
+		require(userClaimed(_userId) == false, "User already claimed");
+	}
 
-	modifier userIsClaimed(string memory _user) {
-		require(userClaimed(_user) == true, "User has not been claimed yet");
+	modifier userIsClaimed(string memory _userId) {
+		_userIsClaimed(_userId);
 		_;
+	}
+	function _userIsClaimed(string memory _userId) internal view {
+		require(userClaimed(_userId) == true, "User not claimed");
 	}
 
 	// @note has<Type>() implies check for mapping of (msg.sender => <Type>)
 	// @notice Check if sending account has a claimed user
 	modifier hasUser() {
-		bytes memory temp = bytes(userIds[msg.sender]);
-		require(temp.length > 0, "Sender does not have a user ID");
+		_hasUser();
 		_;
+	}
+	function _hasUser() internal view {
+		bytes memory temp = bytes(userIds[msg.sender]);
+		require(temp.length > 0, "Sender has no user ID");
 	}
 
 	modifier hasNoUser() {
-		bytes memory temp = bytes(userIds[msg.sender]);
-		require(temp.length == 0, "Sender already has a user ID");
-		emit TraceString('hasNoUser', userIds[msg.sender]);
+		_hasNoUser();
 		_;
 	}
+	function _hasNoUser() internal view {
+		bytes memory temp = bytes(userIds[msg.sender]);
+		require(temp.length == 0, "Sender already has user ID");
+	}
+
 
 	// @notice Authenticate account is owner of user ID
 	// @dev This should be redundant given the user claiming process, but
 	//	    it is left in for added safety during development.
-	modifier isUser(string memory _id) {
+	modifier isUser(string memory _userId) {
+		_isUser(_userId);
+		_;
+	}
+
+	function _isUser(string memory _userId) internal view
+	{
 		string memory temp = string(userIds[msg.sender]);
-		require(keccak256(abi.encodePacked((temp))) == keccak256(abi.encodePacked((_id))),
-				"Sender is not the owner of this user ID");
-				_;
+		require(keccak256(abi.encodePacked((temp))) == keccak256(abi.encodePacked((_userId))),
+				"Sender not the owner of user ID");
 	}
 
 	// @notice Acquire twitterClient request lock for sender iniating request
 	// @dev Require the request lock is available
 	modifier requestUnlocked() {
+		_requestUnlocked();
+		_;
+	}
+	function _requestUnlocked() internal {
 		require(requestMutexes[msg.sender] == false, "Sender already has a request pending");
 		requestMutexes[msg.sender] = true;
-		_;
 	}
 
 	// @notice Release twitterClient for account that initiated request
@@ -485,19 +505,25 @@ contract WokeToken is Ownable, ERC20 {
 	}
 
 	modifier onlyClient() {
-		require(msg.sender == twitterClient, "Sender is not Twitter Client");
+		require(msg.sender == twitterClient, "Sender not Twitter Client");
 		_;
 	}
 
 	modifier onlyTipAgent() {
-		require(msg.sender == tippingAgent, "Sender is not tipping agent");
+		_onlyTipAgent();
 		_;
+	}
+	function _onlyTipAgent() internal view {
+		require(msg.sender == tippingAgent, "Sender not tipping agent");
 	}
 
 	modifier supplyInvariant() {
 		uint256 supply = totalSupply();
 		_;
-		require(totalSupply() == supply);
+		_supplyInvariant(supply);
+	}
+	function _supplyInvariant(uint256 original) internal view {
+		require(totalSupply() == original, "supply invariant");
 	}
 
 	/* EVENTS */

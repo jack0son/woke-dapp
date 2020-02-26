@@ -98,8 +98,8 @@ contract TwitterOracleMock is Ownable, Pausable {
         bytes memory _proof
     )
         public
-	whenNotPaused
-	onlyOracle
+		whenNotPaused
+		onlyOracle
     {
         require(
             stringNotEmpty(statusId[_queryId]),
@@ -107,11 +107,11 @@ contract TwitterOracleMock is Ownable, Pausable {
         );
 
         emit LogResult(_result, _proof);
-	
-	string memory tweetId = statusId[_queryId];
-	statusText[tweetId] = _result; // @fix this should not be stored due to gas cost
 
-	emit TweetStored(tweetId, _result, _queryId);
+		string memory tweetId = statusId[_queryId];
+		statusText[tweetId] = _result; // @fix this should not be stored due to gas cost
+
+		emit TweetStored(tweetId, _result, _queryId);
     }
 
     // example post id 1146384868630130689
@@ -120,23 +120,23 @@ contract TwitterOracleMock is Ownable, Pausable {
         public
         payable
 	returns (bytes32)
-    {
-        // Use computation-resource to add headers to GET request - access app-only Twitter API
-	// TODO: move query string to separate contract for updating (twitter constantly changing their API)
-	
-	string memory query = string(abi.encodePacked("https://api.twitter.com/1.1/statuses/user_timeline.json?id=", _userId, "932596541822418944&trim_user=false&tweet_mode=extended&include_entities=false&count=1&exclude_replies=false&include_rts=false"));
-	bytes32 queryId = request(
-		"json(QmdKK319Veha83h6AYgQqhx9YRsJ9MJE7y33oCXyZ4MqHE).[0].full_text",
-                "GET",
-		query,
-                "{'headers': {'content-type': 'json', 'Authorization': 'Bearer AAAAAAAAAAAAAAAAAAAAADqP%2FAAAAAAAO%2BuD4C5pzXOMYBYQ9%2BcriYYkPwE%3D7OzTjWo4KxdMbPqdvJqQnMaoWMfjicSbQxyMe8WSZKFUYdOaIn'}}"
-        );
+	{
+		// Use computation-resource to add headers to GET request - access app-only Twitter API
+		// TODO: move query string to separate contract for updating (twitter constantly changing their API)
 
-        statusId[queryId] = _userId;
-	emit FindTweetLodged(queryId, _userId);
+		string memory query = string(abi.encodePacked("https://api.twitter.com/1.1/statuses/user_timeline.json?id=", _userId, "932596541822418944&trim_user=false&tweet_mode=extended&include_entities=false&count=1&exclude_replies=false&include_rts=false"));
+		bytes32 queryId = request(
+			"json(QmdKK319Veha83h6AYgQqhx9YRsJ9MJE7y33oCXyZ4MqHE).[0].full_text",
+			"GET",
+			query,
+			"{'headers': {'content-type': 'json', 'Authorization': 'Bearer AAAAAAAAAAAAAAAAAAAAADqP%2FAAAAAAAO%2BuD4C5pzXOMYBYQ9%2BcriYYkPwE%3D7OzTjWo4KxdMbPqdvJqQnMaoWMfjicSbQxyMe8WSZKFUYdOaIn'}}"
+		);
 
-	return queryId;
-    }
+		statusId[queryId] = _userId;
+		emit FindTweetLodged(queryId, _userId);
+
+		return queryId;
+	}
 
 
     /**
@@ -182,8 +182,8 @@ contract TwitterOracleMock is Ownable, Pausable {
     /// @param _userId status ID for status text to be retrieved
     /// @return Returns the text of the twitter post, or an empty string in the case where the post has not been stored yet
     function getTweetText(string memory _userId)
-    public
-    view
+	public
+	view
     returns(string memory)
     {
       //  bytes32 postHash = keccak256(abi.encodePacked(_postId));

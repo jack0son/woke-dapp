@@ -1,7 +1,6 @@
 const TwitterOracle = artifacts.require('TwitterOracle.sol')
 const debug = require('./debug/WokeToken_test');
-const {inspect} = require('./debug/common');
-const {waitForEvent, waitForEventOld} = require('./utils');
+const { waitForEvent } = require('./utils');
 const truffleAssert = require('truffle-assertions');
 
 const printEvents = truffleAssert.prettyPrintEmittedEvents;
@@ -41,7 +40,7 @@ const WokeToken = artifacts.require('WokeToken.sol')
 const MockTwitterOracle = artifacts.require('mocks/TwitterOracleMock.sol')
 
 const getwoketoke_id = '932596541822419000';
-const another_user_id = '12345';
+const stranger_user_id = '12345';
 
 contract('WokeToken', (accounts) => {
 	const [defaultAccount, owner, oraclize_cb, claimer, stranger, cB, cC, ...rest] = accounts;
@@ -49,6 +48,7 @@ contract('WokeToken', (accounts) => {
 	// Token Generation params
 	const max_supply = 100000000;
 	let wt, to;
+	let claimUser;
 
 	context('Using mock TwitterOracle', () => {
 		beforeEach(async () => {
@@ -70,7 +70,7 @@ contract('WokeToken', (accounts) => {
 				})
 			})
 
-			describe('User ID claiming', () => {
+			describe('#claimUser', () => {
 				context('with a single valid claim', () => {
 					it('should submit a tweet request', async () => {
 
@@ -127,11 +127,11 @@ contract('WokeToken', (accounts) => {
 						// Attempt to claim the user again
 						await truffleAssert.reverts(
 							wt.claimUser(getwoketoke_id, {from: claimer}),
-							"Sender already has a user ID"
+							"Sender already has user ID"
 						);
 						await truffleAssert.reverts(
 							wt.claimUser(getwoketoke_id, {from: stranger}),
-							"User is already claimed"
+							"User already claimed"
 						);
 					})
 
@@ -146,9 +146,11 @@ contract('WokeToken', (accounts) => {
 						);
 					})
 
+					it('should fail if no oracle response has been received', async () => {
+					})
 				})
 
-				it('should claim several users old event waiting', async () => {
+				it('should claim several users', async () => {
 					const cases = [
 						{address: cB, id: '212312122', handle: 'jack'},
 						{address: cC, id: '3313322', handle: 'realdonaldtrump'},
@@ -229,19 +231,32 @@ contract('WokeToken', (accounts) => {
 
 			})
 
-			context('#transferUnclaimed', () => {
+			context('#tip', function() {
 				beforeEach(async function() {
-						wt.claimUser(getwoketoke_id, {from: claimer});
-						let {returnValues: {queryId: queryId}} = await waitForEvent(wt.Lodged);
-
-						let claimString = await genClaimString(claimer, getwoketoke_id);
-						await to.__callback(queryId, claimString, '0x0', {from: oraclize_cb});
-						await wt._fulfillClaim(getwoketoke_id);
+					claimUser = bindClaimUser(wt, to, oraclize_cb);
+					await claimUser(claimer, getwoketoke_id)
 				})
 
 				it('should be able to tip an unclaimed user', async function () {
-					let r = await wt.tip(getwoketoke_id, another_user_id, 1, {from: owner});
-				});
+					let r = await wt.tip(getwoketoke_id, stranger_user_id, 1, {from: owner});
+				})
+
+				it('should be able to tip a claimed user', async function () {
+					await claimUser(stranger, stranger_user_id)
+					let r = await wt.tip(getwoketoke_id, stranger_user_id, 1, {from: owner});
+				})
+
+				it('should fail if sender is not tip agent', async function () {
+				})
+
+				it('if tip amount is zero', async function () {
+				})
+
+				it('if tippers balance is zero', async function () {
+				})
+
+				it('if tip amount is greater than users balance', async function () {
+				})
 
 			})
 
@@ -252,47 +267,56 @@ contract('WokeToken', (accounts) => {
 	})
 })
 
+const bindClaimUser = (wt, to, oracleAddress) => async (claimAddress, userId) => {
+	wt.claimUser(userId, {from: claimAddress});
+	let {returnValues: {queryId: queryId}} = await waitForEvent(wt.Lodged);
 
-	// Generate Woke Auth Token
-	const example = '@getwoketoke 0xwoke:1224421374322,0x12312377134319222222312,1'
-	// message_to_sign = <address><userId><appId>
-	// token = '@getwoketoke 0xwoke:<userId>,<signature>,
-	async function genClaimString(signatory, userId, app = 'twitter') {
-		const appId = {
-			'default' : 0,
-			'twitter' : 10,
-			'youtube' : 20,
-			'reddit' : 30
-		}
+	const claimString = await genClaimString( claimAddress, userId);
+	await to.__callback(queryId, claimString, '0x0', {from: oracleAddress});
+	await wt._fulfillClaim(userId, {from: claimAddress});
+}
 
-		let msgHash = web3.utils.soliditySha3(
-			{t: 'uint256', v: signatory}, 
-			{t: 'string', v: userId},
-			{t: 'uint8', v: appId[app]}
-		).toString('hex');
-		//debug.h('msgHash: ', msgHash);
 
-		const sig = await web3.eth.sign(msgHash, signatory);
-
-		//debug.h(`Signature for ${signatory}, uid ${userId}\n${sig}`);
-
-		let str = `@getwoketoke 0xWOKE:${userId},${sig},1`;
-		debug.h(`Gen. claim string: ${str}`);
-		return str;
+// Generate Woke Auth Token
+const example = '@getwoketoke 0xwoke:1224421374322,0x12312377134319222222312,1'
+// message_to_sign = <address><userId><appId>
+// token = '@getwoketoke 0xwoke:<userId>,<signature>,
+async function genClaimString(signatory, userId, app = 'twitter') {
+	const appId = {
+		'default' : 0,
+		'twitter' : 10,
+		'youtube' : 20,
+		'reddit' : 30
 	}
 
-	function signOrder(amount, nonce, callback) {
-		var hash = "0x" + ethereumjs.ABI.soliditySHA3(
-			["address", "uint256", "uint256"],
-			[web3.eth.defaultAccount, amount, nonce]
-		).toString("hex");
-		web3.personal.sign(hash, web3.eth.defaultAccount, callback);
-	}
+	let msgHash = web3.utils.soliditySha3(
+		{t: 'uint256', v: signatory}, 
+		{t: 'string', v: userId},
+		{t: 'uint8', v: appId[app]}
+	).toString('hex');
+	//debug.h('msgHash: ', msgHash);
 
-	const sign = (address, dataToSign) => {
-		return new Promise((resolve, reject) => {
-			;
-		});
-	}
+	const sig = await web3.eth.sign(msgHash, signatory);
 
-	//web3.eth.sign(address, dataToSign, [, callback])
+	//debug.h(`Signature for ${signatory}, uid ${userId}\n${sig}`);
+
+	let str = `@getwoketoke 0xWOKE:${userId},${sig},1`;
+	debug.h(`Gen. claim string: ${str}`);
+	return str;
+}
+
+function signOrder(amount, nonce, callback) {
+	var hash = "0x" + ethereumjs.ABI.soliditySHA3(
+		["address", "uint256", "uint256"],
+		[web3.eth.defaultAccount, amount, nonce]
+	).toString("hex");
+	web3.personal.sign(hash, web3.eth.defaultAccount, callback);
+}
+
+const sign = (address, dataToSign) => {
+	return new Promise((resolve, reject) => {
+		;
+	});
+}
+
+//web3.eth.sign(address, dataToSign, [, callback])
