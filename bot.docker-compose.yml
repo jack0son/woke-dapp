@@ -12,9 +12,9 @@ services:
   notifier:
     image: jvindustries/woke:notifier
     depends_on:
-      - db
+      - bot-db
     environment:
-      WAIT_HOSTS: db:5433
+      WAIT_HOSTS: db:5432
       POSTGRES_HOST: bot-db
       POSTGRES_PORT: 5432
       NODE_ENV: 'production'
@@ -24,9 +24,9 @@ services:
   tipper:
     image: jvindustries/woke:tipper
     depends_on:
-      - db
+      - bot-db
     environment:
-      WAIT_HOSTS: db:5433
+      WAIT_HOSTS: db:5432
       POSTGRES_HOST: bot-db
       POSTGRES_PORT: 5432
       NODE_ENV: 'production'

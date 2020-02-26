@@ -9,7 +9,7 @@
     "test:debug": "DEBUG=oracle:* ./node_modules/.bin/mocha",
     "start:verbose": "DEBUG_RECOVERY=true NODE_ENV=production DEBUG=* node src/index.js",
     "start": "DEBUG=actor*,-*:twitter_monitor*,-*:_tip-*:info node src/index.js",
-    "notifier": "node src/notifier.js",
+    "notifier": "DEBUG=* node src/notifier.js",
     "notifier:development": "PERSIST=true DEBUG=* NODE_ENV=development node src/notifier.js",
     "notifier:production": "PERSIST=true DEBUG=* NODE_ENV=development node src/notifier.js",
     "notifier:transient": "PERSIST=false DEBUG=* NODE_ENV=development node src/notifier.js",

@@ -44,8 +44,8 @@ const { parse_bool } = require('./lib/utils');
 const TwitterStub = require('./lib/twitter-stub');
 
 
-const PERSIST_TIPS = process.env.PERSIST_TIPS;
-const persist = parse_bool(PERSIST_TIPS);
+const PERSIST = process.env.PERSIST;
+const persist = parse_bool(PERSIST);
 
 console.log('Persist? ', persist);
 const bootstrap = async () => {

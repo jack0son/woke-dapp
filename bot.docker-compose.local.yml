@@ -7,7 +7,7 @@ services:
       POSTGRES_PASSWORD: woke_bot
       POSTGRES_DB: bot_db
     volumes:
-      - bot-postgres_data:/var/lib/postgresql/data/
+      - bot-postgres_data-dev:/var/lib/postgresql/data/
     ports:
       - '5433:5432'
 
@@ -20,7 +20,7 @@ services:
     environment:
       WAIT_HOSTS: localhost:5432
       POSTGRES_HOST: localhost
-      POSTGRES_PORT: 5432
+      POSTGRES_PORT: 5433
       NODE_ENV: 'development'
       PERSIST: 'true'
       DEBUG_RECOVERY: 'true'
@@ -35,10 +35,10 @@ services:
     environment:
       WAIT_HOSTS: localhost:5432
       POSTGRES_HOST: localhost
-      POSTGRES_PORT: 5432
+      POSTGRES_PORT: 5433
       NODE_ENV: 'development'
       PERSIST: 'true'
       DEBUG_RECOVERY: 'true'
 
 volumes:
-  bot-postgres_data:
+  bot-postgres_data-dev:
