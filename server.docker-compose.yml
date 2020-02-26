@@ -8,7 +8,7 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql/data/
     ports:
-      - '5432:5432'
+      #- '5432:5432'
   auth-server:
     image: jvindustries/woke:server
     depends_on:
