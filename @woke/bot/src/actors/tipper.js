@@ -153,7 +153,6 @@ const tipper = {
 
 			// FSM effects
 			if(!ctx.recovering) {
-			//if(true) {
 				switch(tip.status) {
 					case 'SETTLED': {
 						log(`\nTip settled: @${tip.fromHandle} tipped @${tip.toHandle} ${tip.amount} WOKENS\n`)
