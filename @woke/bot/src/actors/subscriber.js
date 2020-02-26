@@ -1,7 +1,8 @@
-const { dispatch, query } = require('nact');
+const { dispatch, query, spawnStateless } = require('nact');
 const { start_actor, block } = require('../actor-system');
 const { initContract } = require('../lib/web3');
 
+let idx = 0;
 const subscriptionActor= {
 	properties: {
 		initialState: {
@@ -57,6 +58,21 @@ const subscriptionActor= {
 
 			subscription.start();
 
+			const resubber = spawnStateless(ctx.self, 
+				(msg, _ctx) => {
+					const sub = ctx.self;
+					setInterval(() => {
+						block(state.a_web3, {type: 'get'}).then(() => {
+							//dispatch(sub, { type: 'resubscribe' }, sub);
+							subscription.resubscribe();
+						});
+					}, 5*60*1000);
+				},
+				`_resub-${idx++}`,
+			);
+
+			dispatch(resubber, {type: 'go go go!'}, ctx.self);
+
 			return { ...state, subscription, subscribers: [...subscribers, ctx.sender]};
 		},
 
@@ -84,18 +100,12 @@ const subscriptionActor= {
 		},
 
 		'resubscribe': async (msg, ctx, state) => {
-			const contract = initContract(web3Instance, state.contractInterface);
-			const { web3Instance } = await block(state.a_web3, { type: 'get' });
-			/*
-			if(resubscribe) {
-				setInterval(() => {
-					self.checkConnection().then(() => {
-						debug.d(`... resubscribed ${eventName}`)
-						subscription.resubscribe();
-					});
-				}, 5*60*1000);
-			}
-			*/
+			//const { web3Instance } = await block(state.a_web3, { type: 'get' });
+			//const contract = initContract(web3Instance, state.contractInterface);
+			const { subscription } = state;
+			subscription.resubscribe();
+			console.log(`... resubscribed ${eventName}`)
+
 		},
 
 		'stop': (msg, ctx, state) => {
@@ -109,23 +119,27 @@ const subscriptionActor= {
 
 const makeLogEventSubscription = web3 => (contract, eventName, handleFunc, opts) => {
 	let subscription = null;
+	const eventJsonInterface = web3.utils._.find(
+		contract._jsonInterface,
+		o => o.name === eventName && o.type === 'event',
+	);
+	const handleUpdate = (error, result) => {
+		let event = result ? web3.eth.abi.decodeLog(
+			eventJsonInterface.inputs,
+			result.data,
+			result.topics.slice(1)
+		) : result;
+		handleFunc(error, {...result, event})
+	}
+
 	const start = () => {
-		const eventJsonInterface = web3.utils._.find(
-			contract._jsonInterface,
-			o => o.name === eventName && o.type === 'event',
-		);
+
+
 		const newSub = web3.eth.subscribe('logs', {
 			...opts,
 			address: contract.options.address,
 			topics: [eventJsonInterface.signature],
-		}, (error, result) => {
-			let event = result ? web3.eth.abi.decodeLog(
-					eventJsonInterface.inputs,
-					result.data,
-					result.topics.slice(1)
-			) : result;
-			handleFunc(error, {...result, event})
-		})
+		}, handleUpdate); 
 
 		console.log(`... Subscribed to ${eventName}.`);
 		//console.log(newSub);
@@ -144,7 +158,8 @@ const makeLogEventSubscription = web3 => (contract, eventName, handleFunc, opts)
 	);
 
 	const resubscribe = () => {
-		subscription.subscribe(handleUpdate);
+		console.log(`... Resubscribed to ${eventName}.`);
+		subscription.subscribe();
 	}
 
 	return {
