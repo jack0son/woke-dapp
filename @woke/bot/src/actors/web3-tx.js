@@ -211,6 +211,7 @@ const actions = {
 		const contract = initContract(web3Instance, state.contractInterface);
 		contract.methods[tx.method](...tx.args).send(opts)
 			.on('transactionHash', hash => {
+				ctx.debug.info(msg, `... Pending ${hash}`)
 				reduce({
 					tx: { hash }
 				}, ctx);
