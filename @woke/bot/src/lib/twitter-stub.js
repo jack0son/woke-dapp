@@ -74,7 +74,7 @@ class TwitterStub {
 			query: '$woke OR $WOKE OR $WOKENS OR WOKENS',
 			result_type: 'recent',
 			entities: 'false',
-			count: 15,
+			count: 100,
 			tweetMode: 'extended',
 		}
 
