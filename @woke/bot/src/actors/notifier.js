@@ -111,7 +111,7 @@ const notifier = {
 			ctx.debug.d(msg, `Updated log:${log.transactionHash} to ⊰ ${log.status} ⊱`)
 
 			if(log.status == 'SETTLED') {
-				console_log(`\nNotified: @${entry.fromId} sent @${entry.toId} ${entry.amount} WOKENS\n`)
+				console_log(`\nNotified: @${log.event.fromId} sent @${log.event.toId} ${log.event.amount} WOKENS\n`)
 			}
 
 			return {

@@ -32,6 +32,9 @@ const TweeterActor = (twitterStub) => ({
 		},
 
 		onCrash: (msg, error, ctx) => {
+			console.log(`Error processing message in actor ${ctx.self.name}`);
+			console.log(msg);
+			console.log(error);
 			return ctx.resume;
 		}
 		//onCrash: exponentialRetry
