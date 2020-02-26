@@ -33,7 +33,7 @@ contract TwitterOracleMock is Ownable, Pausable {
 
     event TraceBytes(string m, bytes v);
     // @notice Mock Provable query
-    // @dev not technically accurate representatoin of oraclizeAPI
+    // @dev not accurate representatoin of oraclizeAPI
     function oraclize_query(
 	string memory _dataSource,
         string memory _query,
@@ -45,27 +45,19 @@ contract TwitterOracleMock is Ownable, Pausable {
 	//payable 
 	returns (bytes32) 
     {
-
-        /*emit TraceBytes('packed query data', abi.encodePacked(
-		_dataSource,
-		_query,
-		_method,
-		_url,
-		_kwargs
-	));*/
-	
-        return keccak256(abi.encodePacked(
-		_dataSource,
-		_query,
-		_method,
-		_url,
-		_kwargs
-	));
+        /*emit TraceBytes('packed query data', abi.encodePacked( _dataSource, _query, _method, _url, _kwargs));*/
+		return keccak256(abi.encodePacked(
+			_dataSource,
+			_query,
+			_method,
+			_url,
+			_kwargs
+		));
     }
 
     /* Storage */
-    mapping(bytes32 => string) statusId;  // query id => tweet id
-    mapping(string => string) statusText; // tweet id => tweet text
+    mapping(bytes32 => string) userIdsByQuery;  // query ids => user id // statusId
+    mapping(string => string) tweetsByUserId; // user id => tweet text
 
     event LogNewQuery(string description);
     event LogResult(string result, bytes proof);
@@ -102,21 +94,21 @@ contract TwitterOracleMock is Ownable, Pausable {
 		onlyOracle
     {
         require(
-            stringNotEmpty(statusId[_queryId]),
+            stringNotEmpty(userIdsByQuery[_queryId]),
             "The Oraclize query ID does not match an Oraclize request made from this contract."
         );
 
         emit LogResult(_result, _proof);
 
-		string memory tweetId = statusId[_queryId];
-		statusText[tweetId] = _result; // @fix this should not be stored due to gas cost
+		string memory tweetId = userIdsByQuery[_queryId];
+		tweetsByUserId[tweetId] = _result; // @fix this should not be stored due to gas cost
 
 		emit TweetStored(tweetId, _result, _queryId);
     }
 
     // example post id 1146384868630130689
     // @dev Retrieve text for a specific tweet id
-    function findTweet(string memory _userId)
+    function query_findClaimTweet(string memory _userId)
         public
         payable
 	returns (bytes32)
@@ -132,7 +124,7 @@ contract TwitterOracleMock is Ownable, Pausable {
 			"{'headers': {'content-type': 'json', 'Authorization': 'Bearer AAAAAAAAAAAAAAAAAAAAADqP%2FAAAAAAAO%2BuD4C5pzXOMYBYQ9%2BcriYYkPwE%3D7OzTjWo4KxdMbPqdvJqQnMaoWMfjicSbQxyMe8WSZKFUYdOaIn'}}"
 		);
 
-		statusId[queryId] = _userId;
+		userIdsByQuery[queryId] = _userId;
 		emit FindTweetLodged(queryId, _userId);
 
 		return queryId;
@@ -187,7 +179,7 @@ contract TwitterOracleMock is Ownable, Pausable {
     returns(string memory)
     {
       //  bytes32 postHash = keccak256(abi.encodePacked(_postId));
-        return statusText[_userId];
+        return tweetsByUserId[_userId];
     }
 
     /// @notice Returns the balance of this contract

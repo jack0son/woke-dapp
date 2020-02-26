@@ -96,7 +96,7 @@ contract WokeToken is Ownable, ERC20 {
 		requester[_user] = msg.sender;
 
 		TwitterOracleMock client = TwitterOracleMock(twitterClient);
-		bytes32 queryId = client.findTweet(_user);
+		bytes32 queryId = client.query_findClaimTweet(_user);
 		//bytes32 queryId = bytes32(0);
 
 		if(queryId == bytes32(0)) {
