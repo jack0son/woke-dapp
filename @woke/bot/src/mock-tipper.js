@@ -45,8 +45,8 @@ const { parse_bool } = require('./lib/utils');
 const TwitterStub = require('./lib/twitter-stub');
 const twitterMock = require('../test/mocks/twitter-client');
 
-const PERSIST_TIPS = process.env.PERSIST_TIPS;
-const persist = PERSIST_TIPS ? parse_bool(PERSIST_TIPS) : true;
+const PERSIST = process.env.PERSIST;
+const persist = PERSIST ? parse_bool(PERSIST) : true;
 
 console.log('Persist? ', persist);
 const bootstrap = async () => {
@@ -55,7 +55,7 @@ const bootstrap = async () => {
 
 	const tipSystem = new TipSystem(undefined, {
 		twitterStub: twitterStub,
-		persist: false,
+		persist: persist,
 		pollingInterval: 1000*1000,
 		notify: true,
 	});

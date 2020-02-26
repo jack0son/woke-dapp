@@ -152,34 +152,37 @@ const tipper = {
 			ctx.debug.d(msg, `Updated tip:${tip.id} to ⊰ ${tip.status} ⊱`)
 
 			// FSM effects
-			switch(tip.status) {
-				case 'SETTLED': {
-					log(`\nTip settled: @${tip.fromHandle} tipped @${tip.toHandle} ${tip.amount} WOKENS\n`)
-					dispatch(ctx.self, { type: 'notify', tip }, ctx.self);
-					break;
-				}
-
-				case 'INVALID': {
-					if(tip.reason) {
-						//ctx.debug.error(msg, `Tip ${tip.id} from ${tip.fromHandle} error: ${tip.error}`)
-						log(`\nTip invalid: ${tip.reason}`);
+			if(!ctx.recovering) {
+			//if(true) {
+				switch(tip.status) {
+					case 'SETTLED': {
+						log(`\nTip settled: @${tip.fromHandle} tipped @${tip.toHandle} ${tip.amount} WOKENS\n`)
+						dispatch(ctx.self, { type: 'notify', tip }, ctx.self);
+						break;
 					}
 
-					dispatch(ctx.self, { type: 'notify', tip }, ctx.self);
-					break;
-				}
+					case 'INVALID': {
+						if(tip.reason) {
+							//ctx.debug.error(msg, `Tip ${tip.id} from ${tip.fromHandle} error: ${tip.error}`)
+							log(`\nTip invalid: ${tip.reason}`);
+						}
 
-				case 'FAILED': {
-					if(tip.error) {
-						//ctx.debug.error(msg, `Tip ${tip.id} from ${tip.fromHandle} error: ${tip.error}`)
-						log(`\nTip failed: ${tip.error}`);
+						dispatch(ctx.self, { type: 'notify', tip }, ctx.self);
+						break;
 					}
 
-					dispatch(ctx.self, { type: 'notify', tip }, ctx.self);
-					break;
-				}
+					case 'FAILED': {
+						if(tip.error) {
+							//ctx.debug.error(msg, `Tip ${tip.id} from ${tip.fromHandle} error: ${tip.error}`)
+							log(`\nTip failed: ${tip.error}`);
+						}
 
-				default: {
+						dispatch(ctx.self, { type: 'notify', tip }, ctx.self);
+						break;
+					}
+
+					default: {
+					}
 				}
 			}
 
