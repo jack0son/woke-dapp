@@ -202,7 +202,7 @@ contract WokeToken is Ownable, ERC20 {
 		public
 		hasUser
 	{
-		require(_amount > 0, 'Cannot send 0 tokens');
+		require(_amount > 0, 'cannot send 0 tokens');
 
 		_transferUnclaimed(myUser(), _toId, _amount);
 	}
@@ -214,7 +214,7 @@ contract WokeToken is Ownable, ERC20 {
 		userNotClaimed(_toId)
 		supplyInvariant
 	{
-		require(_amount > 0, 'Cannot send 0 tokens');
+		require(_amount > 0, 'cannot send 0 tokens');
 
 		address from = users[_fromId].account;
 
@@ -228,6 +228,10 @@ contract WokeToken is Ownable, ERC20 {
 		users[_toId].unclaimedBalance += _amount;
 		users[_toId].referralAmount[from] = _amount;
 		users[_toId].referrers.push(from);
+
+		if(DEFAULT_TIP_ALL) {
+			_setTipBalance(_fromId, balanceOf(from));
+		}
 
 		//emit Tx(userIds[msg.sender], _toId, userIds[msg.sender], _toId, _amount, false);
 		emit Tx(from, users[_toId].account, _fromId, _toId, _amount, false);
@@ -257,7 +261,7 @@ contract WokeToken is Ownable, ERC20 {
 		userIsClaimed(_toId)
 		supplyInvariant
 	{
-		require(_amount > 0, 'Cannot send 0 tokens');
+		require(_amount > 0, 'cannot send 0 tokens');
 
 		address from = users[_fromId].account;
 		address to = users[_toId].account;
@@ -281,12 +285,10 @@ contract WokeToken is Ownable, ERC20 {
 		returns(uint256)
 	{
 		// @TODO should perform this check off chain
-		if(_amount == 0) {
-			return 0;
-		}
-
 		uint256 tipBalance = users[_fromId].tipBalance;
 		uint256 amount = _amount > tipBalance ? tipBalance : _amount;
+
+		require(amount > 0, "cannot tip 0 tokens");
 
 		if(userClaimed(_toId)) {
 			_transferClaimed(_fromId, _toId, amount);
@@ -295,7 +297,7 @@ contract WokeToken is Ownable, ERC20 {
 		}
 
 		users[_fromId].tipBalance = tipBalance - amount;
-		require(tipBalance - amount == users[_fromId].tipBalance, "Tip balance invariant violated");
+		require(tipBalance - amount == users[_fromId].tipBalance, "tip balance invariant violated");
 
 		emit Tip(_fromId, _toId, amount);
 		return amount;
@@ -370,7 +372,7 @@ contract WokeToken is Ownable, ERC20 {
 		require(_authVersion == authVersion, 'invalid auth version');
 
 		address recovered = ECDSA.recover(msgHash, sig);
-		require(recovered == claimer, 'Recovered address does not match claimer address');
+		require(recovered == claimer, 'recovered address does not match claimer address');
 
 		bool result = (recovered == claimer);
 		emit Verification(result, recovered, claimer, _id);
@@ -438,7 +440,7 @@ contract WokeToken is Ownable, ERC20 {
 	}
 	function _userNotClaimed(string memory _userId) internal view
 	{
-		require(userClaimed(_userId) == false, "User already claimed");
+		require(userClaimed(_userId) == false, "user already claimed");
 	}
 
 	modifier userIsClaimed(string memory _userId) {
@@ -446,7 +448,7 @@ contract WokeToken is Ownable, ERC20 {
 		_;
 	}
 	function _userIsClaimed(string memory _userId) internal view {
-		require(userClaimed(_userId) == true, "User not claimed");
+		require(userClaimed(_userId) == true, "user not claimed");
 	}
 
 	// @note has<Type>() implies check for mapping of (msg.sender => <Type>)
@@ -457,7 +459,7 @@ contract WokeToken is Ownable, ERC20 {
 	}
 	function _hasUser() internal view {
 		bytes memory temp = bytes(userIds[msg.sender]);
-		require(temp.length > 0, "Sender has no user ID");
+		require(temp.length > 0, "sender has no user ID");
 	}
 
 	modifier hasNoUser() {
@@ -466,7 +468,7 @@ contract WokeToken is Ownable, ERC20 {
 	}
 	function _hasNoUser() internal view {
 		bytes memory temp = bytes(userIds[msg.sender]);
-		require(temp.length == 0, "Sender already has user ID");
+		require(temp.length == 0, "sender already has user ID");
 	}
 
 
@@ -492,20 +494,20 @@ contract WokeToken is Ownable, ERC20 {
 		_;
 	}
 	function _requestUnlocked() internal {
-		require(requestMutexes[msg.sender] == false, "Sender already has a request pending");
+		require(requestMutexes[msg.sender] == false, "sender already has a request pending");
 		requestMutexes[msg.sender] = true;
 	}
 
 	// @notice Release twitterClient for account that initiated request
 	// @dev Requires the request lock to be acquired
 	modifier requestLocked(address _requester) {
-		require(requestMutexes[_requester] == true, "Sender has no request pending");
+		require(requestMutexes[_requester] == true, "sender has no request pending");
 		_;
 		requestMutexes[_requester] = false;
 	}
 
 	modifier onlyClient() {
-		require(msg.sender == twitterClient, "Sender not Twitter Client");
+		require(msg.sender == twitterClient, "sender not client");
 		_;
 	}
 
@@ -514,7 +516,7 @@ contract WokeToken is Ownable, ERC20 {
 		_;
 	}
 	function _onlyTipAgent() internal view {
-		require(msg.sender == tippingAgent, "Sender not tipping agent");
+		require(msg.sender == tippingAgent, "sender not tip agent");
 	}
 
 	modifier supplyInvariant() {

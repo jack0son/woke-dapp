@@ -6,7 +6,7 @@ const truffleAssert = require('truffle-assertions');
 const printEvents = truffleAssert.prettyPrintEmittedEvents;
 
 const {fromAscii, toWei} = web3.utils;
-const BN = web3.BN;
+const BN = require('bignumber.js');
 
 //const Web3 = require('web3')
 //const web3ws = new Web3(new Web3.providers.WebsocketProvider('ws://localhost:9545'))
@@ -40,10 +40,10 @@ const WokeToken = artifacts.require('WokeToken.sol')
 const MockTwitterOracle = artifacts.require('mocks/TwitterOracleMock.sol')
 
 const getwoketoke_id = '932596541822419000';
-const stranger_user_id = '12345';
+const stranger_id = '12345';
 
 contract('WokeToken', (accounts) => {
-	const [defaultAccount, owner, oraclize_cb, claimer, stranger, cB, cC, ...rest] = accounts;
+	const [defaultAccount, owner, oraclize_cb, claimer, tipAgent, stranger, cB, cC, ...rest] = accounts;
 
 	// Token Generation params
 	const max_supply = 100000000;
@@ -57,7 +57,7 @@ contract('WokeToken', (accounts) => {
 				{from: owner, value: web3.utils.toWei('0.1', 'ether')}
 			);
 
-			wt = await WokeToken.new(to.address, owner, max_supply, {from: owner})
+			wt = await WokeToken.new(to.address, tipAgent, max_supply, {from: owner})
 		});
 
 		describe('WokeToken.sol', () => {
@@ -127,11 +127,11 @@ contract('WokeToken', (accounts) => {
 						// Attempt to claim the user again
 						await truffleAssert.reverts(
 							wt.claimUser(getwoketoke_id, {from: claimer}),
-							"Sender already has user ID"
+							"sender already has user ID"
 						);
 						await truffleAssert.reverts(
 							wt.claimUser(getwoketoke_id, {from: stranger}),
-							"User already claimed"
+							"user already claimed"
 						);
 					})
 
@@ -142,7 +142,7 @@ contract('WokeToken', (accounts) => {
 						// Attempt second request before Oracale __callback() called
 						await truffleAssert.reverts(
 							wt.claimUser(getwoketoke_id, {from: claimer}),
-							"Sender already has a request pending"
+							"sender already has a request pending"
 						);
 					})
 
@@ -238,29 +238,50 @@ contract('WokeToken', (accounts) => {
 				})
 
 				it('should be able to tip an unclaimed user', async function () {
-					let r = await wt.tip(getwoketoke_id, stranger_user_id, 1, {from: owner});
+					let r = await wt.tip(getwoketoke_id, stranger_id, 1, {from: tipAgent});
 				})
 
 				it('should be able to tip a claimed user', async function () {
-					await claimUser(stranger, stranger_user_id)
-					let r = await wt.tip(getwoketoke_id, stranger_user_id, 1, {from: owner});
+					await claimUser(stranger, stranger_id)
+					let r = await wt.tip(getwoketoke_id, stranger_id, 1, {from: tipAgent});
 				})
 
-				it('should fail if sender is not tip agent', async function () {
+				it('should revert if sender is not tip agent', async function () {
+					await truffleAssert.reverts(
+						wt.tip(getwoketoke_id, stranger_id, 1, {from: claimer}),
+						"sender not tip agent"
+					);
+
+					await truffleAssert.reverts(
+						wt.tip(getwoketoke_id, stranger_id, 1, {from: stranger}),
+						"sender not tip agent"
+					);
 				})
 
-				it('if tip amount is zero', async function () {
+				it('should revert if tip amount is zero', async function () {
+					await truffleAssert.reverts(
+						wt.tip(getwoketoke_id, stranger_id, 0, {from: tipAgent}),
+						"cannot tip 0 tokens",
+					)
 				})
 
-				it('if tippers balance is zero', async function () {
+				it('should revert if senders balance is zero', async function () {
+					const balance = (await wt.balanceOf.call(claimer)).toNumber();
+					await wt.transferUnclaimed(stranger_id, balance, {from: claimer}); // Empty balance
+					//await wt.tip(getwoketoke_id, stranger_id, 5, {from: tipAgent});
+					await truffleAssert.reverts(
+						wt.tip(getwoketoke_id, stranger_id, 5, {from: tipAgent}),
+						"cannot tip 0 tokens",
+					)
 				})
 
-				it('if tip amount is greater than users balance', async function () {
+				it('should succeed if tip amount is greater than users balance', async function () {
+					const balance = (await wt.balanceOf.call(claimer)).toNumber();
+					let r = await wt.tip(getwoketoke_id, stranger_id, balance + 4, {from: tipAgent}); // Empty balance
+					const tipLog = r.logs[r.logs.length - 1];
+					const tipAmount = tipLog.args.amount.toNumber();
+					assert.strictEqual(balance, tipAmount);
 				})
-
-			})
-
-			describe('#tip', () => {
 
 			})
 		})
