@@ -1,6 +1,6 @@
 const { dispatch } = require('nact');
 const { Logger } = require('@woke/lib');
-const {inspect} = require('util');
+const { delay } = require('../lib/utils');
 const debug = (msg, args) => Logger().name(`TMON`, `${msg.type}>> ` + args);
 // Driven by polling twitter
 // https://developer.twitter.com/en/docs/tweets/search/api-reference/get-search-tweets
@@ -26,6 +26,7 @@ const iface = {
 	seen_tips: 'seen_tips',
 }
 
+const ONCRASH_DELAY = 10*1000;
 const TwitterMonitor = (twitterStub) => ({
 	iface,
 
@@ -39,7 +40,11 @@ const TwitterMonitor = (twitterStub) => ({
 			seenTips: {},
 		},
 
-		onCrash: (msg, error, ctx) => ctx.resume,
+		onCrash: async (msg, error, ctx) => {
+			console.log(`OnCrash delay ${ONCRASH_DELAY}ms ...`);
+			await delay(ONCRASH_DELAY);
+			return ctx.resume;
+		}
 	},
 
 	actions: {
@@ -88,8 +93,13 @@ const TwitterMonitor = (twitterStub) => ({
 					seenTips: {...seenTips},
 				}
 			}).catch(error => {
+				//Failed to fetch tweets
+				// [ { message: 'Rate limit exceeded', code: 88 } ]
 				console.log('Failed to fetch tweets');
 				console.error(error);
+				if(error[0] && error[0].code == 88) {
+					throw error;
+				}
 			});
 		},
 

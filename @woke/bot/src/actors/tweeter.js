@@ -84,6 +84,7 @@ const TweeterActor = (twitterStub) => ({
 			const { tip } = msg;
 
 			ctx.debug.d(msg, `tweeting ${tip.id} failure...`);
+			const text = tip_failure_message(tip);
 			const tweet = await twitter.postTweetReply(text, tip.id);
 
 			dispatch(ctx.sender, { type: msg.type, tweet }, ctx.self);
