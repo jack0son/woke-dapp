@@ -206,6 +206,7 @@ const tipper = {
 			}
 		},
 
+		// Find unsettled tips and attempt to settle them
 		'resume': (msg, ctx, state) => {
 			const { tipRepo } = state;
 
@@ -220,7 +221,6 @@ const tipper = {
 				}
 			});
 
-			// Find unsettled tips and attempt to settle them
 		},
 
 		'distribute': (msg, ctx, state) => {

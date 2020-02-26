@@ -44,9 +44,12 @@ const notifier = {
 
 			// Subscribe to unclaimed transfers
 
+			// Rely on subscription to submit logs from block 0
+			// @TODO persist last seen block number
 			let response = await block(a_wokenContract, {
 				type: 'subscribe_log',
 				eventName: 'Tx',
+				opts: { fromBlock: 0 },
 				filter: e => e.claimed == false,
 			});
 			const a_unclaimed_tx_sub = response.a_sub;
@@ -70,10 +73,14 @@ const notifier = {
 				case 'UNSETTLED': {
 					ctx.debug.info(msg, `Settling ${log.transactionHash}...`);
 					const a_promise = spawn_tweet_promise(log, ctx);
+					entry.toId = log.event.toId;
+					entry.fromId = log.event.fromId;
+					entry.amount = log.event.amount;
+
 					dispatch(a_tweeter, { type: 'tweet_unclaimed_transfer',
-						toId: log.event.toId,
-						fromId: log.event.fromId,
-						amount: log.event.amount,
+						toId: entry.toId,
+						fromId: entry.fromId,
+						amount: entry.amount,
 					}, a_promise);
 					break;
 				}
@@ -102,6 +109,10 @@ const notifier = {
 			}
 
 			ctx.debug.d(msg, `Updated log:${log.transactionHash} to ⊰ ${log.status} ⊱`)
+
+			if(log.status == 'SETTLED') {
+				console_log(`\nNotified: @${entry.fromId} sent @${entry.toId} ${entry.amount} WOKENS\n`)
+			}
 
 			return {
 				...state,

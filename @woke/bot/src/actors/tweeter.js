@@ -31,6 +31,9 @@ const TweeterActor = (twitterStub) => ({
 			twitter: twitterStub,
 		},
 
+		onCrash: (msg, error, ctx) => {
+			return ctx.resume;
+		}
 		//onCrash: exponentialRetry
 	},
 

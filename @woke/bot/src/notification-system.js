@@ -1,9 +1,10 @@
+const { bootstrap, start_actor, block } = require('./actor-system');
 const { spawnStateless, dispatch, query } = require('nact');
-const { bootstrap, start_actor } = require('./actor-system');
 const PersistenceEngine = require('./persistence-engine');
-const { notifier, tweeter  } = require('./actors');
+const { notifier, Tweeter  } = require('./actors');
 
 // Lib
+const { create_woken_contract_actor } = require('./lib/actors/woken-contract');
 const TwitterStub = require('./lib/twitter-stub');
 const twitterMock = require('../test/mocks/twitter-client');
 const debug = require('@woke/lib').Logger('sys_tip');
@@ -54,8 +55,30 @@ class NotificationSystem {
 			}
 		}
 
-		dispatch(self.a_notifier, { type: 'resume' });
+		dispatch(self.a_notifier, { type: 'init' });
 
 		console.log(`Started transaction notification system.`);
 	}
+}
+
+module.exports = NotificationSystem;
+
+// Mock notification system
+if(debug.control.enabled && require.main === module) {
+	var argv = process.argv.slice(2);
+	const [persist, ...args] = argv;
+
+	const { twitter } = require('@woke/lib');
+
+	(async () => {
+		await twitter.initClient();
+		const twitterStub = new TwitterStub(twitter);
+
+		const notiSystem = new NotificationSystem(undefined, {
+			persist,
+			twitterStub,
+		});
+		notiSystem.start();
+
+	})()
 }

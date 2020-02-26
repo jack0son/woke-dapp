@@ -16,7 +16,6 @@ var client;
 const initClient = async () => {
 	let bearerToken = process.env.TWITTER_BEARER_TOKEN;
 
-	console.log(bearerToken)
 	if(bearerToken == undefined) {
 		try {
 			bearerToken = await getBearerToken(consumerKey, consumerSecret);
@@ -35,7 +34,7 @@ const initClient = async () => {
 //		bearer_token: bearerToken, 
 	});
 
-	console.log(client);
+	//console.log(client);
 
 	return;
 }
