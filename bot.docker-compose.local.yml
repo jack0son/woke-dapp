@@ -10,17 +10,31 @@ services:
       - bot-postgres_data:/var/lib/postgresql/data/
     ports:
       - '5433:5432'
-  bot:
+
+  notifier:
     build:
       context: ./
-      dockerfile: bot.Dockerfile
+      dockerfile: notifier.Dockerfile
     depends_on:
       - bot-db
-    ports:
-      - '3001:3001'
     environment:
-      WAIT_HOSTS: bot-db:5432
-      POSTGRES_HOST: bot-db
+      WAIT_HOSTS: localhost:5432
+      POSTGRES_HOST: localhost
+      POSTGRES_PORT: 5432
+      NODE_ENV: 'development'
+      PERSIST: 'true'
+      DEBUG_RECOVERY: 'true'
+
+  tipper:
+    build:
+      context: ./
+      dockerfile: tipper.Dockerfile
+    depends_on:
+      - bot-db
+    network_mode: host
+    environment:
+      WAIT_HOSTS: localhost:5432
+      POSTGRES_HOST: localhost
       POSTGRES_PORT: 5432
       NODE_ENV: 'development'
       PERSIST: 'true'
