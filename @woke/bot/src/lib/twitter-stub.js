@@ -27,7 +27,7 @@ class TwitterStub {
 			client.getUserData(toId),
 		]);
 
-		const text = `${emojis.folded_hands} @${fromUser.handle} just sent you ${amount} WOKENS.\nGo to ${appUrl} to claim them. @${toUser.handle}!`
+		const text = `${emojis.folded_hands} @${fromUser.handle} just sent you ${amount} $WOKE.\nGo to ${appUrl} to claim it. @${toUser.handle}!`
 		try {
 			const r = await client.updateStatus(text);
 			return r;
