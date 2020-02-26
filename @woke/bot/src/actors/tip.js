@@ -71,6 +71,11 @@ const actions = {
 				break;
 			}
 
+			case 'balanceOf': {
+				ctx.receivers.reduce({ event: 'check_bal-recv'});
+				break;
+			}
+
 			case 'tip': {
 				ctx.receivers.reduce({ event: 'send_tip-recv',  ...msg});
 				break;
@@ -118,6 +123,46 @@ const eventsTable = {
 					nextStage = 'invalid';
 
 				} else if(userIsClaimed === true) {
+					dispatch(a_wokenContract, {type: 'call', 
+						method: 'balanceOf',
+						args: [tip.fromId],
+						sinks: [ctx.self],
+					}, ctx.self)
+
+					tip.status = 'UNSETTLED';
+					nextStage = 'CALLING-CHECK-BALANCE';
+
+				} else if(!userIsClaimed) {
+					// Oh yes, this happens sometimes!
+					throw new Error(`User unclaimed is ${userIsClaimed}`)
+				}
+
+				return {
+					...state,
+					stage: nextStage,
+					tip,
+				};
+			}
+		}
+	},
+
+	'check_bal-recv': {
+		'CALLING-CHECK-BALANCE': {
+			effect: (msg, ctx, state) => {
+				const { tip, a_wokenContract } = state;
+				const { tx, result } = msg;
+				let nextStage;
+				const balance = result;
+				ctx.debug.info(msg, `balance: ${balance}`);
+				if(balance.toNumber() === 0) {
+					tip.status = 'INVALID';
+					tip.error = 'broke'
+					//entry.status = statusEnum.INVALID;
+					//entry.error = 'unclaimed sender'
+					dispatch(ctx.parent, { type: 'tip_update', tip }, ctx.self);
+					nextStage = 'invalid';
+
+				} else if(balance.toNumber() > 0) {
 					dispatch(a_wokenContract, {type: 'send', 
 						method: 'tip',
 						args: [tip.fromId, tip.toId, tip.amount],
@@ -127,9 +172,9 @@ const eventsTable = {
 					tip.status = 'UNSETTLED';
 					nextStage = 'SENDING-TIP';
 
-				} else if(!userIsClaimed) {
+				} else if(!balance) {
 					// Oh yes, this happens sometimes!
-					throw new Error(`User unclaimed is ${userIsClaimed}`)
+					throw new Error(`Result from balance call ${balance}`)
 				}
 
 				return {
