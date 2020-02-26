@@ -159,10 +159,20 @@ const tipper = {
 					break;
 				}
 
-				case 'FAILED': {
+				case 'INVALID': {
 					if(tip.reason) {
 						//ctx.debug.error(msg, `Tip ${tip.id} from ${tip.fromHandle} error: ${tip.error}`)
-						log(`\nTip failed: ${tip.reason}`);
+						log(`\nTip invalid: ${tip.reason}`);
+					}
+
+					dispatch(ctx.self, { type: 'notify', tip }, ctx.self);
+					break;
+				}
+
+				case 'FAILED': {
+					if(tip.error) {
+						//ctx.debug.error(msg, `Tip ${tip.id} from ${tip.fromHandle} error: ${tip.error}`)
+						log(`\nTip failed: ${tip.error}`);
 					}
 
 					dispatch(ctx.self, { type: 'notify', tip }, ctx.self);
@@ -188,6 +198,8 @@ const tipper = {
 			if(a_tweeter) {
 				if(tip.status == 'SETTLED') {
 					dispatch(a_tweeter, { type: 'tweet_tip_confirmed', tip })//, ctx.self);
+				} else if (tip.status == 'INVALID') {
+					dispatch(a_tweeter, { type: 'tweet_tip_invalid', tip })//, ctx.self);
 				} else if (tip.status == 'FAILED') {
 					dispatch(a_tweeter, { type: 'tweet_tip_failed', tip })//, ctx.self);
 				}

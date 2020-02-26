@@ -71,7 +71,7 @@ const actions = {
 				break;
 			}
 
-			case 'balanceOf': {
+			case 'userBalance': {
 				ctx.receivers.reduce({ event: 'check_bal-recv'});
 				break;
 			}
@@ -116,7 +116,7 @@ const eventsTable = {
 				ctx.debug.info(msg, `userIsClaimed: ${userIsClaimed}`);
 				if(userIsClaimed === false) {
 					tip.status = 'INVALID';
-					tip.error = 'unclaimed sender'
+					tip.reason = 'unclaimed'
 					//entry.status = statusEnum.INVALID;
 					//entry.error = 'unclaimed sender'
 					dispatch(ctx.parent, { type: 'tip_update', tip }, ctx.self);
@@ -124,7 +124,7 @@ const eventsTable = {
 
 				} else if(userIsClaimed === true) {
 					dispatch(a_wokenContract, {type: 'call', 
-						method: 'balanceOf',
+						method: 'userBalance',
 						args: [tip.fromId],
 						sinks: [ctx.self],
 					}, ctx.self)
@@ -152,17 +152,17 @@ const eventsTable = {
 				const { tip, a_wokenContract } = state;
 				const { tx, result } = msg;
 				let nextStage;
-				const balance = result;
+				const balance = parseInt(result);
 				ctx.debug.info(msg, `balance: ${balance}`);
-				if(balance.toNumber() === 0) {
+				if(balance == 0) {
 					tip.status = 'INVALID';
-					tip.error = 'broke'
+					tip.reason = 'broke'
 					//entry.status = statusEnum.INVALID;
 					//entry.error = 'unclaimed sender'
 					dispatch(ctx.parent, { type: 'tip_update', tip }, ctx.self);
 					nextStage = 'invalid';
 
-				} else if(balance.toNumber() > 0) {
+				} else if(balance > 0) {
 					dispatch(a_wokenContract, {type: 'send', 
 						method: 'tip',
 						args: [tip.fromId, tip.toId, tip.amount],
@@ -172,7 +172,7 @@ const eventsTable = {
 					tip.status = 'UNSETTLED';
 					nextStage = 'SENDING-TIP';
 
-				} else if(!balance) {
+				} else if(!balance || balance == NaN) {
 					// Oh yes, this happens sometimes!
 					throw new Error(`Result from balance call ${balance}`)
 				}
@@ -195,7 +195,7 @@ const eventsTable = {
 				ctx.debug.info(msg, `tip:${tip.id} Got tx status ${txStatus}`);
 				switch(txStatus) {
 					case 'success': {
-						const { receipt } = msg;
+						const { tx: { receipt: receipt } } = msg;
 						ctx.debug.d(msg, `tip:${tip.id} confirmed on chain`);
 						tip.tx_hash = receipt.transactionHash;
 

@@ -6,15 +6,25 @@ const tx_etherscan_url = tip => `https://goerli.etherscan.io/tx/${tip.tx_hash}`;
 const tip_tweet_url = tip =>  `https://twitter.com/${tip.fromId}/status/${tip.id}`;
 
 function tip_success_tweet_text(tip) {
-	return `Wokeness confirmed on chain: ${tx_etherscan_url(tip)}.\n\nSent @${tip.toHandle} ${tip.amount} WOKENS`;
+	return `${emojis.folded_hands} Wokeness confirmed : ${tx_etherscan_url(tip)}.\n\nSent @${tip.toHandle} ${tip.amount} WOKENS`;
 }
 
 function tip_success_message(tip) {
-	return `Wokenation of ${tip.amount} was confirmed on chain: ${tx_etherscan_url(tip)}.\n\nTransaction auth tweet ${tip_tweet_url(tip)}`;
+	return `${emojis.folded_hands} woke vote of ${tip.amount} was confirmed on chain: ${tx_etherscan_url(tip)}.\n\nTransaction auth tweet ${tip_tweet_url(tip)}`;
 }
 
 function tip_failure_message(tip) {
-	return `Your Wokenation of ${tip.amount} WOKENS failed. Are you woke yet? Join with a tweet at https://getwoke.me`;
+	return `${emojis.sleep_face} You need to be woke to send $WOKENS. Join with a tweet at https://getwoke.me`;
+}
+
+function tip_broke_message(tip) {
+	return `${emojis.no} You're broke, not woke. Spread some enlightenment...`;
+}
+
+const emojis = {
+	sleep_face: '😴',
+	folded_hands: '🙏',
+	no: '🙅',
 }
 
 // Drives posting to twitter
@@ -47,12 +57,31 @@ const TweeterActor = (twitterStub) => ({
 			// Tweet an invite
 		},
 
+		'tweet_tip_invalid': async (msg, ctx, state) => {
+			const { twitter } = state;
+			const { tip } = msg;
+
+			ctx.debug.d(msg, `tweeting ${tip.id} invalid...`);
+			let text = tip_failure_message(tip);
+			if(tip.reason == 'broke') {
+				text = tip_broke_message(tip);
+			} else if(tip.reason == 'unclaimed') {
+				text = tip_failure_message(tip);
+			} else {
+				// No invalidation reason
+			}
+			const tweet = await twitter.postTweetReply(text, tip.id);
+
+			dispatch(ctx.sender, { type: msg.type, tweet }, ctx.self);
+			// Tweet an invite
+		},
+
 		'tweet_tip_failed': async (msg, ctx, state) => {
 			const { twitter } = state;
 			const { tip } = msg;
 
 			ctx.debug.d(msg, `tweeting ${tip.id} failure...`);
-			const tweet = await twitter.postTweetReply(tip_failure_message(tip), tip.id);
+			const tweet = await twitter.postTweetReply(text, tip.id);
 
 			dispatch(ctx.sender, { type: msg.type, tweet }, ctx.self);
 			// Tweet an invite
