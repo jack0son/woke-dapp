@@ -67,22 +67,18 @@ const onCrash = (msg, ctx, state) => {
 			if(error instanceof OnChainError) {
 				//return handleOnChainError(error);
 				throw error;
+			} else if (error instanceof ParamError) {
+				if(isNonceError(error)) {
+				}
+				throw error;
 			}
+
 		}
 
 		default: {
 			return ctx.stop()
 		}
 	}
-}
-
-function handleOffChainError(error) {
-	// Want the tx actor to crash'
-	throw new Error(``)
-}
-
-function handleOnChainError(error) {
-	// do some recovery
 }
 
 function reduce(msg, ctx, state) {
@@ -115,6 +111,11 @@ const actions = {
 			if(error) {
 				if(error instanceof OnChainError) {
 
+				} else if(error instanceof TransactionError) {
+					console.log(error);
+					console.log("RETRY");
+					dispatch(ctx.self, { type: 'send', tx }, ctx.self);
+					return state;
 				} else if(error.data && error.data.tx) {
 					console.log(error.data.tx);
 					throw error;
@@ -166,6 +167,12 @@ const actions = {
 
 		tx.type = 'send';
 		const { web3Instance } = await block(state.a_web3, { type: 'get' });
+		const { nonce } = await block(state.a_nonce, { type: 'get_nonce',
+			account: web3Instance.account,
+			network: web3Instance.network,
+		});
+
+		console.log('nonce: ', nonce);
 
 		let account;
 		if(web3Instance.account) {
@@ -177,9 +184,10 @@ const actions = {
 			console.log(`Account: `, web3Instance.account);
 			throw new Error(`No account defined for web3Instance`);
 		}
+		ctx.debug.info(msg, `Send from ${account}`);
 		tx.opts = {...tx.opts, from: account};
 
-		dispatch(ctx.self, { type: '_send', tx, web3Instance }, ctx.sender);
+		dispatch(ctx.self, { type: '_send', tx, web3Instance, nonce }, ctx.self);
 		//dispatch(ctx.sender, {type: 'tx', txStatus: 'submitted', tx }, ctx.self);
 		return {
 			...state,
@@ -192,10 +200,15 @@ const actions = {
 	// @fix TODO: temporary work around
 	//	-- errors from web3 promi-event don't get caught by the actor when called
 	//	inside an async action without await
+	// @notice this action hands if it is made async
 	'_send': (msg, ctx, state) => {
 		// ctx.onlySelf();
 		const { sendOpts } = state;
-		const { tx, web3Instance } = msg; 
+		const { tx, web3Instance, nonce } = msg; 
+
+		if(nonce === undefined) {
+			throw new ParamError(`No nonce provided to tx actor _send`, tx);
+		}
 
 		const opts = {
 			gas: web3Instance.network.gasLimit,
@@ -203,6 +216,7 @@ const actions = {
 			common: web3Instance.network.defaultCommon,
 			...sendOpts,
 			...tx.opts,
+			nonce,
 		}
 		if(web3Instance.account) {
 			opts.from = web3Instance.account;
@@ -231,6 +245,8 @@ const actions = {
 					// If receipt is provided web3js specifies tx was rejected on chain
 					const onChainError = new OnChainError(error, tx, receipt);
 					reduce({ error: onChainError }, ctx);
+				} else if(error.message.includes('not mined')) {
+					reduce({ error: new TransactionError(error, tx)}, ctx);
 				} else {
 					const paramError = new ParamError(error, tx);
 					reduce({ error: paramError }, ctx);
@@ -250,6 +266,15 @@ const actions = {
 
 module.exports = { actions, properties };
 
+/*
+ *    { error:
+      { Error: Transaction was not mined within 50 blocks, please make sure your transaction was properly sent. Be aware that it might still be mined!
+          at Object.TransactionError (/home/jack/Repositories/jgitgud/woke-dapp/@woke/lib/node_modules/web3-core-helpers/src/errors.js:63:21)
+          at /home/jack/Repositories/jgitgud/woke-dapp/@woke/lib/node_modules/web3-core-method/src/index.js:495:40
+          at process._tickCallback (internal/process/next_tick.js:68:7) receipt: undefined },
+					*/
+
+
 class DomainError extends Error {
 	constructor(message) {
 		super(message);
@@ -265,9 +290,16 @@ class ParamError extends DomainError {
 	}
 }
 
+class TransactionError extends DomainError {
+	constructor(error, tx) { // and tx data?
+		super(`Transaction '${tx.method}' failed.`);
+		this.data = { error, tx };
+	}
+}
+
 class OnChainError extends DomainError {
 	constructor(error, tx, receipt) { // and tx data?
-		super(`Transactions ${receipt.transactionHash} failed.`);
+		super(`Transactions ${receipt.transactionHash} failed on chain.`);
 		this.data = { receipt, tx, error }
 	}
 }

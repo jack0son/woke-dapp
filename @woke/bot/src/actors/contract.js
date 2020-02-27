@@ -14,6 +14,7 @@ function spawn_tx(ctx, state) {
 		{
 			sinks: [ctx.sender], // forward the sender to this tx
 			a_web3: state.a_web3,
+			a_nonce: state.a_nonce,
 			contractInterface: state.contractInterface,
 		}
 	);
@@ -39,6 +40,7 @@ const contractActor = {
 	properties: {
 		initialState: {
 			a_web3: undefined,
+			a_nonce: undefined,
 			contractInterface: undefined,
 			logSubscriptions: [],
 			//contract,
