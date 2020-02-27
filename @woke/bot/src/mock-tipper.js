@@ -51,7 +51,7 @@ const persist = PERSIST ? parse_bool(PERSIST) : true;
 console.log('Persist? ', persist);
 const bootstrap = async () => {
 	//await twitter.initClient();
-	const twitterStub = new TwitterStub(twitterMock.createMockClient(1));
+	const twitterStub = new TwitterStub(twitterMock.createMockClient(3));
 
 	const tipSystem = new TipSystem(undefined, {
 		twitterStub: twitterStub,

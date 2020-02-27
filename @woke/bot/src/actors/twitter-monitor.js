@@ -1,5 +1,6 @@
 const { dispatch } = require('nact');
 const { Logger } = require('@woke/lib');
+const { exponentialRetry } = require('./supervision');
 const { delay } = require('../lib/utils');
 const debug = (msg, args) => Logger().name(`TMON`, `${msg.type}>> ` + args);
 // Driven by polling twitter
@@ -26,6 +27,8 @@ const iface = {
 	seen_tips: 'seen_tips',
 }
 
+const retry = exponentialRetry(3);
+
 const ONCRASH_DELAY = 10*1000;
 const TwitterMonitor = (twitterStub) => ({
 	iface,
@@ -46,11 +49,7 @@ const TwitterMonitor = (twitterStub) => ({
 			switch(type) {
 				case 'find_tips': {
 					if(a_polling) dispatch(a_polling, { type: 'interupt' });
-					console.log(`OnCrash delay ${ONCRASH_DELAY}ms ...`);
-					await delay(ONCRASH_DELAY);
-
-					if(a_polling) dispatch(a_polling, { type: 'resume' });
-					return ctx.resume;
+					return retry(msg, error, ctx);
 				}
 
 				default: {
@@ -63,7 +62,10 @@ const TwitterMonitor = (twitterStub) => ({
 	actions: {
 		[iface.find_tips]: (msg, ctx, state) => {
 			const { twitter, seenTips } = state;
+			// @brokenwindow
+			// Polling actor should not be a dependency
 			const {
+				a_polling,
 				//time,
 				//a_processor,
 			} = msg;
@@ -101,6 +103,7 @@ const TwitterMonitor = (twitterStub) => ({
 				//newTips.forEach(t=>console.log(t));
 
 				dispatch(ctx.sender, { type: 'new_tips', tips: newTips }, ctx.self);
+				if(a_polling) dispatch(a_polling, { type: 'resume' });
 				return {
 					...state,
 					seenTips: {...seenTips},
