@@ -28,6 +28,8 @@ const subscriptionActor= {
 		},
 
 		onCrash: (msg, ctx, state) => {
+			console.log(`Subscription crash`);
+			console.log(msg);
 			switch(msg.type) {
 				case 'handle':
 				case 'subscribe': {
@@ -74,6 +76,7 @@ const subscriptionActor= {
 			);
 
 			subscription.start();
+			ctx.debug.info(msg, `Subscribed to ${contractInterface.contractName}-${eventName}: ${state.subscribers.map(s => s.name)}`);
 
 			// So that the polling actor can use a query.
 			dispatch(ctx.sender, {type: 'a_sub', action: 'subscribed'}, ctx.self);
@@ -140,11 +143,9 @@ const subscriptionActor= {
 }
 
 
-let i = 0;
 const makeLogEventSubscription = web3 => (contract, eventName, handleFunc, opts) => {
 	let subscription = null;
 
-	let y = 0;
 	const eventJsonInterface = web3.utils._.find(
 		contract._jsonInterface,
 		o => o.name === eventName && o.type === 'event',
@@ -165,7 +166,7 @@ const makeLogEventSubscription = web3 => (contract, eventName, handleFunc, opts)
 			topics: [eventJsonInterface.signature],
 		}, handleUpdate); 
 
-		console.log(`... (${i++}:${y++}) Subscribed to ${eventName} ${opts && opts.fromBlock ? `bn: ${opts.fromBlock}` : ''}`);
+		//console.log(`... Subscribed to ${eventName} ${opts && opts.fromBlock ? `bn: ${opts.fromBlock}` : ''}`);
 		//console.log(newSub);
 		subscription = newSub;
 		subscription.on("data", log => console.log);

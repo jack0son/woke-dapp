@@ -1,10 +1,11 @@
 const { dispatch } = require('nact');
+const { delay } = require('../lib/utils');
 
 const exponentialRetry = (factor) => {
 	let count = 1;
 	return async (msg, error, ctx) => {
 		console.log(error);
-		debug(msg, `Exponential retry ${ctx.self.name}:${count}`);
+		console.log(`Exponential retry ${ctx.self.name}:${count}`);
 		// Only increment delay on several crashes
 		// Should stop incrementing counter once a reliable delay is found
 		if(msg._crashed) count++; 
