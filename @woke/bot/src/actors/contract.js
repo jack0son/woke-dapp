@@ -94,14 +94,14 @@ const contractActor = {
 		},
 
 		'subscribe_log': async (msg, ctx, state) => {
-			const { eventName, filter } = msg;
+			const { eventName, filter, subscribers, opts } = msg;
 			const { logSubscriptions, contractInterface } = state;
 			const a_sub = spawn_sub({eventName,
 				contractInterface,
 				filter,
 				subscribers: [ctx.sender],
 			}, ctx, state);
-			dispatch(ctx.sender, { type: 'new_sub', a_sub}, ctx.self);
+			dispatch(ctx.sender, { type: 'a_contract', action: 'new_sub', a_sub}, ctx.self);
 
 			logSubscriptions.push(a_sub);
 			return  { ...state, logSubscriptions };

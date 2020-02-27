@@ -24,30 +24,35 @@ const subscriptionActor= {
 			subscription: null,
 			subscribers: [],
 			contractInterface: null,
+			latestBlock: 0,
 		},
 
 		onCrash: (msg, ctx, state) => {
 			switch(msg.type) {
-				case 'handle': {
-					break;
+				case 'handle':
+				case 'subscribe': {
+					return ctx.resume;
 				}
 
 				case 'start': {
 					return ctx.stop;
-					break;
 				}
 
 				default: {
+					console.log('Crash: reason below...');
+					console.log(msg);
 					return ctx.stop;
-					break;
 				}
 			}
 		}
 	},
 
 	actions: {
-		'start': async (msg, ctx, state) => {
-			const {contractInterface, eventName, watchdog} = state;
+		'subscribe': async (msg, ctx, state) => {
+			const { contractInterface, eventName } = state;
+			if(state.subscription) {
+				await state.subscription.stop();
+			}
 
 			// Always get a fresh contract instance
 			const { web3Instance } = await block(state.a_web3, { type: 'get' });
@@ -58,35 +63,38 @@ const subscriptionActor= {
 				dispatch(ctx.self,  { type: 'handle', error, log }, ctx.self);
 			}
 
-			const fromBlock = state.latestBlock || 0;
+			const latestBlock = state.latestBlock ? state.latestBlock : 0;
 			const subscription = makeLogEventSubscription(web3Instance.web3)(
 				contract,
 				eventName,
 				callback,
 				{
-					fromBlock,
+					fromBlock: latestBlock,
 				}
 			);
 
 			subscription.start();
 
+			// So that the polling actor can use a query.
+			dispatch(ctx.sender, {type: 'a_sub', action: 'subscribed'}, ctx.self);
+			return { ...state, subscription, latestBlock};
+		},
+
+		'start': (msg, ctx, state) => {
+			const {contractInterface, eventName, watchdog} = state;
 			if(watchdog && !state.a_watchdog) {
 				ctx.debug.info(msg, `Starting subscription watchdog...`);
 				state.a_watchdog = start_actor(ctx.self)('_watchdog', polling);
 				dispatch(state.a_watchdog, { type: 'poll',
 					target: ctx.self,
-					action: 'start',
+					action: 'subscribe',
 					period: DEFAULT_WATCHDOG_INTERVAL,
 					blocking: DEFAULT_WATCHDOG_INTERVAL*1000, // wait for action complete before next poll
 				}, state.a_watchdog);
+			} else {
+				dispatch(ctx.self, {type: 'subscribe'}, ctx.self);
 			}
-
-			// So that the polling actor can use a query.
-			dispatch(ctx.sender, {type: 'a_sub', action: 'started'}, ctx.self);
-
-			return { ...state, subscription, latestBlock: fromBlock};
 		},
-
 
 		'handle': (msg, ctx, state) => {
 			const {eventName, contractInterface, subscribers, filter} = state;
@@ -97,21 +105,21 @@ const subscriptionActor= {
 			}
 
 			if(log && filter ? filter(log.event) : true) {
-				//console.log(event);
+				const latestBlock = log.blockNumber > state.latestBlock ?
+					log.blockNumber : state.latestBlock;
+
 				subscribers.forEach(a_subscriber => {
-					//console.log(log.transactionHash);
-					//console.log(`${subscribers.length}: Subscriber: `, a_subscriber.name ? a_subscriber.name : a_subscriber.system.name)
 					dispatch(a_subscriber, { type: 'a_sub',
 						contractName: contractInterface.contractName,
 						eventName,
 						log,
 					}, ctx.self)
 				})
+
+				return { ...state, latestBlock }
 			}
 
-			const latestBlock = log.blockNumber > state.latestBlock ? log.blockNumber : state.blockNumber;
 
-			return { ...state, latestBlock }
 		},
 
 		'resubscribe': async (msg, ctx, state) => {
@@ -132,8 +140,11 @@ const subscriptionActor= {
 }
 
 
+let i = 0;
 const makeLogEventSubscription = web3 => (contract, eventName, handleFunc, opts) => {
 	let subscription = null;
+
+	let y = 0;
 	const eventJsonInterface = web3.utils._.find(
 		contract._jsonInterface,
 		o => o.name === eventName && o.type === 'event',
@@ -148,16 +159,13 @@ const makeLogEventSubscription = web3 => (contract, eventName, handleFunc, opts)
 	}
 
 	const start = () => {
-
-
 		const newSub = web3.eth.subscribe('logs', {
 			...opts,
 			address: contract.options.address,
 			topics: [eventJsonInterface.signature],
 		}, handleUpdate); 
 
-		console.log(`... Subscribed to ${eventName}`);
-		console.log(opts);
+		console.log(`... (${i++}:${y++}) Subscribed to ${eventName} ${opts && opts.fromBlock ? `bn: ${opts.fromBlock}` : ''}`);
 		//console.log(newSub);
 		subscription = newSub;
 		subscription.on("data", log => console.log);
@@ -168,14 +176,14 @@ const makeLogEventSubscription = web3 => (contract, eventName, handleFunc, opts)
 			if(error) {
 				reject(error);;
 			}
-			console.log(`... unsub'd ${eventName}`);
+			//console.log(`... unsub'd ${eventName}`);
 			resolve(succ);
 		})
 	);
 
 	const resubscribe = () => {
 		console.log(`... Resubscribed to ${eventName}.`);
-		subscription.subscribe();
+		subscription.subscribe(handleUpdate);
 	}
 
 	return {

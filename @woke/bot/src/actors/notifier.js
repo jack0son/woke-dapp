@@ -39,22 +39,18 @@ const notifier = {
 	},
 
 	actions: {
-		'init': async (msg, ctx, state) => {
+		'init': (msg, ctx, state) => {
 			const { a_wokenContract } = state;
 
 			// Subscribe to unclaimed transfers
 
 			// Rely on subscription to submit logs from block 0
 			// @TODO persist last seen block number
-			let response = await block(a_wokenContract, {
-				type: 'subscribe_log',
+			dispatch(a_wokenContract, {	type: 'subscribe_log',
 				eventName: 'Tx',
 				opts: { fromBlock: 0 },
 				filter: e => e.claimed == false,
-			});
-			const a_unclaimed_tx_sub = response.a_sub;
-
-			dispatch(a_unclaimed_tx_sub,  {type: 'start'}, ctx.self);
+			}, ctx.self);
 		},
 
 		// -- Source actions
@@ -128,6 +124,7 @@ const notifier = {
 			const { eventName } = msg;
 			switch(eventName) {
 				case 'Tx': {
+					// Event update from subscription
 					dispatch(ctx.self, { ...msg, type: 'unclaimed_tx' }, ctx.self);
 					break;
 				}
@@ -138,7 +135,15 @@ const notifier = {
 			}
 		},
 
-		'a_tweeter': (msg, ctx, state) => {
+		'a_contract': (msg, ctx, state) => {
+			const { a_sub } = msg;
+			if(a_sub) {
+				const a_unclaimed_tx_sub = a_sub;
+				dispatch(a_unclaimed_tx_sub,  {type: 'start'}, ctx.self);
+			}
+		},
+
+		'a_tweeter_temp': (msg, ctx, state) => {
 			const { eventName } = msg;
 		}
 	},
