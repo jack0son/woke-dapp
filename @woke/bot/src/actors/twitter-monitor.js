@@ -36,11 +36,14 @@ const TwitterMonitor = (twitterStub) => ({
 	properties: {
 		initialState: {
 			twitter: twitterStub,
+			seenTips: {},
+
+			// @TODO Tweet finality
+			// i.e. a cut off status ID str so the DB can be reset
 			youngest: { // date of last processed tweet
 				date: 0,
 				id: 0,
 			},
-			seenTips: {},
 		},
 
 		onCrash: async (msg, error, ctx) => {

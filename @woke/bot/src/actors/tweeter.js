@@ -51,13 +51,11 @@ const TweeterActor = (twitterStub) => ({
 			switch(twitterError.code) {
 				case 326:
 					console.log('--------- Twitter Account locked ---------')
-					console.log(error);
-					console.log(msg);
+					console.log(msg, error);
 					return ctx.stop;
 				case 226: // flagged for spam
 					console.log('--------- Flagged as spam ---------')
-					console.log(error);
-					console.log(msg);
+					console.log(msg, error);
 					return ctx.stop;
 
 				case 131:	// internal error - http 500
@@ -70,7 +68,7 @@ const TweeterActor = (twitterStub) => ({
 				default: 
 					console.log('Unknown twitter error: ', error);
 				case 187:	// status is a duplicate
-					console.log(error);
+					console.log(msg, error);
 					if(msg.i_want_the_error) {
 						dispatch(msg.i_want_the_error, { type: msg.type, error }, ctx.self);
 					}

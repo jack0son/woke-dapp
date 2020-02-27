@@ -1,6 +1,12 @@
 const { dispatch } = require('nact');
 const { delay } = require('../lib/utils');
 
+const terminate = (msg, err, ctx) => {
+  let path = ctx.path.toString();
+	console.log(`${path}: onCrash: The following error was raised when processing message %O:\n%O\nTerminating faulted actor`, msg, err);
+  return ctx.stop;
+};
+
 const exponentialRetry = (factor) => {
 	let count = 1;
 	return async (msg, error, ctx) => {
@@ -17,4 +23,4 @@ const exponentialRetry = (factor) => {
 	};
 }
 
-module.exports = { exponentialRetry }
+module.exports = { terminate, exponentialRetry }
