@@ -25,6 +25,13 @@ function tip_broke_message(tip) {
 	//return `${emojis.no} You're broke, not woke. Spread some enlightenment @${tip.fromHandle}...`;
 }
 
+// @TODO add to error directory on notion
+// Twitter error response:
+// { errors: [ { code: 187, message: 'Status is a duplicate.' } ] }
+
+// @brokenwindow this should be initialised at actor spawning
+const retry = exponentialRetry(2);
+
 // Drives posting to twitter
 const TweeterActor = (twitterStub) => ({
 	properties: {
@@ -32,7 +39,21 @@ const TweeterActor = (twitterStub) => ({
 			twitter: twitterStub,
 		},
 
-		onCrash: exponentialRetry(2),
+		onCrash: (msg, error, ctx) => {
+			const twitterError = error.errors[0];
+
+			switch(twitterError.code) {
+				case 88: { // rate limit exceeded
+					return retry(msg, error, ctx);
+				}
+
+				default:
+				case 187: { // status is a duplicate
+					console.log(error);
+					return ctx.resume;
+				}
+			}
+		},
 	},
 
 	actions: {
