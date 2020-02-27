@@ -22,6 +22,7 @@ const nonceActor = {
 			}
 
 			const resetNonce = async () => {
+				ctx.debug.info(msg, `Reseting nonce...`);
 				const { web3Instance } = await block(state.a_web3, { type: 'get' });
 				state.web3Instance = web3Instance;
 				const totalConfirmed = await web3Instance.web3.eth.getTransactionCount(web3Instance.account);

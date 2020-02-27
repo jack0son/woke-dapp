@@ -172,7 +172,7 @@ const actions = {
 			network: web3Instance.network,
 		});
 
-		console.log('nonce: ', nonce);
+		// console.log('nonce: ', nonce);
 
 		let account;
 		if(web3Instance.account) {

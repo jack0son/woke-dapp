@@ -8,7 +8,7 @@ services:
       POSTGRES_DB: bot_db
     volumes:
       - bot_postgres_data:/var/lib/postgresql/data/
-    ports:
+      #ports:
       #- '5433:5432'
   notifier:
     image: jvindustries/woke:notifier
