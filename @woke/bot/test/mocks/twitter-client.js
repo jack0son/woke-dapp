@@ -49,6 +49,11 @@ const createMockClient = (_sampleSize, _data) => {
 	// e.g. Search is 180 per user per 15 min window
 	const REQ_PER_MIN = 3;
 	const EPOCH = 3000;
+	const twitterErrors = {
+		duplicate: [ { code: 187, message: 'Status is a duplicate.' } ],
+		rateLimit: [ { code: 88, message: 'Rate limit exceeded' } ],
+	}
+
 	const rateLimiter = (limit = REQ_PER_MIN) => {
 		let requests = 0;
 		setInterval(() => {requests = 0}, EPOCH)
@@ -56,7 +61,7 @@ const createMockClient = (_sampleSize, _data) => {
 			if(requests++ < limit) {
 				resolve(resp);
 			} else {
-				reject([ { "code": 88, "message": "Rate limit exceeded" } ])
+				reject(twitterErrors.duplicate)
 			}
 		})
 	}

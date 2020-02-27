@@ -43,7 +43,7 @@ const TweeterActor = (twitterStub) => ({
 			const twitterError = error[0];
 
 			if(!(twitterError && twitterError.code)) {
-				console.log('Unknown twitter error: ', error);
+				console.log('Invalid twitter error: ', error);
 				return ctx.resume;
 			}
 
@@ -52,9 +52,13 @@ const TweeterActor = (twitterStub) => ({
 					return retry(msg, error, ctx);
 				}
 
-				default:
+				default: 
+					console.log('Unknown twitter error: ', error);
 				case 187: { // status is a duplicate
 					console.log(error);
+					if(msg.i_want_the_error) {
+						dispatch(msg.i_want_the_error, { type: msg.type, error }, ctx.self);
+					}
 					return ctx.resume;
 				}
 			}

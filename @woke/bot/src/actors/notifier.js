@@ -14,7 +14,11 @@ let idx = 0;
 const spawn_tweet_promise = (log, _ctx) => {
 	return spawnStateless(_ctx.self, 
 		(msg, ctx) => {
-			const {type, tweet} = msg;
+			const {type, tweet, error} = msg;
+			if(error) {
+				_ctx.debug.error(msg, `Promise from tweeter: ${error}`);
+			}
+
 			if(type == 'tweet_unclaimed_transfer') {
 				if(tweet) {
 					dispatch(_ctx.self, { type: 'update_log', log: {...log, status: 'SETTLED', statusId: tweet.id_str }}, ctx.self);
@@ -23,6 +27,7 @@ const spawn_tweet_promise = (log, _ctx) => {
 				}
 			}
 		},
+
 		`tweet_promise-${idx++}`,
 	);
 }
@@ -77,8 +82,9 @@ const notifier = {
 						toId: entry.toId,
 						fromId: entry.fromId,
 						amount: entry.amount,
+						i_want_the_error: a_promise, // ctx.sender not correct in onCrash on tweeter
 					}, a_promise);
-					console.log(`... @${entry.fromId} ==> @${entry.toId} : ${entry.amount}.W`)
+					console.log(`... got log @${entry.fromId} ==> @${entry.toId} : ${entry.amount}.W`)
 					break;
 				}
 
