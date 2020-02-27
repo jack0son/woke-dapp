@@ -33,12 +33,10 @@ const nonceActor = {
 
 			let nonce;
 			if(failedNonce) {
-				console.log('FAILED NONCE');
 				nonce = await resetNonce();
 			} else if (entry && entry[network.id] != undefined ) { // nonce could be 0
 				nonce =  ++entry[network.id];
 			} else {
-				console.log('GETTING NONCE');
 				nonce = await resetNonce();
 			}
 			entry = { ...entry, [network.id]: nonce }

@@ -110,7 +110,7 @@ const actions = {
 
 			if(error) {
 				if(error instanceof OnChainError) {
-
+					console.log(error);
 				} else if(error instanceof TransactionError) {
 					console.log(error);
 					console.log("RETRY");
