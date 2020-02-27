@@ -13,8 +13,8 @@ const { initContract } = require('../lib/web3');
 		*/
 
 const INFURA_WS_TIMEOUT = 5*60*1000;
-//const DEFAULT_WATCHDOG_INTERVAL = INFURA_WS_TIMEOUT;
-const DEFAULT_WATCHDOG_INTERVAL = 2*1000;
+const DEFAULT_WATCHDOG_INTERVAL = INFURA_WS_TIMEOUT;
+//const DEFAULT_WATCHDOG_INTERVAL = 2*1000;
 
 let idx = 0;
 const subscriptionActor= {
@@ -203,7 +203,7 @@ class DomainError extends Error {
 
 class SubscriptionError extends DomainError {
 	constructor(error, eventName) { // and tx data?
-		super(`Subscription to '${eventName}' failed due to invalid parameters.`);
+		super(`Subscription to '${eventName}' failed.`);
 		this.data = { error, eventName };
 	}
 }
