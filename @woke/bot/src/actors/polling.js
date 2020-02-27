@@ -31,14 +31,18 @@ const pollingActor = {
 			}
 
 			debug(msg, `Start polling {${target.name}:${action}} every ${period}ms...`);
-			dispatch(ctx.self, { type: 'perform',  target, period, action, args }, ctx.sender);
+			const performMessage = { type: 'perform',  target, period, action, args, impetus: ctx.sender };
+			dispatch(ctx.self, performMessage, ctx.sender);
 
+			// @brokenwindow
+			// @TODO wasting memory
 			return { ...state,
 				halt: false,
 				blocking,
 				period,
 				target,
 				action,
+				currentAction: performMessage,
 			}
 		},
 
@@ -63,9 +67,19 @@ const pollingActor = {
 			return state;
 		},
 
+		'resume': (msg, ctx, state) => {
+			const { currentAction } = state;
+			if(!currentAction) {
+				throw new Error(`No action being polled`);
+			}
+			debug(msg, `Resuming polling of {${state.target.name}:${state.action}}`);
+			dispatch(ctx.self, currentAction, currentAction.impetus);
+			return { ...state, halt: false };
+		},
+
 		'interupt': (msg, ctx, state) => {
 			debug(msg, `Interupting polling of {${state.target.name}:${state.action}}`);
-			return {...state, halt: true}
+			return { ...state, halt: true };
 		},
 
 		'stop': (msg, ctx, state) => {

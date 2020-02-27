@@ -41,9 +41,22 @@ const TwitterMonitor = (twitterStub) => ({
 		},
 
 		onCrash: async (msg, error, ctx) => {
-			console.log(`OnCrash delay ${ONCRASH_DELAY}ms ...`);
-			await delay(ONCRASH_DELAY);
-			return ctx.resume;
+			const { type, a_polling } = msg;
+
+			switch(type) {
+				case 'find_tips': {
+					if(a_polling) dispatch(a_polling, { type: 'interupt' });
+					console.log(`OnCrash delay ${ONCRASH_DELAY}ms ...`);
+					await delay(ONCRASH_DELAY);
+
+					if(a_polling) dispatch(a_polling, { type: 'resume' });
+					return ctx.resume;
+				}
+
+				default: {
+					return ctx.stop;
+				}
+			}
 		}
 	},
 
@@ -101,6 +114,8 @@ const TwitterMonitor = (twitterStub) => ({
 					throw error;
 				}
 			});
+
+			dispatch(ctx.sender, { type: 'new_tips', tips: newTips }, ctx.self);
 		},
 
 		[iface.seen_tips]: (msg, ctx, state) => {

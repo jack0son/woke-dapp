@@ -73,6 +73,7 @@ class TipSystem {
 			target: self.a_tMon,
 			action: 'find_tips',
 			period: self.config.TWITTER_POLLING_INTERVAL,
+			msg: { a_polling: self.a_polling },
 		}, self.a_tweetForwarder);
 
 		console.log(`Started tip system.`);
