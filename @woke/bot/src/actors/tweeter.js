@@ -30,7 +30,8 @@ function tip_broke_message(tip) {
 // { errors: [ { code: 187, message: 'Status is a duplicate.' } ] }
 
 // @brokenwindow this should be initialised at actor spawning
-const retry = exponentialRetry(2);
+const retry = exponentialRetry(100);
+const retryDaily = exponentialRetry(1000);
 
 // Drives posting to twitter
 const TweeterActor = (twitterStub) => ({
@@ -48,21 +49,34 @@ const TweeterActor = (twitterStub) => ({
 			}
 
 			switch(twitterError.code) {
-				case 88: { // rate limit exceeded
+				case 326:
+					console.log('--------- Twitter Account locked ---------')
+					console.log(error);
+					console.log(msg);
+					return ctx.stop;
+				case 226: // flagged for spam
+					console.log('--------- Flagged as spam ---------')
+					console.log(error);
+					console.log(msg);
+					return ctx.stop;
+
+				case 131:	// internal error - http 500
+				case 88:	// rate limit exceeded
 					return retry(msg, error, ctx);
-				}
+
+				case 185: // User is over daily status update limit
+					return retryDaily(msg, error, ctx);
 
 				default: 
 					console.log('Unknown twitter error: ', error);
-				case 187: { // status is a duplicate
+				case 187:	// status is a duplicate
 					console.log(error);
 					if(msg.i_want_the_error) {
 						dispatch(msg.i_want_the_error, { type: msg.type, error }, ctx.self);
 					}
 					return ctx.resume;
-				}
 			}
-		},
+		}
 	},
 
 	actions: {
