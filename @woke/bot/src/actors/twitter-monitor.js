@@ -75,6 +75,8 @@ const TwitterMonitor = (twitterStub) => ({
 
 			ctx.debug.info(msg, 'Finding tip tweets...');
 			return twitter.findTips().then(tipTweets => {
+				if(a_polling) dispatch(a_polling, { type: 'resume' }); // no longer rate limited
+
 				if(tipTweets.length > 0) {
 					ctx.debug.d(msg, `Found ${tipTweets.length} tip tweets`);
 				}
@@ -103,7 +105,7 @@ const TwitterMonitor = (twitterStub) => ({
 				//newTips.forEach(t=>console.log(t));
 
 				dispatch(ctx.sender, { type: 'new_tips', tips: newTips }, ctx.self);
-				if(a_polling) dispatch(a_polling, { type: 'resume' });
+
 				return {
 					...state,
 					seenTips: {...seenTips},
@@ -117,8 +119,6 @@ const TwitterMonitor = (twitterStub) => ({
 					throw error;
 				}
 			});
-
-			dispatch(ctx.sender, { type: 'new_tips', tips: newTips }, ctx.self);
 		},
 
 		[iface.seen_tips]: (msg, ctx, state) => {
