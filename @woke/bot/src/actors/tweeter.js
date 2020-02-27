@@ -1,5 +1,7 @@
 const { dispatch } = require('nact');
+const { exponentialRetry } = require('./supervision');
 const emojis = require('../lib/emojis');
+const { delay } = require('../lib/utils');
 const { Logger } = require('@woke/lib');
 const debug = (msg, args) => Logger().name(`TWEET`, `${msg.type}>> ` + args);
 
@@ -23,7 +25,6 @@ function tip_broke_message(tip) {
 	//return `${emojis.no} You're broke, not woke. Spread some enlightenment @${tip.fromHandle}...`;
 }
 
-
 // Drives posting to twitter
 const TweeterActor = (twitterStub) => ({
 	properties: {
@@ -31,13 +32,7 @@ const TweeterActor = (twitterStub) => ({
 			twitter: twitterStub,
 		},
 
-		onCrash: (msg, error, ctx) => {
-			console.log(`Error processing message in actor ${ctx.self.name}`);
-			console.log(msg);
-			console.log(error);
-			return ctx.resume;
-		}
-		//onCrash: exponentialRetry
+		onCrash: exponentialRetry(2),
 	},
 
 	actions: {

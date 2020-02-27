@@ -14,6 +14,7 @@ function spawn_tx(ctx, state) {
 		{
 			sinks: [ctx.sender], // forward the sender to this tx
 			a_web3: state.a_web3,
+			a_nonce: state.a_nonce,
 			contractInterface: state.contractInterface,
 		}
 	);
@@ -22,14 +23,14 @@ function spawn_tx(ctx, state) {
 let sub_idx = 0;
 const spawn_sub = (msg, ctx, state) => {
 	return start_actor(ctx.self)(
-		`_sub-${sub_idx++}-${msg.contractName}-${msg.eventName}`,
+		`_sub-${sub_idx++}-${state.contractInterface.contractName}-${msg.eventName}`,
 		subActor,
 		{
-			contractName: msg.contractName,
+			watchdog: true,
 			eventName: msg.eventName,
 			filter: msg.filter,
 			contractInterface: msg.contractInterface,
-			subscribers: [], // forward the sender to this tx
+			subscribers: msg.subscribers, // forward the sender to this tx
 			a_web3: state.a_web3,
 		}
 	);
@@ -39,6 +40,7 @@ const contractActor = {
 	properties: {
 		initialState: {
 			a_web3: undefined,
+			a_nonce: undefined,
 			contractInterface: undefined,
 			logSubscriptions: [],
 			//contract,
@@ -94,10 +96,14 @@ const contractActor = {
 		},
 
 		'subscribe_log': async (msg, ctx, state) => {
-			const { eventName, filter } = msg;
+			const { eventName, filter, subscribers, opts } = msg;
 			const { logSubscriptions, contractInterface } = state;
-			const a_sub = spawn_sub({eventName, contractInterface, filter }, ctx, state);
-			dispatch(ctx.sender, { type: 'new_sub', a_sub}, ctx.self);
+			const a_sub = spawn_sub({eventName,
+				contractInterface,
+				filter,
+				subscribers: [ctx.sender],
+			}, ctx, state);
+			dispatch(ctx.sender, { type: 'a_contract', action: 'new_sub', a_sub}, ctx.self);
 
 			logSubscriptions.push(a_sub);
 			return  { ...state, logSubscriptions };

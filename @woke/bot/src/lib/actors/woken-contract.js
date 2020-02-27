@@ -1,4 +1,4 @@
-const { contract, Web3 } = require('../../actors');
+const { contract, Web3, nonce } = require('../../actors');
 const loadContract = require('../contracts').load;
 
 function create_woken_contract_actor(director, opts) {
@@ -10,9 +10,18 @@ function create_woken_contract_actor(director, opts) {
 		retryDelay: RETRY_DELAY,
 	}));
 
+	console.log(`No nonce actor provided, initialising my own...`)
+	let a_nonce;
+	if(opts.persist) {
+		a_nonce = director.start_persistent('nonce', nonce, { a_web3 });
+	} else {
+		a_nonce = director.start_actor('nonce', nonce, { a_web3 });
+	}
+
 	// Initialise Woken Contract agent
 	const a_wokenContract = director.start_actor('woken_contract', contract, {
 		a_web3, 
+		a_nonce,
 		contractInterface: loadContract('WokeToken'),
 	})
 

@@ -14,21 +14,21 @@
     "notifier:production": "PERSIST=true DEBUG=* NODE_ENV=development node src/notifier.js",
     "notifier:transient": "PERSIST=false DEBUG=* NODE_ENV=development node src/notifier.js",
     "dev": "NODE_ENV=development DEBUG=actor*,-*:twitter_monitor*,-*:_tip-*:info node src/index.js",
-    "dev:verbose": "NODE_ENV=development DEBUG=* node src/index.js",
-    "dev:recovery": "PERSIST=true DEBUG_RECOVERY=true NODE_ENV=development DEBUG=* node src/index.js",
     "dev:verbose": "PERSIST=true DEBUG_RECOVERY=true NODE_ENV=development DEBUG=* node src/index.js",
+    "dev:recovery": "PERSIST=true DEBUG_RECOVERY=true NODE_ENV=development DEBUG=* node src/index.js",
     "mock:tipper": "DEBUG_RECOVERY=true NODE_ENV=development DEBUG=actor*,-*:twitter_monitor*,-*:_tip-*:info node src/mock-tipper.js",
-    "mock:tipper:verbose": "DEBUG_RECOVERY=true NODE_ENV=development DEBUG=actor*,-*:twitter_monitor* node src/mock-tipper.js",
+    "mock:tipper:verbose": "DEBUG_RECOVERY=true NODE_ENV=development DEBUG=actor* node src/mock-tipper.js",
     "mock:notifier": "NODE_ENV=development DEBUG=actor* node src/mock-notifier.js",
-    "db": "docker-compose -f ../../bot.docker-compose.local.yml up -d --build bot-db",
-    "down": "docker-compose -f ../../bot.docker-compose.local.yml down",
-    "reset": "docker-compose -f ../../bot.docker-compose.local.yml down -v"
+    "docker:db": "docker-compose -f ../../bot.docker-compose.local.yml up -d --build bot-db",
+    "docker:down": "docker-compose -f ../../bot.docker-compose.local.yml down",
+    "docker:reset": "docker-compose -f ../../bot.docker-compose.local.yml down -v"
   },
   "author": "Jackson Virgo",
   "license": "ISC",
   "dependencies": {
     "@woke/contracts": "0.1.0",
     "@woke/lib": "0.1.0",
+    "dotenv": "^8.2.0",
     "nact": "^7.2.2",
     "nact-persistence-postgres": "^7.3.1"
   },

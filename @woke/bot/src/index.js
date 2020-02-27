@@ -30,7 +30,7 @@
 // Message rules
 //	Responses:
 //		-- msg = { type: ACTOR_DEFN_NAME }
-
+require('dotenv').config()
 const { Logger, twitter } = require('@woke/lib');
 const debug = Logger();
 
