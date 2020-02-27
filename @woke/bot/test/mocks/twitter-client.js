@@ -56,7 +56,7 @@ const createMockClient = (_sampleSize, _data) => {
 			if(requests++ < limit) {
 				resolve(resp);
 			} else {
-				reject({ "errors": [ { "code": 88, "message": "Rate limit exceeded" } ] })
+				reject([ { "code": 88, "message": "Rate limit exceeded" } ])
 			}
 		})
 	}

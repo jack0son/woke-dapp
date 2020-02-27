@@ -67,7 +67,7 @@ const notifier = {
 
 			switch(entry.status) {
 				case 'UNSETTLED': {
-					ctx.debug.info(msg, `Settling ${log.transactionHash}...`);
+					ctx.debug.info(msg, `Settling ${log.transactionHash} ...`);
 					const a_promise = spawn_tweet_promise(log, ctx);
 					entry.toId = log.event.toId;
 					entry.fromId = log.event.fromId;
@@ -78,6 +78,7 @@ const notifier = {
 						fromId: entry.fromId,
 						amount: entry.amount,
 					}, a_promise);
+					console.log(`... @${entry.fromId} ==> @${entry.toId} : ${entry.amount}.W`)
 					break;
 				}
 

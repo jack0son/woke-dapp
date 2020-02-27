@@ -40,7 +40,12 @@ const TweeterActor = (twitterStub) => ({
 		},
 
 		onCrash: (msg, error, ctx) => {
-			const twitterError = error.errors[0];
+			const twitterError = error[0];
+
+			if(!(twitterError && twitterError.code)) {
+				console.log('Unknown twitter error: ', error);
+				return ctx.resume;
+			}
 
 			switch(twitterError.code) {
 				case 88: { // rate limit exceeded
