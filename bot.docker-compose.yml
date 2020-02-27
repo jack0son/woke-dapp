@@ -22,6 +22,7 @@ services:
       POSTGRES_PORT: 5432
       WAIT_HOSTS: bot-db:5432
       NODE_ENV: 'production'
+      ETH_ENV: 'production'
       PERSIST: 'true'
       DEBUG_RECOVERY: 'true'
 
@@ -37,6 +38,7 @@ services:
       POSTGRES_PORT: 5432
       WAIT_HOSTS: bot-db:5432
       NODE_ENV: 'production'
+      ETH_ENV: 'production'
       PERSIST: 'true'
       DEBUG_RECOVERY: 'true'
 
