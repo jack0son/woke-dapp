@@ -61,7 +61,7 @@ const createMockClient = (_sampleSize, _data) => {
 			if(requests++ < limit) {
 				resolve(resp);
 			} else {
-				reject(twitterErrors.duplicate)
+				reject(twitterErrors.rateLimit)
 			}
 		})
 	}
