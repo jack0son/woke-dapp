@@ -20,9 +20,9 @@
     "mock:tipper": "DEBUG_RECOVERY=true NODE_ENV=development DEBUG=actor*,-*:twitter_monitor*,-*:_tip-*:info node src/mock-tipper.js",
     "mock:tipper:verbose": "DEBUG_RECOVERY=true NODE_ENV=development DEBUG=actor*,-*:twitter_monitor* node src/mock-tipper.js",
     "mock:notifier": "NODE_ENV=development DEBUG=actor* node src/mock-notifier.js",
-    "db": "docker-compose -f ../../bot.docker-compose.local.yml up -d --build bot-db",
-    "down": "docker-compose -f ../../bot.docker-compose.local.yml down",
-    "reset": "docker-compose -f ../../bot.docker-compose.local.yml down -v"
+    "docker:db": "docker-compose -f ../../bot.docker-compose.local.yml up -d --build bot-db",
+    "docker:down": "docker-compose -f ../../bot.docker-compose.local.yml down",
+    "docker:reset": "docker-compose -f ../../bot.docker-compose.local.yml down -v"
   },
   "author": "Jackson Virgo",
   "license": "ISC",

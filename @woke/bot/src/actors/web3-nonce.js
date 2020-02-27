@@ -4,12 +4,12 @@ const { block } = require('../actor-system');
 // Keep track of the nonce
 const nonceActor = {
 	properties: {
+		persistenceKey: 'nonce',
+
 		initialState: {
 			a_web3: null,
 			nonceRepo: {}, // address => nonce
 		},
-
-		persistenceKey: 'nonce',
 	},
 
 	actions: {
@@ -29,7 +29,6 @@ const nonceActor = {
 			}
 
 			let entry = nonceRepo[account];
-			console.log(entry);
 
 			let nonce;
 			if(failedNonce) {
@@ -42,13 +41,22 @@ const nonceActor = {
 			entry = { ...entry, [network.id]: nonce }
 			nonceRepo[account] = entry;
 
+			dispatch(ctx.sender, { type: 'nonce', nonce: nonce }, ctx.self);
+			dispatch(ctx.self, { type: 'set_nonce', entry, account }, ctx.self); // persist
+			return { ...state, nonceRepo };
+		},
+
+		// @brokenwindow
+		// If set nonce was used to change the state there would be a data race
+		// between actors requesting the nonce and the nonce actor itself - nonce
+		// responses could get out of order.
+		//	-- for now use seperate action to duplicate message;
+		'set_nonce': async (msg, ctx, state) => {
+			const { entry, account } = msg;
 			if(ctx.persist && !ctx.recovering) {
 				await ctx.persist(msg);
 			}
-
-			dispatch(ctx.sender, { type: 'nonce', nonce: nonce }, ctx.self);
-			console.log(nonceRepo);
-			return { ...state, nonceRepo };
+			return { ...state, nonceRepo: {...state.nonceRepo, [account]: entry } };
 		},
 	}
 }

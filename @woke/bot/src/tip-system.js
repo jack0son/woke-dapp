@@ -1,7 +1,7 @@
 const { spawnStateless, dispatch, query } = require('nact');
 const { bootstrap, start_actor } = require('./actor-system');
 const PersistenceEngine = require('./persistence-engine');
-const { tipper, TwitterMonitor, polling, Tweeter } = require('./actors');
+const { tipper, TwitterMonitor, polling, nonce, Tweeter } = require('./actors');
 
 // Lib
 const { create_woken_contract_actor } = require('./lib/actors/woken-contract');
@@ -35,10 +35,13 @@ class TipSystem {
 		const director = this.director;
 
 		// Actors
-		this.a_wokenContract = a_wokenContract || create_woken_contract_actor(director);
+		this.a_wokenContract = a_wokenContract ||
+			create_woken_contract_actor(director, {persist: this.persist});
+
 		if(notify) {
 			this.a_tweeter = director.start_actor('tweeter', Tweeter(this.twitterStub));
 		}
+
 		this.a_tipper = this.persist ? 
 			director.start_persistent('tipper', tipper, {
 				a_wokenContract: this.a_wokenContract,
@@ -48,6 +51,7 @@ class TipSystem {
 				a_wokenContract: this.a_wokenContract,
 				a_tweeter: this.a_tweeter,
 			});
+
 
 		this.a_tMon = director.start_actor('twitter_monitor', TwitterMonitor(this.twitterStub));
 		this.a_polling = director.start_actor('polling_service', polling);
