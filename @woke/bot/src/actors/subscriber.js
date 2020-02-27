@@ -1,6 +1,20 @@
 const { dispatch, query, spawnStateless } = require('nact');
 const { start_actor, block } = require('../actor-system');
+const polling = require('./polling');
 const { initContract } = require('../lib/web3');
+
+/*
+ *
+		dispatch(self.a_polling, { type: 'poll',
+			target: self.a_tMon,
+			action: 'find_tips',
+			period: self.config.TWITTER_POLLING_INTERVAL,
+		}, self.a_tweetForwarder);
+		*/
+
+const INFURA_WS_TIMEOUT = 5*60*1000;
+//const DEFAULT_WATCHDOG_INTERVAL = INFURA_WS_TIMEOUT;
+const DEFAULT_WATCHDOG_INTERVAL = 2*1000;
 
 let idx = 0;
 const subscriptionActor= {
@@ -33,47 +47,44 @@ const subscriptionActor= {
 
 	actions: {
 		'start': async (msg, ctx, state) => {
-			const {contractInterface, eventName, subscribers} = state;
+			const {contractInterface, eventName, watchdog} = state;
 
+			// Always get a fresh contract instance
 			const { web3Instance } = await block(state.a_web3, { type: 'get' });
 			const contract = initContract(web3Instance, contractInterface);
-
-			if(state.subscription) {
-				return;
-			}
 
 			const callback = (error, log) => {
 				// Seperate subcription init from handling into distinict messages
 				dispatch(ctx.self,  { type: 'handle', error, log }, ctx.self);
 			}
 
+			const fromBlock = state.latestBlock || 0;
 			const subscription = makeLogEventSubscription(web3Instance.web3)(
 				contract,
 				eventName,
 				callback,
 				{
-					fromBlock: 0,
+					fromBlock,
 				}
 			);
 
 			subscription.start();
 
-			const resubber = spawnStateless(ctx.self, 
-				(msg, _ctx) => {
-					const sub = ctx.self;
-					setInterval(() => {
-						block(state.a_web3, {type: 'get'}).then(() => {
-							//dispatch(sub, { type: 'resubscribe' }, sub);
-							subscription.resubscribe();
-						});
-					}, 5*60*1000);
-				},
-				`_resub-${idx++}`,
-			);
+			if(watchdog && !state.a_watchdog) {
+				ctx.debug.info(msg, `Starting subscription watchdog...`);
+				state.a_watchdog = start_actor(ctx.self)('_watchdog', polling);
+				dispatch(state.a_watchdog, { type: 'poll',
+					target: ctx.self,
+					action: 'start',
+					period: DEFAULT_WATCHDOG_INTERVAL,
+					blocking: DEFAULT_WATCHDOG_INTERVAL*1000, // wait for action complete before next poll
+				}, state.a_watchdog);
+			}
 
-			dispatch(resubber, {type: 'go go go!'}, ctx.self);
+			// So that the polling actor can use a query.
+			dispatch(ctx.sender, {type: 'a_sub', action: 'started'}, ctx.self);
 
-			return { ...state, subscription, subscribers: [...subscribers, ctx.sender]};
+			return { ...state, subscription, latestBlock: fromBlock};
 		},
 
 
@@ -97,21 +108,25 @@ const subscriptionActor= {
 					}, ctx.self)
 				})
 			}
+
+			const latestBlock = log.blockNumber > state.latestBlock ? log.blockNumber : state.blockNumber;
+
+			return { ...state, latestBlock }
 		},
 
 		'resubscribe': async (msg, ctx, state) => {
 			//const { web3Instance } = await block(state.a_web3, { type: 'get' });
 			//const contract = initContract(web3Instance, state.contractInterface);
-			const { subscription } = state;
-			subscription.resubscribe();
-			console.log(`... resubscribed ${eventName}`)
-
+			dispatch(ctx.self, { type: 'start' }, ctx.self);
 		},
 
 		'stop': (msg, ctx, state) => {
-			const {subscription} = state;
+			const { subscription, a_watchdog } = state;
+			if(a_watchdog) {
+				dispatch(a_watchdog, { type: 'stop' });
+			}
 			subscription.stop();
-			return ctx.stop();
+			return ctx.stop;
 		},
 	}
 }
@@ -141,7 +156,8 @@ const makeLogEventSubscription = web3 => (contract, eventName, handleFunc, opts)
 			topics: [eventJsonInterface.signature],
 		}, handleUpdate); 
 
-		console.log(`... Subscribed to ${eventName}.`);
+		console.log(`... Subscribed to ${eventName}`);
+		console.log(opts);
 		//console.log(newSub);
 		subscription = newSub;
 		subscription.on("data", log => console.log);

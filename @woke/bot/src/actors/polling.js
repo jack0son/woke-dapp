@@ -1,4 +1,4 @@
-const { dispatch } = require('nact');
+const { dispatch, query } = require('nact');
 const { Logger } = require('@woke/lib');
 const debug = (msg, args) => Logger().name(`POLL:`, `${msg.type}>> ` + args);
 
@@ -21,6 +21,7 @@ const pollingActor = {
 				target, // target actor
 				action, // target action type
 				period, // how often to poll
+				blocking,
 				rateLimit,
 				args
 			} = msg;
@@ -34,18 +35,24 @@ const pollingActor = {
 
 			return { ...state,
 				halt: false,
+				blocking,
 				period,
 				target,
 				action,
 			}
 		},
 
-		'perform': (msg, ctx, state) => {
-			const { halt, } = state;
+		'perform': async (msg, ctx, state) => {
+			const { halt, blocking } = state;
 			const { target, action, period, args } = msg;
 
 			if(!halt) {
-				dispatch(target, {type: action, ...args}, ctx.sender);
+				if(blocking) {
+					//await query(target, {type: action, sender: ctx.sender, ...args}, blocking)
+					await query(target, {type: action, ...args}, blocking)
+				} else {
+					dispatch(target, {type: action, ...args}, ctx.sender);
+				}
 
 				setTimeout(() => 
 					dispatch(ctx.self, { type: 'perform',  target, period, action, args }, ctx.sender),
@@ -59,6 +66,11 @@ const pollingActor = {
 		'interupt': (msg, ctx, state) => {
 			debug(msg, `Interupting polling of {${state.target.name}:${state.action}}`);
 			return {...state, halt: true}
+		},
+
+		'stop': (msg, ctx, state) => {
+			debug(msg, `Stopping polling of {${state.target.name}:${state.action}}`);
+			return ctx.stop;
 		}
 	}
 }
