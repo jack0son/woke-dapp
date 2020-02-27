@@ -29,6 +29,7 @@ const dummyUsers = {
 	},
 }
 
+
 // @param return a subset of the sample tweet data
 const createMockClient = (_sampleSize, _data) => {
 	let data = _data ? _data : tipTweets;
@@ -45,26 +46,43 @@ const createMockClient = (_sampleSize, _data) => {
 		}
 	}
 
+	// e.g. Search is 180 per user per 15 min window
+	const REQ_PER_MIN = 3;
+	const EPOCH = 3000;
+	const rateLimiter = (limit = REQ_PER_MIN) => {
+		let requests = 0;
+		setInterval(() => {requests = 0}, EPOCH)
+		return (resp) => new Promise((resolve, reject) => {
+			if(requests++ < limit) {
+				resolve(resp);
+			} else {
+				reject({ "errors": [ { "code": 88, "message": "Rate limit exceeded" } ] })
+			}
+		})
+	}
+
 	class MockClient {
-		constructor(_credentials) {
+		constructor(_credentials, limitPerMin) {
 			this.credentials = _credentials;
+			this.request = rateLimiter(limitPerMin)
 		}
 
 		async searchTweets(_params) {
-			return queryEngine.match(_params.q);
+			return this.request(queryEngine.match(_params.q));
 		}
 
 		async getUserData(userId) {
 			const user = dummyUsers[userId];
 
-			return user ? user : dummyUsers['0'];
+			return this.request(user ? user : dummyUsers['0']);
 		}
 
 		async updateStatus(text, params) {
-			console.log(`TWITTER_MOCK:updateStatus: ${text}`);
-			return dummyStatus;
+			return this.request(dummyStatus).then(r => {
+				console.log(`TWITTER_MOCK:updateStatus: ${text}`);
+				return r;
+			});
 		}
-
 	}
 
 	return new MockClient();

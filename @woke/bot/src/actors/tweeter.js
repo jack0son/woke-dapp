@@ -1,5 +1,6 @@
 const { dispatch } = require('nact');
 const emojis = require('../lib/emojis');
+const { delay } = require('../lib/utils');
 const { Logger } = require('@woke/lib');
 const debug = (msg, args) => Logger().name(`TWEET`, `${msg.type}>> ` + args);
 
@@ -23,6 +24,21 @@ function tip_broke_message(tip) {
 	//return `${emojis.no} You're broke, not woke. Spread some enlightenment @${tip.fromHandle}...`;
 }
 
+const exponentialRetry = (factor) => {
+	let count = 1;
+	return async (msg, error, ctx) => {
+		console.log(error);
+		debug(msg, `Exponential retry ${ctx.self.name}:${count}`);
+		// Only increment delay on several crashes
+		// Should stop incrementing counter once a reliable delay is found
+		if(msg._crashed) count++; 
+
+		await delay((2**count - 1)*factor);
+		msg._crashed = count;
+		dispatch(ctx.self, msg, ctx.sender);
+		return ctx.resume;
+	};
+}
 
 // Drives posting to twitter
 const TweeterActor = (twitterStub) => ({
@@ -31,13 +47,7 @@ const TweeterActor = (twitterStub) => ({
 			twitter: twitterStub,
 		},
 
-		onCrash: (msg, error, ctx) => {
-			console.log(`Error processing message in actor ${ctx.self.name}`);
-			console.log(msg);
-			console.log(error);
-			return ctx.resume;
-		}
-		//onCrash: exponentialRetry
+		onCrash: exponentialRetry(2),
 	},
 
 	actions: {
