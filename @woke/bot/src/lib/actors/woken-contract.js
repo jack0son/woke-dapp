@@ -12,7 +12,7 @@ function create_woken_contract_actor(director, opts) {
 
 	console.log(`No nonce actor provided, initialising my own...`)
 	let a_nonce;
-	if(opts.persist) {
+	if(opts && opts.persist) {
 		a_nonce = director.start_persistent('nonce', nonce, { a_web3 });
 	} else {
 		a_nonce = director.start_actor('nonce', nonce, { a_web3 });
