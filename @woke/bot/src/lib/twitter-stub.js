@@ -1,6 +1,9 @@
 const appUrl = 'https://getwoke.me';
 const emojis = require('./emojis');
 
+// Errors: 
+// [ { code: 220, message: 'Your credentials do not allow access to this resource.' } ]
+
 class TwitterStub {
 	constructor(_client, _credentials) {
 		const self = this;
@@ -12,8 +15,6 @@ class TwitterStub {
 		return true //this.client.hasCredentials();
 	}
 
-	// Errors: 
-	// [ { code: 220, message: 'Your credentials do not allow access to this resource.' } ]
 
 	async dm() {
 		return true;

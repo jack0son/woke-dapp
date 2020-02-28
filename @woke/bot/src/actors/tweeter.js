@@ -91,7 +91,9 @@ const TweeterActor = (twitterStub) => ({
 			const { tip } = msg;
 
 			ctx.debug.d(msg, `tweeting ${tip.id} success...`);
-			const tweet = await twitter.postTweetReply(tip_success_tweet_text(tip), tip.id);
+			const text = tip_success_tweet_text(tip);
+			const tweet = await twitter.postTweetReply(text, tip.id);
+			ctx.debug.d(msg, `tweeted '${text}'`);
 
 			dispatch(ctx.sender, { type: msg.type, tweet }, ctx.self);
 			// Tweet an invite
@@ -111,6 +113,7 @@ const TweeterActor = (twitterStub) => ({
 				// No invalidation reason
 			}
 			const tweet = await twitter.postTweetReply(text, tip.id);
+			ctx.debug.d(msg, `tweeted '${text}'`);
 
 			dispatch(ctx.sender, { type: msg.type, tweet }, ctx.self);
 			// Tweet an invite
@@ -123,6 +126,7 @@ const TweeterActor = (twitterStub) => ({
 			ctx.debug.d(msg, `tweeting ${tip.id} failure...`);
 			const text = tip_failure_message(tip);
 			const tweet = await twitter.postTweetReply(text, tip.id);
+			ctx.debug.d(msg, `tweeted '${text}'`);
 
 			dispatch(ctx.sender, { type: msg.type, tweet }, ctx.self);
 			// Tweet an invite
