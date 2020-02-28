@@ -44,6 +44,10 @@ const useStyles = makeStyles(theme => ({
 		height: '100%',
 	},
 
+	transWokenAmount: {
+		right: '20%',
+	}
+
 
 }));
 
@@ -71,6 +75,7 @@ export default function TransactionList (props) {
 			opacity: 0.5
 		}
 	}
+
 
 	//TODO render inner border on scroll down 
 	const WithScrollTarget = props => (
@@ -107,7 +112,7 @@ export default function TransactionList (props) {
 				secondary={tx.timeSince ? `${tx.timeSince}` : `...`}
 				secondaryTypographyProps={timeSinceProps}
 			/>
-			<ListItemSecondaryAction>
+			<ListItemSecondaryAction className={classes.transWokenAmount}>
 				<TransactionAmount type={tx.type} amount={tx.returnValues.amount}/>
 			</ListItemSecondaryAction>
 			</ListItem>

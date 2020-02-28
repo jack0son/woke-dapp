@@ -6,11 +6,12 @@ import { makeStyles } from '@material-ui/styles';
 const useStyles = makeStyles(theme => ({
 	footer: {
 		position: 'absolute',
-		bottom: 0,
 		width: '100%',
 		height: 'auto',
 		display: 'flex',
 		marginTop: 'auto',
+		paddingLeft: '10%',
+		paddingRight: '10%',
 		paddingBottom: theme.spacing(4),
 	}
 }));
@@ -18,7 +19,7 @@ const useStyles = makeStyles(theme => ({
 export default function Footer(props) {
 	const classes = useStyles();
 
-	return (
+	return ( 
 		<Box
 			className={classes.footer}
 			{...props}

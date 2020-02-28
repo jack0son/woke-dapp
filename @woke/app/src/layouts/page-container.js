@@ -11,13 +11,13 @@ import { makeStyles, useTheme} from '@material-ui/styles';
 const useStyles = makeStyles(theme => ({
 	root: {
 		background: theme.background,
-		height: theme.breakpoints.values.xl,
-		width: theme.breakpoints.values.sm,
+		height: '100vh',
 	},
 
 	container: {
 		background: theme.palette.background.paper,
 		paddingLeft: 0,
+		maxWidth: 'unset',
 		paddingRight: 0,
 	},
 }));
@@ -30,7 +30,7 @@ export default function PageContainer(props) {
 	return (
 		<React.Fragment>
 			<CssBaseline />
-			<Container maxWidth="sm" className={styles.container}>
+			<Container className={styles.container}>
 				<Box component="div" position="relative" className={styles.root}>
 					{props.children}
 				</Box>
