@@ -7,11 +7,42 @@ Packages `@woke/PACKAGE`
 ### @woke/app
 React app.
 
+### @woke/server
+Burner wallet authentication and wallet funder. The current approach to wallet
+funding is highly wasteful, inefficient and insecure... we are on testnet.
+
 ### @woke/lib
 Web3 init, twitter client, utils.
 
 ### @woke/bot
 Tipping, twitter notifications, leaderboard, token distribution. 
+
+Architecture is centred around the actor model, courtesty of [Nact](https://nact.io).
+Learning from the excitement of managing web3 connections, providers and
+transctions in the funder, oracle and app, a more fault tolerant and 
+*decoupled* structure for dealing with ethereum interactions was needed.
+
+Actors help seperate the frequent and broad set of errors that occur in web3
+calls, from the simple core functionality we want: sending transactions and
+subscribing to events.
+
+For example:
+* Provider / websocket connection errors
+* Nonce errors
+* Transaction errors (paramaters, client, node, eth network, onchain, etc)
+
+The web3 service (a set of actors) takes responsibility for blockchain
+nuances, applying its own policies for problems like account balances, gas
+usage, node availability, giving the rest of the application (other services)
+a much smaller error surface to work with and some clean assumptions for how
+web3 interactions are being handled.
+
+One such assumption is that transactions will never fail due a lack of
+connection to the ethereum node. Once the web3 service receives a transaction
+message, it becomes responsible for confirming it with the network. 
+
+Once the actors library is tested and cleaned up it will replace existing
+server-side web3 code in the oracle and wallet funder.
 
 ### @woke/contracts 
 The contract artifacts which are built by truffle contain the compiled contract
@@ -42,14 +73,21 @@ Deploy procedure:
 4. Merge into hooked branch
 .. + Netlify: `deploy-netlify`
 .. + GCloud: `deploy-gcloud`
-
 Deployment branches must always be downstream of develop.
+
+SSH into deployment instance.
+1. Checkout `deploy`
+2. `git pull`
+3. `bash ./scripts/pull.sh`
+4. `docker-compose -f server.docker-compose.yml up -d`
+5. `docker-compose -f bot.docker-compose.yml up -d`
 
 ## Hosting
 ### Netlify
-Because of the more limited build options available on netlify, it was simplest
-to avoid using any lerna dependencies and simply copy the contract artifacts
-into the `@woke/app/src` on every production migration.
+Because of the more limited build options available on netlify (and not wanting 
+to fiddle with webpack just yet), it was simplest to avoid using any lerna
+dependencies and simply copy the contract artifacts into the `@woke/app/src`
+on every production migration.
 
 ### Google Cloud
 
