@@ -1,2 +1,2 @@
 #!/bin/bash
-docker-compose -f docker-compose.local.yml build
+docker build -f server.Dockerfile -t jvindustries/woke:server .

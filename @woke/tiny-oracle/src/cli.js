@@ -75,12 +75,7 @@ const getTweetText = oracle => async (_userId, _opts) => {
 const getRewardEvents = wokeToken => async (_claimerId, _referrerId) => {
 	let opts = {
 		fromBlock: 0,
-
-		// @fix these params are not indexed in WokeToken.sol
-		//claimerId: _claimerId,
-		//referrerId: _referrerId,
 	}
-
 	let events = await wokeToken.getPastEvents('Reward', opts);
 
 	if(_claimerId) 
@@ -90,7 +85,25 @@ const getRewardEvents = wokeToken => async (_claimerId, _referrerId) => {
 		events = events.filter(e => e.returnValues.referrerId == _referrerId)
 
 	return events;
+}
 
+const getTransferEvents = wokeToken => async (_fromId, _toId) => {
+	let opts = {
+		fromBlock: 0,
+		// @fix these params are not indexed in WokeToken.sol
+		//fromId: _fromId,
+		//toId: _toId,
+	}
+
+	let events = await wokeToken.getPastEvents('Tx', opts);
+
+	if(_fromId) 
+		events = events.filter(e => e.returnValues.fromId == _fromId)
+
+	if(_toId) 
+		events = events.filter(e => e.returnValues.toId == _toId)
+
+	return events;
 }
 
 const oracleSend = oracle => async (method, args, txOpts) => {
@@ -129,12 +142,31 @@ const checkConnection = async web3Instance =>  {
 			if(attempts < maxAttempts) {
 				await timeoutPromise(2000);
 			} else {
-				await web3Instance.initWeb3();
-				web3Instance.initContract();
-				attempts = 0;
+				return false;
 			}
 		}
 	}
+
+	return true;
+}
+
+const twitterUsers = twitter => {
+	const users = {};
+		const getHandle = (() =>  {
+			return async (userId) => {
+				if(!users[userId]) {
+					users[userId] = (await twitter.getUserData(userId)).handle
+				}
+				return users[userId];
+			};
+		})();
+
+		let userIds = [];
+		const addId = (id) => {
+			if(!userIds.includes(id)) userIds.push(id);
+		}
+
+	return { getHandle, addId, users, userIds }
 }
 
 
@@ -157,30 +189,42 @@ const createCommands = ctx => ({
 			return;
 		}
 
-		users = {}
-		const getHandle = (() =>  {
-			return async (userId) => {
-				if(!users[userId]) {
-					users[userId] = (await twitter.getUserData(userId)).handle
-				}
-				return users[userId];
-			};
-		})();
-
-		let userIds = [];
-		const addId = (id) => {
-			if(!userIds.includes(id)) userIds.push(id);
-		}
-		events.forEach(e => {addId(e.returnValues.referrerId); addId(e.returnValues.claimerId)});
+		const users = ctx.twitterUsers;
+		events.forEach(e => {users.addId(e.returnValues.referrerId); users.addId(e.returnValues.claimerId)});
 		debug.d('Fetching user handles...');
-		await Promise.all(userIds.map(id => getHandle(id)));
+		await Promise.all(users.userIds.map(id => users.getHandle(id)));
+
 		const eventList = events.map(e => ({
 			blockNumber: e.blockNumber,
 			returnValues: e.returnValues,
-			summary: `${e.blockNumber}:\t@${users[e.returnValues.referrerId]} received ${e.returnValues.amount}.W for referring @${users[e.returnValues.claimerId]}`
+			summary: `${e.blockNumber}:\t@${users.users[e.returnValues.referrerId]} received ${e.returnValues.amount}.W for referring @${users.users[e.returnValues.claimerId]}`
+		}));
+		eventList.forEach(e => console.log(e.summary))
+		console.log('\nTotal bounty rewards: ', eventList.length);
+
+		return;
+	},
+
+	getTransferEvents: async (from, to) => {
+		const events = await getTransferEvents(ctx.wokeToken)(from, to);
+		if(!(events && events.length)) {
+			console.log('None found.');
+			return;
+		}
+
+		const users = ctx.twitterUsers;
+		events.forEach(e => {users.addId(e.returnValues.toId); users.addId(e.returnValues.fromId)});
+		debug.d('Fetching user handles...');
+		await Promise.all(users.userIds.map(id => users.getHandle(id)));
+
+		const eventList = events.map(e => ({
+			blockNumber: e.blockNumber,
+			returnValues: e.returnValues,
+			summary: `${e.blockNumber}:\t@${users.users[e.returnValues.fromId]} sent ${e.returnValues.amount}.W to ${e.returnValues.claimed ? 'claimed' : 'unclaimed'} user @${users.users[e.returnValues.toId]}`
 		}));
 
 		eventList.forEach(e => console.log(e.summary))
+		console.log('\nTotal transfers: ', eventList.length);
 		return;
 	}
 })
@@ -195,11 +239,11 @@ async function initContext() {
 		web3Instance,
 		oracle,
 		wokeToken,
-		twitter,
+		twitterUsers: twitterUsers(twitter),
 	}
 }
 
-const commands = async () => (createCommands(await initContext()));
+const bindCommands = async () => (createCommands(await initContext()));
 
 // Example usage
 if(require.main === module) {
@@ -210,9 +254,11 @@ if(require.main === module) {
 	const usage = {
 		getTweetText: 'getTweetText <userId>',
 		getRewardEvents: 'getRewardEvents [[claimer,referrer] <userId>]',
+		getTransferEvents: 'getTransferEvents [[from,to] <userId>]',
 	};
 
 	(async () => {
+		let commands = Object.keys(usage).includes(command) && (await bindCommands()); // don't work for nothing
 
 		switch(command) {
 			case 'getTweetText': {
@@ -220,42 +266,47 @@ if(require.main === module) {
 				if(!nonEmptyString(userId)) {
 					console.log('No value provided for userId');
 					console.log(usage.getTweetText);
-					break;
+					return;
 				}
 				debug.d('Getting tweet text for user ', userId);
-				(await commands()).getTweetText(userId);
-				break;
+
+				return commands.getTweetText(userId)
 			}
 
 			case 'getRewardEvents': {
 				const [selectRole, userId] = args;
-				debug.d('Getting reward events', selectRole ? ` for ${selectRole} ${userId}` : '');
+				debug.d('Getting reward events', selectRole ? `for ${selectRole} ${userId}` : '');
 				switch(selectRole) {
-					case 'claimer': {
-						(await commands()).getRewardEvents(userId)
-						break;
-					}
-					case 'referrer': {
-						(await commands()).getRewardEvents(undefined, userId)
-						break;
-					}
-					default: {
-						(await commands()).getRewardEvents()
-						break;
-					}
+					case 'claimer':
+						return commands.getRewardEvents(userId)
+					case 'referrer':
+						return commands.getRewardEvents(undefined, userId)
+					default:
+						return commands.getRewardEvents()
 				}
-				break;
+			}
+
+			case 'getTransferEvents': {
+				const [type, userId] = args; // type: <from, to>
+				debug.d('Getting transfers', type ? ` for ${type} ${userId}` : '');
+				switch(type) {
+					case 'from':
+						return commands.getTransferEvents(userId)
+					case 'to':
+						return commands.getTransferEvents(undefined, userId)
+					default: 
+						return commands.getTransferEvents()
+				}
 			}
 
 			default: {
 				console.log('Commands: ');
-				console.log('  ' + usage.getTweetText);
-				console.log('  ' + usage.getRewardEvents);
+				Object.keys(usage).forEach(c => console.log('  ' + usage[c]))
 			}
 
 				return;
 		}
-	})();
+	})().catch(console.log);
 }
 
 function nonEmptyString(str) {

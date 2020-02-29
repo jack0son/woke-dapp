@@ -7,7 +7,7 @@ const Emitter = require('events');
 const debug = Logger('server:funder');
 
 const web3Utils = require('web3-utils');
-const DEFAULT_WEI = web3Utils.toWei('0.4', 'ether');
+const DEFAULT_WEI = web3Utils.toWei('0.04', 'ether');
 
 // TODO confirm with woketoken that account is not already funded
 class Funder extends Emitter {

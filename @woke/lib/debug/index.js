@@ -1,25 +1,53 @@
 const debug = require('debug');
+const { inspect } = require('util');
+
+const wrapInspect = (wrapper) => ((obj, d=null) => wrapper(inspect(obj, {depth: d})));
 
 const Logger = (prefix = 'm') => {
-	const t = debug(`${prefix}:test`);
-	const e = debug(`${prefix}:event`);
 	// Replace d<module initial> convention with d.<module> (e.g. debug.main)
+	const d = debug(`${prefix}`);
+	const t = d.extend(`test`);
+	const e = d.extend(`event`);
 
-	return {
-		d: debug(`${prefix}`),
-		error: debug(`${prefix}:err`),// errors
+	const levels = {
+		d: d,
+		log: d.extend(`*`), // ignore enabled / disabled
+		inspect: wrapInspect(d.extend(`obj`)),
+		error: d.extend(`err`),// errors
+		warn: d.extend(`warn`),// errors
 		ei: (m, obj) => {e(m), i(obj)}, // error with inspect object
-		h: debug(`${prefix}:handler`),		// helpers
-		info: debug(`${prefix}:info`),		// helpers
-		m: debug(`${prefix}:main`),
+		h: d.extend(`handler`),		// helpers
+		info: d.extend(`info`),		// helpers
+		m: d.extend(`main`),
 		e: e,
-		name: (name, msg) => debug(`${prefix}:${name}`)(msg),
+		name: (name, msg) => d.extend(`${name}`)(msg),
 		t: t,
 
 		// Verbose
 		v: debug(`v:${prefix}`),		
+	}
 
-		debug: debug
+
+	const disable = () => {
+		levels.info(`DEBUG: disabling...`);
+		Object.values(levels).forEach(d => d.enabled = false);
+	}
+
+	const enable = () => {
+		Object.values(levels).forEach(d => d.enabled = true);
+		levels.info(`DEBUG: enabled '${prefix}'`);
+	}
+	//console.log(debug);
+	//console.log(d);
+
+	return {
+		control: {
+			disable,
+			enable,
+			enabled: () => (d.enabled),
+			debug,
+		},
+		...levels,
 	}
 }
 

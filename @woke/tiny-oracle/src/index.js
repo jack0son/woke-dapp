@@ -143,6 +143,7 @@ class TinyOracle {
 					success = true;
 				} catch(error) {
 					debug.error('Failed to handle query: ', error);
+					console.log(error);
 				}
 
 				if(!success) {
@@ -291,7 +292,7 @@ const handleFindTweet = async (account, contract, query, txOpts) => {
 module.exports = TinyOracle;
 
 // Example usage
-if(debug.debug.enabled && require.main === module) {
+if(debug.control.enabled() && require.main === module) {
 	var argv = process.argv.slice(2);
 	if(argv.test) {
 

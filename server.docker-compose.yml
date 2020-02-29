@@ -7,12 +7,10 @@ services:
       POSTGRES_DB: woke_dapp 
     volumes:
       - postgres_data:/var/lib/postgresql/data/
-    ports:
-      - '5432:5432'
+    #ports:
+      #- '5432:5432'
   auth-server:
-    build:
-      context: ./
-      dockerfile: Dockerfile.server
+    image: jvindustries/woke:server
     depends_on:
       - db
     ports:

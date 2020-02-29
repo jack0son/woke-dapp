@@ -22,7 +22,7 @@ const stageList = [AUTH, WEB3];
 export default function RootContainer() {
 	const [claimComplete, setClaimComplete] = useState(false);
 
-	const dummyState = useLinearStages({stageList, initialStage: 1});
+	const dummyState = useLinearStages({stageList, initialStage: 0});
 
 	const dispatchNext = (event) => {
 		dummyState.dispatch({type: 'NEXT'});

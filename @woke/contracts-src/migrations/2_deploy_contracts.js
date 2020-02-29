@@ -1,6 +1,7 @@
 //const oracle = artifacts.require("TwitterOracle.sol");
 var OracleMock = artifacts.require("TwitterOracleMock.sol");
 var Token = artifacts.require("WokeToken.sol");
+var Helpers = artifacts.require("Helpers.sol");
 var Strings = artifacts.require("Strings.sol");
 var ECDSA = artifacts.require("ECDSA.sol");
 
@@ -10,6 +11,7 @@ const doDeploy = async (deployer, network, accounts) => {
 	const [defaultAccount, owner, oracleCallback, ...rest] = accounts;
 	const maxSupply = 10000000;
 
+	console.log('Using network: ', network);
 	console.log('Deploy account: ', defaultAccount);
 	console.log('Callback account: ', oracleCallback);
 
@@ -24,13 +26,31 @@ const doDeploy = async (deployer, network, accounts) => {
 		opts.value =  100000000000;
 	}
 
+	console.log('Deploying OracleMock...');
 	await deployer.deploy(OracleMock, oracleCallback, opts);
 	let oracleInstance = await OracleMock.deployed();
+	console.log(`OracleMock deployed at ${oracleInstance.address}`);
+
+
+	console.log('Deploying Strings...');
 	await deployer.deploy(Strings);
-	await deployer.deploy(ECDSA);
+	await deployer.link(Strings, Helpers);
 	await deployer.link(Strings, Token);
+
+	console.log('Deploying Helpers...');
+	await deployer.deploy(Helpers);
+	await deployer.link(Helpers, Token);
+
+	console.log('Deploying ECDSA...');
+	await deployer.deploy(ECDSA);
 	await deployer.link(ECDSA, Token);
-	return await deployer.deploy(Token, oracleInstance.address, maxSupply, opts);
+
+	console.log('Deploying WokeToken...')
+	return await deployer.deploy(Token, oracleInstance.address, owner, maxSupply, opts)
+		.then(tokenInsance => {
+			console.log(`WokeToken deployed at ${tokenInsance.address}`);
+			return tokenInsance;
+		});
 }
 
 module.exports = function(deployer, network, accounts) {

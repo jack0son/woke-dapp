@@ -80,5 +80,8 @@ module.exports = {
 }
 
 function createRpcUrl(network) {
+	if(!network) {
+		throw new Error('No network provided. Expects: { protocol, host, port }');
+	}
 	return `${network.protocol}://${network.host}${network.port ? ':' + network.port : ''}`;
 }

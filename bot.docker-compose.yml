@@ -1,0 +1,46 @@
+version: '3'
+services:
+  bot-db:
+    image: postgres:11.1
+    environment:
+      POSTGRES_USER: woke_bot
+      POSTGRES_PWD: woke_bot
+      POSTGRES_DB: bot_db
+    volumes:
+      - bot_postgres_data:/var/lib/postgresql/data/
+      #ports:
+      #- '5433:5432'
+  notifier:
+    image: jvindustries/woke:notifier
+    depends_on:
+      - bot-db
+    environment:
+      POSTGRES_USER: woke_bot
+      POSTGRES_PWD: woke_bot
+      POSTGRES_DB: bot_db
+      POSTGRES_HOST: bot-db
+      POSTGRES_PORT: 5432
+      WAIT_HOSTS: bot-db:5432
+      NODE_ENV: 'production'
+      ETH_ENV: 'production'
+      PERSIST: 'true'
+      DEBUG_RECOVERY: 'true'
+
+  tipper:
+    image: jvindustries/woke:tipper
+    depends_on:
+      - bot-db
+    environment:
+      POSTGRES_USER: woke_bot
+      POSTGRES_PWD: woke_bot
+      POSTGRES_DB: bot_db
+      POSTGRES_HOST: bot-db
+      POSTGRES_PORT: 5432
+      WAIT_HOSTS: bot-db:5432
+      NODE_ENV: 'production'
+      ETH_ENV: 'production'
+      PERSIST: 'true'
+      DEBUG_RECOVERY: 'true'
+
+volumes:
+  bot_postgres_data:
