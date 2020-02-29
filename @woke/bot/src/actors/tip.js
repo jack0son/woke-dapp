@@ -227,7 +227,6 @@ const eventsTable = {
 
 						dispatch(ctx.parent, { type: 'tip_update', tip }, ctx.self);
 						ctx.reduce({ event: 'settled' });
-						nextState = 'CONFIRMED';
 
 						return { ...state, nextStage: 'CONFIRMED', }
 						break;

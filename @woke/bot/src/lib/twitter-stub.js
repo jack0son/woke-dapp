@@ -73,7 +73,7 @@ class TwitterStub {
 		const { client } = this;
 
 		const params = {
-			query: '$woke OR $WOKE OR $WOKENS OR WOKENS',
+			query: '$woke OR $wokens OR $WOKE OR $WOKENS OR WOKENS',
 			result_type: 'recent',
 			entities: 'false',
 			count: 100,
@@ -115,7 +115,7 @@ function notRetweet(tweet) {
 }
 
 function nonEmptyArray(arr) {
-	return arr && arr.length && arr.length && arr.length > 0;
+	return arr && arr.length && arr.length > 0;
 }
 
 module.exports = TwitterStub;

@@ -138,7 +138,7 @@ const actions = {
 		const { txStatus } = msg;
 
 		if(txStatus == 'success') {
-			ctx.debug.d(`Complete. Stopping...`);
+			ctx.debug.d(msg, `Complete. Stopping...`);
 			return ctx.stop;
 		}
 	},
