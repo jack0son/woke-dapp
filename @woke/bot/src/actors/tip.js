@@ -6,7 +6,9 @@ const properties = {
 		stage: 'INIT',
 	},
 
+	// Receivers are bound the message bundle and attached to the context
 	receivers: (msg, state, ctx) => ({
+		// Reduce forwards a message to the reduce action
 		reduce: (_msg) => {
 			_msg.type = 'reduce';
 			dispatch(ctx.self, {...msg, ..._msg}, ctx.self);
@@ -31,7 +33,7 @@ function reduceEvent(msg, ctx, state) {
 
 	const action = applicableStages[stage];
 	if(!action) {
-		ctx.debug.warn(msg, `No actions for event <${event}> in stage ╢ ${stage} ╟`);
+		ctx.debug.warn(msg, `Event <${event}> triggers on actions in stage ╢ ${stage} ╟`);
 		return state;
 	}
 

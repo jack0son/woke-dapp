@@ -3,4 +3,5 @@ module.exports = {
 	woozy: '🥴',
 	folded_hands: '🙏',
 	no: '🙅',
+	shrug: '🤷',
 }

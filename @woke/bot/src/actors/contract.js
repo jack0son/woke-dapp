@@ -67,7 +67,7 @@ const contractActor = {
 		},
 
 		'send': async (msg, ctx, state) => {
-			const { method, args, opts} = msg;
+			const { method, args, opts } = msg;
 
 			if(!Array.isArray(args)) {
 				throw new Error(`Send expects parameter args to be Array`);
