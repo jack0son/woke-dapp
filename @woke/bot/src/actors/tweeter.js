@@ -13,11 +13,15 @@ function tip_success_tweet_text(tip) {
 }
 
 function tip_success_message(tip) {
-	return `${emojis.folded_hands} woke vote of ${tip.amount} was confirmed on chain: ${tx_etherscan_url(tip)}.\n\nTransaction auth tweet ${tip_tweet_url(tip)}`;
+	return `${emojis.folded_hands} #WokeVote of ${tip.amount} was confirmed on chain: ${tx_etherscan_url(tip)}.\n\nTransaction auth tweet ${tip_tweet_url(tip)}`;
+}
+
+function tip_invalid_message(tip) {
+	return `${emojis.sleep_face} You need to be woke to send $WOKE. Join with a tweet at https://getwoke.me @${tip.fromHandle}`;
 }
 
 function tip_failure_message(tip) {
-	return `${emojis.sleep_face} You need to be woke to send $WOKE. Join with a tweet at https://getwoke.me @${tip.fromHandle}`;
+	return `${emojis.shrug} Wokens be damned! #WokeVote failed. \n\n@${tip.fromHandle}#${tip.id}`;
 }
 
 function tip_broke_message(tip) {
@@ -104,11 +108,11 @@ const TweeterActor = (twitterStub) => ({
 			const { tip } = msg;
 
 			ctx.debug.d(msg, `tweeting ${tip.id} invalid...`);
-			let text = tip_failure_message(tip);
+			let text = tip_invalid_message(tip);
 			if(tip.reason == 'broke') {
 				text = tip_broke_message(tip);
 			} else if(tip.reason == 'unclaimed') {
-				text = tip_failure_message(tip);
+				text = tip_invalid_message(tip);
 			} else {
 				// No invalidation reason
 			}

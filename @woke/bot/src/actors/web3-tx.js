@@ -15,6 +15,8 @@ const properties = {
 	}
 }
 
+const MAX_ATTEMPTS = 3;
+
 // A parent actor can persist the sendTx messages then spin up a send actor for
 // each one, get notified of the result, then mark the tx message discarded or
 // complete
@@ -108,14 +110,46 @@ const actions = {
 			//ctx.onlySelf()
 			const { error, tx } = msg;
 
+			let _error;
+			const retry = () => {
+				const _attempts = state.tx._attempts ? state.tx._attempts + 1 : 1;
+				if(_attempts > MAX_ATTEMPTS) {
+					_error = new Error('Tx failed too many times');
+					return { ...state, error: _error } // notify sinks
+				}
+
+				dispatch(ctx.self, { type: 'send', tx: { ...state.tx, _attempts } }, ctx.self);
+				return state; // absorb the error
+			}
+
+			// @brokenwindow
+			// This withEffect pattern breaks the let it crash philosophy 
+			// This decision shouldn't be handled in the action logic.
+			//
+			// Challenge here is to distinguish between errors that the tx sink
+			// should be notified of and errors that the tx should just handle itself
+			//	-- if you wanted to get complex the sink could specifiy an error
+			//	policy the same way an actor specifies an onCrash policy
+			//
 			if(error) {
 				if(error instanceof OnChainError) {
 					console.log(error);
+
+				}
+				if(error instanceof ParamError) {
+					console.log('PPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPP');
+					console.dir(error.web3Error.message);
+					if(error.web3Error.message.includes('nonce')) {
+						return retry();
+					} else {
+						throw error;
+					}
+
 				} else if(error instanceof TransactionError) {
 					console.log(error);
 					console.log("RETRY");
-					dispatch(ctx.self, { type: 'send', tx }, ctx.self);
-					return state;
+					return retry();
+
 				} else if(error.data && error.data.tx) {
 					console.log(error.data.tx);
 					throw error;
@@ -124,7 +158,7 @@ const actions = {
 
 			const nextState = {
 				...state,
-				error,
+				error: _error || error,
 				tx: {
 					...state.tx,
 					...tx,
@@ -165,6 +199,7 @@ const actions = {
 	'send': async (msg, ctx, state) => {
 		const { tx } = msg; 
 
+
 		tx.type = 'send';
 		const { web3Instance } = await block(state.a_web3, { type: 'get' });
 		const { nonce } = await block(state.a_nonce, { type: 'get_nonce',
@@ -191,7 +226,6 @@ const actions = {
 		//dispatch(ctx.sender, {type: 'tx', txStatus: 'submitted', tx }, ctx.self);
 		return {
 			...state,
-			sent: true,
 			error: null,
 			tx,
 		};
@@ -216,7 +250,7 @@ const actions = {
 			common: web3Instance.network.defaultCommon,
 			...sendOpts,
 			...tx.opts,
-			nonce,
+			nonce: 0,
 		}
 		if(web3Instance.account) {
 			opts.from = web3Instance.account;
@@ -248,17 +282,18 @@ const actions = {
 				} else if(error.message.includes('not mined')) {
 					reduce({ error: new TransactionError(error, tx)}, ctx);
 				} else {
+					//console.dir(error);
 					const paramError = new ParamError(error, tx);
 					reduce({ error: paramError }, ctx);
 				}
 			})
-			.then( receipt => {
+			.then(receipt => {
 				//reduce({ tx: { receipt }, tx }, ctx);
 				//console.log('GOT RECEIPT -- REEEEEEEE');
 				//dispatch(ctx.sender, {type: 'tx', txStatus: 'success', tx, receipt }, ctx.self);
 				//dispatch(ctx.self, {type: 'tx', txStatus: 'success', tx, receipt }, ctx.self);
 			})
-			.catch( (error, receipt) => {
+			.catch((error, receipt) => {
 				// Caught by promi-event error listener
 			})
 	},
@@ -286,31 +321,32 @@ class DomainError extends Error {
 class ParamError extends DomainError {
 	constructor(error, tx) { // and tx data?
 		super(`Transaction '${tx.method}' failed due to invalid parameters.`);
-		this.data = { error, tx };
+		this.web3Error = error;
+		this.data = { tx };
 	}
 }
 
 class TransactionError extends DomainError {
 	constructor(error, tx) { // and tx data?
 		super(`Transaction '${tx.method}' failed.`);
-		this.data = { error, tx };
+		this.web3Error = error;
+		this.data = { tx };
 	}
 }
 
 class OnChainError extends DomainError {
 	constructor(error, tx, receipt) { // and tx data?
 		super(`Transactions ${receipt.transactionHash} failed on chain.`);
-		this.data = { receipt, tx, error }
+		this.web3Error = error;
+		this.data = { receip, tx };
 	}
 }
 
 class RevertError extends DomainError {
-	constructor(tx) {
-		if(tx.reason) {
-			super(`Transaction reverted '${tx.reason}`);
-		} else {
-			super(`No reason given`);
-		}
+	constructor(error, tx) {
+		super(`Transaction reverted ${error.reason ? `'${error.reason}'` : ` with no reason provided`}`);
+		this.web3Error = error;
+		this.reason = error.reason;
 		this.data = { tx }
 	}
 }
