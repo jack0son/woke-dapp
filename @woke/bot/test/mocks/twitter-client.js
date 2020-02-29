@@ -105,7 +105,7 @@ const dummyStatus = {
 	created_at: 'Tue Feb 25 06:21:41 +0000 2020',
   id: 1232188898765201400,
   id_str: '1232188898765201409',
-  text: 'Wooooooooooooweeeeeeeee',
+  text: 'this is the text of an example status update response',
   truncated: false,
   entities: { hashtags: [], symbols: [], user_mentions: [], urls: [] },
   source:

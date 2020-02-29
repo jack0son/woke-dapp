@@ -7,7 +7,7 @@ services:
       POSTGRES_DB: woke_dapp 
     volumes:
       - postgres_data:/var/lib/postgresql/data/
-    ports:
+    #ports:
       #- '5432:5432'
   auth-server:
     image: jvindustries/woke:server
