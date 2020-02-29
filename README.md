@@ -33,13 +33,15 @@ For example:
 
 The web3 service (a set of actors) takes responsibility for blockchain
 nuances, applying its own policies for problems like account balances, gas
-usage, node availability, giving the rest of the application (other services)
+usage, and node availability, giving the rest of the application (other services)
 a much smaller error surface to work with and some clean assumptions for how
-web3 interactions are being handled.
+web3 interactions are handled.
 
 One such assumption is that transactions will never fail due a lack of
 connection to the ethereum node. Once the web3 service receives a transaction
-message, it becomes responsible for confirming it with the network. 
+message, it becomes responsible for confirming it with the network. Upon
+failure, the requesting service receives a message which enacts it's
+own policies for dealing with reverts and incorrect parameters.
 
 Once the actors library is tested and cleaned up it will replace existing
 server-side web3 code in the oracle and wallet funder.
