@@ -15,7 +15,7 @@ const properties = {
 	}
 }
 
-const MAX_ATTEMPTS = 3;
+const MAX_ATTEMPTS = 4;
 
 // A parent actor can persist the sendTx messages then spin up a send actor for
 // each one, get notified of the result, then mark the tx message discarded or
@@ -118,6 +118,7 @@ const actions = {
 					return { ...state, error: _error } // notify sinks
 				}
 
+				ctx.debug.d(msg, `Retrying tx: ${Object.values(state.tx)}`);
 				dispatch(ctx.self, { type: 'send', tx: { ...state.tx, _attempts } }, ctx.self);
 				return state; // absorb the error
 			}
@@ -132,13 +133,11 @@ const actions = {
 			//	policy the same way an actor specifies an onCrash policy
 			//
 			if(error) {
+				console.log(error);
 				if(error instanceof OnChainError) {
-					console.log(error);
 
 				}
 				if(error instanceof ParamError) {
-					console.log('PPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPP');
-					console.dir(error.web3Error.message);
 					if(error.web3Error.message.includes('nonce')) {
 						return retry();
 					} else {
@@ -146,13 +145,11 @@ const actions = {
 					}
 
 				} else if(error instanceof TransactionError) {
-					console.log(error);
-					console.log("RETRY");
 					return retry();
 
 				} else if(error.data && error.data.tx) {
-					console.log(error.data.tx);
 					throw error;
+
 				}
 			}
 
@@ -250,7 +247,7 @@ const actions = {
 			common: web3Instance.network.defaultCommon,
 			...sendOpts,
 			...tx.opts,
-			nonce: 0,
+			nonce,
 		}
 		if(web3Instance.account) {
 			opts.from = web3Instance.account;

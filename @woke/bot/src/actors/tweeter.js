@@ -86,6 +86,7 @@ const TweeterActor = (twitterStub) => ({
 			const { twitter } = state;
 			const { fromId, toId, amount } = msg;
 			const tweet = await twitter.postUnclaimedTransfer(fromId, toId, amount);
+			ctx.debug.d(msg, `tweeted '${tweet.text}'`);
 			dispatch(ctx.sender, { type: msg.type, tweet }, ctx.self);
 			// Tweet an invite
 		},
@@ -94,7 +95,7 @@ const TweeterActor = (twitterStub) => ({
 			const { twitter } = state;
 			const { tip } = msg;
 
-			ctx.debug.d(msg, `tweeting ${tip.id} success...`);
+			ctx.debug.info(msg, `tweeting ${tip.id} success...`);
 			const text = tip_success_tweet_text(tip);
 			const tweet = await twitter.postTweetReply(text, tip.id);
 			ctx.debug.d(msg, `tweeted '${text}'`);
@@ -107,7 +108,7 @@ const TweeterActor = (twitterStub) => ({
 			const { twitter } = state;
 			const { tip } = msg;
 
-			ctx.debug.d(msg, `tweeting ${tip.id} invalid...`);
+			ctx.debug.info(msg, `tweeting ${tip.id} invalid...`);
 			let text = tip_invalid_message(tip);
 			if(tip.reason == 'broke') {
 				text = tip_broke_message(tip);
@@ -127,7 +128,7 @@ const TweeterActor = (twitterStub) => ({
 			const { twitter } = state;
 			const { tip } = msg;
 
-			ctx.debug.d(msg, `tweeting ${tip.id} failure...`);
+			ctx.debug.info(msg, `tweeting ${tip.id} failure...`);
 			const text = tip_failure_message(tip);
 			const tweet = await twitter.postTweetReply(text, tip.id);
 			ctx.debug.d(msg, `tweeted '${text}'`);
