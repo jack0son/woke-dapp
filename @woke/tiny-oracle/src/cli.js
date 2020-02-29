@@ -75,12 +75,7 @@ const getTweetText = oracle => async (_userId, _opts) => {
 const getRewardEvents = wokeToken => async (_claimerId, _referrerId) => {
 	let opts = {
 		fromBlock: 0,
-
-		// @fix these params are not indexed in WokeToken.sol
-		//claimerId: _claimerId,
-		//referrerId: _referrerId,
 	}
-
 	let events = await wokeToken.getPastEvents('Reward', opts);
 
 	if(_claimerId) 
@@ -90,7 +85,25 @@ const getRewardEvents = wokeToken => async (_claimerId, _referrerId) => {
 		events = events.filter(e => e.returnValues.referrerId == _referrerId)
 
 	return events;
+}
 
+const getTransferEvents = wokeToken => async (_fromId, _toId) => {
+	let opts = {
+		fromBlock: 0,
+		// @fix these params are not indexed in WokeToken.sol
+		//fromId: _fromId,
+		//toId: _toId,
+	}
+
+	let events = await wokeToken.getPastEvents('Tx', opts);
+
+	if(_fromId) 
+		events = events.filter(e => e.returnValues.fromId == _fromId)
+
+	if(_toId) 
+		events = events.filter(e => e.returnValues.toId == _toId)
+
+	return events;
 }
 
 const oracleSend = oracle => async (method, args, txOpts) => {
@@ -182,6 +195,41 @@ const createCommands = ctx => ({
 
 		eventList.forEach(e => console.log(e.summary))
 		return;
+	},
+
+	getTransferEvents: async (from, to) => {
+		const events = await getTransferEvents(ctx.wokeToken)(from, to);
+		if(!(events && events.length)) {
+			console.log('None found.');
+			return;
+		}
+
+		users = {}
+		const getHandle = (() =>  {
+			return async (userId) => {
+				if(!users[userId]) {
+					users[userId] = (await twitter.getUserData(userId)).handle
+				}
+				return users[userId];
+			};
+		})();
+
+		let userIds = [];
+		const addId = (id) => {
+			if(!userIds.includes(id)) userIds.push(id);
+		}
+		events.forEach(e => {addId(e.returnValues.toId); addId(e.returnValues.fromId)});
+		debug.d('Fetching user handles...');
+		await Promise.all(userIds.map(id => getHandle(id)));
+		const eventList = events.map(e => ({
+			blockNumber: e.blockNumber,
+			returnValues: e.returnValues,
+			summary: `${e.blockNumber}:\t@${users[e.returnValues.fromId]} sent ${e.returnValues.amount}.W to ${e.returnValues.claimed ? 'claimed' : 'unclaimed'} user @${users[e.returnValues.toId]}`
+		}));
+
+		eventList.forEach(e => console.log(e.summary))
+		console.log('\nTotal transfers: ', eventList.length);
+		return;
 	}
 })
 
@@ -210,6 +258,7 @@ if(require.main === module) {
 	const usage = {
 		getTweetText: 'getTweetText <userId>',
 		getRewardEvents: 'getRewardEvents [[claimer,referrer] <userId>]',
+		getTransferEvents: 'getTransferEvents [[from,to] <userId>]',
 	};
 
 	(async () => {
@@ -229,7 +278,7 @@ if(require.main === module) {
 
 			case 'getRewardEvents': {
 				const [selectRole, userId] = args;
-				debug.d('Getting reward events', selectRole ? ` for ${selectRole} ${userId}` : '');
+				debug.d('Getting reward events', selectRole ? `for ${selectRole} ${userId}` : '');
 				switch(selectRole) {
 					case 'claimer': {
 						(await commands()).getRewardEvents(userId)
@@ -247,10 +296,29 @@ if(require.main === module) {
 				break;
 			}
 
+			case 'getTransferEvents': {
+				const [type, userId] = args; // type: <from, to>
+				debug.d('Getting transfers', type ? ` for ${type} ${userId}` : '');
+				switch(type) {
+					case 'from': {
+						(await commands()).getTransferEvents(userId)
+						break;
+					}
+					case 'to': {
+						(await commands()).getTransferEvents(undefined, userId)
+						break;
+					}
+					default: {
+						(await commands()).getTransferEvents()
+						break;
+					}
+				}
+				break;
+			}
+
 			default: {
 				console.log('Commands: ');
-				console.log('  ' + usage.getTweetText);
-				console.log('  ' + usage.getRewardEvents);
+				Object.keys(usage).forEach(c => console.log('  ' + usage[c]))
 			}
 
 				return;

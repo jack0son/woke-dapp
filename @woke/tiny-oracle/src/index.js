@@ -143,6 +143,7 @@ class TinyOracle {
 					success = true;
 				} catch(error) {
 					debug.error('Failed to handle query: ', error);
+					console.log(error);
 				}
 
 				if(!success) {
