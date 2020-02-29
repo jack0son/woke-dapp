@@ -9,7 +9,7 @@ const tx_etherscan_url = tip => `https://goerli.etherscan.io/tx/${tip.tx_hash}`;
 const tip_tweet_url = tip =>  `https://twitter.com/${tip.fromId}/status/${tip.id}`;
 
 function tip_success_tweet_text(tip) {
-	return `${emojis.folded_hands} Wokeness confirmed : ${tx_etherscan_url(tip)}.\n\n@${tip.fromHandle} Sent @${tip.toHandle} ${tip.amount} $WOKE`;
+	return `${emojis.folded_hands} Wokeness confirmed : ${tx_etherscan_url(tip)}.\n\n@${tip.fromHandle} sent @${tip.toHandle} ${tip.amount} $WOKE`;
 }
 
 function tip_success_message(tip) {
