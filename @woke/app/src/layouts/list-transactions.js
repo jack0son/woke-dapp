@@ -21,8 +21,8 @@ const useStyles = makeStyles(theme => ({
 		display: 'block',
 		position: 'relative',
 		overflow: 'hidden',
-		paddingRight: theme.spacing(0),
-		paddingLeft: theme.spacing(0),
+		paddingRight: '10%',
+		paddingLeft: '10%',
 		backgroundColor: 'transparent',
 		...styles
 	}),
@@ -43,11 +43,6 @@ const useStyles = makeStyles(theme => ({
 	avatar: {
 		height: '100%',
 	},
-
-	transWokenAmount: {
-		right: '20%',
-	}
-
 
 }));
 
@@ -112,7 +107,7 @@ export default function TransactionList (props) {
 				secondary={tx.timeSince ? `${tx.timeSince}` : `...`}
 				secondaryTypographyProps={timeSinceProps}
 			/>
-			<ListItemSecondaryAction className={classes.transWokenAmount}>
+			<ListItemSecondaryAction>
 				<TransactionAmount type={tx.type} amount={tx.returnValues.amount}/>
 			</ListItemSecondaryAction>
 			</ListItem>

@@ -10,8 +10,6 @@ const useStyles = makeStyles(theme => ({
 		height: 'auto',
 		display: 'flex',
 		marginTop: 'auto',
-		paddingLeft: '10%',
-		paddingRight: '10%',
 		paddingBottom: theme.spacing(4),
 	}
 }));

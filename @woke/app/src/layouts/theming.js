@@ -2,12 +2,15 @@ import React from 'react';
 
 import { createMuiTheme } from '@material-ui/core/styles';
 import { ThemeProvider } from '@material-ui/styles';
+import createBreakpoints from '@material-ui/core/styles/createBreakpoints'
 
 // Theme assets 
 import * as mainPalette from './colors/main-palette';
 import { accentPalette } from './colors/blue-green';
 import Nervous from '../components/fonts/nervous';
 import 'typeface-inconsolata';
+
+const breakpoints = createBreakpoints({})
 
 const palette = mainPalette.palette;
 palette.accents = accentPalette;
@@ -27,6 +30,7 @@ const theme = createMuiTheme({
 
 	breakpoints: {
 		values: {
+			//Note: These breakpoints are used outside the theme, to use breakpoints inside the theme AKA this file, the createBreakpoints method must be used
 			xs: 0,
 			sm: 300,
 			md: 364,
@@ -42,18 +46,38 @@ const theme = createMuiTheme({
 			fontWeight: 400,
 			fontSize: '38px',
 			lineHeight: '48px',
-			color: accentPalette.primary.main
+			color: accentPalette.primary.main,
+			[breakpoints.up('sm')]: {
+				fontSize: '62px',
+				lineHeight: '85px',
+			},
+			[breakpoints.up('lg')]: {
+				fontSize: '88px',
+				lineHeight: '100px',
+			}
 		},
 		h4: {
 			fontFamily: 'Inconsolata',
 			fontWeight: 700,
 			fontSize: '18px',
 			lineHeight: '24px',
+			[breakpoints.up('sm')]: {
+				fontSize: '32px',
+			},
+			[breakpoints.up('lg')]: {
+				fontSize: '38px',
+			}
 		},
 		body1: {
 			fontFamily: 'Inconsolata',
 			fontWeight: 400,
 			fontSize: '0.875rem',
+			[breakpoints.up('sm')]: {
+				fontSize: '1rem',
+			},
+			[breakpoints.up('lg')]: {
+				fontSize: '1.15rem',
+			}
 			//color: 'primary'
 			//lineHeight: '24px',
 		},

@@ -86,7 +86,6 @@ const useStyles = makeStyles(theme => ({
 		flexDirection: 'column',
 		justifyContent: 'flex-start',
 		flexGrow: 0,
-		
 		position: 'relative',
 		//overflow: 'hidden',
 		//backgroundColor: theme.palette.background.dark,
