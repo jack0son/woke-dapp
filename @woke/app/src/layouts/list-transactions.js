@@ -21,8 +21,10 @@ const useStyles = makeStyles(theme => ({
 		display: 'block',
 		position: 'relative',
 		overflow: 'hidden',
-		paddingRight: '10%',
-		paddingLeft: '10%',
+		[theme.breakpoints.up('sm')]: {
+			paddingRight: '10%',
+			paddingLeft: '10%',
+		},
 		backgroundColor: 'transparent',
 		...styles
 	}),

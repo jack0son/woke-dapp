@@ -11,7 +11,7 @@ const useStyles = makeStyles(theme => ({
 		display: 'block',
 		paddingRight: theme.spacing(2),
 		paddingLeft: theme.spacing(2),
-		marginTop: '30vh',
+		marginTop: theme.spacing(2),
 		...styles
 	})
 }));

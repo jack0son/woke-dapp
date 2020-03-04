@@ -30,12 +30,11 @@ const theme = createMuiTheme({
 
 	breakpoints: {
 		values: {
-			//Note: These breakpoints are used outside the theme, to use breakpoints inside the theme AKA this file, the createBreakpoints method must be used
 			xs: 0,
-			sm: 300,
-			md: 364,
-			lg: 488,
-			xl: 504,
+			sm: 600,
+			md: 960,
+			lg: 1280,
+			xl: 1920,
 		}
 	},
 
