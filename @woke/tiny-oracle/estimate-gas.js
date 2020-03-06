@@ -34,50 +34,30 @@ const sendSomeTx = async () => {
 	const [migrator, owner, oracle, ...accounts] = await web3.eth.getAccounts();
 	const [a, b, c, poor] = accounts;
 
-	const userId = `randomUser-${Math.floor(Math.random() * Math.floor(1000))}`;
-
-
-
 	let gasPrice = new BN(txOpts.gasPrice);
 	let gasLimit = new BN(txOpts.gas);
 	console.log('gasPrice: ', gasPrice.toString());
 	console.log('gasLimit: ', gasLimit.toString());
 
 	maxTxCost = gasPrice.mul(gasLimit);
-	console.log(`Max tx cost (wei): ${maxTxCost.toString()}`);
-	console.log(`Max tx cost (eth): ${web3.utils.fromWei(maxTxCost, 'ether')}`);
+	console.log(`Max tx cost ${valStr(maxTxCost.toString())}`);
+	console.log('\n');
 
-	console.log(maxTxCost.toString())
-
-	console.log('\n\n');
 	let send = poor;
 	const balance = web3.utils.fromWei((await web3.eth.getBalance(send)), 'ether')
 	console.log(`Poor's balance: ${balance}`);
-	console.log(`Max tx cost (wei): ${maxTxCost}`);
-	console.log(`Max tx cost (eth): ${web3.utils.fromWei(maxTxCost, 'ether')}`);
-
 	let opts = {...txOpts, from: send, to: owner, value: 1};
 	let estimate = await web3.eth.estimateGas(opts);
-	console.log('Estimate gas used: ', estimate);
-	console.log('est is bigNumber: ', web3.utils.isBN(estimate)); // FALSE
-
-	//console.log(opts);
 	let r = await web3.eth.sendTransaction(opts)
 	console.log('Gas used: ', r.gasUsed);
-	const txCost = gasPrice.mul(new BN(r.gasUsed));
-	console.log(`Tx cost (wei): ${txCost.toString()}`);
-	console.log(`Tx cost (wei): ${web3.utils.fromWei(txCost, 'ether')}`);
-	console.log('Handle revert? ', web3.eth.handleRevert);
-	// console.log(r);
-	//
-	await safeGas(woken, 'claimUser', [userId], txOpts);
 
+	const userId = `randomUser-${Math.floor(Math.random() * Math.floor(1000))}`;
+	await safeGas(woken, 'claimUser', [userId], txOpts);
 	//r = await woken.methods.claimUser(userId).send(txOpts);
 	//console.log(r);
-
 }
 
-const valStr = wei => `eth:${toEth(wei)} wei:${wei.toString()}`;
+const valStr = wei => `${toEth(wei)} ETH, ${wei.toString()} wei`;
 
 // Set the gas limit and price taking eth balance into account.
 // If sufficient funds, use comfortable buffer for gas limit, and set a high
@@ -91,24 +71,38 @@ async function safeGas(contract, method, args, txOpts) {
 	console.log(`\nDetermine safe gas to send method-${method} to ${contract._address}`);
 
 	try { 
+		// Fetch network gas price
 		const medianPrice = await web3.eth.getGasPrice();
 		console.log(`Median price: ${valStr(medianPrice)}`);
 
-		console.log(contract.methods[method]);
+		// Determine transaction cost
 		let estimate = await contract.methods[method](...args).estimateGas({ from: txOpts.from });
-		console.log(`Estimated gas: ${estimate}`);
+		console.log(`Gas estimate: ${estimate}`);
 		let cost = gasPrice.mul(new BN(estimate));
-		console.log(`Estimated tx cost ${valStr(cost)}`);
+		console.log(`Cost estimate: ${valStr(cost)}`);
 
 		let balance = await web3.eth.getBalance(txOpts.from);
+		console.log(`Sender balance: ${valStr(balance)}`);
 
+		// Decide on gas price and limit
 		let price;
-		if(cost > balance) {
+		const factor = new BN(2);
+		if(false && cost > balance) {
+			// Insufficient balance
 			console.log('Error: cannot affort tx at median gas cost');
-		} else if(cost*2 < balance) {
-			price = medianPrice * 2;
-			console.log('Using double median cost');
+			return;
+		} else if( false ) {
+			// Use lowest cost option
+		} else {
+			// Use fast options
+			let limit = (new BN(estimate)).mul(factor);
+			price = (new BN(medianPrice)).mul(factor);
+			console.log(price);
+			let maxCost = limit.mul(price);
+			console.log(`Using factored median cost ${valStr(maxCost)}`);
 		}
+
+		console.log(`Price: ${valStr(price)}`);
 
 	} catch(error) {
 		throw error
