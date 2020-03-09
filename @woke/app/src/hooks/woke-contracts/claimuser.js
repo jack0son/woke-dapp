@@ -417,14 +417,18 @@ export default function useClaimUser({userId, userHandle, claimStatus}) {
 	const handleSendFulfillClaim = async () => {
 
 		try {
-			const txOpts = await safePriceEstimate(web3)(WokeToken, '_fulfillClaim', [userId], txOpts);
+			const { limit, price } = await safePriceEstimate(web3)(WokeToken, '_fulfillClaim', [userId], txOpts);
+			txOpts = { ...txOpts, gas: limit.toString(), gasPrice: price.toString() };
+			if(sendFulfillClaim.send('useOpts', userId, txOpts)) {
+				console.log(`sendFulfillClaim(${userId})`)
+				dispatch({type: 'sent-transaction', payload: 'fulfill'})
+			} else {
+				console.error('Failed to sendFulfillClaim');
+			}
 		} catch (error) {
 			dispatch({type: 'sent-transaction', payload: 'fulfill-error', error: error.message})
 		}
 
-		console.log(`sendFulfillClaim(${userId})`)
-		sendFulfillClaim.send(userId);
-		dispatch({type: 'sent-transaction', payload: 'fulfill'})
 	}
 
 	const foundTweetPredicate = claimState.stage === states.FOUND_TWEET;
