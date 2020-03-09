@@ -58,8 +58,10 @@ const sendSomeTx = async () => {
 	let r = await web3.eth.sendTransaction(opts)
 	console.log('Gas used: ', r.gasUsed);
 
+	//console.log(web3.utils.fromWei((await web3.eth.getBalance('0x9eAD27E55f916c7fCD754477d8BABCAC180573dD')), 'ether'));
+
 	const userId = `randomUser-${Math.floor(Math.random() * Math.floor(1000))}`;
-	await safeGas(woken, 'claimUser', [userId], txOpts);
+	await web3Tools.utils.safePriceEstimate(web3)(woken, 'claimUser', [userId], txOpts);
 
 	//await accountBalances();
 	//r = await woken.methods.claimUser(userId).send(txOpts);
@@ -67,97 +69,5 @@ const sendSomeTx = async () => {
 }
 
 const valStr = (wei, delim = ', ') => `${toEth(wei)} ETH${delim}${wei.toString()} wei`;
-
-// Set the gas limit and price taking eth balance into account.
-// If sufficient funds, use comfortable buffer for gas limit, and set a high
-// price.
-// @param method: web3Contract[method]
-async function safeGas(contract, method, args, txOpts) {
-	let gasPrice = new BN(txOpts.gasPrice);
-	let gasLimit = new BN(txOpts.gas);
-
-	//console.dir(contract.options.jsonInterface, {depth: 2});
-	console.log(`\nDetermine safe gas to send method-${method} to ${contract._address}`);
-
-	try { 
-		// Fetch network gas price
-		const medianPrice = await web3.eth.getGasPrice();
-		console.log(`Median price: ${valStr(medianPrice)}`);
-
-		// Determine transaction cost
-		let estimate = await contract.methods[method](...args).estimateGas({ from: txOpts.from });
-		console.log(`Gas estimate: ${estimate}`);
-		let cost = gasPrice.mul(new BN(estimate));
-		console.log(`Cost estimate: ${valStr(cost)}`);
-
-		console.log('Sender', txOpts.from);
-		let balance = new BN(await web3.eth.getBalance(txOpts.from));
-		console.log(`Sender balance: ${valStr(balance)}`);
-
-		const logOpts = ({limit, price, cost}) => {
-			console.log(`\tGas:\t${limit.toString()}\n\tPrice:\t${valStr(price, '\t')}\n\tCost:\t${valStr(cost, '\t')}`);
-		}
-
-		// Calculate tx options by applying multipliers to the gasLimit and price
-		// @param gasFactor: number
-		// @param priceFactor: number
-		const calcTxOpts = (gasFactor, priceFactor) => {
-			const selectOperator = factor => factor >= 1.0 ? ['mul', factor] : ['div', 1/factor];
-
-			const applyFactor = (base, factor) => {
-				if(!BN.isBN(base)) base = new BN(base);
-				let [op, f] = selectOperator(factor);
-				if(f % 1 !== 0) {
-					console.log(f);
-					f = new BN(f * 100);
-					//f = new BN(f )//* 100);
-					console.log(f.toString());
-					let tmp = base[op](f);
-					//return tmp;
-					return tmp[op == 'mul' ? 'div' : 'mul'](new BN(100));
-				} else {
-					return base[op](new BN(f));
-				}
-			}
-
-			let limit = applyFactor(estimate, gasFactor)
-			limit = txOpts.gas && limit.gt(new BN(txOpts.gas)) ? txOpts.gas : limit;
-
-			let price = applyFactor(medianPrice, priceFactor);
-
-			return { limit, price, cost: limit.mul(price) };
-		}
-
-		// Decide on gas price and limit
-		let tolerance = 0.05;
-		const min = calcTxOpts(1 + tolerance, 0.8);
-		logOpts(min);
-
-		let speedMultiplier = 2;
-		const max = calcTxOpts(speedMultiplier, speedMultiplier);
-		logOpts(max);
-
-		let opts;
-		if(max.cost.lt(balance)) {
-			console.log(`Using speed factored median price`);
-			opts = max;
-		} else if(min.cost.lte(balance)) {
-			console.log(`Using minimised cost`);
-			opts = min;
-		} else {
-			console.log('Error: cannot afford tx at median gas cost');
-			return;
-		}
-		logOpts(opts);
-		console.log(``);
-		return opts;
-
-	} catch(error) {
-		throw error
-		// What errors can we expect here? 
-	}
-}
-
-
 
 sendSomeTx().catch(console.log);

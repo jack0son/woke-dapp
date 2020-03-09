@@ -11,7 +11,7 @@ import { useWeb3Context } from '../web3context';
 import * as claimStates from './claimuser-states';
 import * as statuses from './claim-status';
 
-import { genClaimString } from '../../lib/web3/web3-utils'
+import { genClaimString, safePriceEstimate } from '../../lib/web3/web3-utils'
 import { findClaimTweet } from '../../lib/twitter-helpers'
 import { setSyncTimeout } from '../../lib/utils'
 import { useTwitterContext } from '../twitter/index.js'
@@ -392,26 +392,34 @@ export default function useClaimUser({userId, userHandle, claimStatus}) {
 	}
 
 	const gWei = 1000000000; // 1 GWei
-	let txOpts = {gas: 2000000, gasPrice: gWei * 30};
+	let txOpts = {gas: 2000000, gasPrice: gWei * 30, from: account}; // cost = 0.06 ETH
+
 	const sendClaimUser = useSend('WokeToken', 'claimUser', txOpts);
 	const sendFulfillClaim = useSend('WokeToken', '_fulfillClaim', txOpts);
 
-	const handleSendClaimUser = (id, handle) => {
-		if(!hasEnoughEth) {
-			return;
+	const handleSendClaimUser = async (id, handle) => {
+		try {
+			const { limit, price } = await safePriceEstimate(web3)(WokeToken, 'claimUser', [id], txOpts);
+			txOpts = { ...txOpts, gas: limit.toString(), gasPrice: price.toString() };
+			if(sendClaimUser.send('useOpts', id, txOpts)) {
+				console.log(`sendClaimUser(${id})`)
+				dispatch({type: 'sent-transaction', payload: 'claim'})
+			} else {
+				console.error('Failed to sendClaimUser');
+			}
+		} catch (error) {
+			console.error(error);
+			dispatch({type: 'sent-transaction', payload: 'claim-error', error: error.message})
 		}
 
-		if(sendClaimUser.send(id)) {
-			console.log(`sendClaimUser(${userId})`)
-			dispatch({type: 'sent-transaction', payload: 'claim'})
-		} else {
-			console.error('Failed to sendClaimUser');
-		}
 	}
 
-	const handleSendFulfillClaim = () => {
-		if(!hasEnoughEth) {
-			return;
+	const handleSendFulfillClaim = async () => {
+
+		try {
+			const txOpts = await safePriceEstimate(web3)(WokeToken, '_fulfillClaim', [userId], txOpts);
+		} catch (error) {
+			dispatch({type: 'sent-transaction', payload: 'fulfill-error', error: error.message})
 		}
 
 		console.log(`sendFulfillClaim(${userId})`)
@@ -429,12 +437,12 @@ export default function useClaimUser({userId, userHandle, claimStatus}) {
 	}, [userId, userHandle, hasLodgedRequest, foundTweetPredicate, handleSendClaimUser])
 
 	const storedTweetPredicate = claimState.stage === states.STORED_TWEET;
+
 	useEffect(() => {
 		if(storedTweetPredicate) {
 			handleSendFulfillClaim();
 		}
 	}, [storedTweetPredicate, handleSendFulfillClaim])
-
 
 	// Monitor transaction states
 	useEffect(() => {

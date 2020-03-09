@@ -35,9 +35,14 @@ export default web3 => (contractName, methodName, sendOptions) => {
 	let opts = {
 		from: account,
 		...sendOptions
-	}
+	};
 
 	const send = (...args) => {
+		if(args[0] && args[0] == 'useOpts') {
+			opts = args[args.length - 1];
+			args = args.slice(1, args.length - 1);
+		}
+
 		if(!txState.pending) {
 			safeSetTxState(txState => ({
 				...txState,
@@ -65,7 +70,8 @@ export default web3 => (contractName, methodName, sendOptions) => {
 					}));
 				})
 			console.log('... tx sending with opts: ', opts);
-
+			console.log('... tx cost: ', web3.utils.fromWei((opts.gas * opts.gasPrice).toString(), 'ether'), 'ETH');
+	
 			return true;
 		} 
 
