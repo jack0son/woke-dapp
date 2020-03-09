@@ -435,18 +435,18 @@ export default function useClaimUser({userId, userHandle, claimStatus}) {
 	useEffect(() => {
 		// Must check hasLodgedRequest to avoid sending tx before hook has gathered
 		// initial state from twitter and on-chain
-		if(foundTweetPredicate && hasLodgedRequest === false) {
+		if(foundTweetPredicate && hasLodgedRequest === false && sendClaimUser.status == undefined) {
 			handleSendClaimUser(userId, userHandle);
 		}
-	}, [userId, userHandle, hasLodgedRequest, foundTweetPredicate, handleSendClaimUser])
+	}, [userId, userHandle, hasLodgedRequest, foundTweetPredicate, handleSendClaimUser, sendClaimUser.status])
 
 	const storedTweetPredicate = claimState.stage === states.STORED_TWEET;
 
 	useEffect(() => {
-		if(storedTweetPredicate) {
+		if(storedTweetPredicate && sendFulfillClaim.status == undefined) {
 			handleSendFulfillClaim();
 		}
-	}, [storedTweetPredicate, handleSendFulfillClaim])
+	}, [storedTweetPredicate, handleSendFulfillClaim, sendFulfillClaim.status])
 
 	// Monitor transaction states
 	useEffect(() => {

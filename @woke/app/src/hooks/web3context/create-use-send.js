@@ -39,7 +39,7 @@ export default web3 => (contractName, methodName, sendOptions) => {
 
 	const send = (...args) => {
 		if(args[0] && args[0] == 'useOpts') {
-			opts = args[args.length - 1];
+			opts = {...opts, ...args[args.length - 1]};
 			args = args.slice(1, args.length - 1);
 		}
 

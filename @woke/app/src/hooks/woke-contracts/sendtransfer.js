@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useReducer } from 'react'
 import { useWeb3Context } from '../web3context';
+import { safePriceEstimate } from '../../lib/web3/web3-utils'
 
 
 // User friendly send transfer with user ID checking
@@ -74,16 +75,17 @@ export default function useSendTransferInput({
 }
 
 export function useSendTransfers (recipient, handleClearRecipient) {
-	const { account, useSend, useSubscribeCall, useContract} = useWeb3Context();
+	const { account, useSend, useSubscribeCall, useContract, web3 } = useWeb3Context();
 
 	const nullArgs = {userId: '', amount: 0}
 	const [sendQueued, setSendQueued] = useState(false);
 	const [pending, setPending] = useState(false);
 	const [transferArgs, setTransferArgs] = useState(nullArgs);
+	const [safeTxOpts, setSafeTxOpts] = useState();
 
 	// TODO use network config and web3 utils to set gas
 	const gWei = 1000000000; // 1 GWei
-	let txOpts = {gas: 500000, gasPrice: gWei * 30};
+	let txOpts = {gas: 500000, gasPrice: gWei * 30, from: account};
 	const sendTransferClaimed = useSend('WokeToken', 'transferClaimed', txOpts);
 	const sendTransferUnclaimed = useSend('WokeToken', 'transferUnclaimed', txOpts);
 
@@ -97,6 +99,18 @@ export function useSendTransfers (recipient, handleClearRecipient) {
 	const getUserIsClaimed = (userId) => {
 		//return wokeTokenContract.methods.userClaimed(userId).call({from: account})
 	}
+
+
+	useEffect(() => {
+		const getSafeTxOpts = async (claimed, toId = 'dummy', amount = '10') => {
+			const method = `transfer${claimed ? 'Claimed' : 'Unclaimed'}`;
+			const { limit, price } = await safePriceEstimate(web3)(wokeTokenContract, method, [toId, amount], txOpts);
+
+			setSafeTxOpts({gas: limit, gasPrice: price});
+		}
+
+		getSafeTxOpts(recipientIsClaimed);
+	}, [account, recipientIsClaimed])
 
 	// Need to use effect to wait for cacheCall result
 	useEffect(() => {
@@ -127,7 +141,7 @@ export function useSendTransfers (recipient, handleClearRecipient) {
 				}
 			}
 
-			if(!transferChoice.send(transferArgs.userId, transferArgs.amount)) {
+			if(!transferChoice.send('useOpts', transferArgs.userId, transferArgs.amount, safeTxOpts)) {
 				console.error('... Failed to send transfer');
 			}
 			handleClearRecipient();
