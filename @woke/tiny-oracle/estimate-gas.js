@@ -26,6 +26,12 @@ let txOpts = {
 	from: account,
 };
 
+const accountBalances = () => web3.eth.getAccounts().then(
+	accounts => Promise.all(accounts.map((acc, i) => 
+		web3.eth.getBalance(acc).then(balance => console.log(`${i}: ${acc} - ${toEth(balance)} ETH`)
+	))
+));
+
 const sendSomeTx = async () => {
 	web3.eth.handleRevert = true;
 	const woken = initContract();
@@ -34,6 +40,7 @@ const sendSomeTx = async () => {
 	const [migrator, owner, oracle, ...accounts] = await web3.eth.getAccounts();
 	const [a, b, c, poor] = accounts;
 
+	txOpts.from = a;
 	let gasPrice = new BN(txOpts.gasPrice);
 	let gasLimit = new BN(txOpts.gas);
 	console.log('gasPrice: ', gasPrice.toString());
@@ -53,11 +60,13 @@ const sendSomeTx = async () => {
 
 	const userId = `randomUser-${Math.floor(Math.random() * Math.floor(1000))}`;
 	await safeGas(woken, 'claimUser', [userId], txOpts);
+
+	//await accountBalances();
 	//r = await woken.methods.claimUser(userId).send(txOpts);
 	//console.log(r);
 }
 
-const valStr = wei => `${toEth(wei)} ETH, ${wei.toString()} wei`;
+const valStr = (wei, delim = ', ') => `${toEth(wei)} ETH${delim}${wei.toString()} wei`;
 
 // Set the gas limit and price taking eth balance into account.
 // If sufficient funds, use comfortable buffer for gas limit, and set a high
@@ -81,34 +90,74 @@ async function safeGas(contract, method, args, txOpts) {
 		let cost = gasPrice.mul(new BN(estimate));
 		console.log(`Cost estimate: ${valStr(cost)}`);
 
-		let balance = await web3.eth.getBalance(txOpts.from);
+		console.log('Sender', txOpts.from);
+		let balance = new BN(await web3.eth.getBalance(txOpts.from));
 		console.log(`Sender balance: ${valStr(balance)}`);
 
-		// Decide on gas price and limit
-		let price;
-		const factor = new BN(2);
-		if(false && cost > balance) {
-			// Insufficient balance
-			console.log('Error: cannot affort tx at median gas cost');
-			return;
-		} else if( false ) {
-			// Use lowest cost option
-		} else {
-			// Use fast options
-			let limit = (new BN(estimate)).mul(factor);
-			price = (new BN(medianPrice)).mul(factor);
-			console.log(price);
-			let maxCost = limit.mul(price);
-			console.log(`Using factored median cost ${valStr(maxCost)}`);
+		const logOpts = ({limit, price, cost}) => {
+			console.log(`\tGas:\t${limit.toString()}\n\tPrice:\t${valStr(price, '\t')}\n\tCost:\t${valStr(cost, '\t')}`);
 		}
 
-		console.log(`Price: ${valStr(price)}`);
+		// Calculate tx options by applying multipliers to the gasLimit and price
+		// @param gasFactor: number
+		// @param priceFactor: number
+		const calcTxOpts = (gasFactor, priceFactor) => {
+			const selectOperator = factor => factor >= 1.0 ? ['mul', factor] : ['div', 1/factor];
+
+			const applyFactor = (base, factor) => {
+				if(!BN.isBN(base)) base = new BN(base);
+				let [op, f] = selectOperator(factor);
+				if(f % 1 !== 0) {
+					console.log(f);
+					f = new BN(f * 100);
+					//f = new BN(f )//* 100);
+					console.log(f.toString());
+					let tmp = base[op](f);
+					//return tmp;
+					return tmp[op == 'mul' ? 'div' : 'mul'](new BN(100));
+				} else {
+					return base[op](new BN(f));
+				}
+			}
+
+			let limit = applyFactor(estimate, gasFactor)
+			limit = txOpts.gas && limit.gt(new BN(txOpts.gas)) ? txOpts.gas : limit;
+
+			let price = applyFactor(medianPrice, priceFactor);
+
+			return { limit, price, cost: limit.mul(price) };
+		}
+
+		// Decide on gas price and limit
+		let tolerance = 0.05;
+		const min = calcTxOpts(1 + tolerance, 0.8);
+		logOpts(min);
+
+		let speedMultiplier = 2;
+		const max = calcTxOpts(speedMultiplier, speedMultiplier);
+		logOpts(max);
+
+		let opts;
+		if(max.cost.lt(balance)) {
+			console.log(`Using speed factored median price`);
+			opts = max;
+		} else if(min.cost.lte(balance)) {
+			console.log(`Using minimised cost`);
+			opts = min;
+		} else {
+			console.log('Error: cannot afford tx at median gas cost');
+			return;
+		}
+		logOpts(opts);
+		console.log(``);
+		return opts;
 
 	} catch(error) {
 		throw error
 		// What errors can we expect here? 
 	}
 }
+
 
 
 sendSomeTx().catch(console.log);
