@@ -26,6 +26,7 @@ context('Polling', function() {
 	})
 
 	describe('#poll', function() {
+	describe('When set to non-blocking', function() {
 		it('should dispatch the target action after a delay', function (done) {
 			const [delay, tolerance] = [10, 2]; // ms
 			let count = 0;
@@ -56,6 +57,31 @@ context('Polling', function() {
 				args: { callback }
 			});
 
+		})
+
+	describe('When set to blocking', function() {
+		it('should wait for previous action to complete', function (done) {
+			const [delay, tolerance] = [10, 2]; // ms
+			let count = 0;
+
+			const callback = (msg, ctx, state) => {
+				const myCount = ++count;
+				setTimeout(() => {
+					assert(count == Mycount, 'Polling did not block until previous action complete');
+					dispatch(ctx.sender, { type: 'complete'}, ctx.self);
+				}, delay*3); // wait longer than polling interval
+			}
+
+			director.dispatch(a_polling, {type: 'poll',
+				target: a_stub,
+				action: 'callback',
+				period: delay,
+				args: { callback },
+				blockTimeout: delay*5 // comfortable buffer
+			});
+		})
+
+		it('should resume polling if blocking times out', function (done) {
 		})
 	})
 

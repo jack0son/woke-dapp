@@ -1,6 +1,6 @@
 const { dispatch, query } = require('nact');
 const { Logger } = require('@woke/lib');
-const debug = (msg, args) => Logger().name(`POLL:`, `${msg.type}>> ` + args);
+const debug = (msg, args) => Logger('polling').name(`info:`, `${msg.type}>> ` + args);
 
 const iface = {
 	poll: 'poll',
@@ -12,6 +12,18 @@ const pollingActor = {
 	properties: {
 		initialState: {
 			halt: false,
+			blocking: null,
+
+			onCrash: (msg, error, ctx) => {
+				console.log('Polling actor crashed...', msg);
+				switch(msg.type) {
+					case 'perform':
+						return ctx.resume;
+
+					default:
+						return ctx.stop;
+				}
+			}
 		}
 	},
 
@@ -50,6 +62,7 @@ const pollingActor = {
 			const { halt, blocking } = state;
 			const { target, action, period, args } = msg;
 
+			debug(msg, `Peforming {${target.name}:${action}} ...`);
 			if(!halt) {
 				if(blocking) {
 					//await query(target, {type: action, sender: ctx.sender, ...args}, blocking)

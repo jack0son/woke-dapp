@@ -13,11 +13,11 @@ const { initContract } = require('../lib/web3');
 		*/
 
 const INFURA_WS_TIMEOUT = 5*60*1000;
-const DEFAULT_WATCHDOG_INTERVAL = INFURA_WS_TIMEOUT;
-//const DEFAULT_WATCHDOG_INTERVAL = 2*1000;
+//const DEFAULT_WATCHDOG_INTERVAL = INFURA_WS_TIMEOUT;
+const DEFAULT_WATCHDOG_INTERVAL = 2*1000;
 
 let idx = 0;
-const subscriptionActor= {
+const subscriptionActor = {
 	properties: {
 		initialState: {
 			filter: e => e,
@@ -27,24 +27,22 @@ const subscriptionActor= {
 			latestBlock: 0,
 		},
 
-		onCrash: (msg, ctx, state) => {
+		onCrash: (msg, error, ctx) => {
 			console.log(`Subscription crash`);
 			console.log(msg);
 			switch(msg.type) {
 				case 'handle':
-				case 'subscribe': {
+				case 'subscribe':
+					console.log('... subscription resuming');
 					return ctx.resume;
-				}
 
-				case 'start': {
+				case 'start':
 					return ctx.stop;
-				}
 
-				default: {
+				default: 
 					console.log('Crash: reason below...');
 					console.log(msg);
 					return ctx.stop;
-				}
 			}
 		}
 	},
@@ -92,7 +90,8 @@ const subscriptionActor= {
 					target: ctx.self,
 					action: 'subscribe',
 					period: DEFAULT_WATCHDOG_INTERVAL,
-					blocking: DEFAULT_WATCHDOG_INTERVAL*1000, // wait for action complete before next poll
+					//blockTimeout: DEFAULT_WATCHDOG_INTERVAL*1000, // wait for action complete before next poll
+					blockTimeout: DEFAULT_WATCHDOG_INTERVAL, // wait for action complete before next poll
 				}, state.a_watchdog);
 			} else {
 				dispatch(ctx.self, {type: 'subscribe'}, ctx.self);
@@ -172,15 +171,8 @@ const makeLogEventSubscription = web3 => (contract, eventName, handleFunc, opts)
 		subscription.on("data", log => console.log);
 	}
 
-	const stop = () => new Promise((resolve, reject) => 
-		subscription.unsubscribe((error, succ) => {
-			if(error) {
-				reject(error);;
-			}
-			//console.log(`... unsub'd ${eventName}`);
-			resolve(succ);
-		})
-	);
+	// @fix Ubscribing does not appear to work on web3js@1.2.5
+	const stop = () => subscription.unsubscribe();
 
 	const resubscribe = () => {
 		console.log(`... Resubscribed to ${eventName}.`);
