@@ -13,8 +13,8 @@ const { initContract } = require('../lib/web3');
 		*/
 
 const INFURA_WS_TIMEOUT = 5*60*1000;
-//const DEFAULT_WATCHDOG_INTERVAL = INFURA_WS_TIMEOUT;
-const DEFAULT_WATCHDOG_INTERVAL = 2*1000;
+const DEFAULT_WATCHDOG_INTERVAL = INFURA_WS_TIMEOUT;
+//const DEFAULT_WATCHDOG_INTERVAL = 4*1000;
 
 let idx = 0;
 const subscriptionActor = {
@@ -90,8 +90,7 @@ const subscriptionActor = {
 					target: ctx.self,
 					action: 'subscribe',
 					period: DEFAULT_WATCHDOG_INTERVAL,
-					//blockTimeout: DEFAULT_WATCHDOG_INTERVAL*1000, // wait for action complete before next poll
-					blockTimeout: DEFAULT_WATCHDOG_INTERVAL, // wait for action complete before next poll
+					blockTimeout: DEFAULT_WATCHDOG_INTERVAL*2, // wait for action complete before next poll
 				}, state.a_watchdog);
 			} else {
 				dispatch(ctx.self, {type: 'subscribe'}, ctx.self);
