@@ -19,12 +19,13 @@ const pollingActor = {
 		onCrash: (msg, error, ctx) => {
 			console.log('Polling actor crashed...');
 			console.log(error);
-			console.log(ctx.self);
-			console.log();
 			switch(msg.type) {
-				case 'perform':
-					dispatch(ctx.self, msg, ctx.sender);
+				case 'perform': {
+					const { target, action, period, args } = msg;
+					dispatch(ctx.self, msg, ctx.sender)
+					//setTimeout(() => dispatch(ctx.self, msg, ctx.sender), period);
 					return ctx.resume;
+				}
 
 				default:
 					return ctx.stop;
@@ -70,7 +71,6 @@ const pollingActor = {
 			debug(msg, `Peforming {${target.name}:${action}} ...`);
 			if(!halt) {
 				if(blockTimeout) {
-					console.log('QUERY');
 					//await query(target, {type: action, sender: ctx.sender, ...args}, blockTimeout)
 					await query(target, {type: action, ...args}, blockTimeout)
 				} else {

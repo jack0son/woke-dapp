@@ -118,14 +118,12 @@ context('Polling', function() {
 					const myCount = ++count;
 					let myDelay = delay;
 					if(myCount < failAt) myDelay *= myCount;
-					console.log(myDelay);
 					setTimeout(() => {
-						console.log('myCount', myCount, 'count', count);
+						dispatch(ctx.sender, { type: 'complete' }, ctx.self);
 						if(count >= failAt) {
 							stop_polling(done);
 						} else {
 							assert(count == myCount, 'Polling did not block until previous action complete');
-							dispatch(ctx.sender, { type: 'complete' }, ctx.self);
 						}
 
 					}, myDelay); // wait longer than blocking timeout
