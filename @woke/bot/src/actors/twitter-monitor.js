@@ -35,6 +35,8 @@ const TwitterMonitor = (twitterStub) => {
 
 				switch(type) {
 					case 'find_tips': {
+						// @fix this error isn't handled
+						// Error: HTTP Error: 503 Service Temporarily Unavailable
 						if(a_polling) dispatch(a_polling, { type: 'interupt' });
 						return retry(msg, error, ctx);
 					}
