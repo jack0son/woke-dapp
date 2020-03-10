@@ -397,7 +397,8 @@ export default function useClaimUser({userId, userHandle, claimStatus}) {
 	const sendClaimUser = useSend('WokeToken', 'claimUser', txOpts);
 	const sendFulfillClaim = useSend('WokeToken', '_fulfillClaim', txOpts);
 
-	const handleSendClaimUser = async (id, handle) => {
+	const blockSendClaim = useRef(false);
+	const handleSendClaimUser = useCallback(async (id) => {
 		try {
 			const { limit, price } = await safePriceEstimate(web3)(WokeToken, 'claimUser', [id], txOpts);
 			txOpts = { ...txOpts, gas: limit.toString(), gasPrice: price.toString() };
@@ -411,10 +412,10 @@ export default function useClaimUser({userId, userHandle, claimStatus}) {
 			console.error(error);
 			dispatch({type: 'sent-transaction', payload: 'claim-error', error: error.message})
 		}
+	}, [sendClaimUser])
 
-	}
-
-	const handleSendFulfillClaim = async () => {
+	const blockSendFulfill = useRef(false);
+	const handleSendFulfillClaim = useCallback(async () => {
 
 		try {
 			const { limit, price } = await safePriceEstimate(web3)(WokeToken, '_fulfillClaim', [userId], txOpts);
@@ -428,14 +429,14 @@ export default function useClaimUser({userId, userHandle, claimStatus}) {
 		} catch (error) {
 			dispatch({type: 'sent-transaction', payload: 'fulfill-error', error: error.message})
 		}
-
-	}
+	}, [sendFulfillClaim]);
 
 	const foundTweetPredicate = claimState.stage === states.FOUND_TWEET;
 	useEffect(() => {
 		// Must check hasLodgedRequest to avoid sending tx before hook has gathered
 		// initial state from twitter and on-chain
-		if(foundTweetPredicate && hasLodgedRequest === false && sendClaimUser.status == undefined) {
+		if(blockSendClaim.current == false && foundTweetPredicate && hasLodgedRequest === false && sendClaimUser.status == undefined) {
+			blockSendClaim.current = true;
 			handleSendClaimUser(userId, userHandle);
 		}
 	}, [userId, userHandle, hasLodgedRequest, foundTweetPredicate, handleSendClaimUser, sendClaimUser.status])
@@ -443,7 +444,8 @@ export default function useClaimUser({userId, userHandle, claimStatus}) {
 	const storedTweetPredicate = claimState.stage === states.STORED_TWEET;
 
 	useEffect(() => {
-		if(storedTweetPredicate && sendFulfillClaim.status == undefined) {
+		if(blockSendFulfill.current == false && storedTweetPredicate && sendFulfillClaim.status == undefined) {
+			blockSendFulfill.current = true;
 			handleSendFulfillClaim();
 		}
 	}, [storedTweetPredicate, handleSendFulfillClaim, sendFulfillClaim.status])
