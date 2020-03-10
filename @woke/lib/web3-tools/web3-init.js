@@ -7,6 +7,8 @@ const devPrivKey = '0xe57d058bb90483a0ebf0ff0107a60d9250a0b9b5ab8c53d47217c99580
 const tipperPrivkey = '0x5af83b503129f5c2c32edb23ae02564762783ab1065d23fde5a6d6158762322c'; // index 1
 const ropstenPrivKey = process.env.ROPSTEN_PRIV_KEY;
 
+const ETH_ENV = process.env.ETH_ENV || 'development';
+
 let privKey;
 switch(process.env.ETH_ENV) {
 	case 'development': {
@@ -34,9 +36,11 @@ switch(process.env.ETH_ENV) {
 	}
 }
 
-module.exports = () => {
+module.exports = (opts) => {
 	const rpcUrl = config.createRpcUrl(network);
 	const web3 = new Web3(rpcUrl);
+
+	web3.eth.handleRevert = opts && opts.handleRevert || true;
 
 	let wallet = null;
 	if(!privKey) {

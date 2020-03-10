@@ -124,10 +124,13 @@ export default function SendTransferForm (props) {
 		</>
 	);
 
+	let enableForm = error && error.action && error.action == 'disable' ? false : true;
+
+
 	return (
 		<FieldWrapper align='center' styles={{paddingTop: recipient ? 0 : '16px'}}>
-			{ pending ? <Spinner/> : renderForm()}
-			<StandardBody color='error'>{error}</StandardBody>
+			{ enableForm ? (pending ? <Spinner/> : renderForm()) : <><br/><br/></>}
+			<StandardBody color='error'>{error && error.message ? error.message : error}</StandardBody>
 		</FieldWrapper>
 	);
 }
