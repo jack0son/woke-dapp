@@ -43,7 +43,13 @@ export async function genClaimString(web3, signatory, userId, app = 'twitter') {
 // If sufficient funds, use comfortable buffer for gas limit, and set a high
 // price.
 // @param method: web3Contract[method]
-export const safePriceEstimate = web3 => async (contract, method, args, txOpts) => {
+export const safePriceEstimate = web3 => async (contract, method, args, txOpts, opts) => {
+	const options = {
+		speedMultiplier: 2,
+		tolerance: 0.05, // gas limit tolerance
+		...opts,
+	};
+
 	const toEth = wei => web3.utils.fromWei(wei, 'ether');
 	const valStr = (wei, delim = ', ') => `${toEth(wei)} ETH${delim}${wei.toString()} wei`;
 	const BN = web3.utils.BN;
@@ -97,13 +103,10 @@ export const safePriceEstimate = web3 => async (contract, method, args, txOpts) 
 		}
 
 		// Decide on gas price and limit
-		let tolerance = 0.05;
-		const min = calcTxOpts(1 + tolerance, 0.8); console.log('Min opts:'); logOpts(min);
-
-		let speedMultiplier = 2;
-		const max = calcTxOpts(speedMultiplier, speedMultiplier);
-		console.log('Max opts:');
-		logOpts(max);
+		const min = calcTxOpts(1 + options.tolerance, 0.8);
+		console.log('Min opts:'); logOpts(min);
+		const max = calcTxOpts(options.speedMultiplier, options.speedMultiplier);
+		console.log('Max opts:'); logOpts(max);
 
 		let opts;
 		if(max.cost.lt(balance)) {

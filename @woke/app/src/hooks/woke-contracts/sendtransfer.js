@@ -104,7 +104,7 @@ export function useSendTransfers (recipient, handleClearRecipient) {
 	useEffect(() => {
 		const getSafeTxOpts = (claimed, toId = 'dummy', amount = '10') => {
 			const method = `transfer${claimed ? 'Claimed' : 'Unclaimed'}`;
-			safePriceEstimate(web3)(wokeTokenContract, method, [toId, amount], txOpts)
+			safePriceEstimate(web3)(wokeTokenContract, method, [toId, amount], txOpts, { speedMultiplier: 1.5 })
 				.then(({ limit, price }) => setSafeTxOpts({gas: limit, gasPrice: price}))
 				.catch(error => {
 					setTxOptsError({
