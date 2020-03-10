@@ -12,17 +12,22 @@ const pollingActor = {
 	properties: {
 		initialState: {
 			halt: false,
-			blocking: null,
+			blockTimeout: null,
 
-			onCrash: (msg, error, ctx) => {
-				console.log('Polling actor crashed...', msg);
-				switch(msg.type) {
-					case 'perform':
-						return ctx.resume;
+		},
 
-					default:
-						return ctx.stop;
-				}
+		onCrash: (msg, error, ctx) => {
+			console.log('Polling actor crashed...');
+			console.log(error);
+			console.log(ctx.self);
+			console.log();
+			switch(msg.type) {
+				case 'perform':
+					dispatch(ctx.self, msg, ctx.sender);
+					return ctx.resume;
+
+				default:
+					return ctx.stop;
 			}
 		}
 	},
@@ -33,7 +38,7 @@ const pollingActor = {
 				target, // target actor
 				action, // target action type
 				period, // how often to poll
-				blocking,
+				blockTimeout,
 				rateLimit,
 				args
 			} = msg;
@@ -42,7 +47,7 @@ const pollingActor = {
 				throw new Error('Polling period must be non-zero');
 			}
 
-			debug(msg, `Start polling {${target.name}:${action}} every ${period}ms...`);
+			debug(msg, `Start ${blockTimeout ? 'sync-' : ''}polling {${target.name}:${action}} every ${period}ms...`);
 			const performMessage = { type: 'perform',  target, period, action, args, impetus: ctx.sender };
 			dispatch(ctx.self, performMessage, ctx.sender);
 
@@ -50,7 +55,7 @@ const pollingActor = {
 			// @TODO wasting memory
 			return { ...state,
 				halt: false,
-				blocking,
+				blockTimeout,
 				period,
 				target,
 				action,
@@ -59,14 +64,15 @@ const pollingActor = {
 		},
 
 		'perform': async (msg, ctx, state) => {
-			const { halt, blocking } = state;
+			const { halt, blockTimeout } = state;
 			const { target, action, period, args } = msg;
 
 			debug(msg, `Peforming {${target.name}:${action}} ...`);
 			if(!halt) {
-				if(blocking) {
-					//await query(target, {type: action, sender: ctx.sender, ...args}, blocking)
-					await query(target, {type: action, ...args}, blocking)
+				if(blockTimeout) {
+					console.log('QUERY');
+					//await query(target, {type: action, sender: ctx.sender, ...args}, blockTimeout)
+					await query(target, {type: action, ...args}, blockTimeout)
 				} else {
 					dispatch(target, {type: action, ...args}, ctx.sender);
 				}
