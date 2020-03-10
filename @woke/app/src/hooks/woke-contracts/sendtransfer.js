@@ -1,9 +1,10 @@
-import React, { useState, useEffect, useReducer } from 'react'
+import React, { useState, useEffect, useReducer, useRef } from 'react'
 import { useWeb3Context } from '../web3context';
 import { safePriceEstimate } from '../../lib/web3/web3-utils'
 
 
 // User friendly send transfer with user ID checking
+// Handles input data to token transfer
 export default function useSendTransferInput({
 	defaultRecipient,
 	defaultAmount,
@@ -74,6 +75,7 @@ export default function useSendTransferInput({
 	};
 }
 
+// Handle submitting transfer data to WokeToken smart contract
 export function useSendTransfers (recipient, handleClearRecipient) {
 	const { account, useSend, useSubscribeCall, useContract, web3 } = useWeb3Context();
 
@@ -96,11 +98,8 @@ export function useSendTransfers (recipient, handleClearRecipient) {
 		recipient ? recipient.id : ''
 	);
 
-	const getUserIsClaimed = (userId) => {
-		//return wokeTokenContract.methods.userClaimed(userId).call({from: account})
-	}
-
-
+	// Update gas estimate when recipient prop changes
+	const prevRecipient = useRef({id: '', ...recipient});
 	useEffect(() => {
 		const getSafeTxOpts = async (claimed, toId = 'dummy', amount = '10') => {
 			const method = `transfer${claimed ? 'Claimed' : 'Unclaimed'}`;
@@ -109,8 +108,11 @@ export function useSendTransfers (recipient, handleClearRecipient) {
 			setSafeTxOpts({gas: limit, gasPrice: price});
 		}
 
-		getSafeTxOpts(recipientIsClaimed);
-	}, [account, recipientIsClaimed])
+		if(nonEmptyString(recipient && recipient.id) && recipient.id != prevRecipient.current.id) {
+			prevRecipient.current = recipient;
+			getSafeTxOpts(recipientIsClaimed);
+		}
+	}, [account, recipientIsClaimed, transferArgs.userId])
 
 	// Need to use effect to wait for cacheCall result
 	useEffect(() => {
@@ -121,17 +123,17 @@ export function useSendTransfers (recipient, handleClearRecipient) {
 
 		if(sendQueued && (recipientIsClaimed === true || recipientIsClaimed === false) && transferArgs.userId != '' && transferArgs.userId == recipient.id) {
 			console.log(`${transferArgs.userId} is ${recipientIsClaimed ? 'claimed' : 'unclaimed'}`);
-			let transferChoice;
+			let transferMethod;
 			switch(recipientIsClaimed) {
 				case true: {
 					console.log(`transferClaimed() to: ${transferArgs.userId}, amount:${transferArgs.amount}`);
-					transferChoice = sendTransferClaimed;
+					transferMethod = sendTransferClaimed;
 					break;
 				}
 
 				case false: {
 					console.log(`transferUnclaimed() to:${transferArgs.userId}, amount:${transferArgs.amount}`);
-					transferChoice = sendTransferUnclaimed;
+					transferMethod = sendTransferUnclaimed;
 					break;
 				}
 
@@ -141,7 +143,7 @@ export function useSendTransfers (recipient, handleClearRecipient) {
 				}
 			}
 
-			if(!transferChoice.send('useOpts', transferArgs.userId, transferArgs.amount, safeTxOpts)) {
+			if(!transferMethod.send('useOpts', transferArgs.userId, transferArgs.amount, safeTxOpts)) {
 				console.error('... Failed to send transfer');
 			}
 			handleClearRecipient();
@@ -161,4 +163,9 @@ export function useSendTransfers (recipient, handleClearRecipient) {
 		error: error,
 		pending: sendQueued || sendTransferClaimed.pending || sendTransferUnclaimed.pending,
 	};
+}
+
+// @brokenwindow
+function nonEmptyString(str) {
+	return str && str.length && str != '' && str.length > 0;
 }
