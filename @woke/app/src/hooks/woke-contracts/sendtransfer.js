@@ -59,7 +59,7 @@ export default function useSendTransferInput({
 	// Bubble up errors from sendTransfers
 	useEffect(() => {
 		if(sendTransfers.error) {
-			setError(error);
+			setError(sendTransfers.error);
 		}
 	}, [sendTransfers.error]);
 
@@ -84,6 +84,7 @@ export function useSendTransfers (recipient, handleClearRecipient) {
 	const [pending, setPending] = useState(false);
 	const [transferArgs, setTransferArgs] = useState(nullArgs);
 	const [safeTxOpts, setSafeTxOpts] = useState();
+	const [txOptsError, setTxOptsError] = useState(null);
 
 	// TODO use network config and web3 utils to set gas
 	const gWei = 1000000000; // 1 GWei
@@ -101,11 +102,16 @@ export function useSendTransfers (recipient, handleClearRecipient) {
 	// Update gas estimate when recipient prop changes
 	const prevRecipient = useRef({id: '', ...recipient});
 	useEffect(() => {
-		const getSafeTxOpts = async (claimed, toId = 'dummy', amount = '10') => {
+		const getSafeTxOpts = (claimed, toId = 'dummy', amount = '10') => {
 			const method = `transfer${claimed ? 'Claimed' : 'Unclaimed'}`;
-			const { limit, price } = await safePriceEstimate(web3)(wokeTokenContract, method, [toId, amount], txOpts);
-
-			setSafeTxOpts({gas: limit, gasPrice: price});
+			safePriceEstimate(web3)(wokeTokenContract, method, [toId, amount], txOpts)
+				.then(({ limit, price }) => setSafeTxOpts({gas: limit, gasPrice: price}))
+				.catch(error => {
+					setTxOptsError({
+						message: `Ran out of ETH. Tweet 'gas me fam @getwoketoke' to get more`,
+						action: 'disable',
+					})
+				})
 		}
 
 		if(nonEmptyString(recipient && recipient.id) && recipient.id != prevRecipient.current.id) {
@@ -156,7 +162,7 @@ export function useSendTransfers (recipient, handleClearRecipient) {
 		setSendQueued(true);
 	}
 
-	const error = sendTransferClaimed.error || sendTransferUnclaimed.error;
+	const error = txOptsError || sendTransferClaimed.error || sendTransferUnclaimed.error;
 
 	return {
 		submit: submitTransfer,
