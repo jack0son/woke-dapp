@@ -480,7 +480,7 @@ export default function useClaimUser({userId, userHandle, claimStatus}) {
 	}, [])
 
 	useEffect(() => {
-		console.log(`Claim stage update: ${claimState.stage}, ${statesList[claimState.stage]}`);
+		console.log(`Claim stage\t\t${claimState.stage}:${statesList[claimState.stage]}`);
 	}, [claimState.stage])
 
 	return {

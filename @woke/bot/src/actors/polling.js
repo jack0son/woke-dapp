@@ -1,6 +1,6 @@
 const { dispatch, query } = require('nact');
 const { Logger } = require('@woke/lib');
-const debug = (msg, args) => Logger().name(`POLL:`, `${msg.type}>> ` + args);
+const debug = (msg, args) => Logger('polling').name(`info:`, `${msg.type}>> ` + args);
 
 const iface = {
 	poll: 'poll',
@@ -12,6 +12,24 @@ const pollingActor = {
 	properties: {
 		initialState: {
 			halt: false,
+			blockTimeout: null,
+
+		},
+
+		onCrash: (msg, error, ctx) => {
+			console.log('Polling actor crashed...');
+			console.log(error);
+			switch(msg.type) {
+				case 'perform': {
+					const { target, action, period, args } = msg;
+					dispatch(ctx.self, msg, ctx.sender)
+					//setTimeout(() => dispatch(ctx.self, msg, ctx.sender), period);
+					return ctx.resume;
+				}
+
+				default:
+					return ctx.stop;
+			}
 		}
 	},
 
@@ -21,7 +39,7 @@ const pollingActor = {
 				target, // target actor
 				action, // target action type
 				period, // how often to poll
-				blocking,
+				blockTimeout,
 				rateLimit,
 				args
 			} = msg;
@@ -30,7 +48,7 @@ const pollingActor = {
 				throw new Error('Polling period must be non-zero');
 			}
 
-			debug(msg, `Start polling {${target.name}:${action}} every ${period}ms...`);
+			debug(msg, `Start ${blockTimeout ? 'sync-' : ''}polling {${target.name}:${action}} every ${period}ms...`);
 			const performMessage = { type: 'perform',  target, period, action, args, impetus: ctx.sender };
 			dispatch(ctx.self, performMessage, ctx.sender);
 
@@ -38,7 +56,7 @@ const pollingActor = {
 			// @TODO wasting memory
 			return { ...state,
 				halt: false,
-				blocking,
+				blockTimeout,
 				period,
 				target,
 				action,
@@ -47,13 +65,14 @@ const pollingActor = {
 		},
 
 		'perform': async (msg, ctx, state) => {
-			const { halt, blocking } = state;
+			const { halt, blockTimeout } = state;
 			const { target, action, period, args } = msg;
 
+			debug(msg, `Peforming {${target.name}:${action}} ...`);
 			if(!halt) {
-				if(blocking) {
-					//await query(target, {type: action, sender: ctx.sender, ...args}, blocking)
-					await query(target, {type: action, ...args}, blocking)
+				if(blockTimeout) {
+					//await query(target, {type: action, sender: ctx.sender, ...args}, blockTimeout)
+					await query(target, {type: action, ...args}, blockTimeout)
 				} else {
 					dispatch(target, {type: action, ...args}, ctx.sender);
 				}

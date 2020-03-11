@@ -55,8 +55,7 @@ export default {
 	server: {
 		development: {
 			// URL must have trailing forward slash
-			//url: 'http://localhost:3001/',
-			url: 'http://192.168.1.185:3001/',
+			url: 'http://localhost:3001/',
 		},
 
 		mobile: {
@@ -72,7 +71,11 @@ export default {
 		development: {
 			api: twitterApi,
 			hostUrl: 'http://localhost:3000/',
-			//hostUrl: 'http://192.168.1.185:3000/',
+		},
+
+		mobile: {
+			api: twitterApi,
+			hostUrl: 'http://192.168.1.185:3000/',
 		},
 
 		production: {
