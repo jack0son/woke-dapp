@@ -122,6 +122,20 @@ const oracleSend = oracle => async (method, args, txOpts) => {
 	).send(opts);
 }
 
+const getUsers = wokeToken => async userId => {
+	let opts = { fromBlock: 0 };
+	let events = await wokeToken.getPastEvents('Claimed', opts);
+	if(nonEmptyString(userId)) {
+		events = events.filter(e => e.returnValues.userId == userId)
+	}
+
+	if(events.length && events.length > 0) {
+		return events.map(e => e.returnValues);
+	}
+
+	return null;
+}
+
 const checkConnection = async web3Instance =>  {
 	const maxAttempts = 3;
 	let attempts = 0;
@@ -169,6 +183,11 @@ const twitterUsers = twitter => {
 	return { getHandle, addId, users, userIds }
 }
 
+const fetchUserHandles = twitterUsers => async userIds => {
+		userIds.forEach(id => twitterUsers.addId(id));
+		debug.d('Fetching user handles...');
+		await Promise.all(twitterUsers.userIds.map(id => twitterUsers.getHandle(id)));
+}
 
 // Inefficient but convenient
 const createCommands = ctx => ({
@@ -182,6 +201,19 @@ const createCommands = ctx => ({
 		return;
 	},
 
+	getUser: async (userId) => {
+		const users = await getUsers(ctx.wokeToken)(userId);
+		if(!users) {
+			console.log('None found.');
+			return;
+		}
+		await fetchUserHandles(ctx.twitterUsers)(users.map(u => u.userId));
+
+		users.forEach((u,i) => console.log(`${i}:${ctx.twitterUsers.users[u.userId].padEnd(20, ' ')}\t${u.userId.padEnd(20, ' ')}\t${u.account}`));
+
+		return;
+	},
+
 	getRewardEvents: async (claimer, referrer) => {
 		const events = await getRewardEvents(ctx.wokeToken)(claimer, referrer);
 		if(!(events && events.length)) {
@@ -189,10 +221,8 @@ const createCommands = ctx => ({
 			return;
 		}
 
+		await fetchUserHandles(ctx.twitterUsers)(events.map(e => e.returnValues.referrerId).concat(events.map(e => e.returnValues.claimerId)));
 		const users = ctx.twitterUsers;
-		events.forEach(e => {users.addId(e.returnValues.referrerId); users.addId(e.returnValues.claimerId)});
-		debug.d('Fetching user handles...');
-		await Promise.all(users.userIds.map(id => users.getHandle(id)));
 
 		const eventList = events.map(e => ({
 			blockNumber: e.blockNumber,
@@ -212,10 +242,10 @@ const createCommands = ctx => ({
 			return;
 		}
 
+		const userIds = [];
+		events.forEach(e => {userIds.push(e.returnValues.toId); userIds.push(e.returnValues.fromId)});
 		const users = ctx.twitterUsers;
-		events.forEach(e => {users.addId(e.returnValues.toId); users.addId(e.returnValues.fromId)});
-		debug.d('Fetching user handles...');
-		await Promise.all(users.userIds.map(id => users.getHandle(id)));
+		await fetchUserHandles(users)(userIds);
 
 		const eventList = events.map(e => ({
 			blockNumber: e.blockNumber,
@@ -253,6 +283,7 @@ if(require.main === module) {
 
 	const usage = {
 		getTweetText: 'getTweetText <userId>',
+		getUser: 'getUser <userId>',
 		getRewardEvents: 'getRewardEvents [[claimer,referrer] <userId>]',
 		getTransferEvents: 'getTransferEvents [[from,to] <userId>]',
 	};
@@ -271,6 +302,15 @@ if(require.main === module) {
 				debug.d('Getting tweet text for user ', userId);
 
 				return commands.getTweetText(userId)
+			}
+
+			case 'getUser': {
+				const userId = args[0];
+				if(nonEmptyString(userId)) {
+					debug.d('Getting data for user', userId);
+				}
+
+				return commands.getUser(userId)
 			}
 
 			case 'getRewardEvents': {
