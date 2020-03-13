@@ -7,7 +7,7 @@ const useStyles = makeStyles(theme => ({
   link: {
 		height: '100%',
 		maxWidth: theme.spacing(10),
-		marginLeft: theme.spacing(2),
+		marginLeft: '5%',
 		marginRight: theme.spacing(2),
 		paddingTop: theme.spacing(1),
 		color: 'transparent',
@@ -17,6 +17,12 @@ const useStyles = makeStyles(theme => ({
 		marginTop: theme.spacing(1),
 		//height: theme.spacing(5),
 		width: theme.spacing(5),
+		[theme.breakpoints.up('sm')]: {
+			width: theme.spacing(7.5)
+		},
+		[theme.breakpoints.up('md')]: {
+			width: theme.spacing(10)
+		},
 		height: 'auto',
 		animationName: '$fadeIn, $open',
 		animationDuration: '1s, 2s',
