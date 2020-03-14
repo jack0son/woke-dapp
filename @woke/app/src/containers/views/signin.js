@@ -10,9 +10,7 @@ import ButtonGroup from '../../layouts/button-group';
 export default function SigninView(props) {
 	return (
 		<>
-		<ContentWrapper
-			styles={{marginTop: '10%'}}
-		>
+		<ContentWrapper>
 			<Typography variant="h1" align="center" gutterBottom>
 				WOKE NETWORK
       </Typography>

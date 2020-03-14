@@ -8,7 +8,9 @@ const useStyles = makeStyles(theme => ({
 	contentWrapper: styles => ({
 		width: '100%',
 		position: 'static',
-		display: 'block',
+		display: 'flex',
+		flexDirection: 'column',
+		justifyContent: 'flex-end',
 		paddingRight: theme.spacing(2),
 		paddingLeft: theme.spacing(2),
 		marginTop: theme.spacing(2),
@@ -23,6 +25,9 @@ export default function ContentWrapper(props) {
 	return (
 		<Box
 			className={classes.contentWrapper}
+			style={{
+				height: props.height ? props.height : '40vh',
+			}}
 			{...innerProps}
 		/>
 	);

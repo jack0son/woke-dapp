@@ -22,7 +22,7 @@ export default function CentreHolder(props) {
 	return (
 		<Box
 			className={classes.centreHolder}
-			styles={{
+			style={{
 				height: props.height ? props.height : 'auto',
 			}}
 			{...props}

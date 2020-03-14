@@ -1,6 +1,5 @@
 import React, { useEffect } from 'react';
 import { useTheme } from '@material-ui/styles';
-import { makeStyles } from '@material-ui/styles';
 import Typography from '@material-ui/core/Typography';
 
 import ContentWrapper from '../../layouts/wrapper-content';
@@ -11,16 +10,9 @@ import Logo from '../../components/images/logo';
 // @TODO views should not contain app state
 import { useRootContext } from '../../hooks/root-context'
 
-const useStyles = makeStyles(theme => ({
-	fullHeight: {
-		height: '80vh',
-	}
-}));
-
 export default function LoadingView(props) {
 	const theme = useTheme();
 	const {setLoading} = useRootContext();
-	const classes = useStyles();
 
 	useEffect(() => {
 		setLoading(true);
@@ -30,10 +22,11 @@ export default function LoadingView(props) {
 	}, [])
 
 	return (
-		<CentreHolder height='80vh'>
+		<CentreHolder height='85vh'>
 			<CentreHolder
 				mt='0 !important'
 				mb={theme.spacing(0.5)}
+				height='5vh'
 			>
 					<Logo
 						src='images/eye-logo.png'
@@ -42,6 +35,7 @@ export default function LoadingView(props) {
 
 			<ContentWrapper
 				align='center'
+				height='5vh'
 				styles={{
 					paddingLeft: theme.spacing(5),
 					paddingRight: theme.spacing(5)
