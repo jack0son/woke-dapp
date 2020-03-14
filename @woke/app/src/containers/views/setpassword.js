@@ -16,9 +16,7 @@ import WokeSpan from '../../components/text/span-woke'
 export default function SetPasswordView(props) {
 	return (
 		<>
-		<ContentWrapper
-			styles={{marginTop: '10%'}}
-		>
+		<ContentWrapper height='55vh'>
 			<LargeBody>
 				Set your woke wallet password
 			</LargeBody>

@@ -23,9 +23,10 @@ export default function ErrorView(props) {
 	}, [])
 
 	return (
-		<CentreHolder>
+		<CentreHolder height='100vh'>
 			<ContentWrapper
 				align='center'
+				height='0'
 				styles={{
 					paddingLeft: theme.spacing(5),
 					paddingRight: theme.spacing(5)

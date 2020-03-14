@@ -21,8 +21,10 @@ const useStyles = makeStyles(theme => ({
 		display: 'block',
 		position: 'relative',
 		overflow: 'hidden',
-		paddingRight: theme.spacing(0),
-		paddingLeft: theme.spacing(0),
+		[theme.breakpoints.up('sm')]: {
+			paddingRight: '10%',
+			paddingLeft: '10%',
+		},
 		backgroundColor: 'transparent',
 		...styles
 	}),
@@ -43,7 +45,6 @@ const useStyles = makeStyles(theme => ({
 	avatar: {
 		height: '100%',
 	},
-
 
 }));
 
@@ -71,6 +72,7 @@ export default function TransactionList (props) {
 			opacity: 0.5
 		}
 	}
+
 
 	//TODO render inner border on scroll down 
 	const WithScrollTarget = props => (

@@ -15,9 +15,7 @@ import HL from '../../components/text/span-highlight'
 export default function LoginView(props) {
 	return (
 		<>
-		<ContentWrapper
-			styles={{marginTop: '10%', paddingTop: '15%'}}
-		>
+		<ContentWrapper height='45vh'>
 			<LargeBody styles={{textAlign: 'center'}}>
 			</LargeBody>
 			<StandardBody

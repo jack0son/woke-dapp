@@ -5,11 +5,10 @@ import Typography from '@material-ui/core/Typography';
 import ContentWrapper from '../../layouts/wrapper-content';
 import CentreHolder from '../../layouts/holder-centre';
 import Logo from '../../components/images/logo';
-
+ 
 // View hooks
 // @TODO views should not contain app state
 import { useRootContext } from '../../hooks/root-context'
-
 
 export default function LoadingView(props) {
 	const theme = useTheme();
@@ -23,10 +22,11 @@ export default function LoadingView(props) {
 	}, [])
 
 	return (
-		<CentreHolder>
+		<CentreHolder height='85vh'>
 			<CentreHolder
 				mt='0 !important'
 				mb={theme.spacing(0.5)}
+				height='5vh'
 			>
 					<Logo
 						src='images/eye-logo.png'
@@ -35,6 +35,7 @@ export default function LoadingView(props) {
 
 			<ContentWrapper
 				align='center'
+				height='5vh'
 				styles={{
 					paddingLeft: theme.spacing(5),
 					paddingRight: theme.spacing(5)

@@ -8,6 +8,7 @@ const useStyles = makeStyles(theme => ({
 		position: 'static',
 		width: '100%',
 		maxWidth: '100%',
+		textAlign: 'center',
 		...styles
 		//px: theme.spacing(3),
 	})
