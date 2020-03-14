@@ -10,10 +10,9 @@ const useStyles = makeStyles(theme => ({
 		flexDirection: 'column',
 		justifyContent: 'flex-start',
 		alignItems: 'center',
+		justifyContent: 'center',
 		bottom: 0,
 		width: 'auto',
-		height: 'auto',
-		px: theme.spacing(2),
 	}
 }));
 
@@ -23,6 +22,9 @@ export default function CentreHolder(props) {
 	return (
 		<Box
 			className={classes.centreHolder}
+			styles={{
+				height: props.height ? props.height : 'auto',
+			}}
 			{...props}
 		/>
 	);

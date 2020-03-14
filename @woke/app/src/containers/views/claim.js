@@ -42,6 +42,7 @@ export default function ClaimView (props) {
 						onClick: handleTweeted
 					}}
 					buttonMessage="Don't alter the message"
+					textAlign="center"
 				/>
 			)
 	};

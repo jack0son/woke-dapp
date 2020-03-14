@@ -23,7 +23,7 @@ export default function ErrorView(props) {
 	}, [])
 
 	return (
-		<CentreHolder>
+		<CentreHolder height='80vh'>
 			<ContentWrapper
 				align='center'
 				styles={{
