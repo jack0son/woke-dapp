@@ -11,7 +11,9 @@ const oracleInterface = artifacts.TwitterOracleMock;
 const wokeTokenInterface = artifacts.WokeToken;
 
 function initContract(web3Instance, artifact) {
-	return  new web3Instance.web3.eth.Contract(artifact.abi, artifact.networks[web3Instance.network.id].address);
+	const address = artifact.networks[web3Instance.network.id].address;
+	debug.d(`Initialising ${artifact.contractName} at ${address}`);
+	return  new web3Instance.web3.eth.Contract(artifact.abi, address);
 }
 
 async function initWeb3() {
