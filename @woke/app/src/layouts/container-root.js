@@ -31,17 +31,17 @@ export default function RootContainer(props) {
 	const theme = useTheme();
 
 	return (
-		<React.Fragment>
+		<>
 			<CssBaseline />
 			<Container className={styles.container}>
 				<Box component="div" position="relative" className={styles.root}>
 					{ navBar }
 					<FlexRow>
-					{ children }
+						{ children }
 					</FlexRow>
 				</Box>
 			</Container>
-		</React.Fragment>
+		</>
   );
 }
 

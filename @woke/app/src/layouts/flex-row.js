@@ -5,7 +5,7 @@ import Box from '@material-ui/core/Box';
 
 
 const useStyles = makeStyles(theme => ({
-	contentContainer: styles => ({
+	flexRow: styles => ({
 		// Layout
 		position: 'relative',
 		display: 'flex',
@@ -35,7 +35,7 @@ export default function FlexRow(props) {
 
 	return (
 		<Box
-			className={classes.contentContainer}
+			className={classes.flexRow}
 			{...innerProps}
 		/>
 	);

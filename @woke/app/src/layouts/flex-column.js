@@ -5,7 +5,7 @@ import Box from '@material-ui/core/Box';
 
 
 const useStyles = makeStyles(theme => ({
-	contentWrapper: styles => ({
+	flexColumn: styles => ({
 		// Layout
 		position: 'relative',
 		display: 'flex',
@@ -37,7 +37,7 @@ export default function FlexColumn(props) {
 
 	return (
 		<Box
-			className={classes.contentWrapper}
+			className={classes.flexColumn}
 			{...innerProps}
 		/>
 	);
