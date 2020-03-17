@@ -17,37 +17,35 @@ import WokeSpan from '../../components/text/span-woke'
 export default function SetPasswordView(props) {
 	return (
 		<>
-			<FlexRow styles={{}}>
-				<FlexColumn styles={{
-					//width: '40%',
-					//justifyContent: 'space-around',
-				}}>
-					<div>
-						<LargeBody>
-							Set your password
-						</LargeBody>
-						<StandardBody color='secondary'>
-							We suggest a memorable sentence.
-						</StandardBody>
-					</div>
-
-					<NewPassword
-						triggerSetPassword={props.triggerSetPassword}
-						errorMessage={props.errorMessage}
-						//flexGrow={4}
-						buttonProps={{
-							text: 'confirm',
-							color: 'primary'
-						}}
-					/>
-
-					<StandardBody styles={{textAlign: 'center'}}>
-						Your password can <HL>never</HL> be recovered.
-						<br/>
-						Remember your password. Stay woke.
+			<FlexColumn styles={{
+				//width: '40%',
+				//justifyContent: 'space-around',
+			}}>
+				<div>
+					<LargeBody>
+						Set your password
+					</LargeBody>
+					<StandardBody color='secondary'>
+						We suggest a memorable sentence.
 					</StandardBody>
-				</FlexColumn>
-			</FlexRow>
+				</div>
+
+				<NewPassword
+					triggerSetPassword={props.triggerSetPassword}
+					errorMessage={props.errorMessage}
+					//flexGrow={4}
+					buttonProps={{
+						text: 'confirm',
+						color: 'primary'
+					}}
+				/>
+
+				<StandardBody styles={{textAlign: 'center'}}>
+					Your password can <HL>never</HL> be recovered.
+					<br/>
+					Remember your password. Stay woke.
+				</StandardBody>
+			</FlexColumn>
 		</>
 	);
 }

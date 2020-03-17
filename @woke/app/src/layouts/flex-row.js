@@ -11,7 +11,7 @@ const useStyles = makeStyles(theme => ({
 		display: 'flex',
 		flexDirection: 'row',
 		justifyContent: 'center',
-		alignItems: 'stretch',
+		alignItems: 'center',
 
 		// Size
 		width: '100%',
