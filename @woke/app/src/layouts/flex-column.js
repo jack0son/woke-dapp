@@ -5,25 +5,27 @@ import Box from '@material-ui/core/Box';
 
 
 const useStyles = makeStyles(theme => ({
-	flexColumn: styles => ({
-		// Layout
-		position: 'relative',
-		display: 'flex',
-		flexDirection: 'column',
-		justifyContent: 'space-evenly',
-		alignItems: 'center',
+	flexColumn: styles => {
+		const { defaultHeight, ...inner } =  styles;
 
-		// Size
-		//height:'100%',
-		//width: '90%',
-		[theme.breakpoints.down('sm')]: {
-			//width: '90%',
-		},
-		[theme.breakpoints.up('md')]: {
-		//	width: '90%',
-		},
-		...styles
-	})
+		return {
+			// Layout
+			position: 'relative',
+			display: 'flex',
+			flexDirection: 'column',
+			justifyContent: 'space-evenly',
+			alignItems: 'center',
+
+			// Size
+			height: defaultHeight || '90%',
+			[theme.breakpoints.down('sm')]: {
+				height: '90%',
+			},
+			[theme.breakpoints.up('md')]: {
+			},
+			...inner
+		};
+	},
 }));
 
 export default function FlexColumn(props) {

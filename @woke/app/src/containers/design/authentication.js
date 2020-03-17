@@ -16,10 +16,8 @@ const stages = {};
 stageList.forEach((stage, i) => stages[stage] = i);
 
 export default function AuthContainer (props) {
-
-	const dummyState = useLinearStages({stageList, initialStage: stages.SIGNIN});
+	const dummyState = useLinearStages({stageList, initialStage: stages.SETPASSWORD});
 	const {dispatchNext, dummyAsyncJob} = dummyState;
-
 
 	const renderSignin = () => (
 		<SignIn
