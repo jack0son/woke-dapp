@@ -13,7 +13,12 @@ const nonceActor = {
 	},
 
 	actions: {
-		'get_nonce': async (msg, ctx, state) => {
+		'get_nonce': action_getNonce,
+		'set_nonce': action_setNonce,
+	}
+}
+
+function action_getNonce(msg, ctx, state) {
 			const { nonceRepo } = state;
 			const { failedNonce, account, network } = msg;
 
@@ -43,23 +48,15 @@ const nonceActor = {
 			nonceRepo[account] = entry;
 
 			dispatch(ctx.sender, { type: 'nonce', nonce: nonce }, ctx.self);
-			dispatch(ctx.self, { type: 'set_nonce', entry, account }, ctx.self); // persist
-			return { ...state, nonceRepo };
-		},
+			return action_setNonce({ entry , account }, ctx, state);
+}
 
-		// @brokenwindow
-		// If set nonce was used to change the state there would be a data race
-		// between actors requesting the nonce and the nonce actor itself - nonce
-		// responses could get out of order.
-		//	-- for now use seperate action to duplicate message;
-		'set_nonce': async (msg, ctx, state) => {
-			const { entry, account } = msg;
-			if(ctx.persist && !ctx.recovering) {
-				await ctx.persist(msg);
-			}
-			return { ...state, nonceRepo: {...state.nonceRepo, [account]: entry } };
-		},
+function action_setNonce(msg, ctx, state) {
+	const { entry, account } = msg;
+	if(ctx.persist && !ctx.recovering) {
+		await ctx.persist(msg);
 	}
+	return { ...state, nonceRepo: {...state.nonceRepo, [account]: entry } };
 }
 
 module.exports = nonceActor;
