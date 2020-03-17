@@ -17,14 +17,16 @@ export default function ClaimsProcess(props) {
 
 	return (
 		<>
-		<FlexColumn
-			//styles={{marginTop: '20%'}}
-		>
-			<BodyLarge
+			<FlexColumn styles={{
+				height: '30%',
+				smallHeight: '30%',
+				justifyContent: 'space-evenly',
+				alignItems: 'stretch',
+				//alignContent: 'space-between',
+			}}>
+				<BodyLarge
 				styles={{
-					textAlign: props.textAlign ? props.textAlign : 'justify',
-					paddingLeft: theme.spacing(2),
-					paddingRight: theme.spacing(2),
+					//textAlign: props.textAlign ? props.textAlign : 'justify',
 				}}
 			>
 				{props.instructionText}
@@ -33,7 +35,6 @@ export default function ClaimsProcess(props) {
 				message={props.buttonMessage}
 				Button={props.button}
 				buttonProps={props.buttonProps}
-				//styles={{marginTop: ''}}
 			/>
 			{props.children}
 		</FlexColumn>

@@ -1,4 +1,5 @@
 import React, { useEffect } from 'react';
+import { useTheme } from '@material-ui/styles';
 
 import Loading from './loading'
 import Error from './error'
@@ -25,6 +26,8 @@ export default function ClaimView (props) {
 		triggerPostTweet, // if not use share intent
 	} = props;
 
+	const theme = useTheme();
+
 	const stageMap = claimState.stageMap;
 	const sc = claimState.stageMap;
 	const stage = claimState.stage;
@@ -47,10 +50,11 @@ export default function ClaimView (props) {
 			)
 	};
 
+	console.log(theme);
 	const renderConfirmTweeted = () => (
 		<>
 		<ClaimLayout
-			instructionText={<><br/><br/>Did you tweet?</>}
+			instructionText={`Did you tweet?`}
 			textAlign="center"
 			buttonProps={{
 				onClick: handleConfirmedTweeted,
@@ -61,9 +65,8 @@ export default function ClaimView (props) {
 			<Button
 				onClick={handleNotTweeted}
 				text={'No'}
-				color='secondary'
-				sytles={{
-					paddingBottom: '30%'
+				styles={{
+					background: theme.palette.common.black,
 				}}
 		/>
 		</ClaimLayout>

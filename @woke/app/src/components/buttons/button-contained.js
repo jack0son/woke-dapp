@@ -25,13 +25,13 @@ const useStyles = makeStyles(theme => ({
 }));
 
 export default function ContainedButton(props) {
-	const {text, styles, ...innerProps} = props;
+	const {text, styles, color,  ...innerProps} = props;
   const classes = useStyles(styles);
 
   return (
 		<Button 
 			variant="contained"
-			color={props.color ? props.color : "primary"}
+			color={color || "primary"}
 			className={classes.button}
 			{...innerProps}
 		>

@@ -11,7 +11,6 @@ import Nervous from '../components/fonts/nervous';
 import 'typeface-inconsolata';
 
 const breakpoints = createBreakpoints({})
-console.log(breakpoints);
 
 const palette = mainPalette.palette;
 palette.accents = accentPalette;

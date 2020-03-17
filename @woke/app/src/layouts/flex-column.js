@@ -6,7 +6,7 @@ import Box from '@material-ui/core/Box';
 
 const useStyles = makeStyles(theme => ({
 	flexColumn: styles => {
-		const { defaultHeight, ...inner } =  styles;
+		const { smallHeight, ...inner } =  styles;
 
 		return {
 			// Layout
@@ -17,9 +17,9 @@ const useStyles = makeStyles(theme => ({
 			alignItems: 'center',
 
 			// Size
-			height: defaultHeight || '90%',
+			height: '70%',
 			[theme.breakpoints.down('sm')]: {
-				height: '90%',
+				height: smallHeight || '90%',
 			},
 			[theme.breakpoints.up('md')]: {
 			},

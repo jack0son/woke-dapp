@@ -19,7 +19,7 @@ export default function SetPasswordView(props) {
 		<>
 			<FlexColumn styles={{
 				justifyContent: 'space-around',
-				defaultHeight: '80%',
+				height: '60%',
 			}}>
 				<div>
 					<LargeBody>
