@@ -14,16 +14,16 @@ const useStyles = makeStyles(theme => ({
 		alignItems: 'center',
 
 		// Size
-		width: '100%',
+		width: '90%',
 		height: '80vh',
 		[theme.breakpoints.down('sm')]: {
+			width: '95%',
 			height: '90vh',
 		},
 
 		// Spacing
-		paddingRight: theme.spacing(1),
-		paddingLeft: theme.spacing(1),
-		//marginTop: theme.spacing(2),
+		marginLeft: 'auto',
+		marginRight: 'auto',
 
 		...styles
 	})

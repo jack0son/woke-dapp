@@ -15,18 +15,13 @@ const useStyles = makeStyles(theme => ({
 
 		// Size
 		//height:'100%',
-		width: '50%',
+		//width: '90%',
 		[theme.breakpoints.down('sm')]: {
-			width: '90%',
+			//width: '90%',
 		},
 		[theme.breakpoints.up('md')]: {
 		//	width: '90%',
 		},
-		//height: '100%',
-
-		// Spacing
-		//paddingRight: theme.spacing(2),
-		//paddingLeft: theme.spacing(2),
 		...styles
 	})
 }));
