@@ -2,7 +2,7 @@ import React from 'react';
 import { useTheme } from '@material-ui/styles';
 import Typography from '@material-ui/core/Typography';
 
-import ContentWrapper from './wrapper-content';
+import FlexColumn from './flex-column';
 import Footer from './footer';
 import BottomHolder from './holder-bottom';
 import BelowButtonGroup from './button-group-below';
@@ -17,8 +17,8 @@ export default function ClaimsProcess(props) {
 
 	return (
 		<>
-		<ContentWrapper
-			styles={{marginTop: '20%'}}
+		<FlexColumn
+			//styles={{marginTop: '20%'}}
 		>
 			<BodyLarge
 				styles={{
@@ -29,20 +29,14 @@ export default function ClaimsProcess(props) {
 			>
 				{props.instructionText}
 			</BodyLarge>
-
-		</ContentWrapper>
-
-		<Footer minHeight='50% !important'>
-			<BottomHolder justifyContent='flex-start !important'>
-				<BelowButtonGroup
-					message={props.buttonMessage}
-					Button={props.button}
-					buttonProps={props.buttonProps}
-					//styles={{marginTop: ''}}
-				/>
-				{props.children}
-			</BottomHolder>
-		</Footer>
+			<BelowButtonGroup
+				message={props.buttonMessage}
+				Button={props.button}
+				buttonProps={props.buttonProps}
+				//styles={{marginTop: ''}}
+			/>
+			{props.children}
+		</FlexColumn>
 		</>
 	);
 }

@@ -10,7 +10,7 @@ const useStyles = makeStyles(theme => ({
 		position: 'relative',
 		display: 'flex',
 		flexDirection: 'column',
-		justifyContent: 'space-between',
+		justifyContent: 'space-evenly',
 		alignItems: 'center',
 
 		// Size
@@ -31,7 +31,7 @@ const useStyles = makeStyles(theme => ({
 	})
 }));
 
-export default function ContentWrapper(props) {
+export default function FlexColumn(props) {
 	const {styles, ...innerProps} = props;
 	const classes = useStyles(styles);
 

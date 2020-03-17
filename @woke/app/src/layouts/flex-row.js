@@ -29,7 +29,7 @@ const useStyles = makeStyles(theme => ({
 	})
 }));
 
-export default function ContentContainer(props) {
+export default function FlexRow(props) {
 	const {styles, ...innerProps} = props;
 	const classes = useStyles(styles);
 

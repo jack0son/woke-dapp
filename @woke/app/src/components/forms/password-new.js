@@ -20,7 +20,7 @@ const useStyles = makeStyles(theme => ({
 		// Size
 		width: 'auto',
 		//minHeight: '100%',
-		marginTop: 'auto',
+		//marginTop: 'auto',
 
 		// Spacing
 		//paddingLeft: theme.spacing(3),
