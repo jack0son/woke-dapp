@@ -2,7 +2,7 @@ import React, { useEffect } from 'react';
 import { useTheme } from '@material-ui/styles';
 import Typography from '@material-ui/core/Typography';
 
-import ContentWrapper from '../../layouts/wrapper-content';
+import FlexColumn from '../../layouts/flex-column';
 import CentreHolder from '../../layouts/holder-centre';
 import Brain from '../../components/images/brain';
 
@@ -25,7 +25,7 @@ export default function ErrorView(props) {
 	return (
 		//<CentreHolder>
 		<CentreHolder styles={{height: '40vh'}}>
-			<ContentWrapper
+			<FlexColumn
 				//align='center'
 				//height='0'
 				styles={{
@@ -39,7 +39,7 @@ export default function ErrorView(props) {
 					{props.message ? props.message : 'F&!K'} 
 				</Typography>
 			)}
-			</ContentWrapper>
+			</FlexColumn>
 			<CentreHolder
 				mt='0 !important'
 				mb={theme.spacing(0.5)}

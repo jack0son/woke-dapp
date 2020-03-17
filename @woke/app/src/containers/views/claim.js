@@ -3,7 +3,7 @@ import React, { useEffect } from 'react';
 import Loading from './loading'
 import Error from './error'
 import ClaimLayout from '../../layouts/page-claim'
-import ContentWrapper from '../../layouts/wrapper-content'
+import FlexColumn from '../../layouts/flex-column'
 
 import TweetButton from '../../components/buttons/button-tweet'
 import Button from '../../components/buttons/button-contained'
@@ -109,7 +109,7 @@ export default function ClaimView (props) {
 	return (
 		<>
 		{ chooseRender() }
-		<ContentWrapper align="center">
+		<FlexColumn align="center">
 			<StandardBody color="error">
 			{claimState.error}
 			</StandardBody>
@@ -123,7 +123,7 @@ export default function ClaimView (props) {
 					<Spinner/>
 					: null)
 			}
-		</ContentWrapper>
+		</FlexColumn>
 		</>
 	);
 }

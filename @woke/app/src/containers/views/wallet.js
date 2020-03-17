@@ -6,7 +6,7 @@ import Footer from '../../layouts/footer';
 import BottomHolder from '../../layouts/holder-bottom';
 import Tabs from '../../layouts/tabs';
 import TransactionList from '../../layouts/list-transactions';
-import ContentWrapper from '../../layouts/wrapper-content'
+import FlexColumn from '../../layouts/flex-column'
 
 import AvatarHeader from '../../components/header-avatar';
 import WokeSpan from '../../components/text/span-woke';
@@ -97,14 +97,14 @@ export default function WalletView (props) {
 						label="Transfers"
 						listItems={transferEvents}
 					/>
-					<ContentWrapper	styles={{marginTop: 0}} align='center' label="Bounties">
+					<FlexColumn	styles={{marginTop: 0}} align='center' label="Bounties">
 								<LargeBody align='center'> 
 									Send <WokeSpan>WOKENs</WokeSpan> to new users to receive a bonus when they join.
 								</LargeBody>
 								<TransactionList
 									listItems={rewardEvents}
 								/> 
-				</ContentWrapper>
+				</FlexColumn>
 				</Tabs>
 			</BottomHolder>
 		</Footer>
