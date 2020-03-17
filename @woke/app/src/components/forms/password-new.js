@@ -19,7 +19,7 @@ const useStyles = makeStyles(theme => ({
 
 		// Size
 		width: 'auto',
-		minHeight: '100%',
+		//minHeight: '100%',
 		marginTop: 'auto',
 
 		// Spacing
@@ -32,7 +32,7 @@ const useStyles = makeStyles(theme => ({
 		display: 'flex',
 		flexDirection: 'column',
 		justifyContent: 'space-between',
-		alignItems: 'center',
+		alignItems: 'stretch',
 	}
 }));
 

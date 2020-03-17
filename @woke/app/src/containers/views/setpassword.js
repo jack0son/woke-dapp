@@ -13,7 +13,7 @@ import LargeBody from '../../components/text/body-large'
 import HL from '../../components/text/span-highlight'
 import WokeSpan from '../../components/text/span-woke'
 
-
+const noGrow = 1;
 export default function SetPasswordView(props) {
 	return (
 		<>
@@ -22,7 +22,7 @@ export default function SetPasswordView(props) {
 					//width: '40%',
 					//justifyContent: 'space-around',
 				}}>
-					<div flexGrow={2}>
+					<div>
 						<LargeBody>
 							Set your password
 						</LargeBody>
@@ -34,25 +34,19 @@ export default function SetPasswordView(props) {
 					<NewPassword
 						triggerSetPassword={props.triggerSetPassword}
 						errorMessage={props.errorMessage}
-						flexGrow={4}
+						//flexGrow={4}
 						buttonProps={{
 							text: 'confirm',
 							color: 'primary'
 						}}
 					/>
 
-					<StandardBody styles={{textAlign: 'center', flexGrow: 2}}>
+					<StandardBody styles={{textAlign: 'center'}}>
 						Your password can <HL>never</HL> be recovered.
 						<br/>
 						Remember your password. Stay woke.
 					</StandardBody>
 				</ContentWrapper>
-
-				<Footer>
-					<BottomHolder>
-					</BottomHolder>
-				</Footer>
-
 			</ContentContainer>
 		</>
 	);

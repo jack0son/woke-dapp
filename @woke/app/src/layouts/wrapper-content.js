@@ -10,10 +10,11 @@ const useStyles = makeStyles(theme => ({
 		position: 'relative',
 		display: 'flex',
 		flexDirection: 'column',
-		justifyContent: 'space-around',
-		alignItems: 'stretch',
+		justifyContent: 'space-between',
+		alignItems: 'center',
 
 		// Size
+		//height:'100%',
 		width: '50%',
 		[theme.breakpoints.down('sm')]: {
 			width: '90%',
