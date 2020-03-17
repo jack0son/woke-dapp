@@ -7,12 +7,12 @@ import Box from '@material-ui/core/Box';
 const useStyles = makeStyles(theme => ({
 	fieldWrapper: styles => ({
 		width: '100%',
-		position: 'static',
+		position: 'relative',
 		display: 'block',
-		paddingRight: '10%',
-		paddingLeft: '10%',
-		paddingTop: theme.spacing(4),
-		paddingBottom: theme.spacing(4),
+		//paddingRight: '10%',
+		//paddingLeft: '10%',
+		//paddingTop: theme.spacing(4),
+		//paddingBottom: theme.spacing(4),
 		...styles
 	})
 }));

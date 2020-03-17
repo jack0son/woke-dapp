@@ -2,7 +2,7 @@ import React from 'react'
 
 // Layout
 import Theming from '../../layouts/theming'
-import PageContainer from '../../layouts/page-container'
+import PageContainer from '../../layouts/container-page'
 import NavBar from '../../components/navbar'
 
 // Hooks

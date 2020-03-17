@@ -11,18 +11,13 @@ import useLinearStages from '../../hooks/linearstate'
 import StateFlicker from '../../components/stateflicker'
 
 
-const SIGNIN = 'SIGNIN';
-const LOADING = 'LOADING';
-const SETPASSWORD = 'SETPASSWORD';
-const LOGIN = 'LOGIN';
-const AUTHD = 'AUTHD';
-const stageList = [SIGNIN, LOADING, SETPASSWORD, LOGIN, AUTHD];
+const stageList = ['SIGNIN', 'LOADING', 'SETPASSWORD', 'LOGIN', 'AUTHD'];
 const stages = {};
 stageList.forEach((stage, i) => stages[stage] = i);
 
 export default function AuthContainer (props) {
 
-	const dummyState = useLinearStages({stageList, initialStage: stages.SIGNIN});
+	const dummyState = useLinearStages({stageList, initialStage: stages.SETPASSWORD});
 	const {dispatchNext, dummyAsyncJob} = dummyState;
 
 
@@ -68,7 +63,7 @@ export default function AuthContainer (props) {
 
 	useEffect(() => {
 		console.log('Stage: ', stage);
-		if(stage == AUTHD) {
+		if(stage == stages.AUTHD) {
 			props.handleAuthComplete();
 		}
 	}, [stage])

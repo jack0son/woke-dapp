@@ -1,6 +1,7 @@
 import React from 'react';
 import Typography from '@material-ui/core/Typography';
 
+import ContentContainer from '../../layouts/container-content';
 import ContentWrapper from '../../layouts/wrapper-content';
 import Footer from '../../layouts/footer';
 import BottomHolder from '../../layouts/holder-bottom';
@@ -16,33 +17,43 @@ import WokeSpan from '../../components/text/span-woke'
 export default function SetPasswordView(props) {
 	return (
 		<>
-		<ContentWrapper height='55vh'>
-			<LargeBody>
-				Set your woke wallet password
-			</LargeBody>
-			<StandardBody color='secondary'>
-				We suggest a memorable sentence.
-			</StandardBody>
+			<ContentContainer styles={{}}>
+				<ContentWrapper styles={{
+					//width: '40%',
+					//justifyContent: 'space-around',
+				}}>
+					<div flexGrow={2}>
+						<LargeBody>
+							Set your password
+						</LargeBody>
+						<StandardBody color='secondary'>
+							We suggest a memorable sentence.
+						</StandardBody>
+					</div>
 
-			<NewPassword
-				triggerSetPassword={props.triggerSetPassword}
-				errorMessage={props.errorMessage}
-				buttonProps={{
-					text: 'confirm',
-					color: 'primary'
-				}}
-			/>
-		</ContentWrapper>
+					<NewPassword
+						triggerSetPassword={props.triggerSetPassword}
+						errorMessage={props.errorMessage}
+						flexGrow={4}
+						buttonProps={{
+							text: 'confirm',
+							color: 'primary'
+						}}
+					/>
 
-		<Footer>
-			<BottomHolder>
-				<StandardBody>
-					Your password can <HL>never</HL> be recovered.
-					<br/><br/>
-					Remember your password. Stay woke.
-				</StandardBody>
-			</BottomHolder>
-		</Footer>
+					<StandardBody styles={{textAlign: 'center', flexGrow: 2}}>
+						Your password can <HL>never</HL> be recovered.
+						<br/>
+						Remember your password. Stay woke.
+					</StandardBody>
+				</ContentWrapper>
+
+				<Footer>
+					<BottomHolder>
+					</BottomHolder>
+				</Footer>
+
+			</ContentContainer>
 		</>
 	);
 }
