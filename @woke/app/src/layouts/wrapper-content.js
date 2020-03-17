@@ -6,11 +6,17 @@ import Box from '@material-ui/core/Box';
 
 const useStyles = makeStyles(theme => ({
 	contentWrapper: styles => ({
-		width: '100%',
+		// Layout
 		position: 'static',
 		display: 'flex',
 		flexDirection: 'column',
-		justifyContent: 'flex-end',
+		justifyContent: 'flex-start',
+
+		// Size
+		width: '100%',
+		height: '40vh',
+
+		// Spacing
 		paddingRight: theme.spacing(2),
 		paddingLeft: theme.spacing(2),
 		marginTop: theme.spacing(2),
@@ -25,9 +31,6 @@ export default function ContentWrapper(props) {
 	return (
 		<Box
 			className={classes.contentWrapper}
-			style={{
-				height: props.height ? props.height : '40vh',
-			}}
 			{...innerProps}
 		/>
 	);
