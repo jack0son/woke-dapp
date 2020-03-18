@@ -23,6 +23,11 @@ const useStyles = makeStyles(theme => ({
 			},
 			[theme.breakpoints.up('md')]: {
 			},
+
+			// Spacing
+			//marginLeft: 'auto',
+			//marginRight: 'auto',
+
 			...inner
 		};
 	},

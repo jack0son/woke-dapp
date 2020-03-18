@@ -11,10 +11,8 @@ const useStyles = makeStyles(theme => ({
 		position: 'relative',
 		display: 'flex',
 		flexDirection: 'column',
-		justifyContent: 'flex-start',
+		justifyContent: 'space-between',
 		alignItems: 'center',
-		bottom: 0,
-		width: 'auto',
 		height: 'auto',
 		...styles
 	})

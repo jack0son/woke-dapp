@@ -45,12 +45,10 @@ export default function ClaimView (props) {
 						onClick: handleTweeted
 					}}
 					buttonMessage="Don't alter the message"
-					textAlign="center"
 				/>
 			)
 	};
 
-	console.log(theme);
 	const renderConfirmTweeted = () => (
 		<>
 		<ClaimLayout

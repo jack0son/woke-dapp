@@ -10,16 +10,16 @@ import { useRootContext } from '../../hooks/root-context'
 import useLinearStages from '../../hooks/linearstate';
 import StateFlicker from '../../components/stateflicker';
 import * as claimStates from '../../hooks/woke-contracts/claimuser-states';
+import initialStates from './stage-controller'
 
 const {statesMap, statesList, statesLabels} = claimStates;
 const states = statesMap;
 
 export default function ClaimContainer (props) {
-	const dummyClaimState = useLinearStages({stageList: statesList, initialStage: states.TWEETED});
+	const dummyClaimState = useLinearStages({stageList: statesList, initialStage: states.READY});
 	const {dispatchNext, dummyAsyncJob} = dummyClaimState;
 	const rootContext = useRootContext();
 	const [error, setError] = useState();
-
 
 	// Pass claim stage up to the state selector
 	useEffect(() => {

@@ -12,9 +12,11 @@ import { RootContextProvider, useRootContext } from '../../hooks/root-context'
 import useLinearStages from '../../hooks/linearstate'
 import StateFlicker from '../../components/stateflicker'
 import StateSelector from '../../components/state-selector'
-const AUTH = 'AUTH';
-const WEB3 = 'WEB3';
-const stageList = [AUTH, WEB3];
+import stageConfig from './stage-controller';
+
+console.log(stageConfig);
+
+const stages = stageConfig.root;
 
 // For deployment
 // Set container paths to _stateDir/<containerpath>
@@ -22,7 +24,7 @@ const stageList = [AUTH, WEB3];
 export default function RootContainer() {
 	const [claimComplete, setClaimComplete] = useState(false);
 
-	const dummyState = useLinearStages({stageList, initialStage: 1});
+	const dummyState = useLinearStages({stageList: stages.list, initialStage: stages.initial ||  0});
 
 	const dispatchNext = (event) => {
 		dummyState.dispatch({type: 'NEXT'});
@@ -51,7 +53,7 @@ export default function RootContainer() {
 	return (
 		<RootContextProvider>
 		<Root
-			hideLogo={stage == WEB3 ? false : true}
+			hideLogo={stage == stages.byName.WEB3 ? false : true}
 		>
 			{ chooseRender() }
 		</Root>

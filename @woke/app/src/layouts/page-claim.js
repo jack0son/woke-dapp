@@ -18,26 +18,28 @@ export default function ClaimsProcess(props) {
 	return (
 		<>
 			<FlexColumn styles={{
-				height: '30%',
-				smallHeight: '30%',
+				height: '50%',
+				smallHeight: '60%',
 				justifyContent: 'space-evenly',
 				alignItems: 'stretch',
-				//alignContent: 'space-between',
+				alignContent: 'center',
 			}}>
 				<BodyLarge
-				styles={{
-					//textAlign: props.textAlign ? props.textAlign : 'justify',
-				}}
-			>
-				{props.instructionText}
-			</BodyLarge>
-			<BelowButtonGroup
-				message={props.buttonMessage}
-				Button={props.button}
-				buttonProps={props.buttonProps}
-			/>
-			{props.children}
-		</FlexColumn>
+					styles={{
+						paddingLeft: '10%',
+						paddingRight: '10%',
+						textAlign: props.textAlign || 'justify',
+					}}
+				>
+					{props.instructionText}
+				</BodyLarge>
+				<BelowButtonGroup
+					message={props.buttonMessage}
+					Button={props.button}
+					buttonProps={props.buttonProps}
+				/>
+				{props.children}
+			</FlexColumn>
 		</>
 	);
 }
