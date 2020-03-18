@@ -5,7 +5,7 @@ import Claim from '../views/claim';
 import Loading from '../views/loading';
 
 // Dummy state 
-import { useRootContext } from '../../hooks/root-context'
+import { useDesignContext } from '../../hooks/design/design-context'
 import useLinearStages from '../../hooks/linearstate';
 import * as claimStates from '../../hooks/woke-contracts/claimuser-states';
 import stageConfig from './stage-controller'
@@ -18,7 +18,7 @@ const states = stages.byName;
 export default function ClaimContainer (props) {
 	const dummyClaimState = useLinearStages({stageList: stages.list, initialStage: stages.initial || states.READY});
 	const {dispatchNext, dummyAsyncJob} = dummyClaimState;
-	const rootContext = useRootContext();
+	const designContext = useDesignContext();
 	const [error, setError] = useState();
 
 	// Pass claim stage up to the state selector
@@ -29,7 +29,7 @@ export default function ClaimContainer (props) {
 			select: dummyClaimState.select,
 		})
 		return () => {
-			designContext.deregister('claim');
+			designContext.deregisterDomain('claim');
 		};
 	}, []);
 

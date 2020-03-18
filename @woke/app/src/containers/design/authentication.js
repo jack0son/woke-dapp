@@ -7,8 +7,9 @@ import SetPassword from '../views/setpassword'
 import Login from '../views/login'
 
 // Dummy state 
+import { useDesignContext } from '../../hooks/design/design-context'
 import useLinearStages from '../../hooks/linearstate'
-import StateFlicker from '../../components/stateflicker'
+import StateFlicker from '../../components/state-flicker'
 import stageConfig from './stage-controller'
 
 const stages = stageConfig.authentication;
@@ -17,6 +18,19 @@ const stages = stageConfig.authentication;
 export default function AuthContainer (props) {
 	const dummyState = useLinearStages({stageList: stages.list, initialStage: stages.initial || stages.byName.SIGNIN });
 	const {dispatchNext, dummyAsyncJob} = dummyState;
+	const designContext = useDesignContext();
+
+	// Pass auth stage up to the state selector
+	useEffect(() => {
+		designContext.registerDomain({
+			name: 'authentication',
+			options: stages.list,
+			select: dummyState.select,
+		})
+		return () => {
+			designContext.deregisterDomain('authentication');
+		};
+	}, []);
 
 	const renderSignin = () => (
 		<SignIn

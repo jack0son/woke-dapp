@@ -1,17 +1,22 @@
 import React from 'react'
 
-import { useRootContext } from '../hooks/root-context'
+import { useDesignContext } from '../hooks/design/design-context'
 // @todo make selector properly supported by design flow so prop passing here
 // can be cleaned up
-export default function(props) {
-	const bundle = useRootContext().escapeHatch;
-	if(!bundle) {
+export default function({ domainName }) {
+	const { domains } = useDesignContext();
+
+	const domain = domains[domainName];
+	if(!domain) {
 		return null;
 	}
+
+	const onChange = event => domain.select(event.target.value);
+
 	return (
-		<select id='otherState' onChange={bundle.onChange}>
+		<select id={`stageSelector-${domainName}`} onChange={onChange}>
 			{
-				bundle.items.map(i => <option value={i}>{i}</option>)
+				domain.options.map(i => <option value={i}>{i}</option>)
 
 			}
 		</select>

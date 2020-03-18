@@ -16,6 +16,7 @@ function reduceDomains(state, action) {
 		case 'register': {
 			const { name, options, select } = action.payload;
 			const domains = { ...state.domains, [name]: { options, select } };
+			debug(`registered ${name}`);
 			return { ...state, domains };
 		}
 
@@ -43,26 +44,27 @@ function reduceDomains(state, action) {
 }
 
 export function DesignContextProvider({children}) {
+	const [domains, dispatch] = useReducer(reduceDomains, { domains: {} });
 
-	const [domains, dispatch] = useReducer(reduceDomains, {});
-
-	const register = ({name, options, select}) => {
+	const registerDomain = ({name, options, select}) => {
 		dispatch({type: 'register', payload: { name, options, select }});
 	}
 
-	const register = (name) => {
+	const deregisterDomain = (name) => {
 		dispatch({type: 'deregister', payload: { name }});
 	}
 
 	return (
 		<Context.Provider
 			value={useMemo(() => ({
-				register,
-				deregister,
+				domains: domains.domains,
+				registerDomain,
+				deregisterDomain,
 			}),
 				[
-					register,
-					deregister,
+					domains,
+					registerDomain,
+					deregisterDomain,
 				]
 			)}
 		>

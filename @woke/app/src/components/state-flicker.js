@@ -33,7 +33,8 @@ export default function StateFlicker(props) {
 		<div className={classes.flickerBox}>
 			<button onClick={() => props.dispatch({type: 'PREV'})}>PREV</button>
 			<button onClick={() => props.dispatch({type: 'NEXT'})}>NEXT</button>
-			<h1>{props.stageString}</h1>
+			<h1>{ props.stageString }</h1>
+			{ props.children }
 		</div>
 	);
 }

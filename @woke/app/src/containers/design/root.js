@@ -7,6 +7,7 @@ import Web3Initializer from './web3-initializer'
 // View containers
 import Root from '../views/root'
 import { RootContextProvider, useRootContext } from '../../hooks/root-context'
+import { DesignContextProvider, useDesignContext } from '../../hooks/design/design-context'
 
 // Dummy state 
 import useLinearStages from '../../hooks/linearstate'
@@ -52,17 +53,23 @@ export default function RootContainer() {
 
 	return (
 		<RootContextProvider>
-		<Root
-			hideLogo={stage == stages.byName.WEB3 ? false : true}
-		>
-			{ chooseRender() }
-		</Root>
+			<DesignContextProvider>
+				<Root
+					hideLogo={stage == stages.byName.WEB3 ? false : true}
+				>
+					{ chooseRender() }
+				</Root>
 
-			<StateFlicker
-				dispatch={dummyState.dispatch}
-				stageString={stage}
-			/>
-			<StateSelector/>
+				<StateFlicker
+					dispatch={dummyState.dispatch}
+					stageString={stage}
+				>
+					<StateSelector domainName={'root'}/>
+					<StateSelector domainName={'authentication'}/>
+					<StateSelector domainName={'claim'}/>
+				</StateFlicker>
+
+			</DesignContextProvider>
 		</RootContextProvider>
 	);
 }
