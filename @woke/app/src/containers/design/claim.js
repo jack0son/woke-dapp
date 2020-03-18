@@ -4,19 +4,20 @@ import React, { useEffect, useState } from 'react';
 import Claim from '../views/claim';
 import Loading from '../views/loading';
 
-
 // Dummy state 
 import { useRootContext } from '../../hooks/root-context'
 import useLinearStages from '../../hooks/linearstate';
 import StateFlicker from '../../components/stateflicker';
 import * as claimStates from '../../hooks/woke-contracts/claimuser-states';
-import initialStates from './stage-controller'
+import stageConfig from './stage-controller'
 
-const {statesMap, statesList, statesLabels} = claimStates;
-const states = statesMap;
+
+const stages = stageConfig.claim;
+const { statesLabels } = claimStates;
+const states = stages.byName;
 
 export default function ClaimContainer (props) {
-	const dummyClaimState = useLinearStages({stageList: statesList, initialStage: states.READY});
+	const dummyClaimState = useLinearStages({stageList: stages.list, initialStage: stages.initial || states.READY});
 	const {dispatchNext, dummyAsyncJob} = dummyClaimState;
 	const rootContext = useRootContext();
 	const [error, setError] = useState();
@@ -24,7 +25,7 @@ export default function ClaimContainer (props) {
 	// Pass claim stage up to the state selector
 	useEffect(() => {
 		rootContext.setEscapeHatch({
-			items: statesList,
+			items: stages.list,
 			onChange: (event) => dummyClaimState.select(event.target.value)
 		});
 	}, []);

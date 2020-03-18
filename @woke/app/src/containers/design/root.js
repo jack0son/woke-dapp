@@ -24,7 +24,7 @@ const stages = stageConfig.root;
 export default function RootContainer() {
 	const [claimComplete, setClaimComplete] = useState(false);
 
-	const dummyState = useLinearStages({stageList: stages.list, initialStage: stages.initial ||  0});
+	const dummyState = useLinearStages({stageList: stages.list, initialStage: stages.initial ||  stages.byName.AUTH });
 
 	const dispatchNext = (event) => {
 		dummyState.dispatch({type: 'NEXT'});

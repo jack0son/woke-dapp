@@ -9,15 +9,13 @@ import Login from '../views/login'
 // Dummy state 
 import useLinearStages from '../../hooks/linearstate'
 import StateFlicker from '../../components/stateflicker'
-import initialStates from './stage-controller'
+import stageConfig from './stage-controller'
 
+const stages = stageConfig.authentication;
 
-const stageList = ['SIGNIN', 'LOADING', 'SETPASSWORD', 'LOGIN', 'AUTHD'];
-const stages = {};
-stageList.forEach((stage, i) => stages[stage] = i);
 
 export default function AuthContainer (props) {
-	const dummyState = useLinearStages({stageList, initialStage: stages.SIGNIN});
+	const dummyState = useLinearStages({stageList: stages.list, initialStage: stages.initial || stages.byName.SIGNIN });
 	const {dispatchNext, dummyAsyncJob} = dummyState;
 
 	const renderSignin = () => (
