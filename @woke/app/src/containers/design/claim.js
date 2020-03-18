@@ -7,7 +7,6 @@ import Loading from '../views/loading';
 // Dummy state 
 import { useRootContext } from '../../hooks/root-context'
 import useLinearStages from '../../hooks/linearstate';
-import StateFlicker from '../../components/stateflicker';
 import * as claimStates from '../../hooks/woke-contracts/claimuser-states';
 import stageConfig from './stage-controller'
 
@@ -24,10 +23,14 @@ export default function ClaimContainer (props) {
 
 	// Pass claim stage up to the state selector
 	useEffect(() => {
-		rootContext.setEscapeHatch({
-			items: stages.list,
-			onChange: (event) => dummyClaimState.select(event.target.value)
-		});
+		designContext.registerDomain({
+			name: 'claim',
+			options: stages.list,
+			select: dummyClaimState.select,
+		})
+		return () => {
+			designContext.deregister('claim');
+		};
 	}, []);
 
 	const renderClaim = () => (

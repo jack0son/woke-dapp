@@ -10,7 +10,7 @@ import { RootContextProvider, useRootContext } from '../../hooks/root-context'
 
 // Dummy state 
 import useLinearStages from '../../hooks/linearstate'
-import StateFlicker from '../../components/stateflicker'
+import StateFlicker from '../../components/state-flicker'
 import StateSelector from '../../components/state-selector'
 import stageConfig from './stage-controller';
 
@@ -58,10 +58,10 @@ export default function RootContainer() {
 			{ chooseRender() }
 		</Root>
 
-		<StateFlicker
-			dispatch={dummyState.dispatch}
-			stageString={stage}
-		/>
+			<StateFlicker
+				dispatch={dummyState.dispatch}
+				stageString={stage}
+			/>
 			<StateSelector/>
 		</RootContextProvider>
 	);
