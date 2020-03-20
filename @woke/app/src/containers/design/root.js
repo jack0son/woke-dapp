@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 
 // Logical containers
 import Authentication from './authentication'
@@ -11,8 +11,9 @@ import { DesignContextProvider, useDesignContext } from '../../hooks/design/desi
 
 // Dummy state 
 import useLinearStages from '../../hooks/linearstate'
-import StateFlicker from '../../components/state-flicker'
-import StateSelector from '../../components/state-selector'
+import StageFlicker from '../../components/design/stage-flicker'
+import StageOverlay from '../../components/design/stage-overlay'
+import StageSelector from '../../components/design/stage-selector'
 import stageConfig from './stages';
 
 
@@ -22,6 +23,27 @@ export default function RootContainer() {
 	const [claimComplete, setClaimComplete] = useState(false);
 
 	const dummyState = useLinearStages({stageList: stages.list, initialStage: stages.initial ||  stages.byName.AUTH });
+
+	// So that useDesignContext is called from designContext provider
+	function RegisterRootDomain() {
+		const designContext = useDesignContext();
+		// Pass claim stage up to the state selector
+		useEffect(() => {
+			designContext.registerDomain({
+				name: 'root',
+				options: stages.list,
+				select: dummyState.select,
+				dispatch: dummyState.dispatch,
+				stageIndex: dummyState.stage,
+			})
+
+			return () => {
+				designContext.deregisterDomain('root');
+			};
+		}, []);
+
+		return null;
+	}
 
 	const dispatchNext = (event) => {
 		dummyState.dispatch({type: 'NEXT'});
@@ -53,17 +75,15 @@ export default function RootContainer() {
 				<Root
 					hideLogo={stage == stages.byName.WEB3 ? false : true}
 				>
+					<RegisterRootDomain/>
 					{ chooseRender() }
 				</Root>
 
-				<StateFlicker
-					dispatch={dummyState.dispatch}
-					stageString={stage}
-				>
-					<StateSelector domainName={'root'}/>
-					<StateSelector domainName={'authentication'}/>
-					<StateSelector domainName={'claim'}/>
-				</StateFlicker>
+				<StageOverlay >
+					<StageSelector domainName={'root'}/>
+					<StageSelector domainName={'authentication'}/>
+					<StageSelector domainName={'claim'}/>
+				</StageOverlay>
 
 			</DesignContextProvider>
 		</RootContextProvider>

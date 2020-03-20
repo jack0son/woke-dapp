@@ -14,8 +14,8 @@ const debug = (...args) => console.log('context:design: ', ...args);
 function reduceDomains(state, action) {
 	switch(action.type) {
 		case 'register': {
-			const { name, options, select } = action.payload;
-			const domains = { ...state.domains, [name]: { options, select } };
+			const { name, ...stageState } = action.payload;
+			const domains = { ...state.domains, [name]: { ...stageState } };
 			debug(`registered ${name}`);
 			return { ...state, domains };
 		}
@@ -46,8 +46,8 @@ function reduceDomains(state, action) {
 export function DesignContextProvider({children}) {
 	const [domains, dispatch] = useReducer(reduceDomains, { domains: {} });
 
-	const registerDomain = ({name, options, select}) => {
-		dispatch({type: 'register', payload: { name, options, select }});
+	const registerDomain = (domainBundle) => {
+		dispatch({type: 'register', payload: domainBundle});
 	}
 
 	const deregisterDomain = (name) => {

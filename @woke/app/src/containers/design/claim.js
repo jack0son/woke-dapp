@@ -27,7 +27,10 @@ export default function ClaimContainer (props) {
 			name: 'claim',
 			options: stages.list,
 			select: dummyClaimState.select,
+			dispatch: dummyClaimState.dispatch,
+			stageIndex: dummyClaimState.stage,
 		})
+
 		return () => {
 			designContext.deregisterDomain('claim');
 		};

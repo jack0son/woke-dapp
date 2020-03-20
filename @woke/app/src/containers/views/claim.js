@@ -59,6 +59,7 @@ export default function ClaimView (props) {
 				text: `Yes, I tweeted!`,
 				color: 'primary',
 			}}
+			buttonMessage="Here is a  message button"
 		>
 			<Button
 				onClick={handleNotTweeted}
