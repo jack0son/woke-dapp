@@ -12,7 +12,7 @@ import BodyLarge from '../components/text/body-large'
 import HL from '../components/text/span-highlight'
 
 
-export default function ClaimsProcess(props) {
+export default function ClaimPage(props) {
 	const theme = useTheme();
 
 	return (
@@ -26,8 +26,8 @@ export default function ClaimsProcess(props) {
 			}}>
 				<BodyLarge
 					styles={{
-						paddingLeft: '10%',
-						paddingRight: '10%',
+						paddingLeft: '0%',
+						paddingRight: '0%',
 						textAlign: props.textAlign || 'justify',
 					}}
 				>
@@ -35,7 +35,7 @@ export default function ClaimsProcess(props) {
 				</BodyLarge>
 				<BelowButtonGroup
 					message={props.buttonMessage}
-					Button={props.button}
+					Button={props.Button}
 					buttonProps={props.buttonProps}
 				/>
 				{props.children}

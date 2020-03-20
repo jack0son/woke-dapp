@@ -27,8 +27,8 @@ Object.keys(stages).forEach(name => {
 
 // Set initial stages, using name or index
 // See design/stages/<name>.js for available stages
-stageConfig.root.initial = stageConfig.root.byName.AUTH;
-stageConfig.authentication.initial = stageConfig.authentication.byName.SIGNIN;
+stageConfig.root.initial = stageConfig.root.byName.WEB3;
+stageConfig.authentication.initial = stageConfig.authentication.byName.TWEETED;
 stageConfig.claim.initial = stageConfig.claim.byName.READY;
 
 export default stageConfig;

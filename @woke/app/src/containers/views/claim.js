@@ -3,7 +3,7 @@ import { useTheme } from '@material-ui/styles';
 
 import Loading from './loading'
 import Error from './error'
-import ClaimLayout from '../../layouts/page-claim'
+import ClaimPage from '../../layouts/page-claim'
 import FlexColumn from '../../layouts/flex-column'
 
 import TweetButton from '../../components/buttons/button-tweet'
@@ -37,9 +37,9 @@ export default function ClaimView (props) {
 	const renderTweetClaim = () => {
 			const intentUrl = createShareIntentUrl(claimState.claimString);
 			return (
-				<ClaimLayout
+				<ClaimPage
 					instructionText={[`To securely claim any `, <WokeSpan key="WokeSpan">WOKENs</WokeSpan>, ` you've already been sent, we need to tweet a signed message.`]}
-					button={TweetButton}
+					Button={TweetButton}
 					buttonProps={{
 						href: intentUrl,
 						onClick: handleTweeted
@@ -51,7 +51,7 @@ export default function ClaimView (props) {
 
 	const renderConfirmTweeted = () => (
 		<>
-		<ClaimLayout
+		<ClaimPage
 			instructionText={`Did you tweet?`}
 			textAlign="center"
 			buttonProps={{
@@ -67,7 +67,7 @@ export default function ClaimView (props) {
 					background: theme.palette.common.black,
 				}}
 		/>
-		</ClaimLayout>
+		</ClaimPage>
 		</>
 	);
 

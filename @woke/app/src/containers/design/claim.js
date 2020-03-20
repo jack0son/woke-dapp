@@ -8,7 +8,7 @@ import Loading from '../views/loading';
 import { useDesignContext } from '../../hooks/design/design-context'
 import useLinearStages from '../../hooks/linearstate';
 import * as claimStates from '../../hooks/woke-contracts/claimuser-states';
-import stageConfig from './stage-controller'
+import stageConfig from './stages'
 
 
 const stages = stageConfig.claim;

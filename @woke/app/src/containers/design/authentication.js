@@ -10,7 +10,8 @@ import Login from '../views/login'
 import { useDesignContext } from '../../hooks/design/design-context'
 import useLinearStages from '../../hooks/linearstate'
 import StateFlicker from '../../components/state-flicker'
-import stageConfig from './stage-controller'
+import stageConfig from './stages'
+
 
 const stages = stageConfig.authentication;
 

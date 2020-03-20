@@ -13,14 +13,10 @@ import { DesignContextProvider, useDesignContext } from '../../hooks/design/desi
 import useLinearStages from '../../hooks/linearstate'
 import StateFlicker from '../../components/state-flicker'
 import StateSelector from '../../components/state-selector'
-import stageConfig from './stage-controller';
+import stageConfig from './stages';
 
-console.log(stageConfig);
 
 const stages = stageConfig.root;
-
-// For deployment
-// Set container paths to _stateDir/<containerpath>
 
 export default function RootContainer() {
 	const [claimComplete, setClaimComplete] = useState(false);

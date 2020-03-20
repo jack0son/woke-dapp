@@ -5,16 +5,7 @@ import Button from './button-contained'
 // TODO Sytle as version of layered button
 const useStyles = makeStyles(theme => ({
 	tweetButton: {
-		//position: 'relative',
-		//flexDirection: 'column',
-		//justifyContent: 'flex-end',
-		//alignItems: 'center',
-		//width: 'auto',
-		//height: 'auto',
-		//marginTop: 'auto',
-		width: '100%',
-		paddingTop: theme.spacing(2),
-		paddingBottom: theme.spacing(2),
+		//width: '100%',
 	},
 
 	buttonBackground: {
@@ -27,6 +18,7 @@ export default function TweetButton (props) {
 
 	return (
 			<Button 
+				className={classes.tweetButton}
 				text="tweet"
 				color="secondary"
 				//styles={{width: '100%'}}
