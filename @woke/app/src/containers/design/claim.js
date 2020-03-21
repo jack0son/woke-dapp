@@ -5,6 +5,7 @@ import Claim from '../views/claim';
 import Loading from '../views/loading';
 
 // Dummy state 
+import { useDesignContext } from '../../hooks/design/use-domain'
 import useDesignDomain from '../../hooks/design/use-domain'
 import useLinearStages from '../../hooks/fsm-linear';
 import * as claimStates from '../../hooks/woke-contracts/claimuser-states';

@@ -19,14 +19,16 @@ import stageConfig from './stages';
 
 const stages = stageConfig.root;
 
+function RegisterRootDomain({ linearStages }) {
+	console.log('=================================================================');
+	useDesignDomain({ domainName: 'root', linearStages, stages });
+	return null;
+}
+
 export default function RootContainer() {
 	const dummyState = useLinearStages({stageList: stages.list, initialStage: stages.initial ||  stages.byName.AUTH });
 
 	// useDesignContext must be called inside design context
-	function RegisterRootDomain() {
-		useDesignDomain({ domainName: 'root', linearStages: dummyState, stages });
-		return null;
-	}
 
 	const renderAuth = () => (
 		<Authentication
@@ -52,7 +54,7 @@ export default function RootContainer() {
 		<RootContextProvider>
 			<DesignContextProvider>
 				<Root>
-					<RegisterRootDomain/>
+					<RegisterRootDomain linearStages={dummyState}/>
 					{ chooseRender() }
 				</Root>
 

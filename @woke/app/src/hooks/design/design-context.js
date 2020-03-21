@@ -4,7 +4,9 @@ import React, {
 	createContext,
 	useState,
 	useReducer,
+	useEffect,
 } from 'react';
+import { makeObjectCache } from '../../lib/utils';
 
 const Context = createContext();
 export const useDesignContext = () => useContext(Context);
@@ -58,8 +60,34 @@ function reduceDomains(state, action) {
 	return state;
 }
 
+const cache = makeObjectCache('design_mode');
 export function DesignContextProvider({children}) {
-	const [domains, dispatch] = useReducer(reduceDomains, {});
+	const [domains, dispatch] = useReducer(reduceDomains, () => {
+		const stored = cache.retrieve()
+		return stored && stored.domains || {};
+	});
+
+	const [save, setSave] = useState(() => {
+		const stored = cache.retrieve()
+		return stored && stored.save || false;
+	});
+
+	function mapDomains(domains) {
+		const r = {}
+		Object.keys(domains).forEach( name =>
+			r[name] = {
+				stageIndex: domains[name] && domains[name].stageIndex || 0,
+			}
+		);
+		return r;
+	}
+
+	useEffect(() => {
+		cache.store({
+			save,
+			domains: save ? mapDomains(domains) : {},
+		})
+	}, [save, domains])
 
 	const registerDomain = (domainBundle) => {
 		dispatch({ type: 'register',  domain: domainBundle });
@@ -70,6 +98,7 @@ export function DesignContextProvider({children}) {
 	}
 
 	const updateDomain = (name, stageIndex) => {
+		console.log(name, stageIndex);
 		dispatch({ type: 'update', name, stageIndex });
 	}
 
@@ -78,12 +107,16 @@ export function DesignContextProvider({children}) {
 	return (
 		<Context.Provider
 			value={useMemo(() => ({
+				save,
+				setSave,
 				domains,
 				registerDomain,
 				deregisterDomain,
 				updateDomain,
 			}),
 				[
+					save,
+					setSave,
 					domains,
 					registerDomain,
 					deregisterDomain,
