@@ -7,7 +7,11 @@ import ButtonGroup from '../../layouts/button-group';
 export default function SigninView(props) {
 	return (
 		<>
-			<FlexColumn styles={{justifyContent: 'space-evenly'}}>
+			<FlexColumn styles={{
+				//height: '60%',
+				smallHeight: '50%',
+				justifyContent: 'space-evenly'
+			}}>
 				<Typography variant="h1" align="center" gutterBottom>
 					WOKE NETWORK
 				</Typography>
