@@ -26,7 +26,7 @@ export default function({ domainName }) {
 	return (
 		<div className={classes.selectorRow}>
 			<StageFlicker domainName={domainName}/>
-			<select id={`stageSelector-${domainName}`} onChange={onChange}>
+			<select id={`stageSelector-${domainName}`} onChange={onChange} value={domain.options[domain.stageIndex]}>
 				{
 					domain.options.map(i => <option value={i}>{i}</option>)
 

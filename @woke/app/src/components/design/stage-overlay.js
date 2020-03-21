@@ -28,11 +28,10 @@ const useStyles = makeStyles(theme => ({
 }));
 
 const VisibilityToggle = ({ show, toggle }) => 
-	show ? <VisibilityOffIcon
+	!show ? <VisibilityOffIcon
 		style={{ alignSelf: 'flex-end' }}
-		onClick={toggle}/> : 
-		<VisibilityIcon onClick={toggle}
-		/>
+		onClick={toggle}
+		/> : <VisibilityIcon onClick={toggle}/>
 
 export default function StageOverlay(props) {
 	const {styles, domain, ...innerProps} = props;

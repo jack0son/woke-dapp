@@ -5,7 +5,7 @@ import Claim from '../views/claim';
 import Loading from '../views/loading';
 
 // Dummy state 
-import { useDesignContext } from '../../hooks/design/design-context'
+import useDesignDomain from '../../hooks/design/use-domain'
 import useLinearStages from '../../hooks/fsm-linear';
 import * as claimStates from '../../hooks/woke-contracts/claimuser-states';
 import stageConfig from './stages'
@@ -18,23 +18,14 @@ const states = stages.byName;
 export default function ClaimContainer (props) {
 	const dummyClaimState = useLinearStages({stageList: stages.list, initialStage: stages.initial || states.READY});
 	const {dispatchNext, dummyAsyncJob} = dummyClaimState;
-	const designContext = useDesignContext();
 	const [error, setError] = useState();
 
 	// Pass claim stage up to the state selector
-	useEffect(() => {
-		designContext.registerDomain({
-			name: 'claim',
-			options: stages.list,
-			select: dummyClaimState.select,
-			dispatch: dummyClaimState.dispatch,
-			stageIndex: dummyClaimState.stage,
-		})
-
-		return () => {
-			designContext.deregisterDomain('claim');
-		};
-	}, []);
+	useDesignDomain({
+		domainName: 'claim',
+		linearStages: dummyClaimState,
+		stages,
+	});
 
 	const renderClaim = () => (
 		<Claim
