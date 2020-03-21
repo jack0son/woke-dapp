@@ -20,6 +20,7 @@ export default function ClaimContainer (props) {
 	const dummyClaimState = useLinearStages({stageList: stages.list, initialStage: stages.initial || states.READY});
 	const {dispatchNext, dummyAsyncJob} = dummyClaimState;
 	const [error, setError] = useState();
+	const [claiming, setClaiming] = useState(false);
 
 	// Pass claim stage up to the state selector
 	useDesignDomain({
@@ -27,6 +28,12 @@ export default function ClaimContainer (props) {
 		linearStages: dummyClaimState,
 		stages,
 	});
+
+	const handleConfirmedTweeted = () => {
+		// Automate claim loading
+		setClaiming(true);
+		dispatchNext();
+	}
 
 	const renderClaim = () => (
 		<Claim
@@ -43,7 +50,7 @@ export default function ClaimContainer (props) {
 			}}
 			triggerPostTweet={() => dispatchNext()}
 			handleTweeted={() => dispatchNext()}
-			handleConfirmedTweeted={() => dispatchNext()}
+			handleConfirmedTweeted={handleConfirmedTweeted}
 		/>
 	);
 
@@ -54,8 +61,8 @@ export default function ClaimContainer (props) {
 
 	useEffect(() => {
 		console.log('Claim Stage: ', stage);
-		if(dummyClaimState.stage >= stages.byName.CONFIRMED && dummyClaimState.stage < stages.byName.CLAIMED) {
-			dummyClaimState.dummyOnChangeEvent(1000);
+		if(claiming && dummyClaimState.stage >= stages.byName.CONFIRMED && dummyClaimState.stage < stages.byName.CLAIMED) {
+			dummyClaimState.dummyOnChangeEvent(700);
 		}
 	}, [stage])
 
