@@ -1,19 +1,26 @@
 import React from 'react';
-import { useTheme } from '@material-ui/styles';
-import Typography from '@material-ui/core/Typography';
+import { useTheme, makeStyles } from '@material-ui/styles';
 
 import FlexColumn from './flex-column';
-import Footer from './footer';
-import BottomHolder from './holder-bottom';
 import BelowButtonGroup from './button-group-below';
 
-import BodyStandard from '../components/text/body-standard'
 import BodyLarge from '../components/text/body-large'
 import HL from '../components/text/span-highlight'
 
+const useStyles = makeStyles(theme => ({
+	buttons: styles => ({
+		//paddingLeft: '30%',
+		//paddingRight: '30%',
+		layout: 'flex',
+		justifyContent: 'space-between',
+		alignItems: 'stretch',
+		width: '30vh',
+	}),
+}));
+
 
 export default function ClaimPage(props) {
-	const theme = useTheme();
+	const classes = useStyles(props.styles);
 
 	return (
 		<>
@@ -21,8 +28,8 @@ export default function ClaimPage(props) {
 				height: '50%',
 				smallHeight: '60%',
 				justifyContent: 'space-evenly',
-				alignItems: 'stretch',
-				alignContent: 'center',
+				alignItems: 'center',
+				//alignContent: 'center',
 			}}>
 				<BodyLarge
 					styles={{
@@ -33,12 +40,14 @@ export default function ClaimPage(props) {
 				>
 					{props.instructionText}
 				</BodyLarge>
-				<BelowButtonGroup
-					message={props.buttonMessage}
-					Button={props.Button}
-					buttonProps={props.buttonProps}
-				/>
-				{props.children}
+				<div className={classes.buttons}>
+					<BelowButtonGroup
+						message={props.buttonMessage}
+						Button={props.Button}
+						buttonProps={props.buttonProps}
+					/>
+					{props.children}
+				</div>
 			</FlexColumn>
 		</>
 	);

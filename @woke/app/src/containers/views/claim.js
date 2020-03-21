@@ -65,6 +65,7 @@ export default function ClaimView (props) {
 				onClick={handleNotTweeted}
 				text={'No'}
 				styles={{
+					alignSelf: 'center',
 					background: theme.palette.common.black,
 				}}
 		/>

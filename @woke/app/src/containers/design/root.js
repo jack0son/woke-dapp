@@ -8,9 +8,10 @@ import Web3Initializer from './web3-initializer'
 import Root from '../views/root'
 import { RootContextProvider, useRootContext } from '../../hooks/root-context'
 import { DesignContextProvider, useDesignContext } from '../../hooks/design/design-context'
+import useDesignDomain from '../../hooks/design/use-domain'
 
 // Dummy state 
-import useLinearStages from '../../hooks/linearstate'
+import useLinearStages from '../../hooks/fsm-linear'
 import StageFlicker from '../../components/design/stage-flicker'
 import StageOverlay from '../../components/design/stage-overlay'
 import StageSelector from '../../components/design/stage-selector'
@@ -26,32 +27,12 @@ export default function RootContainer() {
 
 	// So that useDesignContext is called from designContext provider
 	function RegisterRootDomain() {
-		const designContext = useDesignContext();
-		// Pass claim stage up to the state selector
-		useEffect(() => {
-			designContext.registerDomain({
-				name: 'root',
-				options: stages.list,
-				select: dummyState.select,
-				dispatch: dummyState.dispatch,
-				stageIndex: dummyState.stage,
-			})
-
-			return () => {
-				designContext.deregisterDomain('root');
-			};
-		}, []);
-
-		return null;
-	}
-
-	const dispatchNext = (event) => {
-		dummyState.dispatch({type: 'NEXT'});
+		useDesignDomain({ domainName: 'root', linearStages: dummyState, stages });
 	}
 
 	const renderAuth = () => (
 		<Authentication
-			handleAuthComplete={dispatchNext}
+			handleAuthComplete={dummyState.dispatchNext}
 		/>
 	);
 
@@ -63,8 +44,8 @@ export default function RootContainer() {
 
 	const renderMap = {
 		AUTH: renderAuth,
-		WEB3: renderWeb3
-	}
+		WEB3: renderWeb3,
+	};
 
 	const stage = dummyState.stageEnum[dummyState.stage]; // stage string
 	const chooseRender = renderMap[stage];
@@ -72,9 +53,7 @@ export default function RootContainer() {
 	return (
 		<RootContextProvider>
 			<DesignContextProvider>
-				<Root
-					hideLogo={stage == stages.byName.WEB3 ? false : true}
-				>
+				<Root>
 					<RegisterRootDomain/>
 					{ chooseRender() }
 				</Root>

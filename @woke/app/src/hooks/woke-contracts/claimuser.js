@@ -40,6 +40,8 @@ export default function useClaimUser({userId, userHandle, claimStatus}) {
 		useSubscribeCall,
 	} = useWeb3Context();
 	const twitterClient = useTwitterContext().client;
+
+	// @fix use hoook useIsMounted
 	const isMounted = useRef(true)
 	useEffect(() => {
 		return () => {

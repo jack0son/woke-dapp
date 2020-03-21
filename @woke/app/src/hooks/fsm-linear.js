@@ -1,7 +1,10 @@
 import React, { useEffect, useReducer } from 'react';
+import { useIsMounted } from './util-hooks';
 
 const useLinearStages = (props) => {
 	const { stageList, initialStage } = props;
+
+	const isMounted =  useIsMounted(); 
 
 	// These objects are cheap to build and very useful
 	const stageEnum = {};
@@ -84,15 +87,15 @@ const useLinearStages = (props) => {
 		dispatch({type: 'SELECT', payload: stage});
 	}
 
-	const dummyAsyncJob = (message, delay = 1000) => {
-		{setTimeout(() => dispatchNext({target: message}), delay)}
+	const dummyOnChangeEvent = (target, delay = 1000) => {
+		{setTimeout(() => dispatchNext({ target }), delay)}
 	}
 
 	return {
 		dispatch,
 		select,
 		dispatchNext,
-		dummyAsyncJob,
+		dummyOnChangeEvent,
 		stage: dummyState.stage,
 		stageList,
 		stageEnum,

@@ -24,7 +24,7 @@ export function useIsMounted() {
 		}
 	}, []);
 
-	return isMounted.current;
+	return isMounted;
 }
 
 export function usePrevious(value) {
