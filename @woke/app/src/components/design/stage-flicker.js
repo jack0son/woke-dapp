@@ -42,7 +42,6 @@ export default function StateFlicker(props) {
 
 	return (
 		<div className={classes.flickerBox}>
-			<h2>{ null && stageString }</h2>
 			<div className={classes.buttons}>
 				<button onClick={() => domain.dispatch({type: 'PREV'})}>PREV</button>
 				<button onClick={() => domain.dispatch({type: 'NEXT'})}>NEXT</button>

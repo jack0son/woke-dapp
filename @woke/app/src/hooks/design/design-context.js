@@ -60,6 +60,10 @@ function reduceDomains(state, action) {
 	return state;
 }
 
+// When true, don't discard the stage a previously active domain was in
+// i.e. when moving from auth to claim, forget we were in the loading stage
+// and go back to the signin stage when returning to auth domain.
+const PRESERVE_FINISHED_DOMAINS = false;
 const cache = makeObjectCache('design_mode');
 export function DesignContextProvider({children}) {
 	const [domains, dispatch] = useReducer(reduceDomains, () => {
@@ -86,7 +90,7 @@ export function DesignContextProvider({children}) {
 
 	useEffect(() => {
 		const saved = cache.retrieve(); // prevented unregistered domain from being clobbered
-		const storedDomains = saved && saved.domains || {};
+		const storedDomains = PRESERVE_FINISHED_DOMAINS && saved && saved.domains || {};
 		cache.store({
 			save,
 			domains: save ? { ...storedDomains, ...mapDomains(domains) } : { domains: {} },

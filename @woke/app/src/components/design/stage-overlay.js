@@ -3,6 +3,7 @@ import { makeStyles } from '@material-ui/styles';
 import VisibilityIcon from '@material-ui/icons/Visibility';
 import VisibilityOffIcon from '@material-ui/icons/VisibilityOff';
 import Switch from '@material-ui/core/Switch';
+import Box from '@material-ui/core/Box';
 
 import { useDesignContext } from '../../hooks/design/design-context'
 import { makeObjectCache } from '../../lib/utils';
@@ -17,8 +18,8 @@ const useStyles = makeStyles(theme => ({
 		display: 'flex',
 		flexDirection: 'row',
 		justifyContent: 'flex-start',
-		alignItems: 'flex-end',
-		alignContent: 'space-between',
+		alignItems: 'center',
+		alignContent: 'flex-end',
 		flexWrap: 'wrap',
 
 		// Size
@@ -32,11 +33,16 @@ const useStyles = makeStyles(theme => ({
 	})
 }));
 
-const VisibilityToggle = ({ show, toggle }) => 
+const VisibilityToggle = ({ show, toggle, order }) => 
+	//<div order={order}> {
 	!show ? <VisibilityOffIcon
-		style={{ alignSelf: 'flex-end' }}
+		order={order}
+		style={{
+			//alignSelf: 'flex-end'
+		}}
 		onClick={toggle}
-		/> : <VisibilityIcon onClick={toggle}/>
+		/> : <VisibilityIcon order={order} onClick={toggle}/>
+		//} </div>)
 
 export default function StageOverlay(props) {
 	const {styles, domain, ...innerProps} = props;
@@ -55,7 +61,18 @@ export default function StageOverlay(props) {
 	const renderControls = () => (
 		<>
 		{ props.children }
-			<div><Switch checked={save} onChange={updateSave} style={{ color: 'secondary' }}/>save</div>
+			<div order={5} alignSelf='flex-end'>
+				<Switch
+					order={5}
+					checked={save}
+					onChange={updateSave}
+					style={{
+						color: 'secondary',
+						alignSelf: 'flex-end',
+					}}
+				/>
+				save
+			</div>
 		</>
 	);
 
@@ -63,7 +80,7 @@ export default function StageOverlay(props) {
 		<>
 		<div className={classes.overlayRow}>
 			{ show ? renderControls() : null }
-			<VisibilityToggle show={show} toggle={toggle}/>
+			<VisibilityToggle order={1} show={show} toggle={toggle}/>
 		</div>
 		</>
 

@@ -52,10 +52,7 @@ export default function AuthContainer (props) {
 	const chooseRender = renderMap[dummyState.stageEnum[dummyState.stage]];
 
 	useEffect(() => {
-		console.log('Stage: ', dummyState.stageEnum[dummyState.stage]);
-		if(dummyState.stage == stages.byName.AUTHD) {
-			//props.handleAuthComplete();
-		}
+		console.log('Auth Stage: ', dummyState.stageEnum[dummyState.stage]);
 	}, [dummyState.stage])
 
 	return (
