@@ -16,8 +16,13 @@ import { useIsMounted } from '../../hooks/util-hooks';
 const stages = stageConfig.authentication;
 
 export default function AuthContainer (props) {
-	const dummyState = useLinearStages({stageList: stages.list, initialStage: stages.initial || stages.byName.SIGNIN });
-	const {dispatchNext, dummyOnChangeEvent } = dummyState;
+	const { handleAuthComplete } = props;
+	const dummyState = useLinearStages({
+		stageList: stages.list,
+		initialStage: stages.initial || stages.byName.SIGNIN,
+		handleLastStage: handleAuthComplete,
+	});
+	const { dispatchNext, dummyOnChangeEvent } = dummyState;
 
 	useDesignDomain({
 		domainName: 'authentication',
@@ -25,54 +30,39 @@ export default function AuthContainer (props) {
 		stages,
 	});
 
-	const renderSignin = () => (
-		<SignIn
-			triggerSignIn={dispatchNext}
-		/>
-	);
+	const delayedNext = (action) => {
+		dispatchNext();
+		dummyOnChangeEvent(1000, {target: { value: `auth:${action}`, log: true }});//,  abortRef: isMounted });
+	}
 
-	const RenderLoading = () => {
-		const isMounted = useIsMounted();
-		dummyOnChangeEvent(2000, {target: { value: 'auth_dummy:load-complete' },  abortRef: isMounted });
-		return (
-			<Loading/>
-		)
-	};
-
-	const renderSetPassword = () => (
-		<SetPassword
-			triggerSetPassword={dispatchNext}
-		/>
-	);
-
-	const renderLogin = () => (
-		<Login
-			handleLogin={dispatchNext}
-		/>
-	);
+	const renderSignin = () => <SignIn triggerSignIn={() => delayedNext('twitter-signin')}/>;
+	const renderLoading = () => <Loading/>;
+	const renderSetPassword = () => <SetPassword triggerSetPassword={dispatchNext}/>;
+	const renderLogin = () => <Login handleLogin={() => delayedNext('woke-login')}/>;
 
 	const renderMap = {
-		SIGNIN: renderSignin,
-		LOADING: () => null,
+		SIGNIN: renderSignin, // @fix rename to SIGNIN_TWITTER
+		LOADING: renderLoading,
 		SETPASSWORD: renderSetPassword,
 		LOGIN: renderLogin,
-		AUTHD: () => (<Loading/>),
+		AUTHD: renderLoading,
 	};
 
-	const stage = dummyState.stageEnum[dummyState.stage]; // stage string
-	const chooseRender = renderMap[stage];
+	// const stageString = dummyState.stageEnum[dummyState.stage]; // stage string
+	const chooseRender = renderMap[dummyState.stageEnum[dummyState.stage]];
 
 	useEffect(() => {
-		console.log('Stage: ', stage);
-		if(stage == stages.AUTHD) {
-			props.handleAuthComplete();
+		console.log('Stage: ', dummyState.stageEnum[dummyState.stage]);
+		if(dummyState.stage == stages.byName.AUTHD) {
+			//props.handleAuthComplete();
 		}
-	}, [stage])
+	}, [dummyState.stage])
 
 	return (
 		<>
 			{
-				dummyState.stage == stages.byName.LOADING ? <RenderLoading/> : chooseRender()
+				chooseRender()
+				//dummyState.stage == stages.byName.LOADING ? <RenderLoading/> : chooseRender()
 			}
 		</>
 	);

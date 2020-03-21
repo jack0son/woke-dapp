@@ -85,10 +85,11 @@ export function DesignContextProvider({children}) {
 	}
 
 	useEffect(() => {
-		const storedDomains = cache.retrieve().domains; // prevented unregistered domain from being clobbered
+		const saved = cache.retrieve(); // prevented unregistered domain from being clobbered
+		const storedDomains = saved && saved.domains || {};
 		cache.store({
 			save,
-			domains: save ? { ...storedDomains, ...mapDomains(domains) } : {},
+			domains: save ? { ...storedDomains, ...mapDomains(domains) } : { domains: {} },
 		})
 	}, [save, domains])
 

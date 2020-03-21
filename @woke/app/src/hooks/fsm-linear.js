@@ -2,7 +2,7 @@ import React, { useEffect, useReducer } from 'react';
 import { useIsMounted } from './util-hooks';
 
 const useLinearStages = (props) => {
-	const { stageList, initialStage } = props;
+	const { stageList, initialStage, handleLastStage } = props;
 
 	const isMounted =  useIsMounted(); 
 
@@ -27,7 +27,12 @@ const useLinearStages = (props) => {
 						...state,
 						stage: state.stage + 1
 					}
+				} 
+				
+				if(handleLastStage) {
+					handleLastStage();
 				}
+
 				return state;
 			}
 
@@ -79,7 +84,7 @@ const useLinearStages = (props) => {
 	const [dummyState, dispatch] = useReducer(reducer, {stage: initialStage});
 
 	const dispatchNext = (event) => {
-		//dispatch({type: 'NEXT', payload: event.target});
+		if(event && event.target && event.target.log) console.log(event.target.value);
 		dispatch({type: 'NEXT', payload: event});
 	}
 
