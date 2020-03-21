@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { makeStyles } from '@material-ui/styles';
 import Box from '@material-ui/core/Box';
 import { useDesignContext } from '../../hooks/design/design-context'
@@ -19,7 +19,7 @@ const useStyles = makeStyles(theme => ({
 		position: 'relative',
 		display: 'flex',
 		flexDirection: 'row',
-		justifyContent: 'space-between',
+		justifyContent: 'flex-start',
 	}
 }));
 
@@ -29,11 +29,20 @@ export default function StateFlicker(props) {
 
 	const { domains } = useDesignContext();
 	const domain = domains[domainName];
+	const [stageString, setStageString] = useState(domain && domain.options[domain && domain.stageIndex])
+
+	useEffect(() => {
+		if(domain) {
+			setStageString(domain.options[domain.stageIndex]);
+		}
+	}, [domain]);
+
 	if(!domain) return null;
+
 
 	return (
 		<div className={classes.flickerBox}>
-			<h2>{ domain.options[domain.stageIndex]}</h2>
+			<h2>{ stageString }</h2>
 			<div className={classes.buttons}>
 				<button onClick={() => domain.dispatch({type: 'PREV'})}>PREV</button>
 				<button onClick={() => domain.dispatch({type: 'NEXT'})}>NEXT</button>

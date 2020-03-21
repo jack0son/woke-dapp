@@ -10,6 +10,7 @@ const useStyles = makeStyles(theme => ({
 		flexDirection: 'row',
 		justifyContent: 'flex-start',
 		alignItems: 'flex-end',
+		marginLeft: '2%',
 	},
 }));
 

@@ -19,8 +19,9 @@ const useStyles = makeStyles(theme => ({
 			// Size
 			height: '70%',
 			[theme.breakpoints.down('sm')]: {
-				height: small.height || '90%',
-				alignSelf: small.alignSelf || 'center', 
+				height: '90%',
+				alignSelf: 'center', 
+				...small,
 			},
 			[theme.breakpoints.up('md')]: {
 			},

@@ -11,27 +11,37 @@ export const useDesignContext = () => useContext(Context);
 
 const debug = (...args) => console.log('context:design: ', ...args);
 
+// Contract: domain is registered in design context
+function _domainIsRegistered(state, name) {
+	if(!name) {
+		debug(`No design domain provided`);
+		throw new Error(`No design domain provided`);
+	}
+	const domain = state[name];
+	if(!domain) {
+		throw new Error(`${name} is not a registered design domain`);
+	}
+}
+
 function reduceDomains(state, action) {
 	switch(action.type) {
 		case 'register': {
 			const { name, ...stageState } = action.payload;
-			const domains = { ...state.domains, [name]: { ...stageState } };
+			const domain = { ...action.payload };
 			debug(`registered ${name}`);
-			return { ...state, domains };
+			return { ...state, [name]: domain };
+		}
+
+		case 'update': {
+			const { name, stageIndex } = action.payload;
+			_domainIsRegistered(state, name);
+			return { ...state, [name]: { ...state[name], stageIndex } };
 		}
 
 		case 'deregister': {
 			const { name } = action.payload;
-			if(!name) {
-				debug(`No design domain provided`);
-				break;
-			}
-			const domain = state.domains[name];
-			if(!domain) {
-				throw new Error(`${name} is not a registered design domain`);
-			}
-
-			return { ...state, domains: { ...state.domains, [name]: null } };
+			_domainIsRegistered(state, name);
+			return { ...state, [name]: null };
 		}
 
 		default: {
@@ -44,27 +54,33 @@ function reduceDomains(state, action) {
 }
 
 export function DesignContextProvider({children}) {
-	const [domains, dispatch] = useReducer(reduceDomains, { domains: {} });
+	const [domains, dispatch] = useReducer(reduceDomains, {});
 
 	const registerDomain = (domainBundle) => {
-		dispatch({type: 'register', payload: domainBundle});
+		dispatch({ type: 'register', payload: domainBundle });
 	}
 
 	const deregisterDomain = (name) => {
-		dispatch({type: 'deregister', payload: { name }});
+		dispatch({ type: 'deregister', payload: { name }});
+	}
+
+	const updateDomain = (name, stageIndex) => {
+		dispatch({ type: 'update', payload: { name, stageIndex } });
 	}
 
 	return (
 		<Context.Provider
 			value={useMemo(() => ({
-				domains: domains.domains,
+				domains,
 				registerDomain,
 				deregisterDomain,
+				updateDomain,
 			}),
 				[
 					domains,
 					registerDomain,
 					deregisterDomain,
+					updateDomain,
 				]
 			)}
 		>

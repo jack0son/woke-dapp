@@ -53,10 +53,10 @@ export default function AuthContainer (props) {
 
 	const renderMap = {
 		SIGNIN: renderSignin,
-		LOADING: RenderLoading,
+		LOADING: () => null,
 		SETPASSWORD: renderSetPassword,
 		LOGIN: renderLogin,
-		AUTHD: RenderLoading,
+		AUTHD: () => (<Loading/>),
 	};
 
 	const stage = dummyState.stageEnum[dummyState.stage]; // stage string
