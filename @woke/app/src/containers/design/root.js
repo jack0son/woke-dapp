@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 
 // Logical containers
 import Authentication from './authentication'
@@ -6,13 +6,12 @@ import Web3Initializer from './web3-initializer'
 
 // View containers
 import Root from '../views/root'
-import { RootContextProvider, useRootContext } from '../../hooks/root-context'
-import { DesignContextProvider, useDesignContext } from '../../hooks/design/design-context'
+import { RootContextProvider } from '../../hooks/root-context'
+import { DesignContextProvider } from '../../hooks/design/design-context'
 import useDesignDomain from '../../hooks/design/use-domain'
 
 // Dummy state 
 import useLinearStages from '../../hooks/fsm-linear'
-import StageFlicker from '../../components/design/stage-flicker'
 import StageOverlay from '../../components/design/stage-overlay'
 import StageSelector from '../../components/design/stage-selector'
 import stageConfig from './stages';
@@ -21,13 +20,12 @@ import stageConfig from './stages';
 const stages = stageConfig.root;
 
 export default function RootContainer() {
-	const [claimComplete, setClaimComplete] = useState(false);
-
 	const dummyState = useLinearStages({stageList: stages.list, initialStage: stages.initial ||  stages.byName.AUTH });
 
-	// So that useDesignContext is called from designContext provider
+	// useDesignContext must be called inside design context
 	function RegisterRootDomain() {
 		useDesignDomain({ domainName: 'root', linearStages: dummyState, stages });
+		return null;
 	}
 
 	const renderAuth = () => (

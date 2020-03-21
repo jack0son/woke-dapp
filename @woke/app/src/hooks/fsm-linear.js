@@ -87,8 +87,12 @@ const useLinearStages = (props) => {
 		dispatch({type: 'SELECT', payload: stage});
 	}
 
-	const dummyOnChangeEvent = (target, delay = 1000) => {
-		{setTimeout(() => dispatchNext({ target }), delay)}
+	const dummyOnChangeEvent = (target, abortRef, delay = 1000) => {
+		setTimeout(() => {
+			if(isMounted.current == true && abortRef.current == true) {
+				dispatchNext({ target })
+			}
+		}, delay)
 	}
 
 	return {

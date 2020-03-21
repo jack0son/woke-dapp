@@ -6,7 +6,7 @@ import Loading from '../views/loading';
 
 // Dummy state 
 import { useDesignContext } from '../../hooks/design/design-context'
-import useLinearStages from '../../hooks/linearstate';
+import useLinearStages from '../../hooks/fsm-linear';
 import * as claimStates from '../../hooks/woke-contracts/claimuser-states';
 import stageConfig from './stages'
 

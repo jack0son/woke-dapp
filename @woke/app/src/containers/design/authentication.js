@@ -8,15 +8,16 @@ import Login from '../views/login'
 
 // Dummy state 
 import useDesignDomain from '../../hooks/design/use-domain'
-import useLinearStages from '../../hooks/linearstate'
+import useLinearStages from '../../hooks/fsm-linear'
 import stageConfig from './stages'
+import { useIsMounted } from '../../hooks/util-hooks';
 
 
 const stages = stageConfig.authentication;
 
 export default function AuthContainer (props) {
 	const dummyState = useLinearStages({stageList: stages.list, initialStage: stages.initial || stages.byName.SIGNIN });
-	const {dispatchNext, dummyAsyncJob} = dummyState;
+	const {dispatchNext, dummyOnChangeEvent } = dummyState;
 
 	useDesignDomain({
 		domainName: 'authentication',
@@ -30,8 +31,9 @@ export default function AuthContainer (props) {
 		/>
 	);
 
-	const renderLoading = () => {
-		dummyAsyncJob('auth_dummy:load-complete', 3750);
+	const RenderLoading = () => {
+		const isMounted = useIsMounted();
+		dummyOnChangeEvent( { value: 'auth_dummy:load-complete' }, isMounted, 3750);
 		return (
 			<Loading/>
 		)
@@ -49,16 +51,12 @@ export default function AuthContainer (props) {
 		/>
 	);
 
-	const failure = () => (
-		<div>failure</div>
-	);
-
 	const renderMap = {
 		SIGNIN: renderSignin,
-		LOADING: renderLoading,
+		LOADING: RenderLoading,
 		SETPASSWORD: renderSetPassword,
 		LOGIN: renderLogin,
-		AUTHD: renderLoading,
+		AUTHD: RenderLoading,
 	};
 
 	const stage = dummyState.stageEnum[dummyState.stage]; // stage string
@@ -73,7 +71,9 @@ export default function AuthContainer (props) {
 
 	return (
 		<>
-			{ chooseRender() }
+			{
+				dummyState.stage == stages.byName.LOADING ? <RenderLoading/> : chooseRender()
+			}
 		</>
 	);
 }
