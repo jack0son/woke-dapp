@@ -12,7 +12,7 @@ import { useRootContext } from '../../hooks/root-context'
 
 export default function LoadingView(props) {
 	const theme = useTheme();
-	const {setLoading} = useRootContext();
+	const { setLoading } = useRootContext();
 
 	useEffect(() => {
 		setLoading(true);

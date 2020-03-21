@@ -33,7 +33,7 @@ export default function AuthContainer (props) {
 
 	const RenderLoading = () => {
 		const isMounted = useIsMounted();
-		dummyOnChangeEvent( { value: 'auth_dummy:load-complete' }, isMounted, 3750);
+		dummyOnChangeEvent(2000, {target: { value: 'auth_dummy:load-complete' },  abortRef: isMounted });
 		return (
 			<Loading/>
 		)

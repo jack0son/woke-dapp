@@ -20,6 +20,7 @@ export default function useDesignDomain({ domainName, linearStages, stages }) {
 
 			if(save) {
 				const { domains } = cache.retrieve();
+				console.log(domainName, domains);
 				const saved = domains && domains[domainName];
 				console.log(saved);
 				if(saved) {

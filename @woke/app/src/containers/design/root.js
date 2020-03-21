@@ -20,7 +20,6 @@ import stageConfig from './stages';
 const stages = stageConfig.root;
 
 function RegisterRootDomain({ linearStages }) {
-	console.log('=================================================================');
 	useDesignDomain({ domainName: 'root', linearStages, stages });
 	return null;
 }

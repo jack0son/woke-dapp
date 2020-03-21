@@ -55,7 +55,7 @@ export default function StageOverlay(props) {
 	const renderControls = () => (
 		<>
 		{ props.children }
-		<div><Switch checked={save} onChange={updateSave} inputProps={{ 'aria-label': 'secondary checkbox' }}/>save</div>
+			<div><Switch checked={save} onChange={updateSave} style={{ color: 'secondary' }}/>save</div>
 		</>
 	);
 

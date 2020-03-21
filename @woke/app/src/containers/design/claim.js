@@ -47,24 +47,15 @@ export default function ClaimContainer (props) {
 		/>
 	);
 
-	const renderLoading = () => {
-		//dummyAsyncJob('auth_dummy:load-complete');
-		return (
-			<Loading
-				handleDone={() => setTimeout(() => dispatchNext('done loading'), 2000)}
-			/>
-		);
-	};
+	const renderLoading = () => <Loading/>
 
 	const stage = dummyClaimState.stageEnum[dummyClaimState.stage]; // stage string
 	const chooseRender = stage != states.CLAIMED ? renderClaim : renderLoading;
 
 	useEffect(() => {
 		console.log('Claim Stage: ', stage);
-		if(dummyClaimState.stage ==  states.CONFIRMED) {
-			setInterval(() => {
-				dispatchNext();
-			}, 500);
+		if(dummyClaimState.stage >= stages.byName.CONFIRMED && dummyClaimState.stage < stages.byName.CLAIMED) {
+			dummyClaimState.dummyOnChangeEvent(1000);
 		}
 	}, [stage])
 
@@ -74,7 +65,7 @@ export default function ClaimContainer (props) {
 		}
 
 		if(dummyClaimState.stage == states.ERROR) {
-			setError('Hint: Scroll down to use the state selector. Start at ready.');
+			setError('Hint: State overlay lets you flick everywhere. Hooray!');
 		} else {
 			setError(null);
 		}

@@ -73,19 +73,22 @@ export function DesignContextProvider({children}) {
 	});
 
 	function mapDomains(domains) {
-		const r = {}
-		Object.keys(domains).forEach( name =>
-			r[name] = {
-				stageIndex: domains[name] && domains[name].stageIndex || 0,
+		const r = {};
+		Object.keys(domains).forEach(name => {
+			if(domains[name] && domains[name].stageIndex) {
+				r[name] = {
+					stageIndex: domains[name].stageIndex,
+				};
 			}
-		);
+		});
 		return r;
 	}
 
 	useEffect(() => {
+		const storedDomains = cache.retrieve().domains; // prevented unregistered domain from being clobbered
 		cache.store({
 			save,
-			domains: save ? mapDomains(domains) : {},
+			domains: save ? { ...storedDomains, ...mapDomains(domains) } : {},
 		})
 	}, [save, domains])
 
@@ -98,7 +101,6 @@ export function DesignContextProvider({children}) {
 	}
 
 	const updateDomain = (name, stageIndex) => {
-		console.log(name, stageIndex);
 		dispatch({ type: 'update', name, stageIndex });
 	}
 
