@@ -1,8 +1,9 @@
 import root from './root';
 import authentication from "./authentication";
 import claim from './claim';
+import web3 from './web3-container';
 
-const stages = { root, authentication, claim };
+const stages = { root, authentication, claim, web3 };
 
 const toEnum = (stageList) => {
 	const byName = {};
