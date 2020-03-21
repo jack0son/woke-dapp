@@ -59,7 +59,7 @@ export function setSyncTimeout(ms) {
 	})
 }
 
-export function createObjectCache (cacheKey) {
+export function makeObjectCache (cacheKey) {
 	function store (cache) {
 		window.localStorage.setItem(cacheKey, JSON.stringify(cache));
 	}

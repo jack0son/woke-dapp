@@ -26,22 +26,27 @@ function _domainIsRegistered(state, name) {
 function reduceDomains(state, action) {
 	switch(action.type) {
 		case 'register': {
-			const { name, ...stageState } = action.payload;
-			const domain = { ...action.payload };
+			const { name, ...stageState } = action.domain;
+			const domain = { ...stageState };
 			debug(`registered ${name}`);
 			return { ...state, [name]: domain };
 		}
 
 		case 'update': {
-			const { name, stageIndex } = action.payload;
+			const { name, stageIndex } = action;
 			_domainIsRegistered(state, name);
 			return { ...state, [name]: { ...state[name], stageIndex } };
 		}
 
 		case 'deregister': {
-			const { name } = action.payload;
+			const { name } = action;
 			_domainIsRegistered(state, name);
 			return { ...state, [name]: null };
+		}
+
+		case 'restore': {
+			const { domains } = action;
+			return { ...state, ...domains };
 		}
 
 		default: {
@@ -57,16 +62,18 @@ export function DesignContextProvider({children}) {
 	const [domains, dispatch] = useReducer(reduceDomains, {});
 
 	const registerDomain = (domainBundle) => {
-		dispatch({ type: 'register', payload: domainBundle });
+		dispatch({ type: 'register',  domain: domainBundle });
 	}
 
 	const deregisterDomain = (name) => {
-		dispatch({ type: 'deregister', payload: { name }});
+		dispatch({ type: 'deregister', name });
 	}
 
 	const updateDomain = (name, stageIndex) => {
-		dispatch({ type: 'update', payload: { name, stageIndex } });
+		dispatch({ type: 'update', name, stageIndex });
 	}
+
+	const restore = domains => dispatch({ type: 'restore', domains })	
 
 	return (
 		<Context.Provider
