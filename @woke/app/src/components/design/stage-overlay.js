@@ -11,13 +11,14 @@ const useStyles = makeStyles(theme => ({
 		left: 0,
 		display: 'flex',
 		flexDirection: 'row',
-		justifyContent: 'space-between',
+		justifyContent: 'flex-start',
 		alignItems: 'flex-end',
+		alignContent: 'space-between',
 		flexWrap: 'wrap',
 
 		// Size
-		width: '30vw',
-		maxWidth: '100vw',
+		//width: '30vw',
+		maxWidth: '80vw',
 
 		// Color
 		opacity: '50%',
@@ -26,16 +27,12 @@ const useStyles = makeStyles(theme => ({
 	})
 }));
 
-function VisibilityToggle({ show, toggle }) {
-	const useStyles = makeStyles(theme => ({
-		visIcon: {
-			opacity: '50%',
-		},
-	}));
-
-
-	return show ? <VisibilityOffIcon onClick={toggle}/> : <VisibilityIcon onClick={toggle}/>;
-}
+const VisibilityToggle = ({ show, toggle }) => 
+	show ? <VisibilityOffIcon
+		style={{ alignSelf: 'flex-end' }}
+		onClick={toggle}/> : 
+		<VisibilityIcon onClick={toggle}
+		/>
 
 export default function StageOverlay(props) {
 	const {styles, domain, ...innerProps} = props;
@@ -45,10 +42,12 @@ export default function StageOverlay(props) {
 	const toggle = () => setShow( show => show ? false : true );
 
 	return (
+		<>
 		<div className={classes.overlayRow}>
-			<VisibilityToggle show={show} toggle={toggle}/>
 			{ show ? props.children : null }
+			<VisibilityToggle show={show} toggle={toggle}/>
 		</div>
+		</>
 
 	);
 }
