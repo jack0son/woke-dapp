@@ -18,10 +18,10 @@ const useStyles = makeStyles(theme => ({
 		//height: theme.spacing(5),
 		width: theme.spacing(5),
 		[theme.breakpoints.up('sm')]: {
-			width: theme.spacing(7.5)
+			width: theme.spacing(6)
 		},
 		[theme.breakpoints.up('md')]: {
-			width: theme.spacing(10)
+			width: theme.spacing(8)
 		},
 		height: 'auto',
 		animationName: '$fadeIn, $open',
