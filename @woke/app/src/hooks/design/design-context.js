@@ -76,6 +76,11 @@ export function DesignContextProvider({children}) {
 		return stored && stored.save || false;
 	});
 
+	const [overlay, setOverlay] = useState(() => {
+		const stored = cache.retrieve()
+		return stored && stored.overlay || false;
+	})
+
 	function mapDomains(domains) {
 		const r = {};
 		Object.keys(domains).forEach(name => {
@@ -89,16 +94,14 @@ export function DesignContextProvider({children}) {
 	}
 
 	useEffect(() => {
-		console.log('DETECTED DOMAINS UPDATED');
 		const saved = cache.retrieve(); // prevented unregistered domain from being clobbered
 		const storedDomains = PRESERVE_FINISHED_DOMAINS && saved && saved.domains || {};
-		console.log(domains);
-		console.log(storedDomains);
 		cache.store({
 			save,
+			overlay,
 			domains: save ? { ...storedDomains, ...mapDomains(domains) } : {},
 		})
-	}, [save, domains])
+	}, [save, domains, overlay])
 
 	const registerDomain = (domainBundle) => {
 		dispatch({ type: 'register',  domain: domainBundle });
@@ -117,6 +120,8 @@ export function DesignContextProvider({children}) {
 	return (
 		<Context.Provider
 			value={useMemo(() => ({
+				overlay,
+				setOverlay,
 				save,
 				setSave,
 				domains,
@@ -125,6 +130,8 @@ export function DesignContextProvider({children}) {
 				updateDomain,
 			}),
 				[
+					overlay,
+					setOverlay,
 					save,
 					setSave,
 					domains,

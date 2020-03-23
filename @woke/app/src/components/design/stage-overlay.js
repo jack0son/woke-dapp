@@ -48,10 +48,10 @@ export default function StageOverlay(props) {
 	const {styles, domain, ...innerProps} = props;
 	const classes = useStyles(styles);
 
-	const { save, setSave } = useDesignContext();
+	const { save, setSave, overlay, setOverlay } = useDesignContext();
 
-	const [show, setShow] = useState(true);
-	const toggle = () => setShow( show => show ? false : true );
+	const toggle = () => setOverlay( overlay => overlay ? false : true );
+	const show = overlay;
 
 	const cached = cache.retrieve();
 	const [settings, setSettings] = useState(cached || {});

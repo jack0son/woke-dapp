@@ -85,13 +85,13 @@ const useStyles = makeStyles(theme => ({
 		display: 'flex',
 		flexDirection: 'column',
 		justifyContent: 'flex-start',
-		flexGrow: 0,
+		//flexGrow: 1,
 		position: 'relative',
 		//overflow: 'hidden',
 		//backgroundColor: theme.palette.background.dark,
-		width: '100%',
-		height:'100%',
-		maxHeight: '100%',
+		//width: '100%',
+		//height:'100%',
+		///maxHeight: '100%',
   },
 
 	swipeableView: {
@@ -101,6 +101,7 @@ const useStyles = makeStyles(theme => ({
 }));
 
 export default function CustomTabs (props) {
+	const { order } = props;
   const classes = useStyles();
 	const theme = useTheme();
   const [value, setValue] = React.useState(0);
@@ -114,8 +115,8 @@ export default function CustomTabs (props) {
   }
 
   return (
-		<div className={classes.tabsWrapper}>
-			<SwipeableViews
+		<div className={classes.tabsWrapper} order={order}>
+			<SwipeableViews order={0}
 				className={classes.SwipeableViews}
 				axis={theme.direction === 'rtl' ? 'x-reverse' : 'x'}
 				index={value}
@@ -130,7 +131,7 @@ export default function CustomTabs (props) {
 				}
 
 			</SwipeableViews>
-			<StyledTabs 
+			<StyledTabs order={1}
 				//style={{height: theme.spacing()}} 
 				value={value} 
 				onChange={handleChange} 

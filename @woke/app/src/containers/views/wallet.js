@@ -1,9 +1,7 @@
 import React from 'react';
-import { makeStyles } from '@material-ui/styles';
+import { makeStyles, useTheme } from '@material-ui/styles';
 import Typography from '@material-ui/core/Typography';
 
-import Footer from '../../layouts/footer';
-import BottomHolder from '../../layouts/holder-bottom';
 import Tabs from '../../layouts/tabs';
 import TransactionList from '../../layouts/list-transactions';
 import FlexColumn from '../../layouts/flex-column'
@@ -14,21 +12,6 @@ import SendTransferForm from  '../../components/forms/send-transfer'
 import LargeBody from '../../components/text/body-large';
 
 const useStyles = makeStyles(theme => ({
-	bottomHolder: styles => ({
-		position: 'relative',
-		display: 'flex',
-		flexDirection: 'column',
-		justifyContent: 'flex-end',
-		alignItems: 'center',
-		bottom: 0,
-		width: '100%',
-		height: 'auto',
-		//marginTop: 'auto',
-		paddingLeft: theme.spacing(2),
-		paddingRight: theme.spacing(2),
-		...styles,
-	}),
-
 	balanceText: {
 		fontSize: '38px',
 		lineHeight: '40px',
@@ -49,6 +32,7 @@ export default function WalletView (props) {
 		sendTransfers,
 	} = props;
 	const classes = useStyles(styles);
+	const theme = useTheme();
 
 	friends.forEach(user => {
 		user.label = user.screen_name;
@@ -63,51 +47,58 @@ export default function WalletView (props) {
 		avatar = avatar.slice(0, avatar.length - imageModifier.length) + '.jpg';
 	}
 
+	const responsive = {
+		[theme.breakpoints.up('sm')]: {
+			order: 1
+		},
+		[theme.breakpoints.up('md')]: {
+			order: 10
+		},
+	}
+
 	return (
 		<>
-		<AvatarHeader
-			src={avatar}
-			handle={props.user.handle}
-		/>
+			<FlexColumn styles={{
+				justifyContent: 'space-around',
+				height: '80%',
+				width: '80%',
+				small: {
+					alignSelf: 'flex-start',
+				}
+			}}>
 
-		<Typography variant="h3" fontSize='38px' align="center">
-			{balance}<WokeSpan styles={{fontSize: '30px'}}> W</WokeSpan>
-		</Typography>
+				<AvatarHeader order={0}
+					src={avatar}
+					handle={props.user.handle}
+				/>
 
-		<SendTransferForm
-			sendTransfers={sendTransfers}
-			pending={sendTransfers.pending}
-			usernamePlaceholder='username...'
-			amountPlaceholder='amount'
-			suggestions={friends}
-		/>
+				<Typography variant="h3" fontSize='38px' align="center" order={3}>
+					{balance}<WokeSpan styles={{fontSize: '30px'}}> W</WokeSpan>
+				</Typography>
 
-		<Footer minHeight='40% !important' height='40% !important'>
-			<BottomHolder
-				styles={{
-					height: '100%',
-					position: 'absolute',
-					bottom: 0,
-					paddingLeft: 0,
-					paddingRight: 0,
-				}}
-			>
-				<Tabs>
+				<SendTransferForm order={4}
+					sendTransfers={sendTransfers}
+					pending={sendTransfers.pending}
+					usernamePlaceholder='username...'
+					amountPlaceholder='amount'
+					suggestions={friends}
+				/>
+
+				<Tabs order={responsive.order}>
 					<TransactionList
 						label="Transfers"
 						listItems={transferEvents}
 					/>
 					<FlexColumn	styles={{marginTop: 0}} align='center' label="Bounties">
-								<LargeBody align='center'> 
-									Send <WokeSpan>WOKENs</WokeSpan> to new users to receive a bonus when they join.
-								</LargeBody>
-								<TransactionList
-									listItems={rewardEvents}
-								/> 
-				</FlexColumn>
+						<LargeBody align='center'> 
+							Send <WokeSpan>WOKENs</WokeSpan> to new users to receive a bonus when they join.
+						</LargeBody>
+						<TransactionList
+							listItems={rewardEvents}
+						/> 
+					</FlexColumn>
 				</Tabs>
-			</BottomHolder>
-		</Footer>
+			</FlexColumn>
 		</>
 	);
 }

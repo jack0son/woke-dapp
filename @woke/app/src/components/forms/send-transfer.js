@@ -29,6 +29,7 @@ const useStyles = makeStyles(theme => ({
 }));
 
 export default function SendTransferForm (props) {
+	const { order } = props;
 	const classes = useStyles();
 	const theme = useTheme();
 
@@ -63,9 +64,7 @@ export default function SendTransferForm (props) {
 
 	const renderForm = () => (
 		<>
-				<div
-					className={classes.centeredForm}
-				>
+			<div className={classes.centeredForm} order={order}>
 					{ recipient ? (
 						<>
 						<AmountField
