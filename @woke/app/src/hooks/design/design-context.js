@@ -63,7 +63,7 @@ function reduceDomains(state, action) {
 // When true, don't discard the stage a previously active domain was in
 // i.e. when moving from auth to claim, forget we were in the loading stage
 // and go back to the signin stage when returning to auth domain.
-const PRESERVE_FINISHED_DOMAINS = false;
+const PRESERVE_FINISHED_DOMAINS = true;
 const cache = makeObjectCache('design_mode');
 export function DesignContextProvider({children}) {
 	const [domains, dispatch] = useReducer(reduceDomains, () => {

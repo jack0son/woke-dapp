@@ -17,26 +17,31 @@ const { statesLabels } = claimStates;
 const states = stages.byName;
 
 export default function ClaimContainer (props) {
-	const dummyClaimState = useLinearStages({stageList: stages.list, initialStage: stages.initial || states.READY});
-	const {dispatchNext, dummyAsyncJob} = dummyClaimState;
-	const [error, setError] = useState();
-	const [claiming, setClaiming] = useState(false);
+	const { handleClaimComplete } = props;
 
-	// Pass claim stage up to the state selector
-	useDesignDomain({
+	const claimState = useLinearStages({
+		stageList: stages.list,
+		initialStage: stages.initial || states.READY,
+		handleLastStage: handleClaimComplete,
+	});
+	useDesignDomain({									// Pass claim stage up to the state selector
 		domainName: 'claim',
-		linearStages: dummyClaimState,
+		linearStages: claimState,
 		stages,
 	});
 
+	const { dispatchNext, dummyOnChangeEvent } = claimState;
+	const [error, setError] = useState();
+	const [claiming, setClaiming] = useState(false);
+
+
 	const handleConfirmedTweeted = () => {
-		// Automate claim loading
-		setClaiming(true);
+		setClaiming(true);							// Simulate web3 claim process
 		dispatchNext();
 	}
 
-	const renderClaim = () => (
-		<Claim
+	const renderLoading = () => <Loading/>;
+	const renderClaim = () => <Claim
 			claimState={{
 				transactions: {
 					sendClaimUser: {
@@ -46,37 +51,34 @@ export default function ClaimContainer (props) {
 				},
 				error: error,
 				stageLabels: statesLabels,
-				...dummyClaimState
+				...claimState
 			}}
 			triggerPostTweet={() => dispatchNext()}
 			handleTweeted={() => dispatchNext()}
 			handleConfirmedTweeted={handleConfirmedTweeted}
-		/>
-	);
+	/>;
 
-	const renderLoading = () => <Loading/>
-
-	const stage = dummyClaimState.stageEnum[dummyClaimState.stage]; // stage string
-	const chooseRender = stage != states.CLAIMED ? renderClaim : renderLoading;
+	const chooseRender = claimState.stage != stages.byName.CLAIMED ? renderClaim : renderLoading;
 
 	useEffect(() => {
-		console.log('Claim Stage: ', stage);
-		if(claiming && dummyClaimState.stage >= stages.byName.CONFIRMED && dummyClaimState.stage < stages.byName.CLAIMED) {
-			dummyClaimState.dummyOnChangeEvent(700);
+		const stageString = claimState.stageEnum[claimState.stage]; // stage string
+		console.log('Claim Stage: ', stageString);
+		if(claiming && claimState.stage >= stages.byName.CONFIRMED && claimState.stage < stages.byName.CLAIMED) {
+			dummyOnChangeEvent(700);
 		}
-	}, [stage])
+	}, [claimState.stage])
 
 	useEffect(() => {
-		if(dummyClaimState.stage == states.CLAIMED) {
-			props.handleComplete();
+		if(claimState.stage == states.CLAIMED) {
+			handleClaimComplete();
 		}
 
-		if(dummyClaimState.stage == states.ERROR) {
+		if(claimState.stage == states.ERROR) {
 			setError('Hint: State overlay lets you flick everywhere. Hooray!');
 		} else {
 			setError(null);
 		}
-	}, [dummyClaimState.stage])
+	}, [claimState.stage])
 
 	return (
 		<>

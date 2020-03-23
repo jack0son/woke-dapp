@@ -26,7 +26,7 @@ export default function Web3Container(props) {
 	const renderClaimProcess = () => (
 		<Claim
 			// TODO change loading to use avatar image
-			handleComplete={() => state.dispatchNext()}
+			handleClaimComplete={() => state.dispatchNext()}
 		/>
 	);
 
