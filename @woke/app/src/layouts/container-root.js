@@ -4,6 +4,8 @@ import Container from '@material-ui/core/Container';
 import Box from '@material-ui/core/Box';
 import Typography from '@material-ui/core/Typography';
 
+import FlexRow from './flex-row';
+
 import { makeStyles, useTheme} from '@material-ui/styles';
 
 // Theme is default first arg to make styles
@@ -23,19 +25,23 @@ const useStyles = makeStyles(theme => ({
 }));
 
 
-export default function PageContainer(props) {
+export default function RootContainer(props) {
+	const { navBar, children } = props;
 	const styles = useStyles();
 	const theme = useTheme();
 
 	return (
-		<React.Fragment>
+		<>
 			<CssBaseline />
 			<Container className={styles.container}>
 				<Box component="div" position="relative" className={styles.root}>
-					{props.children}
+					{ navBar }
+					<FlexRow>
+						{ children }
+					</FlexRow>
 				</Box>
 			</Container>
-		</React.Fragment>
+		</>
   );
 }
 

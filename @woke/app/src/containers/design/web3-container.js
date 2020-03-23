@@ -7,14 +7,26 @@ import Wallet from './wallet'
 // View containers
 import Loading from '../views/loading'
 
+// Dummy state
+import useLinearStages from '../../hooks/fsm-linear';
+import useDesignDomain from '../../hooks/design/use-domain'
+import stageConfig from './stages'
+const stages = stageConfig.web3;
+
+
 export default function Web3Container(props) {
 	// Dummy state 
-	const [claimComplete, setClaimComplete] = useState(false);
+	const state = useLinearStages({stageList: stages.list, initialStage: stages.initial ||stages.byName.CLAIM});
+	useDesignDomain({ // Enable stage saving by stage-overlay
+		domainName: 'web3',
+		linearStages: state,
+		stages,
+	}, { preserve: false });
 
 	const renderClaimProcess = () => (
 		<Claim
 			// TODO change loading to use avatar image
-			handleComplete={() => setClaimComplete(true)}
+			handleClaimComplete={() => state.dispatchNext()}
 		/>
 	);
 
@@ -22,11 +34,15 @@ export default function Web3Container(props) {
 		<Wallet/>
 	);
 
-	const chooseRender = claimComplete ? renderWallet : renderClaimProcess; 
+	const renderMap = {
+		[stages.byName.CLAIM]: renderClaimProcess,
+		[stages.byName.WALLET]: renderWallet,
+	}
+	
 
 	return (
 		<>
-			{ chooseRender() }
+			{ renderMap[state.stage]() }
 		</>
 	);
 }

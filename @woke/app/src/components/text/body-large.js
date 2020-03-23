@@ -5,14 +5,17 @@ import { makeStyles } from '@material-ui/styles';
 
 const useStyles = makeStyles(theme => ({
 	bodyLarge: styles => ({
+		// Layout
 		position: 'static',
-		fontSize: '1rem',
+		textAlign: 'center',
+
+		// Size
+		fontSize: '1.5rem',
 		fontWeight: '700',
 		width: '100%',
 		maxWidth: '100%',
-		textAlign: 'center',
+
 		...styles
-		//px: theme.spacing(3),
 	})
 }));
 
@@ -23,7 +26,7 @@ export default function LargeBody(props) {
 
 	return (
 		<Typography
-			variant="body1"
+			variant='body1'
 			className={classes.bodyLarge}
 			{...innerProps}
 		gutterBottom/>

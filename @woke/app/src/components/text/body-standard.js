@@ -5,12 +5,14 @@ import { makeStyles } from '@material-ui/styles';
 
 const useStyles = makeStyles(theme => ({
 	bodyStandard: styles => ({
+		// Layout
 		position: 'static',
-		width: '100%',
-		maxWidth: '100%',
 		textAlign: 'center',
+
+		// Size
+		//width: '100%',
+		maxWidth: '100%',
 		...styles
-		//px: theme.spacing(3),
 	})
 }));
 
@@ -21,7 +23,7 @@ export default function StandardBody(props) {
 
 	return (
 		<Typography
-			variant="body1"
+			variant='body1'
 			className={classes.bodyStandard}
 			{...innerProps}
 		/>

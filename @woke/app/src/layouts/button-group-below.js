@@ -11,14 +11,9 @@ const useStyles = makeStyles(theme => ({
 		position: 'relative',
 		display: 'flex',
 		flexDirection: 'column',
-		justifyContent: 'flex-end',
-		alignItems: 'center',
-		bottom: 0,
-		width: 'auto',
+		justifyContent: 'space-between',
+		alignItems: 'stretch',
 		height: 'auto',
-		marginTop: '0',
-		paddingTop: theme.spacing(2),
-		paddingBottom: theme.spacing(2),
 		...styles
 	})
 }));
@@ -50,8 +45,6 @@ export default function ButtonGroupBelow (props) {
 			<BodyStandard
 				color='secondary'
 				styles={{
-					marginTop: '15%',
-					marginBottom: '15%',
 					paddingLeft: theme.spacing(3),
 					paddingRight: theme.spacing(3),
 					textAlign: 'center',

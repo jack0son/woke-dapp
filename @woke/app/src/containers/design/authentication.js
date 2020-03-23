@@ -7,75 +7,60 @@ import SetPassword from '../views/setpassword'
 import Login from '../views/login'
 
 // Dummy state 
-import useLinearStages from '../../hooks/linearstate'
-import StateFlicker from '../../components/stateflicker'
+import useDesignDomain from '../../hooks/design/use-domain'
+import useLinearStages from '../../hooks/fsm-linear'
+import stageConfig from './stages'
+import { useIsMounted } from '../../hooks/util-hooks';
 
 
-const SIGNIN = 'SIGNIN';
-const LOADING = 'LOADING';
-const SETPASSWORD = 'SETPASSWORD';
-const LOGIN = 'LOGIN';
-const AUTHD = 'AUTHD';
-const stageList = [SIGNIN, LOADING, SETPASSWORD, LOGIN, AUTHD];
-const stages = {};
-stageList.forEach((stage, i) => stages[stage] = i);
+const stages = stageConfig.authentication;
 
 export default function AuthContainer (props) {
+	const { handleAuthComplete } = props;
+	const dummyState = useLinearStages({
+		stageList: stages.list,
+		initialStage: stages.initial || stages.byName.SIGNIN,
+		handleLastStage: handleAuthComplete,
+	});
+	const { dispatchNext, dummyOnChangeEvent } = dummyState;
 
-	const dummyState = useLinearStages({stageList, initialStage: stages.SIGNIN});
-	const {dispatchNext, dummyAsyncJob} = dummyState;
+	useDesignDomain({
+		domainName: 'authentication',
+		linearStages: dummyState,
+		stages,
+	});
 
+	const delayedNext = (action) => {
+		dispatchNext();
+		dummyOnChangeEvent(1000, {target: { value: `auth:${action}`, log: true }});//,  abortRef: isMounted });
+	}
 
-	const renderSignin = () => (
-		<SignIn
-			triggerSignIn={dispatchNext}
-		/>
-	);
-
-	const renderLoading = () => {
-		dummyAsyncJob('auth_dummy:load-complete', 3750);
-		return (
-			<Loading/>
-		)
-	};
-
-	const renderSetPassword = () => (
-		<SetPassword
-			triggerSetPassword={dispatchNext}
-		/>
-	);
-
-	const renderLogin = () => (
-		<Login
-			handleLogin={dispatchNext}
-		/>
-	);
-
-	const failure = () => (
-		<div>failure</div>
-	);
+	const renderSignin = () => <SignIn triggerSignIn={() => delayedNext('twitter-signin')}/>;
+	const renderLoading = () => <Loading/>;
+	const renderSetPassword = () => <SetPassword triggerSetPassword={dispatchNext}/>;
+	const renderLogin = () => <Login handleLogin={() => delayedNext('woke-login')}/>;
 
 	const renderMap = {
-		SIGNIN: renderSignin,
+		SIGNIN: renderSignin, // @fix rename to SIGNIN_TWITTER
 		LOADING: renderLoading,
 		SETPASSWORD: renderSetPassword,
 		LOGIN: renderLogin,
 		AUTHD: renderLoading,
 	};
 
-	const stage = dummyState.stageEnum[dummyState.stage]; // stage string
-	const chooseRender = renderMap[stage];
+	// const stageString = dummyState.stageEnum[dummyState.stage]; // stage string
+	const chooseRender = renderMap[dummyState.stageEnum[dummyState.stage]];
 
 	useEffect(() => {
-		console.log('Stage: ', stage);
-		if(stage == AUTHD) {
-			props.handleAuthComplete();
-		}
-	}, [stage])
+		console.log('Auth Stage: ', dummyState.stageEnum[dummyState.stage]);
+	}, [dummyState.stage])
 
 	return (
 		<>
-			{ chooseRender() }
+			{
+				chooseRender()
+				//dummyState.stage == stages.byName.LOADING ? <RenderLoading/> : chooseRender()
+			}
 		</>
 	);
 }

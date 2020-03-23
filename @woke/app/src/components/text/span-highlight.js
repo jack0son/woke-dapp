@@ -21,7 +21,7 @@ export default function HighlightSpan(props) {
 
 	return (
 		<Typography
-			variant="body2"
+			variant="body1"
 			component="span"
 			color="secondary"
 			className={classes.highlightSpan}

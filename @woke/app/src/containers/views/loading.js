@@ -2,7 +2,7 @@ import React, { useEffect } from 'react';
 import { useTheme } from '@material-ui/styles';
 import Typography from '@material-ui/core/Typography';
 
-import ContentWrapper from '../../layouts/wrapper-content';
+import FlexColumn from '../../layouts/flex-column';
 import CentreHolder from '../../layouts/holder-centre';
 import Logo from '../../components/images/logo';
  
@@ -12,7 +12,7 @@ import { useRootContext } from '../../hooks/root-context'
 
 export default function LoadingView(props) {
 	const theme = useTheme();
-	const {setLoading} = useRootContext();
+	const { setLoading } = useRootContext();
 
 	useEffect(() => {
 		setLoading(true);
@@ -33,7 +33,7 @@ export default function LoadingView(props) {
 					/>
 			</CentreHolder>
 
-			<ContentWrapper
+			<FlexColumn
 				align='center'
 				height='5vh'
 				styles={{
@@ -46,7 +46,7 @@ export default function LoadingView(props) {
 					{props.message ? props.message : 'loading ...'}
 				</Typography>
 			)}
-			</ContentWrapper>
+			</FlexColumn>
 		</CentreHolder>
 	);
 }

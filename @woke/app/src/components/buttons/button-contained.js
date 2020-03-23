@@ -2,6 +2,7 @@ import React from 'react';
 import { makeStyles } from '@material-ui/core/styles';
 import Button from '@material-ui/core/Button';
 
+
 const useStyles = makeStyles(theme => ({
 	button: styles => ({
     margin: theme.spacing(1),
@@ -25,13 +26,13 @@ const useStyles = makeStyles(theme => ({
 }));
 
 export default function ContainedButton(props) {
-	const {text, styles, ...innerProps} = props;
+	const {text, styles, color,  ...innerProps} = props;
   const classes = useStyles(styles);
 
   return (
 		<Button 
 			variant="contained"
-			color={props.color ? props.color : "primary"}
+			color={color || "primary"}
 			className={classes.button}
 			{...innerProps}
 		>

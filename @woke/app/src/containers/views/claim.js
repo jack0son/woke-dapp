@@ -1,9 +1,10 @@
 import React, { useEffect } from 'react';
+import { useTheme } from '@material-ui/styles';
 
 import Loading from './loading'
 import Error from './error'
-import ClaimLayout from '../../layouts/page-claim'
-import ContentWrapper from '../../layouts/wrapper-content'
+import ClaimPage from '../../layouts/page-claim'
+import FlexColumn from '../../layouts/flex-column'
 
 import TweetButton from '../../components/buttons/button-tweet'
 import Button from '../../components/buttons/button-contained'
@@ -25,6 +26,8 @@ export default function ClaimView (props) {
 		triggerPostTweet, // if not use share intent
 	} = props;
 
+	const theme = useTheme();
+
 	const stageMap = claimState.stageMap;
 	const sc = claimState.stageMap;
 	const stage = claimState.stage;
@@ -34,39 +37,39 @@ export default function ClaimView (props) {
 	const renderTweetClaim = () => {
 			const intentUrl = createShareIntentUrl(claimState.claimString);
 			return (
-				<ClaimLayout
+				<ClaimPage
 					instructionText={[`To securely claim any `, <WokeSpan key="WokeSpan">WOKENs</WokeSpan>, ` you've already been sent, we need to tweet a signed message.`]}
-					button={TweetButton}
+					Button={TweetButton}
 					buttonProps={{
 						href: intentUrl,
 						onClick: handleTweeted
 					}}
 					buttonMessage="Don't alter the message"
-					textAlign="center"
 				/>
 			)
 	};
 
 	const renderConfirmTweeted = () => (
 		<>
-		<ClaimLayout
-			instructionText={<><br/><br/>Did you tweet?</>}
+		<ClaimPage
+			instructionText={`Did you tweet?`}
 			textAlign="center"
 			buttonProps={{
 				onClick: handleConfirmedTweeted,
 				text: `Yes, I tweeted!`,
 				color: 'primary',
 			}}
+			buttonMessage="Here is a  message button"
 		>
 			<Button
 				onClick={handleNotTweeted}
 				text={'No'}
-				color='secondary'
-				sytles={{
-					paddingBottom: '30%'
+				styles={{
+					alignSelf: 'center',
+					background: theme.palette.common.black,
 				}}
 		/>
-		</ClaimLayout>
+		</ClaimPage>
 		</>
 	);
 
@@ -109,7 +112,7 @@ export default function ClaimView (props) {
 	return (
 		<>
 		{ chooseRender() }
-		<ContentWrapper align="center">
+		<FlexColumn align="center">
 			<StandardBody color="error">
 			{claimState.error}
 			</StandardBody>
@@ -123,7 +126,7 @@ export default function ClaimView (props) {
 					<Spinner/>
 					: null)
 			}
-		</ContentWrapper>
+		</FlexColumn>
 		</>
 	);
 }

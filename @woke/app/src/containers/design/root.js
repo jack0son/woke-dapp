@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 
 // Logical containers
 import Authentication from './authentication'
@@ -6,31 +6,32 @@ import Web3Initializer from './web3-initializer'
 
 // View containers
 import Root from '../views/root'
-import { RootContextProvider, useRootContext } from '../../hooks/root-context'
+import { RootContextProvider } from '../../hooks/root-context'
+import { DesignContextProvider } from '../../hooks/design/design-context'
+import useDesignDomain from '../../hooks/design/use-domain'
 
 // Dummy state 
-import useLinearStages from '../../hooks/linearstate'
-import StateFlicker from '../../components/stateflicker'
-import StateSelector from '../../components/state-selector'
-const AUTH = 'AUTH';
-const WEB3 = 'WEB3';
-const stageList = [AUTH, WEB3];
+import useLinearStages from '../../hooks/fsm-linear'
+import StageOverlay from '../../components/design/stage-overlay'
+import StageSelector from '../../components/design/stage-selector'
+import stageConfig from './stages';
 
-// For deployment
-// Set container paths to _stateDir/<containerpath>
+
+const stages = stageConfig.root;
+
+function RegisterRootDomain({ linearStages }) {
+	useDesignDomain({ domainName: 'root', linearStages, stages });
+	return null;
+}
 
 export default function RootContainer() {
-	const [claimComplete, setClaimComplete] = useState(false);
+	const dummyState = useLinearStages({stageList: stages.list, initialStage: stages.initial ||  stages.byName.AUTH });
 
-	const dummyState = useLinearStages({stageList, initialStage: 0});
-
-	const dispatchNext = (event) => {
-		dummyState.dispatch({type: 'NEXT'});
-	}
+	// useDesignContext must be called inside design context
 
 	const renderAuth = () => (
 		<Authentication
-			handleAuthComplete={dispatchNext}
+			handleAuthComplete={dummyState.dispatchNext}
 		/>
 	);
 
@@ -42,25 +43,27 @@ export default function RootContainer() {
 
 	const renderMap = {
 		AUTH: renderAuth,
-		WEB3: renderWeb3
-	}
+		WEB3: renderWeb3,
+	};
 
 	const stage = dummyState.stageEnum[dummyState.stage]; // stage string
 	const chooseRender = renderMap[stage];
 
 	return (
 		<RootContextProvider>
-		<Root
-			hideLogo={stage == WEB3 ? false : true}
-		>
-			{ chooseRender() }
-		</Root>
+			<DesignContextProvider>
+				<Root>
+					<RegisterRootDomain linearStages={dummyState}/>
+					{ chooseRender() }
+				</Root>
 
-		<StateFlicker
-			dispatch={dummyState.dispatch}
-			stageString={stage}
-		/>
-			<StateSelector/>
+				<StageOverlay >
+					<StageSelector domainName={'root'}/>
+					<StageSelector domainName={'authentication'}/>
+					<StageSelector domainName={'claim'}/>
+				</StageOverlay>
+
+			</DesignContextProvider>
 		</RootContextProvider>
 	);
 }

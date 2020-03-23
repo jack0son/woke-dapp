@@ -1,48 +1,54 @@
 import React from 'react';
-import { useTheme } from '@material-ui/styles';
-import Typography from '@material-ui/core/Typography';
+import { useTheme, makeStyles } from '@material-ui/styles';
 
-import ContentWrapper from './wrapper-content';
-import Footer from './footer';
-import BottomHolder from './holder-bottom';
+import FlexColumn from './flex-column';
 import BelowButtonGroup from './button-group-below';
 
-import BodyStandard from '../components/text/body-standard'
 import BodyLarge from '../components/text/body-large'
 import HL from '../components/text/span-highlight'
 
+const useStyles = makeStyles(theme => ({
+	buttons: styles => ({
+		//paddingLeft: '30%',
+		//paddingRight: '30%',
+		layout: 'flex',
+		justifyContent: 'space-between',
+		alignItems: 'stretch',
+		width: '30vh',
+	}),
+}));
 
-export default function ClaimsProcess(props) {
-	const theme = useTheme();
+
+export default function ClaimPage(props) {
+	const classes = useStyles(props.styles);
 
 	return (
 		<>
-		<ContentWrapper
-			styles={{marginTop: '20%'}}
-		>
-			<BodyLarge
-				styles={{
-					textAlign: props.textAlign ? props.textAlign : 'justify',
-					paddingLeft: theme.spacing(2),
-					paddingRight: theme.spacing(2),
-				}}
-			>
-				{props.instructionText}
-			</BodyLarge>
-
-		</ContentWrapper>
-
-		<Footer minHeight='50% !important'>
-			<BottomHolder justifyContent='flex-start !important'>
-				<BelowButtonGroup
-					message={props.buttonMessage}
-					Button={props.button}
-					buttonProps={props.buttonProps}
-					//styles={{marginTop: ''}}
-				/>
-				{props.children}
-			</BottomHolder>
-		</Footer>
+			<FlexColumn styles={{
+				height: '50%',
+				smallHeight: '60%',
+				justifyContent: 'space-evenly',
+				alignItems: 'center',
+				//alignContent: 'center',
+			}}>
+				<BodyLarge
+					styles={{
+						paddingLeft: '0%',
+						paddingRight: '0%',
+						textAlign: props.textAlign || 'justify',
+					}}
+				>
+					{props.instructionText}
+				</BodyLarge>
+				<div className={classes.buttons}>
+					<BelowButtonGroup
+						message={props.buttonMessage}
+						Button={props.Button}
+						buttonProps={props.buttonProps}
+					/>
+					{props.children}
+				</div>
+			</FlexColumn>
 		</>
 	);
 }

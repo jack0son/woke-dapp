@@ -36,7 +36,6 @@ export default function NavBar(props) {
 					<LogoLink
 						src='images/eye-logo.png'
 						url='https://getwoke.me'
-						float="left"
 					/>
 			);
 		}
