@@ -1,3 +1,6 @@
+# Misc
+.idea
+
 # Config
 .DS_Store
 .env
