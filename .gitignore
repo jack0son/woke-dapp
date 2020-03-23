@@ -6,6 +6,10 @@
 .env.test.local
 .env.production.local
 
+# Vim
+*.swp*
+.*.swp*
+
 # Logs
 logs
 *.log
