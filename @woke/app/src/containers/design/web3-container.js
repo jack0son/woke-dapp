@@ -21,7 +21,7 @@ export default function Web3Container(props) {
 		domainName: 'web3',
 		linearStages: state,
 		stages,
-	});
+	}, { preserve: false });
 
 	const renderClaimProcess = () => (
 		<Claim

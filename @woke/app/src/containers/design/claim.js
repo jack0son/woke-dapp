@@ -70,7 +70,7 @@ export default function ClaimContainer (props) {
 
 	useEffect(() => {
 		if(claimState.stage == states.CLAIMED) {
-			handleClaimComplete();
+			setTimeout(handleClaimComplete, 1000);
 		}
 
 		if(claimState.stage == states.ERROR) {
