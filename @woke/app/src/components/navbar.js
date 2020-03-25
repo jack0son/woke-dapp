@@ -6,6 +6,7 @@ import Toolbar from '@material-ui/core/Toolbar';
 import Typography from '@material-ui/core/Typography';
 import IconButton from '@material-ui/core/IconButton';
 import MenuIcon from '@material-ui/icons/Menu';
+import Hamburger from './hamburger';
 
 import LogoLink from './images/logo-link';
 
@@ -47,14 +48,7 @@ export default function NavBar(props) {
 					{ renderLogo() }
 					<Typography variant="h6" className={classes.title}>
           </Typography>
-					<IconButton 
-						edge="end"
-						className={classes.menuButton} 
-						color="inherit" 
-						aria-label="menu" 
-					>
-						<MenuIcon/>
-					</IconButton>
+				<Hamburger />
 			</Toolbar>
 		</AppBar>
   );
