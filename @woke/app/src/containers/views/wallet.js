@@ -1,8 +1,9 @@
 import React from 'react';
 import { makeStyles, useTheme } from '@material-ui/styles';
 import Typography from '@material-ui/core/Typography';
+import Box from '@material-ui/core/Box';
 
-import Tabs from '../../layouts/tabs';
+import PaneTabs from '../../layouts/tabs/tabs-panes';
 import TransactionList from '../../layouts/list-transactions';
 import FlexColumn from '../../layouts/flex-column'
 
@@ -16,7 +17,16 @@ const useStyles = makeStyles(theme => ({
 		fontSize: '38px',
 		lineHeight: '40px',
 		fontWeight: 700,
-	}
+	},
+
+	placeholder: {
+		width: '100%',
+		backgroundColor: 'white',
+		position: 'static',
+		height: '50vh',
+		minHeight: '50%',
+		border: '5px',
+	},
 }));
 
 export default function WalletView (props) {
@@ -55,49 +65,60 @@ export default function WalletView (props) {
 			order: 10
 		},
 	}
+	
+	const renderBalance = () => (
+		<Typography variant="h3" fontSize='38px' align="center" order={3}>
+			{balance}<WokeSpan styles={{fontSize: '30px'}}> W</WokeSpan>
+		</Typography>
+	);
 
-	return (
-		<>
-			<FlexColumn styles={{
-				justifyContent: 'space-around',
-				height: '80%',
-				width: '80%',
-				small: {
-					alignSelf: 'flex-start',
-				}
-			}}>
+	const renderTransfer = () => (
+		<SendTransferForm order={4}
+			sendTransfers={sendTransfers}
+			pending={sendTransfers.pending}
+			usernamePlaceholder='username...'
+			amountPlaceholder='amount'
+			suggestions={friends}
+		/>
+	);
 
+	const renderHeader = () => (
 				<AvatarHeader order={0}
 					src={avatar}
 					handle={props.user.handle}
 				/>
+	);
 
-				<Typography variant="h3" fontSize='38px' align="center" order={3}>
-					{balance}<WokeSpan styles={{fontSize: '30px'}}> W</WokeSpan>
-				</Typography>
+	const renderPaneTabs = () => (
+		<PaneTabs order={responsive.order}>
+			<TransactionList
+				label="Transfers"
+				listItems={transferEvents}
+			/>
+			<FlexColumn	styles={{marginTop: 0}} align='center' label="Bounties">
+				<LargeBody align='center'> 
+					Send <WokeSpan>WOKENs</WokeSpan> to new users to receive a bonus when they join.
+				</LargeBody>
+				<TransactionList
+					listItems={rewardEvents}
+				/> 
+			</FlexColumn>
+		</PaneTabs>
+	);
 
-				<SendTransferForm order={4}
-					sendTransfers={sendTransfers}
-					pending={sendTransfers.pending}
-					usernamePlaceholder='username...'
-					amountPlaceholder='amount'
-					suggestions={friends}
-				/>
-
-				<Tabs order={responsive.order}>
-					<TransactionList
-						label="Transfers"
-						listItems={transferEvents}
-					/>
-					<FlexColumn	styles={{marginTop: 0}} align='center' label="Bounties">
-						<LargeBody align='center'> 
-							Send <WokeSpan>WOKENs</WokeSpan> to new users to receive a bonus when they join.
-						</LargeBody>
-						<TransactionList
-							listItems={rewardEvents}
-						/> 
-					</FlexColumn>
-				</Tabs>
+	return (
+		<>
+			<FlexColumn styles={{
+				justifyContent: 'space-between',
+				height: '80%',
+				width: '100%',
+				small: {
+					alignSelf: 'flex-start',
+				}
+			}}>
+				<Box border={1} borderColor='text.primary' className={classes.placeholder}>
+				</Box>
+				{ renderPaneTabs() }
 			</FlexColumn>
 		</>
 	);

@@ -7,7 +7,7 @@ import Avatar from '../components/images/avatar-wrapped'
 
 const useStyles = makeStyles(theme => ({
 	avatarHeader: styles => ({
-		width: '100%',
+		width: '120%',
 		height: '76px',
 		position: 'relative',
 		display: 'flex',
@@ -18,11 +18,11 @@ const useStyles = makeStyles(theme => ({
 	}),
 
 	centreLine: {
-		display: 'block',
-		width: '80%',
+		//display: 'block',
+		width: '140%',
 		height: '50%',
 		position: 'absolute',
-		left: 0,
+		left: '-20%',
 		top: 0,
 		paddingLeft: theme.spacing(4),
 		paddingTop: theme.spacing(2),
