@@ -12,17 +12,18 @@ import TabPanel from './tab-panel';
 
 const useStyles = makeStyles(theme => ({
 tabsWrapper: {
-		//flexGrow: 1,
+		position: 'relative',
 		display: 'flex',
 		flexDirection: 'column',
-		justifyContent: 'flex-start',
-		position: 'relative',
+		//justifyContent: 'space-between',
+		justifyContent: 'space-between',
+		//flexGrow: 1,
 		//backgroundColor: theme.palette.background.dark,
   },
 
 	swipeableView: {
 		overflow: 'scroll',
-		flexGrow: 0,
+		//flexShrink: 0,
 	}
 }));
 
@@ -48,6 +49,7 @@ export default function PaneTabs(props) {
 				axis={theme.direction === 'rtl' ? 'x-reverse' : 'x'}
 				index={value}
 				onChangeIndex={handleChangeIndex}
+				//slideStyle={{ overflow: 'scroll' }}
 			>
 				{ 
 					props.children.map((child, i) => (

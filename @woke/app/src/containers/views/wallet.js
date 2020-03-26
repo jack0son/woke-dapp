@@ -23,8 +23,9 @@ const useStyles = makeStyles(theme => ({
 		width: '100%',
 		backgroundColor: 'white',
 		position: 'static',
-		height: '50vh',
+	//	height: '50vh',
 		minHeight: '50%',
+		//flexGrow: 3,
 		border: '5px',
 	},
 }));
