@@ -1,7 +1,7 @@
 import React from 'react';
 
 // Container View
-import Wallet from '../views/wallet';
+import WalletView from '../views/wallet';
 
 // Dummy state
 import useSendTransfers from '../../hooks/mocks/sendtransfer';
@@ -22,7 +22,7 @@ export default function WalletContainer() {
 	const sendTransfers = useSendTransfers(friends);
 
 	return (
-		<Wallet
+		<WalletView
 			user={user}
 			friends={friends}
 			userData={users}
@@ -75,6 +75,7 @@ const transferList = [
 		timestamp: '2019-09-12',
 		timeSince: timeSince('2019-09-12')
 	},
+	/*
 	{
 		counterParty: users['11'],
 		returnValues: {
@@ -309,4 +310,5 @@ const transferList = [
 		timestamp: '2019-09-12',
 		timeSince: timeSince('2019-09-12')
 	},
+	*/
 ]

@@ -23,9 +23,9 @@ const useStyles = makeStyles(theme => ({
 		width: '100%',
 		backgroundColor: 'white',
 		position: 'static',
+		flexGrow: 2,
 	//	height: '50vh',
 		minHeight: '50%',
-		//flexGrow: 3,
 		border: '5px',
 	},
 }));
@@ -91,7 +91,7 @@ export default function WalletView (props) {
 	);
 
 	const renderPaneTabs = () => (
-		<PaneTabs order={responsive.order}>
+		<PaneTabs order={responsive.order} flexGrow={2}>
 			<TransactionList
 				label="Transfers"
 				listItems={transferEvents}
@@ -111,13 +111,13 @@ export default function WalletView (props) {
 		<>
 			<FlexColumn styles={{
 				justifyContent: 'space-between',
-				height: '80%',
+				height: '100%',
 				width: '100%',
 				small: {
 					alignSelf: 'flex-start',
 				}
 			}}>
-				<Box border={1} borderColor='text.primary' className={classes.placeholder}>
+				<Box border={1} borderColor='text.primary' flexGrow={4} className={classes.placeholder}>
 				</Box>
 				{ renderPaneTabs() }
 			</FlexColumn>

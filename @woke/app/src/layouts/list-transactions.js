@@ -17,26 +17,22 @@ import WokeSpan from '../components/text/span-woke';
 
 const useStyles = makeStyles(theme => ({
 	transactionList: styles => ({
-		width: '40vh',
-		height: '30vh',
-		maxHeight: '50%',
-		//display: 'block',
+		maxWidth: '60vw',
+		height: 'inherit',
+		maxHeight: 'inherit',
 		position: 'relative',
-		overflow: 'scroll',
+		//flexShrink: 1,
+		//overflow: 'scroll',
 		[theme.breakpoints.up('sm')]: {
-			paddingRight: '10%',
-			paddingLeft: '10%',
+			//paddingRight: '10%',
+			//paddingLeft: '10%',
 		},
 		backgroundColor: 'transparent',
 		...styles
 	}),
 
 	listItem: {
-		display: 'block',
-		//width: '100%',
-		width: '100%',
 		maxHeight: theme.spacing(5),
-		position: 'relative',
 		paddingRight: theme.spacing(1),
 		paddingLeft: theme.spacing(1),
 		paddingTop: theme.spacing(0.5),

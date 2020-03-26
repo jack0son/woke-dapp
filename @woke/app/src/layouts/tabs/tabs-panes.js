@@ -12,23 +12,26 @@ import TabPanel from './tab-panel';
 
 const useStyles = makeStyles(theme => ({
 tabsWrapper: {
+		//height: '50%',
 		position: 'relative',
 		display: 'flex',
 		flexDirection: 'column',
 		//justifyContent: 'space-between',
 		justifyContent: 'space-between',
-		//flexGrow: 1,
+		height: '100%',
+		flexGrow: 1,
 		//backgroundColor: theme.palette.background.dark,
   },
 
 	swipeableView: {
-		overflow: 'scroll',
-		//flexShrink: 0,
+		height: '100%',
+		// overflow: 'scroll',
+		// flexShrink: 1,
 	}
 }));
 
 export default function PaneTabs(props) {
-	const { order } = props;
+	const { order, ...innerProps } = props;
   const classes = useStyles();
 	const theme = useTheme();
   const [value, setValue] = React.useState(0);
@@ -43,13 +46,12 @@ export default function PaneTabs(props) {
   }
 
   return (
-		<Box className={classes.tabsWrapper} order={order}>
+		<Box className={classes.tabsWrapper} order={order} {...innerProps}>
 			<SwipeableViews order={0}
 				className={classes.SwipeableViews}
 				axis={theme.direction === 'rtl' ? 'x-reverse' : 'x'}
 				index={value}
 				onChangeIndex={handleChangeIndex}
-				//slideStyle={{ overflow: 'scroll' }}
 			>
 				{ 
 					props.children.map((child, i) => (

@@ -5,7 +5,7 @@ import Tab from '@material-ui/core/Tab';
 import { withStyles } from '@material-ui/core/styles';
 
 export const StyledTabs = withStyles(theme => ({
-	styledTab: {
+	root: {
 		backgroundColor: theme.palette.background.dark,
 		height: theme.spacing(5),
 		minHeight: theme.spacing(4),
@@ -29,7 +29,7 @@ export const StyledTabs = withStyles(theme => ({
 }))(props => <Tabs {...props} color="primary" TabIndicatorProps={{ children: <div /> }} />);
 
 export const StyledTab = withStyles(theme => ({
-  styledTab: {
+  root: {
     textTransform: 'none',
     color: '#fff',
     fontWeight: theme.typography.fontWeightRegular,

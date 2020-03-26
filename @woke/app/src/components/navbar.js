@@ -11,6 +11,8 @@ import LogoLink from './images/logo-link';
 
 const useStyles = makeStyles(theme => ({
 	appBar: {
+		height: '10vh',
+		minHeight: '8vh',
     flexGrow: 1,
 		width: '100%',
 		height: theme.spacing(6),
@@ -42,8 +44,8 @@ export default function NavBar(props) {
 	}
 
 	return (
-		<AppBar position="relative" overflow="auto" className={classes.appBar}>
-			<Toolbar position="relative" disableGutters={true} height="100%">
+		<AppBar position="static" className={classes.appBar}>
+			<Toolbar> {/* position="relative" disableGutters={false} height="100%">*/}
 					{ renderLogo() }
 					<Typography variant="h6" className={classes.title}>
           </Typography>
