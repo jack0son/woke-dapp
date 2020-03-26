@@ -47,8 +47,8 @@ export default function NavBar(props) {
 			<Toolbar position="relative" disableGutters={true} height="100%">
 					{ renderLogo() }
 					<Typography variant="h6" className={classes.title}>
-          </Typography>
-				<Hamburger />
+          			</Typography>
+					<Hamburger hecj="heck" />
 			</Toolbar>
 		</AppBar>
   );
