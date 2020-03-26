@@ -111,6 +111,7 @@ export default function WalletView (props) {
 		<>
 			<FlexColumn styles={{
 				justifyContent: 'space-between',
+				alignItems: 'center',
 				height: '100%',
 				width: '100%',
 				small: {

@@ -18,6 +18,7 @@ tabsWrapper: {
 		flexDirection: 'column',
 		//justifyContent: 'space-between',
 		justifyContent: 'space-between',
+		alignSelf: 'stretch',
 		height: '100%',
 		flexGrow: 1,
 		//backgroundColor: theme.palette.background.dark,
@@ -46,7 +47,7 @@ export default function PaneTabs(props) {
   }
 
   return (
-		<Box className={classes.tabsWrapper} order={order} {...innerProps}>
+		<Box className={classes.tabsWrapper} {...innerProps}>
 			<SwipeableViews order={0}
 				className={classes.SwipeableViews}
 				axis={theme.direction === 'rtl' ? 'x-reverse' : 'x'}

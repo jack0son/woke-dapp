@@ -17,7 +17,8 @@ import WokeSpan from '../components/text/span-woke';
 
 const useStyles = makeStyles(theme => ({
 	transactionList: styles => ({
-		maxWidth: '60vw',
+		//maxWidth: '60vw',
+		width: '100%',
 		height: 'inherit',
 		maxHeight: 'inherit',
 		position: 'relative',
@@ -32,6 +33,7 @@ const useStyles = makeStyles(theme => ({
 	}),
 
 	listItem: {
+		width: '100%',
 		maxHeight: theme.spacing(5),
 		paddingRight: theme.spacing(1),
 		paddingLeft: theme.spacing(1),
