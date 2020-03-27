@@ -13,13 +13,15 @@ import { makeStyles, useTheme} from '@material-ui/styles';
 const useStyles = makeStyles(theme => ({
 	root: {
 		background: theme.background,
-		height: '100vh',
+		//height: '100vh',
+		width: '100vw',
 	},
 
 	container: {
 		background: theme.palette.background.paper,
 		paddingLeft: 0,
-		maxWidth: 'unset',
+		height: '100vh',
+		//maxWidth: 'unset',
 		paddingRight: 0,
 	},
 }));
@@ -32,10 +34,10 @@ export default function RootContainer(props) {
 
 	return (
 		<>
-			<CssBaseline />
-			<Container className={styles.container}>
+			<CssBaseline/>
+			<Container className={styles.container} disableGutters>
+				{ navBar }
 				<Box component="div" position="relative" className={styles.root}>
-					{ navBar }
 					<FlexRow>
 						{ children }
 					</FlexRow>

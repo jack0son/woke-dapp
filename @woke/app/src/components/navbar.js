@@ -11,13 +11,16 @@ import LogoLink from './images/logo-link';
 
 const useStyles = makeStyles(theme => ({
 	appBar: {
-		height: '10vh',
-		minHeight: '8vh',
-    flexGrow: 1,
-		width: '100%',
-		height: theme.spacing(6),
+		//height: '18vh',
+		//minHeight: '8vh',
+    //flexGrow: 1,
+		//width: '100%',
 		background: 'transparent',
 		boxShadow: 'none',
+	},
+
+	toolBar: {
+		height: '100%',
 	},
 
   menuButton: {
@@ -44,8 +47,8 @@ export default function NavBar(props) {
 	}
 
 	return (
-		<AppBar position="static" className={classes.appBar}>
-			<Toolbar> {/* position="relative" disableGutters={false} height="100%">*/}
+		<AppBar position="static"className={classes.appBar}>
+			<Toolbar>
 					{ renderLogo() }
 					<Typography variant="h6" className={classes.title}>
           </Typography>
