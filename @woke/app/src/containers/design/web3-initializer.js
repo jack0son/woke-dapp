@@ -12,7 +12,8 @@ export default function Web3Initializer(props) {
 	const [web3Provider, setWeb3Provider] = useState(null);
 
 	useEffect(() => {
-		setTimeout(() => setWeb3Provider({wallet: props.wallet}), 1500);
+		setWeb3Provider({wallet: props.wallet})
+		//setTimeout(() => setWeb3Provider({wallet: props.wallet}), 1500);
 	}, [])
 
 	const renderWeb3 = () => (

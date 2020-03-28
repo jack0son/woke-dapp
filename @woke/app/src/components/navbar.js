@@ -11,16 +11,12 @@ import LogoLink from './images/logo-link';
 
 const useStyles = makeStyles(theme => ({
 	appBar: {
-		//height: '18vh',
-		//minHeight: '8vh',
-    //flexGrow: 1,
-		//width: '100%',
 		background: 'transparent',
 		boxShadow: 'none',
 	},
 
 	toolBar: {
-		height: '100%',
+		background: 'transparent',
 	},
 
   menuButton: {

@@ -13,15 +13,14 @@ import { makeStyles, useTheme} from '@material-ui/styles';
 const useStyles = makeStyles(theme => ({
 	root: {
 		background: theme.background,
-		//height: '100vh',
+		height: '100vh',
 		width: '100vw',
 	},
 
 	container: {
 		background: theme.palette.background.paper,
 		paddingLeft: 0,
-		height: '100vh',
-		//maxWidth: 'unset',
+		maxWidth: 'unset',
 		paddingRight: 0,
 	},
 }));
@@ -34,10 +33,10 @@ export default function RootContainer(props) {
 
 	return (
 		<>
-			<CssBaseline/>
-			<Container className={styles.container} disableGutters>
-				{ navBar }
+			<CssBaseline />
+			<Container className={styles.container}>
 				<Box component="div" position="relative" className={styles.root}>
+					{ navBar }
 					<FlexRow>
 						{ children }
 					</FlexRow>
@@ -46,7 +45,3 @@ export default function RootContainer(props) {
 		</>
   );
 }
-
-//<Typography component="div" className={styles.root} />
-//<Container maxWidth={theme.breakpoints.sm}>
-//<Typography component="div" style={{ backgroundColor: '#cfe8fc', height: '100vh' }} />

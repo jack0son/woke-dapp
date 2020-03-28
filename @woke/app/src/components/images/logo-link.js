@@ -16,14 +16,16 @@ const useStyles = makeStyles(theme => ({
 	logo: {
 		marginTop: theme.spacing(1),
 		//height: theme.spacing(5),
-		width: theme.spacing(5),
+		//width: theme.spacing(5),
 		[theme.breakpoints.up('sm')]: {
-			width: theme.spacing(6)
+			//width: theme.spacing(6)
 		},
 		[theme.breakpoints.up('md')]: {
-			width: theme.spacing(8)
+			//width: theme.spacing(8)
 		},
-		height: 'auto',
+		height: '15vw',
+		minHeight: '48px',
+		maxHeight: '5vh',
 		animationName: '$fadeIn, $open',
 		animationDuration: '1s, 2s',
 		animationTimingFunction: 'ease-in, ease-out',

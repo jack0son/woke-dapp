@@ -9,9 +9,11 @@ export const StyledTabs = withStyles(theme => ({
 		backgroundColor: theme.palette.background.dark,
 		height: theme.spacing(5),
 		minHeight: theme.spacing(4),
+		maxWidth: 'fit-content',
+		// width: 'auto',
 		// width: '100%',
-		position: 'absolute',
-		bottom: 0,
+		position: 'relative',
+		//bottom: 0,
 	},
 
   indicator: {
@@ -22,7 +24,7 @@ export const StyledTabs = withStyles(theme => ({
 		// Underline
 		'& > div': {
       //maxWidth: 60,
-      width: '100%',
+      // width: '100%',
 			backgroundColor: theme.palette.primary.main,
     },
   },

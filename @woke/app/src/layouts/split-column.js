@@ -1,0 +1,51 @@
+import React from 'react';
+import { makeStyles } from '@material-ui/styles';
+
+import Box from '@material-ui/core/Box';
+import FlexColumn from './flex-column';
+
+
+const useStyles = makeStyles(theme => ({
+	flexRow: styles => ({
+		// Layout
+		position: 'relative',
+		display: 'flex',
+		flexDirection: 'row',
+		justifyContent: 'center',
+		alignItems: 'center',
+
+		// Size
+		width: '90%',
+		height: '80vh',
+		[theme.breakpoints.down('sm')]: {
+			width: '95%',
+			height: '90vh',
+		},
+
+		// Spacing
+		marginLeft: 'auto',
+		marginRight: 'auto',
+
+		...styles
+	})
+}));
+
+export default function FlexRow(props) {
+	const {first, second, reverse, styles, ...other} = props;
+	const classes = useStyles(styles);
+
+	const _styles = {
+		alignSelf: 'stretch',
+		justifyContent: 'flex-start',
+		...styles,
+	}
+
+	return (<>
+		<FlexColumn flexGrow={1} styles={_styles}>
+			{ second }
+		</FlexColumn>
+		<FlexColumn flexGrow={1} styles={_styles}>
+			{ first }
+		</FlexColumn>
+	</>);
+}

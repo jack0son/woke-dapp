@@ -3,6 +3,7 @@ import { makeStyles, useTheme } from '@material-ui/styles';
 import Typography from '@material-ui/core/Typography';
 import Box from '@material-ui/core/Box';
 
+import ColumnSplit from '../../layouts/split-column';
 import PaneTabs from '../../layouts/tabs/tabs-panes';
 import TransactionList from '../../layouts/list-transactions';
 import FlexColumn from '../../layouts/flex-column'
@@ -91,12 +92,12 @@ export default function WalletView (props) {
 	);
 
 	const renderPaneTabs = () => (
-		<PaneTabs order={responsive.order} flexGrow={2}>
+		<PaneTabs order={responsive.order} flexGrow={1}>
 			<TransactionList
 				label="Transfers"
 				listItems={transferEvents}
 			/>
-			<FlexColumn	styles={{marginTop: 0}} align='center' label="Bounties">
+			<FlexColumn	styles={{width: '0px'}} align='center' label="Bounties">
 				<LargeBody align='center'> 
 					Send <WokeSpan>WOKENs</WokeSpan> to new users to receive a bonus when they join.
 				</LargeBody>
@@ -107,21 +108,15 @@ export default function WalletView (props) {
 		</PaneTabs>
 	);
 
-	return (
-		<>
-			<FlexColumn styles={{
-				justifyContent: 'space-between',
-				alignItems: 'center',
-				height: '100%',
-				width: '100%',
-				small: {
-					alignSelf: 'flex-start',
-				}
-			}}>
-				<Box border={1} borderColor='text.primary' flexGrow={4} className={classes.placeholder}>
-				</Box>
+	return (<>
+		<ColumnSplit
+			first={<>
+				{ renderHeader() }
+			</>}
+			second={<>
+				<div style={{ height: '15vw'}}/>
 				{ renderPaneTabs() }
-			</FlexColumn>
-		</>
-	);
+			</>}
+		/>
+	</>);
 }

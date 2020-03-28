@@ -13,14 +13,16 @@ import TabPanel from './tab-panel';
 const useStyles = makeStyles(theme => ({
 tabsWrapper: {
 		//height: '50%',
+		//width: '30vw',
 		position: 'relative',
 		display: 'flex',
 		flexDirection: 'column',
 		//justifyContent: 'space-between',
-		justifyContent: 'space-between',
-		alignSelf: 'stretch',
+		justifyContent: 'flex-start',
+		//alignSelf: 'stretch',
 		height: '100%',
-		flexGrow: 1,
+		//flexGrow: 1,
+		//flexShrink: 1,
 		//backgroundColor: theme.palette.background.dark,
   },
 
@@ -48,7 +50,19 @@ export default function PaneTabs(props) {
 
   return (
 		<Box className={classes.tabsWrapper} {...innerProps}>
-			<SwipeableViews order={0}
+			<StyledTabs order={0}
+				//style={{height: theme.spacing()}} 
+				value={value} 
+				onChange={handleChange} 
+				aria-label="wallet tabs"
+			>
+				{ 
+					props.children.map((child, i) => (
+							<StyledTab key={i} label={child.props.label} />
+					))
+				}
+			</StyledTabs>
+			<SwipeableViews order={1}
 				className={classes.SwipeableViews}
 				axis={theme.direction === 'rtl' ? 'x-reverse' : 'x'}
 				index={value}
@@ -62,19 +76,6 @@ export default function PaneTabs(props) {
 					))
 				}
 			</SwipeableViews>
-
-			<StyledTabs order={1}
-				//style={{height: theme.spacing()}} 
-				value={value} 
-				onChange={handleChange} 
-				aria-label="wallet tabs"
-			>
-				{ 
-					props.children.map((child, i) => (
-							<StyledTab key={i} label={child.props.label} />
-					))
-				}
-			</StyledTabs>
 		</Box>
   );
 }
