@@ -9,6 +9,7 @@ import MenuIcon from '@material-ui/icons/Menu';
 
 import LogoLink from './images/logo-link';
 
+const gutterSize = '5%';
 const useStyles = makeStyles(theme => ({
 	appBar: {
 		background: 'transparent',
@@ -20,7 +21,7 @@ const useStyles = makeStyles(theme => ({
 	},
 
   menuButton: {
-    marginRight: '5%'
+    marginRight: gutterSize
   },
 
   title: {
@@ -35,6 +36,8 @@ export default function NavBar(props) {
 		if(props.hideLogo != true) {
 			return (
 					<LogoLink
+						styles={{ marginLeft: gutterSize }}
+						className={classes.logo}
 						src='images/eye-logo.png'
 						url='https://getwoke.me'
 					/>
@@ -54,7 +57,13 @@ export default function NavBar(props) {
 						color="inherit" 
 						aria-label="menu" 
 					>
-						<MenuIcon/>
+						<MenuIcon
+						style={{
+							height: '15vw',
+							minHeight: '48px',
+							maxHeight: '5vh',
+						}}
+						/>
 					</IconButton>
 			</Toolbar>
 		</AppBar>

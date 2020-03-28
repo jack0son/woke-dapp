@@ -7,7 +7,8 @@ const useStyles = makeStyles(theme => ({
   link: {
 		height: '100%',
 		maxWidth: theme.spacing(10),
-		marginLeft: '5%',
+		//marginLeft: '5%',
+		marginLeft: theme.spacing(2),
 		marginRight: theme.spacing(2),
 		paddingTop: theme.spacing(1),
 		color: 'transparent',
@@ -53,15 +54,18 @@ const useStyles = makeStyles(theme => ({
 }));
 
 export default function BrandLink(props) {
+	const { styles, src, alt, ...other } = props;
 	const classes = useStyles();
 	return (
 			<Link 
+				style={styles}
 				href={props.url} 
 				className={classes.link} 
 				position="relative" 
 				target="_blank"
+				{ ...other }
 			>
-				<img position="static" src={props.src} alt={props.alt} className={classes.logo}/>
+				<img position="static" src={src} alt={alt} className={classes.logo}/>
 			</Link>
 	);
 }
