@@ -15,7 +15,7 @@ const useStyles = makeStyles(theme => ({
 		marginRight: theme.spacing(2),
 		color: 'transparent',
 		borderStyle: 'solid',
-		borderWidth: '2px',
+		borderWidth: '0.25vh',
 		borderColor: '#46dc9e',
 		borderRadius: '50%',
   },
