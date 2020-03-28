@@ -94,8 +94,9 @@ export default function WalletView (props) {
 	);
 
 	const renderPaneTabs = () => (
-		<PaneTabs order={responsive.order} flexGrow={1}>
+		<PaneTabs alignSelf="stretch" order={responsive.order}> 
 			<TransactionList
+				styles={{ width: '80%' }}
 				label="Transfers"
 				listItems={transferEvents}
 			/>
@@ -117,7 +118,11 @@ export default function WalletView (props) {
 				{ renderHeader(headerHeight) }
 			</>}
 			second={<>
-				<div style={{ height: `${headerHeight/2}vw`}}/>
+				<div style={{
+					display: 'inline-block',
+					// @fix Smaller height on repsonsive (header height/2)
+					minHeight: `${headerHeight}vh`
+				}}/>
 				{ renderPaneTabs() }
 			</>}
 		/>

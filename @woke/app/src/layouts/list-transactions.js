@@ -17,14 +17,16 @@ import WokeSpan from '../components/text/span-woke';
 
 const useStyles = makeStyles(theme => ({
 	transactionList: styles => ({
+		//flexGrow: 1,
 		//maxWidth: '60vw',
-		//width: '100%',
+		//maxWidth: styles.itemWidth || '100%',
 		height: 'inherit',
 		maxHeight: 'inherit',
 		position: 'relative',
 		//flexShrink: 1,
 		//overflow: 'scroll',
-		[theme.breakpoints.up('sm')]: {
+		[theme.breakpoints.down('sm')]: {
+			width: '100%',
 			//paddingRight: '10%',
 			//paddingLeft: '10%',
 		},
@@ -33,7 +35,7 @@ const useStyles = makeStyles(theme => ({
 	}),
 
 	listItem: {
-		//width: '100%',
+		width: '100%',
 		maxHeight: theme.spacing(5),
 		paddingRight: theme.spacing(1),
 		paddingLeft: theme.spacing(1),
@@ -53,7 +55,7 @@ const useStyles = makeStyles(theme => ({
 export default function TransactionList (props) {
 	const {styles, listItems, ...innerProps} = props;
 	const theme = useTheme();
-	const dense = true;
+	const dense = false;
 
 	const [scrollTarget, setScrollTarget] = useState(undefined)
 	const scrollTrigger = useScrollTrigger({ target: scrollTarget });
