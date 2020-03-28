@@ -20,6 +20,7 @@ const useStyles = makeStyles(theme => ({
 		//flexGrow: 1,
 		//maxWidth: '60vw',
 		//maxWidth: styles.itemWidth || '100%',
+		//direction: 'rtl',
 		height: 'inherit',
 		maxHeight: 'inherit',
 		position: 'relative',
@@ -34,6 +35,12 @@ const useStyles = makeStyles(theme => ({
 		...styles
 	}),
 
+	avatarItem: {
+		height: '100%',
+		width: 'auto',
+		marginRight: '18%',
+	},
+
 	listItem: {
 		display: 'flex',
 		flexDirection: 'row',
@@ -42,7 +49,7 @@ const useStyles = makeStyles(theme => ({
 		minHeight: theme.spacing(5),
 		//height: '8vh',
 		paddingRight: theme.spacing(1),
-		paddingLeft: theme.spacing(1),
+		paddingLeft: '2%', // theme.spacing(1),
 		paddingTop: theme.spacing(0.5),
 		paddingBottom: theme.spacing(0.5),
 		marginBottom: '3px',
@@ -50,8 +57,11 @@ const useStyles = makeStyles(theme => ({
 		boxShadow: '0 1px 7px 0 #090117',
 	},
 
-	avatar: {
-		height: '100%',
+	handleLabel: {
+		display: 'flex',
+		flexDirection: 'row',
+		justifyContent: 'space-between',
+		minWidth: '40%',
 	},
 
 }));
@@ -67,17 +77,18 @@ export default function TransactionList (props) {
 
 	const handleProps = {
 		style: {
-			fontSize: '14px',
-			lineHeight: '14px',
+			//paddingTop: '5%',
+			fontSize: '1.5rem',
+			lineHeight: '1.0',
 		}
 	}
 
 	const timeSinceProps = {
 		style: {
-			fontSize: '12px',
+			fontSize: '1.0rem',
 			color: theme.palette.primary.contrastText,
-			lineHeight: '12px',
-			opacity: 0.5
+			lineHeight: '1.0rem',
+			opacity: 0.7
 		}
 	}
 
@@ -93,10 +104,11 @@ export default function TransactionList (props) {
 		</div>
 	);
 
-	const defaultAvatarHeight = 8;
+	const defaultAvatarHeight = 5;
 	const renderTransactions = () => listItems.map((tx, i) => (
-		<ListItem key={i} className={classes.listItem}>
-			<ListItemAvatar className={classes.avatar}>
+		<ListItem key={i} alignItems='flex-start' className={classes.listItem}>
+			<div className={classes.handleLabel}>
+			<ListItemAvatar className={classes.avatarItem}>
 				<Avatar
 					alt={tx.counterParty ? tx.counterParty.handle : 'loading'}
 					src={tx.counterParty ? tx.counterParty.avatar : 'loading'}
@@ -115,13 +127,14 @@ export default function TransactionList (props) {
 					}}
 				/>
 			</ListItemAvatar>
-			<ListItemText
+				<ListItemText style={{display: 'flex', flexDirection: 'column', justifyContent: 'space-evenly'}}
 				primary={`@${tx.counterParty ? tx.counterParty.handle : 'loading'}`}
 				primaryTypographyProps={handleProps}
 
 				secondary={tx.timeSince ? `${tx.timeSince}` : `...`}
 				secondaryTypographyProps={timeSinceProps}
 			/>
+			</div>
 			<ListItemSecondaryAction>
 				<TransactionAmount type={tx.type} amount={tx.returnValues.amount}/>
 			</ListItemSecondaryAction>

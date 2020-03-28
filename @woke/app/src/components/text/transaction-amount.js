@@ -24,7 +24,7 @@ export default function TransactionAmount(props) {
 	}
 
 	let styles = {
-		fontSize: '16px',
+		fontSize: '1.5rem' || '16px',
 		lineHeight: '20px',
 		...style
 	};

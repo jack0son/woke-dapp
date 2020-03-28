@@ -75,6 +75,15 @@ const transferList = [
 		timestamp: '2019-09-12',
 		timeSince: timeSince('2019-09-12')
 	},
+	{
+		counterParty: users['11'],
+		returnValues: {
+			amount: '12',
+		},
+		type: 'receive',
+		timestamp: '2019-09-12',
+		timeSince: timeSince('2019-09-12')
+	},
 	/*
 	{
 		counterParty: users['11'],
@@ -121,15 +130,7 @@ const transferList = [
 		timestamp: '2019-09-12',
 		timeSince: timeSince('2019-09-12')
 	},
-	{
-		counterParty: users['11'],
-		returnValues: {
-			amount: '12',
-		},
-		type: 'receive',
-		timestamp: '2019-09-12',
-		timeSince: timeSince('2019-09-12')
-	},
+	/*
 	{
 		counterParty: users['11'],
 		returnValues: {
