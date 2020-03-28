@@ -35,8 +35,12 @@ const useStyles = makeStyles(theme => ({
 	}),
 
 	listItem: {
+		display: 'flex',
+		flexDirection: 'row',
+		justifyContent: 'space-between',
 		width: '100%',
-		maxHeight: theme.spacing(5),
+		minHeight: theme.spacing(5),
+		//height: '8vh',
 		paddingRight: theme.spacing(1),
 		paddingLeft: theme.spacing(1),
 		paddingTop: theme.spacing(0.5),
@@ -53,7 +57,7 @@ const useStyles = makeStyles(theme => ({
 }));
 
 export default function TransactionList (props) {
-	const {styles, listItems, ...innerProps} = props;
+	const {styles, itemHeightVH, listItems, ...innerProps} = props;
 	const theme = useTheme();
 	const dense = false;
 
@@ -80,25 +84,30 @@ export default function TransactionList (props) {
 
 	//TODO render inner border on scroll down 
 	const WithScrollTarget = props => (
-					<div ref={node => {
-							if (node) {
-									setScrollTarget(node);
-							}
-					}}>
-							{props.children}
-					</div>
+		<div ref={node => {
+			if (node) {
+				setScrollTarget(node);
+			}
+		}}>
+			{props.children}
+		</div>
 	);
 
+	const defaultAvatarHeight = 8;
 	const renderTransactions = () => listItems.map((tx, i) => (
-			<ListItem key={i} className={classes.listItem}>
+		<ListItem key={i} className={classes.listItem}>
 			<ListItemAvatar className={classes.avatar}>
 				<Avatar
 					alt={tx.counterParty ? tx.counterParty.handle : 'loading'}
 					src={tx.counterParty ? tx.counterParty.avatar : 'loading'}
 					styles={{
-						//height: '100%', 
-						height: '32px', 
-						width: '32px', 
+						marginTop: '10%',
+						marginBottom: '10%',
+						marginLeft: '10%',
+						marginRight: '10%',
+						height: `${itemHeightVH || 8}vh`, 
+						width: '8vh',
+						minHeight: '32px', 
 						//borderStyle: 'solid',
 						borderWidth: '1px',
 						borderColor: theme.palette.background.dark,
@@ -116,20 +125,20 @@ export default function TransactionList (props) {
 			<ListItemSecondaryAction>
 				<TransactionAmount type={tx.type} amount={tx.returnValues.amount}/>
 			</ListItemSecondaryAction>
-			</ListItem>
+		</ListItem>
 	));
 
 	return (
 		<>
-		{ 
-			listItems.length > 0 ? (
-				<List dense={dense} className={classes.transactionList} disablePadding>
-				{ renderTransactions() }
-				</List>
-			) : (
-				props.label == 'Transfers' ? <StandardBody align="center">Start sending <WokeSpan>WOKENs</WokeSpan></StandardBody> : null
-			)
-		}
+			{ 
+				listItems.length > 0 ? (
+					<List dense={dense} className={classes.transactionList} disablePadding>
+						{ renderTransactions() }
+					</List>
+				) : (
+					props.label == 'Transfers' ? <StandardBody align="center">Start sending <WokeSpan>WOKENs</WokeSpan></StandardBody> : null
+				)
+			}
 		</>
 	);
 }

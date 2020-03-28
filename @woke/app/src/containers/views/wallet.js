@@ -96,6 +96,7 @@ export default function WalletView (props) {
 	const renderPaneTabs = () => (
 		<PaneTabs alignSelf="stretch" order={responsive.order}> 
 			<TransactionList
+				itemHeightVH={8}
 				styles={{ width: '80%' }}
 				label="Transfers"
 				listItems={transferEvents}
