@@ -84,8 +84,10 @@ export default function WalletView (props) {
 		/>
 	);
 
-	const renderHeader = () => (
+	const renderHeader = (heightVH) => (
 				<AvatarHeader order={0}
+					styles={{height: `${heightVH}vh`}}
+					alignSelf='flex-start'
 					src={avatar}
 					handle={props.user.handle}
 				/>
@@ -108,13 +110,14 @@ export default function WalletView (props) {
 		</PaneTabs>
 	);
 
+	const headerHeight = 15;
 	return (<>
 		<ColumnSplit
 			first={<>
-				{ renderHeader() }
+				{ renderHeader(headerHeight) }
 			</>}
 			second={<>
-				<div style={{ height: '15vw'}}/>
+				<div style={{ height: `${headerHeight/2}vw`}}/>
 				{ renderPaneTabs() }
 			</>}
 		/>

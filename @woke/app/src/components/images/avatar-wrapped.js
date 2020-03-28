@@ -24,7 +24,7 @@ const useStyles = makeStyles(theme => ({
 		//boxSizing: 'box-content !important',
 		position: 'relative',
 		//width: '100%',
-		width: 'auto',
+		//width: 'auto',
 		height: '100%',
 		borderRadius: '50%',
 	},

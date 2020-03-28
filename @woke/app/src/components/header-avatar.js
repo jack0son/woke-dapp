@@ -9,13 +9,13 @@ const useStyles = makeStyles(theme => ({
 	avatarHeader: styles => ({
 		//width: '120%',
 		minHeight: '76px',
-		height: '20vh',
+		height: '18vh',
 		position: 'relative',
 		display: 'flex',
 		flexDirection: 'row',
 		justifyContent: 'flex-end',
 		//overflow: 'hidden',
-		marginTop: theme.spacing(2),
+		//marginTop: theme.spacing(2),
 		...styles
 	}),
 
