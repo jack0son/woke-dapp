@@ -2,11 +2,12 @@ import React from 'react';
 import { makeStyles } from '@material-ui/core/styles';
 
 import AppBar from '@material-ui/core/AppBar';
-import Toolbar from '@material-ui/core/Toolbar';
+// import Toolbar from '@material-ui/core/Toolbar'; 
 import Typography from '@material-ui/core/Typography';
 import IconButton from '@material-ui/core/IconButton';
 import MenuIcon from '@material-ui/icons/Menu';
-import Hamburger from './hamburger';
+import Menu from './menu';
+import FlexRow from '../layouts/flex-row'
 
 import LogoLink from './images/logo-link';
 
@@ -44,12 +45,12 @@ export default function NavBar(props) {
 
 	return (
 		<AppBar position="relative" overflow="auto" className={classes.appBar}>
-			<Toolbar position="relative" disableGutters={true} height="100%">
+			<FlexRow position="relative" disableGutters={true} height="100%">
 					{ renderLogo() }
 					<Typography variant="h6" className={classes.title}>
           			</Typography>
-					<Hamburger hecj="heck" />
-			</Toolbar>
+					<Menu />
+			</FlexRow>
 		</AppBar>
   );
 }
