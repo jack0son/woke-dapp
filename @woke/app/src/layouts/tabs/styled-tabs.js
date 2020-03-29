@@ -7,7 +7,8 @@ import { withStyles } from '@material-ui/core/styles';
 export const StyledTabs = withStyles(theme => ({
 	root: {
 		backgroundColor: theme.palette.background.dark,
-		height: theme.spacing(5),
+		minHeight: theme.spacing(5),
+		//height: '5vh',
 		minHeight: theme.spacing(4),
 		marginBottom: theme.spacing(2),
 		marginTop: theme.spacing(2),
@@ -37,7 +38,7 @@ export const StyledTab = withStyles(theme => ({
     textTransform: 'none',
     color: '#fff',
     fontWeight: theme.typography.fontWeightRegular,
-    fontSize: theme.typography.pxToRem(15),
+    fontSize: '1.5rem', // theme.typography.pxToRem(15),
     marginRight: theme.spacing(1),
     '&:focus': {
       opacity: 1,

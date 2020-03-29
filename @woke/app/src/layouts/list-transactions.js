@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
-import { makeStyles, useTheme } from '@material-ui/styles';
-import useScrollTrigger from '@material-ui/core/useScrollTrigger';
+import { makeStyles, useTheme } from '@material-ui/styles'; import useScrollTrigger from '@material-ui/core/useScrollTrigger';
 
 import Box from '@material-ui/core/Box';
 import List from '@material-ui/core/List';
@@ -52,8 +51,9 @@ const useStyles = makeStyles(theme => ({
 		paddingLeft: '2%', // theme.spacing(1),
 		paddingTop: theme.spacing(0.5),
 		paddingBottom: theme.spacing(0.5),
-		marginBottom: '3px',
+		marginBottom: '2%',
 		backgroundColor: theme.palette.background.dark,
+		//backgroundColor: theme.palette.common.black,
 		boxShadow: '0 1px 7px 0 #090117',
 	},
 
@@ -104,7 +104,7 @@ export default function TransactionList (props) {
 		</div>
 	);
 
-	const defaultAvatarHeight = 5;
+	const defaultAvatarHeight = 7;
 	const renderTransactions = () => listItems.map((tx, i) => (
 		<ListItem key={i} alignItems='flex-start' className={classes.listItem}>
 			<div className={classes.handleLabel}>
@@ -117,8 +117,8 @@ export default function TransactionList (props) {
 						marginBottom: '10%',
 						marginLeft: '10%',
 						marginRight: '10%',
-						height: `${itemHeightVH || 8}vh`, 
-						width: '8vh',
+						height: `${itemHeightVH || defaultAvatarHeight}vh`, 
+						width:  `${itemHeightVH || defaultAvatarHeight}vh`,
 						minHeight: '32px', 
 						//borderStyle: 'solid',
 						borderWidth: '1px',

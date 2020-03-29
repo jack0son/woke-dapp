@@ -11,7 +11,7 @@ import TabPanel from './tab-panel';
 
 
 const useStyles = makeStyles(theme => ({
-tabsWrapper: {
+	tabsWrapper: {
 		//height: '50%',
 		//width: '30vw',
 		position: 'relative',
@@ -24,7 +24,11 @@ tabsWrapper: {
 		//flexGrow: 1,
 		//flexShrink: 1,
 		//backgroundColor: theme.palette.background.dark,
-  },
+	},
+
+	styledTabs: styles => ({
+		height: styles.tabHeight || '5vh',
+	}),
 
 	swipeableView: {
 		height: '100%',
@@ -34,11 +38,10 @@ tabsWrapper: {
 }));
 
 export default function PaneTabs(props) {
-	const { order, ...innerProps } = props;
-  const classes = useStyles();
+	const { order, styles, ...innerProps } = props;
+  const classes = useStyles(styles);
 	const theme = useTheme();
   const [value, setValue] = React.useState(0);
-
 
   function handleChange(event, newValue) {
     setValue(newValue);
@@ -51,6 +54,7 @@ export default function PaneTabs(props) {
   return (
 		<Box className={classes.tabsWrapper} {...innerProps}>
 			<StyledTabs order={0}
+				className={classes.styledTabs}
 				//style={{height: theme.spacing()}} 
 				value={value} 
 				onChange={handleChange} 

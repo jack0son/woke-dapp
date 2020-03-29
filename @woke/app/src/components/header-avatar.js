@@ -22,7 +22,8 @@ const useStyles = makeStyles(theme => ({
 
 	centreLine: {
 		//display: 'block',
-		width: '50vw',
+		overflow: 'hidden',
+		width: '100%',
 		height: '50%',
 		position: 'absolute',
 		left: 0,
