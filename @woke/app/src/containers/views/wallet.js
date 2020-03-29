@@ -114,7 +114,7 @@ export default function WalletView (props) {
 
 	const headerHeight = 15;
 	return (<>
-		<ColumnSplit
+		<ColumnSplit reverse
 			first={<>
 				<div style={{
 					display: 'inline-block',
@@ -125,6 +125,15 @@ export default function WalletView (props) {
 			</>}
 			second={<>
 				{ renderHeader(headerHeight) }
+				<FlexColumn styles={{
+					width: '100%',
+					maxWidth: '100%', // limit to width of split columns
+					justifyContent: 'space-evenly',
+					alignSelf: 'stretch',
+				}}>
+					{ renderBalance() }
+					{ renderTransfer() }
+				</FlexColumn>
 			</>}
 		/>
 	</>);
