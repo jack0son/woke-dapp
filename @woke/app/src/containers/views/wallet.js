@@ -116,15 +116,15 @@ export default function WalletView (props) {
 	return (<>
 		<ColumnSplit
 			first={<>
-				{ renderHeader(headerHeight) }
-			</>}
-			second={<>
 				<div style={{
 					display: 'inline-block',
 					// @fix Smaller height on repsonsive (header height/2)
 					minHeight: `${headerHeight}vh`
 				}}/>
 				{ renderPaneTabs() }
+			</>}
+			second={<>
+				{ renderHeader(headerHeight) }
 			</>}
 		/>
 	</>);

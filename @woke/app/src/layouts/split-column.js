@@ -29,16 +29,18 @@ const useStyles = makeStyles(theme => ({
 	})
 }));
 
-export default function FlexRow(props) {
-	const {first, second, reverse, styles, ...other} = props;
+export default function ColumnSplit(props) {
+	const {first, second, reverse, order, styles, ...other} = props;
 	const classes = useStyles(styles);
 
+	const _order = order || 2;
+
 	return (<>
-		<FlexColumn flexGrow={1} className={classes.splitPane} styles={styles}>
-			{ second }
-		</FlexColumn>
-		<FlexColumn flexGrow={1} className={classes.splitPane} styles={styles}>
+		<FlexColumn order={_order} flexGrow={1} className={classes.splitPane} styles={styles}>
 			{ first }
+		</FlexColumn>
+		<FlexColumn order={reverse ? _order - 1 : _order + 1} flexGrow={1} className={classes.splitPane} styles={styles}>
+			{ second }
 		</FlexColumn>
 	</>);
 }
