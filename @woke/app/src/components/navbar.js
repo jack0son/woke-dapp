@@ -9,17 +9,19 @@ import MenuIcon from '@material-ui/icons/Menu';
 
 import LogoLink from './images/logo-link';
 
+const gutterSize = '5%';
 const useStyles = makeStyles(theme => ({
 	appBar: {
-    flexGrow: 1,
-		width: '100%',
-		height: theme.spacing(6),
 		background: 'transparent',
 		boxShadow: 'none',
 	},
 
+	toolBar: {
+		background: 'transparent',
+	},
+
   menuButton: {
-    marginRight: '5%'
+    marginRight: gutterSize
   },
 
   title: {
@@ -34,6 +36,8 @@ export default function NavBar(props) {
 		if(props.hideLogo != true) {
 			return (
 					<LogoLink
+						styles={{ marginLeft: gutterSize }}
+						className={classes.logo}
 						src='images/eye-logo.png'
 						url='https://getwoke.me'
 					/>
@@ -42,8 +46,8 @@ export default function NavBar(props) {
 	}
 
 	return (
-		<AppBar position="relative" overflow="auto" className={classes.appBar}>
-			<Toolbar position="relative" disableGutters={true} height="100%">
+		<AppBar position="static"className={classes.appBar}>
+			<Toolbar>
 					{ renderLogo() }
 					<Typography variant="h6" className={classes.title}>
           </Typography>
@@ -53,7 +57,13 @@ export default function NavBar(props) {
 						color="inherit" 
 						aria-label="menu" 
 					>
-						<MenuIcon/>
+						<MenuIcon
+						style={{
+							height: '15vw',
+							minHeight: '48px',
+							maxHeight: '5vh',
+						}}
+						/>
 					</IconButton>
 			</Toolbar>
 		</AppBar>

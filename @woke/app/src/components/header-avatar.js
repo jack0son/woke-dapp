@@ -5,30 +5,42 @@ import Box from '@material-ui/core/Box';
 import Avatar from '../components/images/avatar-wrapped'
 
 
+const avatarHeightVH = 18;
 const useStyles = makeStyles(theme => ({
 	avatarHeader: styles => ({
-		width: '100%',
-		height: '76px',
+		//width: '120%',
+		minHeight: '76px',
+		height: `${avatarHeightVH}vh`,
 		position: 'relative',
 		display: 'flex',
 		flexDirection: 'row',
-		justifyContent: 'flex-end',
-		marginTop: theme.spacing(2),
+		justifyContent: 'flex-start',
+		//overflow: 'hidden',
+		//marginTop: theme.spacing(2),
 		...styles
 	}),
 
 	centreLine: {
-		display: 'block',
-		width: '80%',
+		//display: 'block',
+		overflow: 'hidden',
+		width: '100%',
 		height: '50%',
 		position: 'absolute',
 		left: 0,
 		top: 0,
-		paddingLeft: theme.spacing(4),
-		paddingTop: theme.spacing(2),
+		paddingLeft: `${avatarHeightVH}vh`,
+		paddingTop: 0,
 		mx: theme.spacing(1),
-		borderBottom: `2px solid ${theme.palette.accents.secondary.main}`,
-		fontSizing: '18px',
+		borderBottom: `${0.5}vh solid ${theme.palette.accents.secondary.main}`,
+	},
+
+	handle: {
+		height: '100%',
+		display: 'flex',
+		flexDirection: 'row',
+		justifyContent: 'flex-start',
+		alignItems: 'flex-end',
+		fontSize: '2vh',
 		fontWeight: '700',
 		color: '#46dc9e'
 	}
@@ -55,7 +67,9 @@ export default function AvatarHeader (props) {
 			{...innerProps}
 		>
 			<Box className={classes.centreLine}>
+				<div className={classes.handle}>
 				@{props.handle}
+				</div>
 			</Box>
 			<Avatar src={props.src}/>
 		</Box>

@@ -5,22 +5,14 @@ import InputAdornment from '@material-ui/core/InputAdornment';
 
 const useStyles = makeStyles(theme => ({
 	amountField: {
-		//marginLeft: theme.spacing(0.25),
-		//marginTop: 0,
-		marginBottom: theme.spacing(1),
+		minWidth: '200px',
+		width: '40%',
 	},
 
 	inputLabel: {
 		color: theme.palette.primary.main.contrastText,
 		textOpacity: 70,
-	},
-
-	wrapper: {
-		position: 'relative',
-		alignSelf: 'center',
-		marginLeft: theme.spacing(0.25),
-		marginTop: 0,
-	},
+	}
 }));
 
 export default function AmountField(props) {
@@ -55,10 +47,9 @@ export default function AmountField(props) {
 
 	// TODO fix autocomplete
 	return (
-		<div className={classes.wrapper}>
 			<TextField
 				id="standard"
-				label="Amount"
+				label="Enter amount to send"
 				InputLabelProps={{
 					className: classes.inputLabel
 				}}
@@ -66,7 +57,7 @@ export default function AmountField(props) {
 					style: {
 						//marginTop: 8,
 					},
-					margin: 'dense',
+					//margin: 'dense',
 					endAdornment: renderAdornment(),
 					inputProps: {
 						min: 0,
@@ -78,6 +69,5 @@ export default function AmountField(props) {
 				type="number"
 				{...innerProps}
 			/>
-		</div>
 	);
 }

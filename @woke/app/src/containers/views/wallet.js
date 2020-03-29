@@ -1,8 +1,10 @@
 import React from 'react';
 import { makeStyles, useTheme } from '@material-ui/styles';
 import Typography from '@material-ui/core/Typography';
+import Box from '@material-ui/core/Box';
 
-import Tabs from '../../layouts/tabs';
+import ColumnSplit from '../../layouts/split-column';
+import PaneTabs from '../../layouts/tabs/tabs-panes';
 import TransactionList from '../../layouts/list-transactions';
 import FlexColumn from '../../layouts/flex-column'
 
@@ -16,7 +18,17 @@ const useStyles = makeStyles(theme => ({
 		fontSize: '38px',
 		lineHeight: '40px',
 		fontWeight: 700,
-	}
+	},
+
+	placeholder: {
+		width: '100%',
+		backgroundColor: 'white',
+		position: 'static',
+		flexGrow: 2,
+	//	height: '50vh',
+		minHeight: '50%',
+		border: '5px',
+	},
 }));
 
 export default function WalletView (props) {
@@ -55,50 +67,74 @@ export default function WalletView (props) {
 			order: 10
 		},
 	}
+	
+	const renderBalance = () => (
+		<Typography variant="h3" fontSize='38px' align="center" order={3}>
+			{balance}<WokeSpan styles={{fontSize: '30px'}}> W</WokeSpan>
+		</Typography>
+	);
 
-	return (
-		<>
-			<FlexColumn styles={{
-				justifyContent: 'space-around',
-				height: '80%',
-				width: '80%',
-				small: {
-					alignSelf: 'flex-start',
-				}
-			}}>
+	const renderTransfer = () => (
+		<SendTransferForm order={4}
+			sendTransfers={sendTransfers}
+			pending={sendTransfers.pending}
+			usernamePlaceholder='username...'
+			amountPlaceholder='amount'
+			suggestions={friends}
+		/>
+	);
 
+	const renderHeader = (heightVH) => (
 				<AvatarHeader order={0}
+					styles={{height: `${heightVH}vh`}}
+					alignSelf='flex-start'
 					src={avatar}
 					handle={props.user.handle}
 				/>
-
-				<Typography variant="h3" fontSize='38px' align="center" order={3}>
-					{balance}<WokeSpan styles={{fontSize: '30px'}}> W</WokeSpan>
-				</Typography>
-
-				<SendTransferForm order={4}
-					sendTransfers={sendTransfers}
-					pending={sendTransfers.pending}
-					usernamePlaceholder='username...'
-					amountPlaceholder='amount'
-					suggestions={friends}
-				/>
-
-				<Tabs order={responsive.order}>
-					<TransactionList
-						label="Transfers"
-						listItems={transferEvents}
-					/>
-					<FlexColumn	styles={{marginTop: 0}} align='center' label="Bounties">
-						<LargeBody align='center'> 
-							Send <WokeSpan>WOKENs</WokeSpan> to new users to receive a bonus when they join.
-						</LargeBody>
-						<TransactionList
-							listItems={rewardEvents}
-						/> 
-					</FlexColumn>
-				</Tabs>
-			</FlexColumn>
-		</>
 	);
+
+	const renderPaneTabs = () => (
+		<PaneTabs alignSelf="stretch" order={responsive.order} styles={{tabHeight: '6vh'}}> 
+			<TransactionList
+				itemHeightVH={5}
+				styles={{ width: '80%' }}
+				label="Transfers"
+				listItems={transferEvents}
+			/>
+			<FlexColumn	styles={{width: '0px'}} align='center' label="Bounties">
+				<LargeBody align='center'> 
+					Send <WokeSpan>WOKENs</WokeSpan> to new users to receive a bonus when they join.
+				</LargeBody>
+				<TransactionList
+					listItems={rewardEvents}
+				/> 
+			</FlexColumn>
+		</PaneTabs>
+	);
+
+	const headerHeight = 15;
+	return (<>
+		<ColumnSplit reverse
+			first={<>
+				<div style={{
+					display: 'inline-block',
+					// @fix Smaller height on repsonsive (header height/2)
+					minHeight: `${headerHeight}vh`
+				}}/>
+				{ renderPaneTabs() }
+			</>}
+			second={<>
+				{ renderHeader(headerHeight) }
+				<FlexColumn styles={{
+					width: '100%',
+					maxWidth: '100%', // limit to width of split columns
+					justifyContent: 'space-evenly',
+					alignSelf: 'stretch',
+				}}>
+					{ renderBalance() }
+					{ renderTransfer() }
+				</FlexColumn>
+			</>}
+		/>
+	</>);
 }

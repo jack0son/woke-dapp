@@ -14,6 +14,7 @@ const useStyles = makeStyles(theme => ({
 	root: {
 		background: theme.background,
 		height: '100vh',
+		width: '100vw',
 	},
 
 	container: {
@@ -44,7 +45,3 @@ export default function RootContainer(props) {
 		</>
   );
 }
-
-//<Typography component="div" className={styles.root} />
-//<Container maxWidth={theme.breakpoints.sm}>
-//<Typography component="div" style={{ backgroundColor: '#cfe8fc', height: '100vh' }} />

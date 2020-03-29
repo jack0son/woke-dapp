@@ -58,6 +58,8 @@ function reduceDomains(state, action) {
 	}
 }
 
+const isDefined = (obj) => obj !== undefined && obj !== null
+
 // When true, don't discard the stage a previously active domain was in
 // i.e. when moving from auth to claim, forget we were in the loading stage
 // and go back to the signin stage when returning to auth domain.
@@ -68,17 +70,17 @@ const cache = makeObjectCache('design_mode');
 export function DesignContextProvider({children}) {
 	const [domains, dispatch] = useReducer(reduceDomains, () => {
 		const stored = cache.retrieve()
-		return stored && stored.domains || {};
+		return stored && isDefined(stored.domains) || {};
 	});
 
 	const [save, setSave] = useState(() => {
 		const stored = cache.retrieve()
-		return stored && stored.save || false;
+		return stored && isDefined(stored.save) || false;
 	});
 
 	const [overlay, setOverlay] = useState(() => {
 		const stored = cache.retrieve()
-		return stored && stored.overlay || false;
+		return stored && isDefined(stored.overlay) || true;
 	})
 
 	function mapDomains(domains) {
