@@ -41,7 +41,6 @@ export default function useDesignDomain({ domainName, linearStages, stages }, op
 
 	useEffect(() => {
 		if(domainName)  {
-			if(domainName == 'root') console.log('UPDATE ROOT DOMAIN');
 			updateDomain(domainName, stageIndex)
 		}
 	}, [stageIndex, domainName])

@@ -11,17 +11,19 @@ import FlexRow from '../layouts/flex-row'
 
 import LogoLink from './images/logo-link';
 
+const gutterSize = '5%';
 const useStyles = makeStyles(theme => ({
 	appBar: {
-    flexGrow: 1,
-		width: '100%',
-		height: theme.spacing(6),
 		background: 'transparent',
 		boxShadow: 'none',
 	},
 
+	toolBar: {
+		background: 'transparent',
+	},
+
   menuButton: {
-    marginRight: '5%'
+    marginRight: gutterSize
   },
 
   title: {
@@ -36,6 +38,8 @@ export default function NavBar(props) {
 		if(props.hideLogo != true) {
 			return (
 					<LogoLink
+						styles={{ marginLeft: gutterSize }}
+						className={classes.logo}
 						src='images/eye-logo.png'
 						url='https://getwoke.me'
 					/>
@@ -44,13 +48,26 @@ export default function NavBar(props) {
 	}
 
 	return (
-		<AppBar position="relative" overflow="auto" className={classes.appBar}>
-			<FlexRow position="relative" disableGutters={true} height="100%">
+		<AppBar position="static"className={classes.appBar}>
+			<Toolbar>
 					{ renderLogo() }
 					<Typography variant="h6" className={classes.title}>
-          			</Typography>
-					<Menu />
-			</FlexRow>
+          </Typography>
+					<IconButton 
+						edge="end"
+						className={classes.menuButton} 
+						color="inherit" 
+						aria-label="menu" 
+					>
+						<MenuIcon
+						style={{
+							height: '15vw',
+							minHeight: '48px',
+							maxHeight: '5vh',
+						}}
+						/>
+					</IconButton>
+			</Toolbar>
 		</AppBar>
   );
 }

@@ -58,6 +58,8 @@ function reduceDomains(state, action) {
 	}
 }
 
+const isDefined = (obj) => obj !== undefined && obj !== null
+
 // When true, don't discard the stage a previously active domain was in
 // i.e. when moving from auth to claim, forget we were in the loading stage
 // and go back to the signin stage when returning to auth domain.
@@ -68,13 +70,18 @@ const cache = makeObjectCache('design_mode');
 export function DesignContextProvider({children}) {
 	const [domains, dispatch] = useReducer(reduceDomains, () => {
 		const stored = cache.retrieve()
-		return stored && stored.domains || {};
+		return stored && isDefined(stored.domains) || {};
 	});
 
 	const [save, setSave] = useState(() => {
 		const stored = cache.retrieve()
-		return stored && stored.save || false;
+		return stored && isDefined(stored.save) || false;
 	});
+
+	const [overlay, setOverlay] = useState(() => {
+		const stored = cache.retrieve()
+		return stored && isDefined(stored.overlay) || true;
+	})
 
 	function mapDomains(domains) {
 		const r = {};
@@ -89,16 +96,14 @@ export function DesignContextProvider({children}) {
 	}
 
 	useEffect(() => {
-		console.log('DETECTED DOMAINS UPDATED');
 		const saved = cache.retrieve(); // prevented unregistered domain from being clobbered
 		const storedDomains = PRESERVE_FINISHED_DOMAINS && saved && saved.domains || {};
-		console.log(domains);
-		console.log(storedDomains);
 		cache.store({
 			save,
+			overlay,
 			domains: save ? { ...storedDomains, ...mapDomains(domains) } : {},
 		})
-	}, [save, domains])
+	}, [save, domains, overlay])
 
 	const registerDomain = (domainBundle) => {
 		dispatch({ type: 'register',  domain: domainBundle });
@@ -117,6 +122,8 @@ export function DesignContextProvider({children}) {
 	return (
 		<Context.Provider
 			value={useMemo(() => ({
+				overlay,
+				setOverlay,
 				save,
 				setSave,
 				domains,
@@ -125,6 +132,8 @@ export function DesignContextProvider({children}) {
 				updateDomain,
 			}),
 				[
+					overlay,
+					setOverlay,
 					save,
 					setSave,
 					domains,

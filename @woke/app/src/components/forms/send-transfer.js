@@ -4,7 +4,8 @@ import Box from '@material-ui/core/Box';
 import Fab from '@material-ui/core/Fab';
 import CloseIcon from '@material-ui/icons/CloseRounded';
 
-import FieldWrapper from '../../layouts/wrapper-field';
+import FlexColumn from '../../layouts/flex-column';
+import FlexRow from '../../layouts/flex-row';
 
 import SearchField from  '../fields/search';
 import AmountField from  '../fields/amount';
@@ -14,13 +15,14 @@ import Spinner from '../progress/spinner-indeterminate';
 
 const useStyles = makeStyles(theme => ({
 	centeredForm: {
+		width: '80%',
 		position: 'relative',
 		display: 'flex',
 		flexDirection: 'row',
 		justifyContent: 'space-between',
-		alignItems: 'center',
-		width: 'auto',
-		marginTop: 0,
+		alignItems: 'baseline',
+		//width: 'auto',
+		//marginTop: 0,
 	},
 
 	cancelButton: {
@@ -29,6 +31,7 @@ const useStyles = makeStyles(theme => ({
 }));
 
 export default function SendTransferForm (props) {
+	const { order } = props;
 	const classes = useStyles();
 	const theme = useTheme();
 
@@ -61,34 +64,38 @@ export default function SendTransferForm (props) {
 		onClick: handleSelectRecipient,
 	}
 
+	const renderChooseAmount = () => (<>
+		<AmountField
+			flexGrow={3}
+			//placeholder={props.amountPlaceholder}
+			onChange={handleChangeInput('amount')}
+		/>
+			<StandardBody 
+				style={{
+					justifySelf: 'center',
+					paddingLeft:theme.spacing(2),
+					paddingTop: theme.spacing(1)
+				}}
+				align='left'
+			>
+				@{recipient.handle}
+			</StandardBody>
+	</>);
+
+	const renderChooseRecipient = () => (<>
+		<SearchField 
+			suggestions={suggestions}
+			placeholder={usernamePlaceholder}
+			handleChange={handleChangeInput('screen_name')}
+		/>
+	</>)
+
 	const renderForm = () => (
 		<>
-				<div
-					className={classes.centeredForm}
-				>
-					{ recipient ? (
-						<>
-						<AmountField
-							//placeholder={props.amountPlaceholder}
-							onChange={handleChangeInput('amount')}
-						/>
-						<StandardBody 
-							style={{
-								paddingLeft:theme.spacing(2),
-								paddingTop: theme.spacing(1)
-							}}
-							align='left'
-						>
-							@{recipient.handle}
-						</StandardBody>
-						</>
-					) : (
-							<SearchField 
-								suggestions={suggestions}
-								placeholder={usernamePlaceholder}
-								handleChange={handleChangeInput('screen_name')}
-							/>
-						)
+			<div className={classes.centeredForm} order={order}>
+					{ recipient ? 
+							renderChooseAmount() :
+							renderChooseRecipient()
 					}
 					<Button 
 						styles={{
@@ -128,9 +135,19 @@ export default function SendTransferForm (props) {
 
 
 	return (
-		<FieldWrapper align='center' styles={{paddingTop: recipient ? 0 : '16px'}}>
-			{ enableForm ? (pending ? <Spinner/> : renderForm()) : <><br/><br/></>}
-			<StandardBody color='error'>{error && error.message ? error.message : error}</StandardBody>
-		</FieldWrapper>
+			<FlexColumn
+				styles={{
+					alignSelf: 'center',
+					width: '80%',
+					maxWidth: '100%',
+					maxHeight: '70%',
+					justifyContent: 'space-between',
+					alignItems: 'center',
+					paddingTop: recipient ? 0 : '16px'
+				}}
+			>
+				{ enableForm ? (pending ? <Spinner/> : renderForm()) : <><br/><br/></>}
+				<StandardBody color='error'>{error && error.message ? error.message : error}</StandardBody>
+			</FlexColumn>
 	);
 }
