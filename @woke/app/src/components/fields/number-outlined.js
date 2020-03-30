@@ -80,7 +80,7 @@ export default function NumberFieldOutlined(props) {
 					id="outlined-adornment-amount"
 					value={values.amount}
 					onChange={handleChange('amount')}
-					startAdornment={<InputAdornment position="start">$</InputAdornment>}
+					startAdornment={<InputAdornment position="start">w</InputAdornment>}
 					labelWidth={60}
 				/>
 			</FormControl>
@@ -94,7 +94,8 @@ export default function NumberFieldOutlined(props) {
 				className={clsx(classes.margin, classes.textField)} //, classes.outlined)}
 				InputProps={{
 					//className: classes.outlined,
-					startAdornment: <InputAdornment position="start">W</InputAdornment>,
+					startAdornment:
+						<InputAdornment position="start" className={classes.adornment}>W</InputAdornment>
 				}}
 				variant="outlined"
 				{ ...props }
@@ -103,6 +104,5 @@ export default function NumberFieldOutlined(props) {
 
 	return (<>
 		{ renderAmountField() }
-		{ renderWithLabel() }
 	</>);
 }

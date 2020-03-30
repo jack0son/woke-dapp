@@ -102,12 +102,14 @@ export default function WalletView (props) {
 	const renderPaneTabs = () => (
 		<PaneTabs alignSelf="stretch" order={responsive.order} styles={{tabHeight: '6vh'}}> 
 			<TransactionList
+				label="History"
 				itemHeightVH={5}
 				styles={{ width: '80%' }}
-				label="Transfers"
 				listItems={transferEvents}
 			/>
-			<FlexColumn	styles={{width: '0px'}} align='center' label="Bounties">
+			<FlexColumn	styles={{width: '0px'}} align='center'
+				label="Earnings"
+			>
 				<LargeBody align='center'> 
 					Send <WokeSpan>WOKENs</WokeSpan> to new users to receive a bonus when they join.
 				</LargeBody>
