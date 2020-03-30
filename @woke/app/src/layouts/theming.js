@@ -55,6 +55,21 @@ const theme = createMuiTheme({
 				lineHeight: '100px',
 			}
 		},
+		h3: {
+			fontFamily: 'Inconsolata',
+			fontWeight: 500,
+			fontSize: '18px',
+			lineHeight: '24px',
+			[breakpoints.up('sm')]: {
+				fontSize: '26px',
+			},
+			[breakpoints.up('lg')]: {
+				fontSize: '28px',
+			},
+			// '&:hover, &:focus, &:active, &:visited': {
+			// 	textDecoration: 'none',
+			// }
+		},
 		h4: {
 			fontFamily: 'Inconsolata',
 			fontWeight: 700,
