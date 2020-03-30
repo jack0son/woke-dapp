@@ -67,7 +67,7 @@ export default function TextFieldOutlined({ controlledValue, handleChange, ...pr
 			fullWidth
 		>
 			<InputLabel htmlFor="outlined-adornment-text">{labelText}</InputLabel>
-			<OutlinedInput type="number"
+			<OutlinedInput
 				value={controlledValue}
 				onChange={handleChange}
 				className={classes.input}

@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import Button from '../buttons/button-contained';
 
 import FlexColumn from '../../layouts/flex-column';
 import FlexRow from '../../layouts/flex-row';
@@ -16,10 +17,13 @@ export default function TransferTokensForm(props) {
 	} = props;
 
 	const [amount, setAmount] = useState(0);
-	const [recipient, setRecipient] = useState('twitterHandle');
+	const [recipient, setRecipient] = useState(`  ... user's twitter handle goes here`);
 
 	const handleSetAmount = (amount) => {
 		setAmount(amount);
+	};
+
+	const popModal = () => {
 	};
 
 	return (
@@ -38,6 +42,15 @@ export default function TransferTokensForm(props) {
 				amount={amount}
 				handleSetAmount={handleSetAmount}
 				balance={1305}
+			/>
+			<Button
+				color='primary'
+				text='SEND'
+				onClick={popModal}
+				styles={{
+					fontSize: '1.5rem',
+					width: '100%',
+				}}
 			/>
 		</FlexColumn>
 	);
