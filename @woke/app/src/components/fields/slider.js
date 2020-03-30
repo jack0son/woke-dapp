@@ -10,39 +10,33 @@ const useStyles = makeStyles({
 });
 
 function valuetext(value) {
-  return `${value}°C`;
+  return `${value} W`;
 }
 
 export default function DiscreteSlider({defaultValue, max, ...props}) {
 	const defaults = {
 		min: 5,
-		step: 10,
+		step: 100,
 		labelText: 'Slider',
-		disabled: 'false',
+		disabled: false,
 	};
-
-	const {
-		step,
-		labelText, 
-		disabled,
-	} = { ...defaults, ...props };
+	const other = { ...defaults, ...props };
   const classes = useStyles();
+
 
   return (
     <div className={classes.slider}>
       <Typography id="discrete-slider" gutterBottom>
-				{ labelText }
+				{ other.labelText }
       </Typography>
       <Slider
+				max={max}
         valueLabelDisplay="auto"
-				disabled={disabled}
         defaultValue={defaultValue}
         getAriaValueText={valuetext}
-        step={step}
-        min={10}
-        max={110}
         aria-labelledby="discrete-slider"
         //marks
+				{...other}
       />
     </div>
   );

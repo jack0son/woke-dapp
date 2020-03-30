@@ -17,7 +17,9 @@ export default function TransferTokensForm(props) {
 
 	return (
 		<FlexColumn>
-			<AmountForm/>
+			<AmountForm
+				balance={1305}
+			/>
 			{/* <RecipientForm/> */ }
 		</FlexColumn>
 	);

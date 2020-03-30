@@ -13,59 +13,70 @@ import TextField from '@material-ui/core/TextField';
 import Visibility from '@material-ui/icons/Visibility';
 import VisibilityOff from '@material-ui/icons/VisibilityOff';
 
+const useStyles = makeStyles((theme) => ({
+  root: {
+    display: 'flex',
+    flexWrap: 'wrap',
+  },
+  margin: {
+    margin: theme.spacing(1),
+  },
+  withoutLabel: {
+    marginTop: theme.spacing(3),
+  },
+
+	notchedOutline: {
+		//border: '4px solid',
+		borderColor: theme.palette.background.default,
+		borderWidth: '2px',
+
+		focused: {
+			borderWidth: '5px',
+		}
+	},
+
+	input: {
+		backgroundColor: theme.palette.background.default,
+	},
+
+	// @fix move to global theme
+	overrides: {
+   MuiOutlinedInput: {
+      root: {
+        '&:hover:not($disabled):not($focused):not($error) $notchedOutline': {
+          borderColor: 'rgba(0,0,0,0.4)',
+        },
+      },
+    },
+  },
+
+  textField: {
+    width: '25ch',
+  },
+}));
 
 export default function NumberFieldOutlined(props) {
+	const { controlValue } = props;
+ const classes = useStyles();
+	const [values, setValues] = React.useState({
+    amount: '',
+    password: '',
+    weight: '',
+    weightRange: '',
+    showPassword: false,
+  });
 
-	return (
-		<div>
-			<TextField
-				label="With normal TextField"
-				id="outlined-start-adornment"
-				className={clsx(classes.margin, classes.textField)}
-				InputProps={{
-					startAdornment: <InputAdornment position="start">Kg</InputAdornment>,
-				}}
-				variant="outlined"
-			/>
-			<FormControl className={clsx(classes.margin, classes.textField)} variant="outlined">
-				<OutlinedInput
-					id="outlined-adornment-weight"
-					value={values.weight}
-					onChange={handleChange('weight')}
-					endAdornment={<InputAdornment position="end">Kg</InputAdornment>}
-					aria-describedby="outlined-weight-helper-text"
-					inputProps={{
-						'aria-label': 'weight',
-					}}
-					labelWidth={0}
-				/>
-				<FormHelperText id="outlined-weight-helper-text">Weight</FormHelperText>
-			</FormControl>
-			<FormControl className={clsx(classes.margin, classes.textField)} variant="outlined">
-				<InputLabel htmlFor="outlined-adornment-password">Password</InputLabel>
-				<OutlinedInput
-					id="outlined-adornment-password"
-					type={values.showPassword ? 'text' : 'password'}
-					value={values.password}
-					onChange={handleChange('password')}
-					endAdornment={
-						<InputAdornment position="end">
-							<IconButton
-								aria-label="toggle password visibility"
-								onClick={handleClickShowPassword}
-								onMouseDown={handleMouseDownPassword}
-								edge="end"
-							>
-								{values.showPassword ? <Visibility /> : <VisibilityOff />}
-							</IconButton>
-						</InputAdornment>
-					}
-					labelWidth={70}
-				/>
-			</FormControl>
+  const handleChange = (prop) => (event) => {
+    setValues({ ...values, [prop]: event.target.value });
+  };
+
+	const renderAmountField = () => (
 			<FormControl fullWidth className={classes.margin} variant="outlined">
 				<InputLabel htmlFor="outlined-adornment-amount">Amount</InputLabel>
 				<OutlinedInput
+					value={controlValue}
+					className={classes.input}
+					classes={{ notchedOutline: classes.notchedOutline }}
 					id="outlined-adornment-amount"
 					value={values.amount}
 					onChange={handleChange('amount')}
@@ -73,7 +84,25 @@ export default function NumberFieldOutlined(props) {
 					labelWidth={60}
 				/>
 			</FormControl>
-		</div>
-		</div>
 	);
+
+	const renderWithLabel = () => (
+			<TextField
+				color="primary"
+				label="amount"
+				id="outlined-start-adornment"
+				className={clsx(classes.margin, classes.textField)} //, classes.outlined)}
+				InputProps={{
+					//className: classes.outlined,
+					startAdornment: <InputAdornment position="start">W</InputAdornment>,
+				}}
+				variant="outlined"
+				{ ...props }
+			/>
+	);
+
+	return (<>
+		{ renderAmountField() }
+		{ renderWithLabel() }
+	</>);
 }

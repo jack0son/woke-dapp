@@ -12,7 +12,7 @@ export default function TokenAmountForm(props) {
 
 	return (<>
 		<AmountSlider
-			defaultValue={defaults.value < balance ? defaults.value : Math.floor(balance/2)}
+			defaultAmount={defaults.value < balance ? defaults.value : Math.floor(balance/2)}
 			min={1}
 			max={balance}
 		/>
