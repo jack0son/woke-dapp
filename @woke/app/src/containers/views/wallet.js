@@ -10,6 +10,7 @@ import FlexColumn from '../../layouts/flex-column'
 
 import AvatarHeader from '../../components/header-avatar';
 import WokeSpan from '../../components/text/span-woke';
+import TransferTokensForm from  '../../components/forms/tokens-transfer'
 import SendTransferForm from  '../../components/forms/send-transfer'
 import LargeBody from '../../components/text/body-large';
 
@@ -74,13 +75,18 @@ export default function WalletView (props) {
 		</Typography>
 	);
 
-	const renderTransfer = () => (
+	const renderTransferOld = () => (
 		<SendTransferForm order={4}
 			sendTransfers={sendTransfers}
 			pending={sendTransfers.pending}
 			usernamePlaceholder='username...'
 			amountPlaceholder='amount'
 			suggestions={friends}
+		/>
+	);
+
+	const renderTransfer = () => (
+		<TransferTokensForm 
 		/>
 	);
 
