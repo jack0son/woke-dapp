@@ -18,6 +18,22 @@ const useStyles = makeStyles((theme) => ({
     display: 'flex',
     flexWrap: 'wrap',
   },
+  margin: {
+    margin: theme.spacing(1),
+  },
+  withoutLabel: {
+    marginTop: theme.spacing(3),
+  },
+
+	notchedOutlineDisabled: {
+		//border: '4px solid',
+		borderColor: theme.palette.background.default,
+		borderWidth: '2px',
+
+		focused: {
+			borderWidth: '5px',
+		}
+	},
 
 	input: {
 		backgroundColor: theme.palette.background.default,
@@ -35,33 +51,33 @@ const useStyles = makeStyles((theme) => ({
   },
 
   textField: {
-    margin: theme.spacing(1),
-		marginLeft: 0,
 		flexGrow: 1,
-		//maxWidth: '40%',
-    minWidth: '50px',
+    //minWidth: '8ch',
   },
 }));
 
-export default function NumberFieldOutlined({ controlledValue, handleChange, ...props }) {
-	const defaults = { unitSymbol: '$' };
-	const { styles, unitSymbol, ...other } = { ...defaults, ...props }
+export default function TextFieldOutlined({ controlledValue, handleChange, ...props }) {
+	const defaults = {error: false, errorText: 'error', labelText: 'Text'};
+	const { styles, labelText, error, errorText, ...other } = { ...defaults, ...props }
 	const classes = useStyles(styles);
 
 	return (
-		<FormControl variant="outlined" className={classes.textField}
+		<FormControl variant="outlined" className={classes.margin}
 			//required
-			//fullWidth
+			fullWidth
 		>
-			<InputLabel htmlFor="outlined-adornment-amount">Amount</InputLabel>
+			<InputLabel htmlFor="outlined-adornment-text">{labelText}</InputLabel>
 			<OutlinedInput type="number"
 				value={controlledValue}
 				onChange={handleChange}
 				className={classes.input}
-				classes={{ notchedOutline: classes.notchedOutline }}
+				//classes={{ notchedOutline: classes.notchedOutline }}
 				id="outlined-adornment-amount"
-				startAdornment={<InputAdornment position="start">{unitSymbol}</InputAdornment>}
+				startAdornment={<InputAdornment position="start">Search</InputAdornment>}
+				error={error}
+				//helperText={ error ? errorText : null }
 				//labelWidth={60}
+				{ ...other }
 			/>
 		</FormControl>
 	);

@@ -9,13 +9,17 @@ export default function AmountSlider({defaultAmount, max, ...props}) {
 		//disabled: 'false',
 	};
 
-	const other = { ...defaults, ...props };
+	const { styles, ...other } = { ...defaults, ...props };
 
 	return(
 		<Slider
 			defaultValue={defaultAmount}
 			max={max}
-			labelText={'Amount'}
+			labelText={'give...'}
+			styles={{
+				minWidth: '40%',
+				...styles,
+			}}
 			{ ...other }
 		/>
 	);

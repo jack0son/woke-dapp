@@ -14,7 +14,7 @@ const useStyles = makeStyles(theme => ({
 		alignItems: 'center',
 
 		// Size
-		width: '90%',
+		width: '80%',
 		height: '80vh',
 		[theme.breakpoints.down('sm')]: {
 			width: '95%',

@@ -6,7 +6,8 @@ import Slider from '@material-ui/core/Slider';
 const useStyles = makeStyles({
 	slider: styles => ({
     //width: 300,
-		minWidth: 300,
+		minWidth: 100,
+		...styles,
   }),
 });
 
