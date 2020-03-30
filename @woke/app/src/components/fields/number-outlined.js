@@ -51,58 +51,31 @@ const useStyles = makeStyles((theme) => ({
   },
 
   textField: {
-    width: '25ch',
+		flexGrow: 1,
+    //minWidth: '8ch',
   },
 }));
 
-export default function NumberFieldOutlined(props) {
-	const { controlValue } = props;
- const classes = useStyles();
-	const [values, setValues] = React.useState({
-    amount: '',
-    password: '',
-    weight: '',
-    weightRange: '',
-    showPassword: false,
-  });
+export default function NumberFieldOutlined({ controlledValue, handleChange, ...props }) {
+	const defaults = { unitSymbol: '$' };
+	const { styles, unitSymbol, ...other } = { ...defaults, ...props }
+	const classes = useStyles(styles);
 
-  const handleChange = (prop) => (event) => {
-    setValues({ ...values, [prop]: event.target.value });
-  };
-
-	const renderAmountField = () => (
-			<FormControl fullWidth className={classes.margin} variant="outlined">
-				<InputLabel htmlFor="outlined-adornment-amount">Amount</InputLabel>
-				<OutlinedInput
-					value={controlValue}
-					className={classes.input}
-					classes={{ notchedOutline: classes.notchedOutline }}
-					id="outlined-adornment-amount"
-					value={values.amount}
-					onChange={handleChange('amount')}
-					startAdornment={<InputAdornment position="start">w</InputAdornment>}
-					labelWidth={60}
-				/>
-			</FormControl>
-	);
-
-	const renderWithLabel = () => (
-			<TextField
-				color="primary"
-				label="amount"
-				id="outlined-start-adornment"
-				className={clsx(classes.margin, classes.textField)} //, classes.outlined)}
-				InputProps={{
-					//className: classes.outlined,
-					startAdornment:
-						<InputAdornment position="start" className={classes.adornment}>W</InputAdornment>
-				}}
-				variant="outlined"
-				{ ...props }
+	return (
+		<FormControl variant="outlined" className={classes.margin}
+			//required
+			//fullWidth
+		>
+			<InputLabel htmlFor="outlined-adornment-amount">Amount</InputLabel>
+			<OutlinedInput
+				value={controlledValue}
+				onChange={handleChange}
+				className={classes.input}
+				classes={{ notchedOutline: classes.notchedOutline }}
+				id="outlined-adornment-amount"
+				startAdornment={<InputAdornment position="start">{unitSymbol}</InputAdornment>}
+				//labelWidth={60}
 			/>
+		</FormControl>
 	);
-
-	return (<>
-		{ renderAmountField() }
-	</>);
 }

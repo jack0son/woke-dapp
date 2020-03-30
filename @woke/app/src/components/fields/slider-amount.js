@@ -4,9 +4,9 @@ import Slider from './slider';
 
 export default function AmountSlider({defaultAmount, max, ...props}) {
 	const defaults = {
-		min: 5,
-		step: 10,
-		disabled: 'false',
+		//min: 5,
+		//step: 10,
+		//disabled: 'false',
 	};
 
 	const other = { ...defaults, ...props };

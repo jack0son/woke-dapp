@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 
 import FlexColumn from '../../layouts/flex-row';
 
@@ -14,10 +14,17 @@ export default function TransferTokensForm(props) {
 		amountPlaceholder,
 	} = props;
 
+	const [amount, setAmount] = useState(0);
+
+	const handleSetAmount = (amount) => {
+		setAmount(amount);
+	};
 
 	return (
 		<FlexColumn>
 			<AmountForm
+				amount={amount}
+				handleSetAmount={handleSetAmount}
 				balance={1305}
 			/>
 			{/* <RecipientForm/> */ }

@@ -4,9 +4,10 @@ import Typography from '@material-ui/core/Typography';
 import Slider from '@material-ui/core/Slider';
 
 const useStyles = makeStyles({
-  slider: {
-    width: 300,
-  },
+	slider: styles => ({
+    //width: 300,
+		minWidth: 300,
+  }),
 });
 
 function valuetext(value) {
@@ -18,11 +19,10 @@ export default function DiscreteSlider({defaultValue, max, ...props}) {
 		min: 5,
 		step: 100,
 		labelText: 'Slider',
-		disabled: false,
+		//disabled: false,
 	};
-	const other = { ...defaults, ...props };
-  const classes = useStyles();
-
+	const { styles, controlledValue, ...other } = { ...defaults, ...props };
+  const classes = useStyles(styles);
 
   return (
     <div className={classes.slider}>
@@ -31,6 +31,7 @@ export default function DiscreteSlider({defaultValue, max, ...props}) {
       </Typography>
       <Slider
 				max={max}
+				value={controlledValue}
         valueLabelDisplay="auto"
         defaultValue={defaultValue}
         getAriaValueText={valuetext}
