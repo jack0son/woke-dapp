@@ -69,11 +69,21 @@ export default function WalletView (props) {
 		},
 	}
 	
-	const renderBalance = () => (
-		<Typography variant="h3" fontSize='38px' align="center" order={3}>
-			{balance}<WokeSpan styles={{fontSize: '30px'}}> W</WokeSpan>
+	const balanceSizeREM = 8;
+	const renderBalance = () => (<>
+		<Typography variant="h3"align="center" order={3}
+			style={{
+				marginTop: '5%',
+				marginBottom: '5%',
+				fontSize: `${balanceSizeREM}rem`
+			}} 
+		>
+			<LargeBody alignSelf='flex-start' color='secondary' styles={{textAlign: 'left'}}> 
+				balance
+			</LargeBody>
+			{balance}<WokeSpan styles={{fontSize: `${balanceSizeREM*0.7}rem`}}> W</WokeSpan>
 		</Typography>
-	);
+	</>);
 
 	const renderTransferOld = () => (
 		<SendTransferForm order={4}
