@@ -14,7 +14,7 @@ export default function RootView({children}) {
 
 	const makeNavBar = () => (
 		<NavBar
-			hideLogo={loading}
+			hideNavItems={loading}
 		/>
 	);
 

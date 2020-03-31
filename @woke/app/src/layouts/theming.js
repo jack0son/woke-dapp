@@ -66,9 +66,6 @@ const theme = createMuiTheme({
 			[breakpoints.up('lg')]: {
 				fontSize: '28px',
 			},
-			// '&:hover, &:focus, &:active, &:visited': {
-			// 	textDecoration: 'none',
-			// }
 		},
 		h4: {
 			fontFamily: 'Inconsolata',
@@ -92,14 +89,11 @@ const theme = createMuiTheme({
 			[breakpoints.up('lg')]: {
 				fontSize: '1.15rem',
 			}
-			//color: 'primary'
-			//lineHeight: '24px',
 		},
 		body2: {
 			fontFamily: 'Inconsolata',
 			fontWeight: 400,
 			fontSize: '0.875rem',
-			//color: 'secondary',
 		},
 	},
 

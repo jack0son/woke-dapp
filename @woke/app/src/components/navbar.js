@@ -3,12 +3,11 @@ import { makeStyles } from '@material-ui/core/styles';
 
 import AppBar from '@material-ui/core/AppBar';
 import Toolbar from '@material-ui/core/Toolbar'; 
-import Typography from '@material-ui/core/Typography';
 import Menu from './menu';
-
 import LogoLink from './images/logo-link';
 
 const gutterSize = '5%';
+
 const useStyles = makeStyles(theme => ({
 	appBar: {
 		background: 'transparent',
@@ -19,28 +18,31 @@ const useStyles = makeStyles(theme => ({
 		background: 'transparent',
 	},
 
-  navbar: {
-	marginRight: gutterSize,
-	marginLeft: gutterSize,
-	flexWrap: 'wrap'
-  },
-
-  title: {
-    flexGrow: 1,
-  },
+	navbar: {
+		marginRight: gutterSize,
+		marginLeft: gutterSize,
+		flexWrap: 'wrap',
+		justifyContent: 'space-between',
+		[theme.breakpoints.up('sm')]: {
+			height: '12vh',
+		}
+	},
 }));
 
 export default function NavBar(props) {
 	const classes = useStyles();
 
-	const renderLogo = () => {
-		if(props.hideLogo != true) {
+	const renderNavItems = () => {
+		if(props.hideNavItems != true) {
 			return (
-					<LogoLink
-						className={classes.logo}
-						src='images/eye-logo.png'
-						url='https://getwoke.me'
-					/>
+				<>
+				<LogoLink
+					className={classes.logo}
+					src='images/eye-logo.png'
+					url='https://getwoke.me'
+				/>
+				<Menu />
+				</>
 			);
 		}
 	}
@@ -48,11 +50,8 @@ export default function NavBar(props) {
 	return (
 		<AppBar position="static"className={classes.appBar}>
 			<Toolbar className={classes.navbar}>
-					{ renderLogo() }
-					<Typography variant="h6" className={classes.title}>
-          			</Typography>
-					<Menu />
+					{ renderNavItems() }
 			</Toolbar>
 		</AppBar>
-  );
+  	);
 }
