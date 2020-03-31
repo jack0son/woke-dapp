@@ -90,8 +90,8 @@ export default function Menu() {
 						hideMenu();
 					}}
 				>
-					<Link className={classes.menuItem} variant="h3" href="/about">about</Link>
 					<Link className={classes.menuItem} variant="h3" href="/how">how</Link>
+					<Link className={classes.menuItem} variant="h3" href="https://about.getwoke.me">about</Link>
 					<Link className={classes.menuItem} variant="h3" href="/logout">logout</Link>
 				</OutsideClickHandler>
 			</FlexColumn>
