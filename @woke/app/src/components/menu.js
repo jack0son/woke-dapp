@@ -51,11 +51,11 @@ const useStyles = makeStyles(theme => ({
 			padding: '10px 0px 10px 0px',
 			width: '100%',
 			textAlign: 'center',
-			borderLeft: '1px dashed',
-			borderRight: '1px dashed',
-			borderTop: '1px dashed',
+			borderLeft: '2px dashed',
+			borderRight: '2px dashed',
+			borderTop: '2px dashed',
 			'&:nth-of-type(3)': {
-				borderBottom: '1px dashed',
+				borderBottom: '2px dashed',
 			}
 		},
 		[theme.breakpoints.up('sm')]: {
