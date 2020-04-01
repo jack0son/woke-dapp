@@ -119,11 +119,19 @@ export default function WalletView (props) {
 				styles={{ }}
 				listItems={transferEvents}
 			/>
-			<FlexColumn	styles={{width: '0px'}} align='center'
+			<FlexColumn	styles={{}} //align='center'
 				label="Earnings"
 			>
-				<LargeBody align='center'> 
-					Send <WokeSpan>WOKENs</WokeSpan> to new users to receive a bonus when they join.
+				<LargeBody align='center'
+					styles={{
+						marginTop: '10%',
+						marginBottom: '10%',
+						paddingLeft: '10%',
+						paddingRight: '10%',
+						marginBottom: '10%',
+					}}
+				> 
+					Tribute <WokeSpan>WOKENs</WokeSpan> to new users to earn an elightenment bonus when they join.
 				</LargeBody>
 				<TransactionList
 					listItems={rewardEvents}
