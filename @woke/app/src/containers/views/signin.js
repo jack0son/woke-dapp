@@ -9,7 +9,9 @@ export default function SigninView(props) {
 		<>
 			<FlexColumn styles={{
 				//height: '60%',
-				smallHeight: '50%',
+				small: {
+					height: '50%',
+				},
 				justifyContent: 'space-evenly'
 			}}>
 				<Typography variant="h1" align="center" gutterBottom>
