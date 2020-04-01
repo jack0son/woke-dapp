@@ -20,6 +20,7 @@ const useStyles = makeStyles(theme => ({
 		//maxWidth: '60vw',
 		//maxWidth: styles.itemWidth || '100%',
 		//direction: 'rtl',
+		width: '100%',
 		height: 'inherit',
 		maxHeight: 'inherit',
 		position: 'relative',

@@ -23,26 +23,12 @@ const useStyles = makeStyles(theme => ({
 	centreLine: {
 		//display: 'block',
 		overflow: 'hidden',
-		width: '100%',
+		width: '130%',
 		height: '50%',
 		position: 'absolute',
-		left: '-9vw',
-		//top: 0,
-		paddingLeft: `${avatarHeightVH*2}vh`, //`${avatarHeightVH}vh`,
-		//marginLeft: '-19vw',
-		//paddingRight: '10vw',
-		borderBottom: `${0.5}vh solid ${theme.palette.accents.secondary.main}`,
-	},
-
-	centreLineLeft: {
-		//display: 'block',
-		overflow: 'hidden',
-		width: '50%',
-		height: '50%',
-		position: 'absolute',
-		left: '-50%',
+		left: 0,
 		top: 0,
-		//paddingLeft: `${avatarHeightVH}vh`,
+		paddingLeft: `${avatarHeightVH}vh`,
 		paddingTop: 0,
 		mx: theme.spacing(1),
 		borderBottom: `${0.5}vh solid ${theme.palette.accents.secondary.main}`,
@@ -80,11 +66,11 @@ export default function AvatarHeader (props) {
 			className={classes.avatarHeader}
 			{...innerProps}
 		>
-			<div className={classes.centreLine}>
+			<Box className={classes.centreLine}>
 				<div className={classes.handle}>
 				@{props.handle}
 				</div>
-			</div>
+			</Box>
 			<Avatar src={props.src}/>
 		</Box>
 	);

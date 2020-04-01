@@ -3,7 +3,7 @@ import { makeStyles, useTheme } from '@material-ui/styles';
 import Typography from '@material-ui/core/Typography';
 import Box from '@material-ui/core/Box';
 
-import ColumnSplit from '../../layouts/split-column';
+import SplitColumns from '../../layouts/split-column';
 import PaneTabs from '../../layouts/tabs/tabs-panes';
 import TransactionList from '../../layouts/list-transactions';
 import FlexColumn from '../../layouts/flex-column'
@@ -110,11 +110,13 @@ export default function WalletView (props) {
 	);
 
 	const renderPaneTabs = () => (
-		<PaneTabs alignSelf="stretch" order={responsive.order} styles={{tabHeight: '6vh'}}> 
+		<PaneTabs order={responsive.order} styles={{
+			tabHeight: '6vh',
+		}}> 
 			<TransactionList
 				label="History"
 				itemHeightVH={5}
-				styles={{ width: '80%' }}
+				styles={{ }}
 				listItems={transferEvents}
 			/>
 			<FlexColumn	styles={{width: '0px'}} align='center'
@@ -129,19 +131,19 @@ export default function WalletView (props) {
 			</FlexColumn>
 		</PaneTabs>
 	);
-
-	const headerHeight = 15;
-	return (<>
-		<ColumnSplit reverse
-			first={<>
+	
+	const headerSpacer = () => (
 				<div style={{
 					display: 'inline-block',
 					// @fix Smaller height on repsonsive (header height/2)
 					minHeight: `${headerHeight}vh`
 				}}/>
-				{ renderPaneTabs() }
-			</>}
-			second={<>
+	);
+
+	const headerHeight = 15;
+	return (<>
+		<SplitColumns
+			first={<>
 				{ renderHeader(headerHeight) }
 				<FlexColumn styles={{
 					width: '100%',
@@ -152,6 +154,11 @@ export default function WalletView (props) {
 					{ renderBalance() }
 					{ renderTransfer() }
 				</FlexColumn>
+			</>}
+			second={<>
+				{ headerSpacer() }
+				{ headerSpacer() }
+				{ renderPaneTabs() }
 			</>}
 		/>
 	</>);

@@ -59,9 +59,9 @@ export default function NavBar(props) {
 					>
 						<MenuIcon
 						style={{
-							height: '15vw',
+							//height: '15vw',
 							minHeight: '48px',
-							maxHeight: '5vh',
+							//maxHeight: '5vh',
 						}}
 						/>
 					</IconButton>

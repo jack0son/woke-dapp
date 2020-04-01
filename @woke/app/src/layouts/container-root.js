@@ -13,7 +13,7 @@ const useStyles = makeStyles(theme => ({
 	root: {
 		background: theme.background,
 		height: '100vh',
-		width: '100vw',
+		//width: '100vw',
 	},
 
 	container: {

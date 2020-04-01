@@ -7,11 +7,11 @@ import FlexColumn from './flex-column';
 
 const useStyles = makeStyles(theme => ({
 	splitPane: styles => ({
-		maxWidth: '50%',
+		// Layout
 		alignSelf: 'stretch',
 		alignItems: 'flex-start',
 		justifyContent: 'flex-start',
-		// Layout
+
 		/*
 		position: 'relative',
 		display: 'flex',
@@ -21,6 +21,7 @@ const useStyles = makeStyles(theme => ({
 		*/
 
 		// Size
+		maxWidth: '50%',
 		[theme.breakpoints.down('sm')]: {
 		},
 
@@ -30,17 +31,17 @@ const useStyles = makeStyles(theme => ({
 	})
 }));
 
-export default function ColumnSplit(props) {
+export default function SplitColumns(props) {
 	const {first, second, reverse, order, styles, ...other} = props;
 	const classes = useStyles(styles);
 
 	const _order = order || 2;
 
 	return (<>
-		<FlexColumn order={_order} flexGrow={1} className={classes.splitPane} styles={styles}>
+		<FlexColumn p={0} order={_order} flexGrow={1} className={classes.splitPane} styles={styles}>
 			{ first }
 		</FlexColumn>
-		<FlexColumn order={reverse ? _order - 1 : _order + 1} flexGrow={1} className={classes.splitPane} styles={styles}>
+		<FlexColumn p={0} order={reverse ? _order - 1 : _order + 1} flexGrow={1} className={classes.splitPane} styles={styles}>
 			{ second }
 		</FlexColumn>
 	</>);
