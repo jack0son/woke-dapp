@@ -12,7 +12,7 @@ import TabPanel from './tab-panel';
 
 const useStyles = makeStyles(theme => ({
 	tabsWrapper: styles => ({
-		width: '80%',
+		width: '85%',
 		position: 'relative',
 		display: 'flex',
 		flexDirection: 'column',

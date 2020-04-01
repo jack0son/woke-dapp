@@ -15,6 +15,7 @@ const useStyles = makeStyles(theme => ({
 		display: 'flex',
 		flexDirection: 'row',
 		justifyContent: 'flex-start',
+		//marginBottom:  `${avatarHeightVH}vh`
 		//overflow: 'hidden',
 		//marginTop: theme.spacing(2),
 		...styles
@@ -23,10 +24,10 @@ const useStyles = makeStyles(theme => ({
 	centreLine: {
 		//display: 'block',
 		overflow: 'hidden',
-		width: '100%',
+		width: '100vw',
 		height: '50%',
 		position: 'absolute',
-		left: '-9vw',
+		left: '-10vw',
 		//top: 0,
 		paddingLeft: `${avatarHeightVH*2}vh`, //`${avatarHeightVH}vh`,
 		//marginLeft: '-19vw',

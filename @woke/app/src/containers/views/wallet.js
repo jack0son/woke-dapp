@@ -73,7 +73,7 @@ export default function WalletView (props) {
 	const renderBalance = () => (<>
 		<Typography variant="h3"align="center" order={3}
 			style={{
-				marginTop: '5%',
+				//marginTop: '5%',
 				marginBottom: '5%',
 				fontSize: `${balanceSizeREM}rem`
 			}} 
@@ -132,19 +132,20 @@ export default function WalletView (props) {
 		</PaneTabs>
 	);
 	
-	const headerSpacer = () => (
+	const headerHeight = 15;
+	const headerSpacer = (vh) => (
 				<div style={{
 					display: 'inline-block',
 					// @fix Smaller height on repsonsive (header height/2)
-					minHeight: `${headerHeight}vh`
+					minHeight: `${vh}vh`
 				}}/>
 	);
 
-	const headerHeight = 15;
 	return (<>
 		<SplitColumns
 			first={<>
 				{ renderHeader(headerHeight) }
+				{ headerSpacer(headerHeight/2) }
 				<FlexColumn styles={{
 					width: '100%',
 					maxWidth: '100%', // limit to width of split columns
@@ -156,8 +157,7 @@ export default function WalletView (props) {
 				</FlexColumn>
 			</>}
 			second={<>
-				{ headerSpacer() }
-				{ headerSpacer() }
+				{ headerSpacer(headerHeight*1.5) }
 				{ renderPaneTabs() }
 			</>}
 		/>
