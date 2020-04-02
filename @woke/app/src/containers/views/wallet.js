@@ -16,8 +16,8 @@ import AvatarHeader from '../../components/header-avatar';
 import Balance from  '../../components/wallet-balance'
 import WokeSpan from '../../components/text/span-woke';
 import TransferTokensForm from  '../../components/forms/tokens-transfer'
-import SendTransferForm from  '../../components/forms/send-transfer'
 
+const headerHeight = 15;
 const useStyles = makeStyles(theme => ({
 	balanceText: {
 		fontSize: '38px',
@@ -35,10 +35,11 @@ const useStyles = makeStyles(theme => ({
 		border: '5px',
 	},
 
-	spaceer: {
+	spacer: {
+		width: '100%',
+		minHeight: `${headerHeight/2}vh`,
 		[theme.breakpoints.down('sm')]: {
-			width: '100%',
-			maxWidth: '100%',
+			minHeight: `${headerHeight/4}vh`,
 		},
 	},
 }));
@@ -79,10 +80,9 @@ export default function WalletView (props) {
 			order: 10
 		},
 	}
-	
 
-	const renderTransferOld = () => (
-		<SendTransferForm order={4}
+	const renderTransfer = () => (
+		<TransferTokensForm order={2}
 			sendTransfers={sendTransfers}
 			pending={sendTransfers.pending}
 			usernamePlaceholder='username...'
@@ -91,18 +91,15 @@ export default function WalletView (props) {
 		/>
 	);
 
-	const renderTransfer = () => (
-		<TransferTokensForm 
-		/>
-	);
-
 	const renderHeader = (heightVH) => (
+		<Hidden smDown>
 				<AvatarHeader order={0}
 					styles={{height: `${heightVH}vh`}}
 					alignSelf='flex-start'
 					src={avatar}
 					handle={props.user.handle}
 				/>
+		</Hidden>
 	);
 
 	const renderPaneTabs = () => (
@@ -112,6 +109,7 @@ export default function WalletView (props) {
 			<TransactionList
 				label="History"
 				itemHeightVH={5}
+				itemHeightVHSmall={4}
 				styles={{ }}
 				listItems={transferEvents}
 			/>
@@ -136,17 +134,7 @@ export default function WalletView (props) {
 		</PaneTabs>
 	);
 	
-	const headerHeight = 15;
-	const headerSpacer = (vh) => (
-		//<Hidden smDown>
-				<div style={{
-					width: '100%',
-					//display: 'block',
-					//height: `${vh}vh`,
-					minHeight: `${vh}vh`,
-				}}/>
-		//</Hidden>
-	);
+	const headerSpacer = () => <div className={classes.spacer}/>;
 
 	const renderBalance = () => <Balance balance={balance}/>
 
@@ -160,6 +148,9 @@ export default function WalletView (props) {
 					maxWidth: '100%', // limit to width of split columns
 					justifyContent: 'space-evenly',
 					alignSelf: 'stretch',
+					small: {
+						height: '100%',
+					}
 				}}>
 					{ renderBalance() }
 					{ renderTransfer() }

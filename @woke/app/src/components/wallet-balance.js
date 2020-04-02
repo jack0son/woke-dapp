@@ -9,7 +9,7 @@ import LargeBody from './text/body-large';
 import WokeSpan from './text/span-woke';
 
 const balanceSizeREM = 8;
-const balanceSizeSmallREM = 5;
+const balanceSizeSmallREM = 6;
 const useStyles = makeStyles(theme => ({
 	amount: styles => ({
 		// Typography 
@@ -20,7 +20,7 @@ const useStyles = makeStyles(theme => ({
 
 		paddingLeft: 0,
 		paddingRight: 0,
-		marginBottom: '10%',
+		marginBottom: '5%',
 		// Size
 		//width: '100%',
 		maxWidth: '100%',
@@ -30,9 +30,6 @@ const useStyles = makeStyles(theme => ({
 			lineHeight: `${balanceSizeSmallREM}rem`,
 		},
 	}),
-
-	wokeSpan: {
-	}
 }));
 
 export default function WalletBalance({ balance }, props) {
@@ -50,9 +47,10 @@ export default function WalletBalance({ balance }, props) {
 				//marginBottom: '15%',
 				textAlign: 'left',
 				small: {
-					textAlign: 'center',
+					fontSize: '0.8rem',
+					textAlign: 'left',
 				}
-			}}>balance</LargeBody>
+			}}>Balance</LargeBody>
 			{balance} <WokeSpan styles={{
 				fontSize: `${wokeSize}rem`,
 				lineHeight: `${wokeSize}rem`,

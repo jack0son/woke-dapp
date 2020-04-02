@@ -17,7 +17,7 @@ export default function AmountSlider({defaultAmount, max, ...props}) {
 			max={max}
 			labelText={'give...'}
 			styles={{
-				minWidth: '40%',
+				minWidth: '60%',
 				...styles,
 			}}
 			{ ...other }

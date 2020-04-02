@@ -29,9 +29,11 @@ export default function TransferTokensForm(props) {
 	return (
 		<FlexColumn styles={{
 			width: '70%',
-			widthSmall: '95%',
 			marginLeft: 'auto',
 			marginRight: 'auto',
+			small: {
+				width: '85%',
+			}
 		}}>
 			<RecipientForm
 				flexGrow={5}
