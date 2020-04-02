@@ -25,6 +25,7 @@ const useStyles = makeStyles(theme => ({
 	}),
 
 	avatar: {
+		zIndex: 500,
 		position: 'absolute',
 		width: '100%',
 		top: '100%',
@@ -36,10 +37,12 @@ const useStyles = makeStyles(theme => ({
 		justifyContent: 'center',
 
 		[theme.breakpoints.down('sm')]: {
+			height: `${2*avatarHeightVH/3}vh`,
+			marginTop: `-${2*avatarHeightVH/6}vh`,
 		},
 	},
 
-	centreLine: styles => ({
+	centerLine: styles => ({
 		//display: 'block',
 		width: '100vw',
 		height: '50%',
@@ -48,23 +51,37 @@ const useStyles = makeStyles(theme => ({
 		left: '0',
 		//left: `${styles.gutterSizeP}vw` || '0',
 		//top: 0,
-		paddingLeft: `${avatarHeightVH*2}vh`, //`${avatarHeightVH}vh`,
+		//paddingLeft: `${avatarHeightVH*2}vh`, //`${avatarHeightVH}vh`,
 		//marginLeft: '-19vw',
 		//paddingRight: '10vw',
 		borderBottom: `${0.5}vh solid ${theme.palette.accents.secondary.main}`,
 	}),
 
 	handle: {
-		height: '100%',
+		zIndex: 250,
+		position: 'relative',
+		top: '100%',
+		height: '50%',
+		width: '50%',
 		display: 'flex',
 		flexDirection: 'row',
-		justifyContent: 'flex-start',
-		alignItems: 'flex-end',
+		justifyContent: 'center',
+		alignItems: 'center',
 		fontSize: '2vh',
 		fontWeight: '700',
-		color: '#46dc9e'
+		color: '#46dc9e',
+		border: '1px solid',
+		borderRight: '0px',
+		[theme.breakpoints.down('sm')]: {
+			paddingLeft: '10%',
+			paddingLeft: '10%',
+			marginLeft: '50%',
+			// Position under centerline
+			//paddingTop: '20%',
+			//marginBottom: '-50%', //,
+		},
 	}
-	
+
 }));
 
 const defaultImageSrc =  'images/avatar-getwoke.jpg';
@@ -87,12 +104,12 @@ export default function AvatarHeader (props) {
 			className={classes.avatarHeader}
 			{...innerProps}
 		>
-			<div className={classes.centreLine}>
-					<div className={classes.avatar}>
-				<Avatar src={props.src}/>
-					</div>
+			<div className={classes.centerLine}>
+				<div className={classes.avatar}>
+					<Avatar src={props.src}/>
+				</div>
 				<div className={classes.handle}>
-				@{props.handle}
+					@{props.handle}
 				</div>
 			</div>
 		</Box>
