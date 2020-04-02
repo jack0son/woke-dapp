@@ -7,6 +7,7 @@ const useStyles = makeStyles(theme => ({
 	bodyLarge: styles => {
 		const { small, ...other } = styles;
 
+		console.log(styles);
 		return ({
 			// Layout
 			position: 'static',
@@ -15,13 +16,14 @@ const useStyles = makeStyles(theme => ({
 			// Size
 			fontSize: '2rem',
 			fontWeight: '700',
-			width: '100%',
-			maxWidth: '100%',
+			//width: '100%',
+			//maxWidth: '100%',
 
 			[theme.breakpoints.down('sm')]: {
+				textAlign: 'left',
 				...small,
 			},
-
+	
 			...other
 		});
 	}

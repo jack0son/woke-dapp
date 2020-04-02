@@ -80,7 +80,6 @@ export default function WalletView (props) {
 		},
 	}
 	
-	const balanceSizeREM = 8;
 
 	const renderTransferOld = () => (
 		<SendTransferForm order={4}
@@ -139,22 +138,23 @@ export default function WalletView (props) {
 	
 	const headerHeight = 15;
 	const headerSpacer = (vh) => (
-		<Hidden smDown>
+		//<Hidden smDown>
 				<div style={{
-					display: 'inline-block',
-					// @fix Smaller height on repsonsive (header height/2)
-					minHeight: `${vh}vh`
+					width: '100%',
+					//display: 'block',
+					//height: `${vh}vh`,
+					minHeight: `${vh}vh`,
 				}}/>
-		</Hidden>
+		//</Hidden>
 	);
 
 	const renderBalance = () => <Balance balance={balance}/>
 
 	return (<>
+		{ renderHeader(headerHeight) }
+		{ headerSpacer(headerHeight/2) }
 		<SplitColumns
 			first={<>
-				{ renderHeader(headerHeight) }
-				{ headerSpacer(headerHeight/2) }
 				<FlexColumn styles={{
 					width: '100%',
 					maxWidth: '100%', // limit to width of split columns
@@ -166,7 +166,6 @@ export default function WalletView (props) {
 				</FlexColumn>
 			</>}
 			second={<>
-				{ headerSpacer(headerHeight*1.5) }
 				{ renderPaneTabs() }
 			</>}
 		/>

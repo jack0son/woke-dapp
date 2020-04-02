@@ -26,8 +26,10 @@ const useStyles = makeStyles(theme => ({
 
 
 export default function RootContainer(props) {
-	const { navBar, children } = props;
+	const { navBar, gutterSizeP, children } = props;
 	const styles = useStyles();
+
+	const width = 100 - (gutterSizeP*2);
 
 	return (
 		<>
@@ -35,7 +37,13 @@ export default function RootContainer(props) {
 			<Container className={styles.container}>
 				<Box component="div" position="relative" className={styles.root}>
 					{ navBar }
-					<FlexRow>
+					<FlexRow styles={{
+						width,
+						small: {
+							width: `${gutterSizeP}%`,
+						}
+						// Pass gutter sizes here
+					}}>
 						{ children }
 					</FlexRow>
 				</Box>

@@ -5,29 +5,34 @@ import Box from '@material-ui/core/Box';
 
 
 const useStyles = makeStyles(theme => ({
-	flexRow: styles => ({
-		// Layout
-		position: 'relative',
-		display: 'flex',
-		flexDirection: 'row',
-		justifyContent: 'center',
-		alignItems: 'center',
-		flexWrap: 'wrap',
+	flexRow: styles => {
+		const { small, ...other } = styles;
 
-		// Size
-		width: '80%',
-		//height: '80vh',
-		[theme.breakpoints.down('sm')]: {
-			width: '95%',
-			//height: 'auto',
-		},
+		return ({
+			// Layout
+			position: 'relative',
+			display: 'flex',
+			flexDirection: 'row',
+			justifyContent: 'center',
+			alignItems: 'center',
+			flexWrap: 'wrap',
 
-		// Spacing
-		marginLeft: 'auto',
-		marginRight: 'auto',
+			// Size
+			width: '80%',
+			//height: '80vh',
+			[theme.breakpoints.down('sm')]: {
+				width: '95%',
+				...small,
+				//height: 'auto',
+			},
 
-		...styles
-	})
+			// Spacing
+			marginLeft: 'auto',
+			marginRight: 'auto',
+
+			...styles
+		});
+	}
 }));
 
 export default function FlexRow(props) {

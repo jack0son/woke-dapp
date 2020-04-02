@@ -5,7 +5,7 @@ import Authentication from './authentication'
 import Web3Initializer from './web3-initializer'
 
 // View containers
-import Root from '../views/root'
+import RootView from '../views/root'
 import { RootContextProvider } from '../../hooks/root-context'
 import { DesignContextProvider } from '../../hooks/design/design-context'
 import useDesignDomain from '../../hooks/design/use-domain'
@@ -19,7 +19,7 @@ import stageConfig from './stages';
 
 const stages = stageConfig.root;
 
-function RegisterRootDomain({ linearStages }) {
+function UseRootContext({ linearStages }) {
 	useDesignDomain({ domainName: 'root', linearStages, stages });
 	return null;
 }
@@ -52,10 +52,17 @@ export default function RootContainer() {
 	return (
 		<RootContextProvider>
 			<DesignContextProvider>
-				<Root>
-					<RegisterRootDomain linearStages={dummyState}/>
+				<RootView>
+					<UseRootContext
+						linearStages={dummyState}i
+						styles={{
+							rootContainer: {
+								gutterSizeP: 10,
+							}
+						}}
+					/>
 					{ chooseRender() }
-				</Root>
+				</RootView>
 
 				<StageOverlay >
 					<StageSelector domainName={'root'}/>

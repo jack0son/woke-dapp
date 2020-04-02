@@ -11,6 +11,9 @@ const useStyles = makeStyles(theme => ({
 		fontWeight: 400,
 		textAlign: 'left',
 		lineHeight: '20px',
+		[theme.breakpoints.down('sm')]: {
+			...(styles.small || {}),
+		},
 		...styles
 		//px: theme.spacing(3),
 	})

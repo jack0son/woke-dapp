@@ -21,33 +21,20 @@ const useStyles = makeStyles(theme => ({
 		...styles
 	}),
 
-	centreLine: {
+	centreLine: styles => ({
 		//display: 'block',
 		overflow: 'hidden',
-		width: '100vw',
+		width: '20vw',
 		height: '50%',
 		position: 'absolute',
-		left: '-10vw',
+		left: '0',
+		left: `${styles.gutterSizeP}vw` || '0',
 		//top: 0,
 		paddingLeft: `${avatarHeightVH*2}vh`, //`${avatarHeightVH}vh`,
 		//marginLeft: '-19vw',
 		//paddingRight: '10vw',
 		borderBottom: `${0.5}vh solid ${theme.palette.accents.secondary.main}`,
-	},
-
-	centreLineLeft: {
-		//display: 'block',
-		overflow: 'hidden',
-		width: '50%',
-		height: '50%',
-		position: 'absolute',
-		left: '-50%',
-		top: 0,
-		//paddingLeft: `${avatarHeightVH}vh`,
-		paddingTop: 0,
-		mx: theme.spacing(1),
-		borderBottom: `${0.5}vh solid ${theme.palette.accents.secondary.main}`,
-	},
+	}),
 
 	handle: {
 		height: '100%',
@@ -65,6 +52,7 @@ const useStyles = makeStyles(theme => ({
 const defaultImageSrc =  'images/avatar-getwoke.jpg';
 
 export default function AvatarHeader (props) {
+	// @TODO get gutter size from root context
 	const {styles, src, handle, ...innerProps} = props;
 	const classes = useStyles(styles);
 
