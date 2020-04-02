@@ -28,9 +28,10 @@ export default function TransferTokensForm(props) {
 
 	return (
 		<FlexColumn styles={{
-			width: '70%',
-			marginLeft: 'auto',
-			marginRight: 'auto',
+			width: '50%',
+			minWidth: '25vw',
+			//marginLeft: 'auto',
+			//marginRight: 'auto',
 			small: {
 				width: '85%',
 			}
@@ -50,6 +51,7 @@ export default function TransferTokensForm(props) {
 				text='SEND'
 				onClick={popModal}
 				styles={{
+					marginTop: '5%',
 					fontSize: '1.5rem',
 					width: '100%',
 				}}

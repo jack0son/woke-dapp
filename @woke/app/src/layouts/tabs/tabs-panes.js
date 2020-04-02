@@ -16,12 +16,13 @@ const useStyles = makeStyles(theme => ({
 		position: 'relative',
 		display: 'flex',
 		flexDirection: 'column',
-		justifyContent: 'flex-start',
-		alignSelf: 'flex-end',
+		justifyContent: 'center',
+		alignSelf: 'stretch',
 		//height: '100%',
 
 		marginLeft: 'auto',
 		marginRight: 'auto',
+
 		[theme.breakpoints.down('sm')]: {
 			marginTop: '10%',
 			width: '100%',

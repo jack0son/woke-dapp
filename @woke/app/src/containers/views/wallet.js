@@ -30,7 +30,7 @@ const useStyles = makeStyles(theme => ({
 		backgroundColor: 'white',
 		position: 'static',
 		flexGrow: 2,
-	//	height: '50vh',
+		//	height: '50vh',
 		minHeight: '50%',
 		border: '5px',
 	},
@@ -93,12 +93,12 @@ export default function WalletView (props) {
 
 	const renderHeader = (heightVH) => (
 		<Hidden smDown>
-				<AvatarHeader order={0}
-					styles={{height: `${heightVH}vh`}}
-					alignSelf='flex-start'
-					src={avatar}
-					handle={props.user.handle}
-				/>
+			<AvatarHeader order={0}
+				styles={{height: `${heightVH}vh`}}
+				alignSelf='flex-start'
+				src={avatar}
+				handle={props.user.handle}
+			/>
 		</Hidden>
 	);
 
@@ -116,49 +116,50 @@ export default function WalletView (props) {
 			<FlexColumn	styles={{}} //align='center'
 				label="Earnings"
 			>
-				<LargeBody align='center'
-					styles={{
-						marginTop: '10%',
-						marginBottom: '10%',
-						paddingLeft: '10%',
-						paddingRight: '10%',
-						marginBottom: '10%',
-					}}
-				> 
-					Tribute <WokeSpan>WOKENs</WokeSpan> to new users to earn an elightenment bonus when they join.
-				</LargeBody>
+				{ rewardEvents.length < 4 ? (<>
+					<LargeBody align='center'
+						styles={{
+							marginTop: '8%',
+							marginBottom: '5%',
+							paddingLeft: '10%',
+							paddingRight: '10%',
+						}}
+					> 
+						Tribute <WokeSpan>WOKENs</WokeSpan> to new users to earn an elightenment bonus when they join.
+					</LargeBody>
+				</>) : null }
 				<TransactionList
 					listItems={rewardEvents}
 				/> 
 			</FlexColumn>
 		</PaneTabs>
 	);
-	
+
 	const headerSpacer = () => <div className={classes.spacer}/>;
 
 	const renderBalance = () => <Balance balance={balance}/>
 
-	return (<>
-		{ renderHeader(headerHeight) }
-		{ headerSpacer(headerHeight/2) }
-		<SplitColumns
-			first={<>
-				<FlexColumn styles={{
-					width: '100%',
-					maxWidth: '100%', // limit to width of split columns
-					justifyContent: 'space-evenly',
-					alignSelf: 'stretch',
-					small: {
-						height: '100%',
-					}
-				}}>
-					{ renderBalance() }
-					{ renderTransfer() }
-				</FlexColumn>
-			</>}
-			second={<>
-				{ renderPaneTabs() }
-			</>}
-		/>
-	</>);
+		return (<>
+			{ renderHeader(headerHeight) }
+			{ headerSpacer(headerHeight/2) }
+			<SplitColumns
+				first={<>
+					<FlexColumn styles={{
+						width: '100%',
+						maxWidth: '100%', // limit to width of split columns
+						justifyContent: 'space-evenly',
+						alignSelf: 'stretch',
+						small: {
+							height: '100%',
+						}
+					}}>
+						{ renderBalance() }
+						{ renderTransfer() }
+					</FlexColumn>
+				</>}
+				second={<>
+					{ renderPaneTabs() }
+				</>}
+			/>
+		</>);
 }

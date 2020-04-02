@@ -9,6 +9,7 @@ const avatarHeightVH = 18;
 const useStyles = makeStyles(theme => ({
 	avatarHeader: styles => ({
 		//width: '120%',
+		alignSelf: 'flex-start',
 		minHeight: '76px',
 		height: `${avatarHeightVH}vh`,
 		position: 'relative',
@@ -24,11 +25,11 @@ const useStyles = makeStyles(theme => ({
 	centreLine: styles => ({
 		//display: 'block',
 		overflow: 'hidden',
-		width: '20vw',
+		width: '105vw',
 		height: '50%',
 		position: 'absolute',
-		left: '0',
-		left: `${styles.gutterSizeP}vw` || '0',
+		left: '-47.5vw',
+		//left: `${styles.gutterSizeP}vw` || '0',
 		//top: 0,
 		paddingLeft: `${avatarHeightVH*2}vh`, //`${avatarHeightVH}vh`,
 		//marginLeft: '-19vw',
