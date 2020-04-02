@@ -12,6 +12,7 @@ export default function TabPanel(props) {
 			display="flex"
 			flexDirection="row"
 			styles={{
+				width: 'inherit',
 				height: 'inherit',
 				maxHeight: 'inherit',
 			}}

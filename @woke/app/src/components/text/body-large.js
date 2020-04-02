@@ -10,7 +10,7 @@ const useStyles = makeStyles(theme => ({
 		textAlign: 'center',
 
 		// Size
-		fontSize: '1.5rem',
+		fontSize: '2rem',
 		fontWeight: '700',
 		width: '100%',
 		maxWidth: '100%',

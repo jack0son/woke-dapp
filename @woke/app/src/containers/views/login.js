@@ -1,7 +1,7 @@
 import React from 'react';
 import Typography from '@material-ui/core/Typography';
 
-import ContentWrapper from '../../layouts/flex-column';
+import FlexColumn from '../../layouts/flex-column';
 import Footer from '../../layouts/footer';
 import BottomHolder from '../../layouts/holder-bottom';
 import ButtonGroup from '../../layouts/button-group';
@@ -13,10 +13,18 @@ import HL from '../../components/text/span-highlight'
 
 
 export default function LoginView(props) {
-	return (
-		<>
-		<ContentWrapper height='45vh'>
-			<LargeBody styles={{textAlign: 'center'}}>
+	return (<>
+		<FlexColumn styles={{
+			justifyContent: 'space-around',
+			height: '80%',
+			small: {
+				justifyContent: 'space-between',
+				alignSelf: 'center',
+				//height: '50%',
+			},
+		}}>
+			<LargeBody styles={{textAlign: 'center', marginTop: '10%'}}>
+				Login
 			</LargeBody>
 			<StandardBody
 				color='secondary'
@@ -32,17 +40,11 @@ export default function LoginView(props) {
 				}}
 			/>
 
-		</ContentWrapper>
-
-		<Footer>
-			<BottomHolder>
-				<StandardBody>
-					Your password can <HL>never</HL> be recovered.
-					<br/><br/>
-					Remember your password. Stay woke.
-				</StandardBody>
-			</BottomHolder>
-		</Footer>
-		</>
-	);
+			<StandardBody styles={{marginBottom: '10%', marginTop: '10%'}}>
+				Your password can <HL>never</HL> be recovered.
+				<br/><br/>
+				Remember your password. Stay woke.
+			</StandardBody>
+		</FlexColumn>
+	</>);
 }

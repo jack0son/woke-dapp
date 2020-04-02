@@ -3,13 +3,14 @@ import { makeStyles, useTheme } from '@material-ui/styles';
 import Typography from '@material-ui/core/Typography';
 import Box from '@material-ui/core/Box';
 
-import ColumnSplit from '../../layouts/split-column';
+import SplitColumns from '../../layouts/split-column';
 import PaneTabs from '../../layouts/tabs/tabs-panes';
 import TransactionList from '../../layouts/list-transactions';
 import FlexColumn from '../../layouts/flex-column'
 
 import AvatarHeader from '../../components/header-avatar';
 import WokeSpan from '../../components/text/span-woke';
+import TransferTokensForm from  '../../components/forms/tokens-transfer'
 import SendTransferForm from  '../../components/forms/send-transfer'
 import LargeBody from '../../components/text/body-large';
 
@@ -68,19 +69,34 @@ export default function WalletView (props) {
 		},
 	}
 	
-	const renderBalance = () => (
-		<Typography variant="h3" fontSize='38px' align="center" order={3}>
-			{balance}<WokeSpan styles={{fontSize: '30px'}}> W</WokeSpan>
+	const balanceSizeREM = 8;
+	const renderBalance = () => (<>
+		<Typography variant="h3"align="center" order={3}
+			style={{
+				//marginTop: '5%',
+				marginBottom: '5%',
+				fontSize: `${balanceSizeREM}rem`
+			}} 
+		>
+			<LargeBody alignSelf='flex-start' color='secondary' styles={{textAlign: 'left'}}> 
+				balance
+			</LargeBody>
+			{balance}<WokeSpan styles={{fontSize: `${balanceSizeREM*0.7}rem`}}> W</WokeSpan>
 		</Typography>
-	);
+	</>);
 
-	const renderTransfer = () => (
+	const renderTransferOld = () => (
 		<SendTransferForm order={4}
 			sendTransfers={sendTransfers}
 			pending={sendTransfers.pending}
 			usernamePlaceholder='username...'
 			amountPlaceholder='amount'
 			suggestions={friends}
+		/>
+	);
+
+	const renderTransfer = () => (
+		<TransferTokensForm 
 		/>
 	);
 
@@ -94,16 +110,28 @@ export default function WalletView (props) {
 	);
 
 	const renderPaneTabs = () => (
-		<PaneTabs alignSelf="stretch" order={responsive.order} styles={{tabHeight: '6vh'}}> 
+		<PaneTabs order={responsive.order} styles={{
+			tabHeight: '6vh',
+		}}> 
 			<TransactionList
+				label="History"
 				itemHeightVH={5}
-				styles={{ width: '80%' }}
-				label="Transfers"
+				styles={{ }}
 				listItems={transferEvents}
 			/>
-			<FlexColumn	styles={{width: '0px'}} align='center' label="Bounties">
-				<LargeBody align='center'> 
-					Send <WokeSpan>WOKENs</WokeSpan> to new users to receive a bonus when they join.
+			<FlexColumn	styles={{}} //align='center'
+				label="Earnings"
+			>
+				<LargeBody align='center'
+					styles={{
+						marginTop: '10%',
+						marginBottom: '10%',
+						paddingLeft: '10%',
+						paddingRight: '10%',
+						marginBottom: '10%',
+					}}
+				> 
+					Tribute <WokeSpan>WOKENs</WokeSpan> to new users to earn an elightenment bonus when they join.
 				</LargeBody>
 				<TransactionList
 					listItems={rewardEvents}
@@ -111,20 +139,21 @@ export default function WalletView (props) {
 			</FlexColumn>
 		</PaneTabs>
 	);
-
+	
 	const headerHeight = 15;
-	return (<>
-		<ColumnSplit reverse
-			first={<>
+	const headerSpacer = (vh) => (
 				<div style={{
 					display: 'inline-block',
 					// @fix Smaller height on repsonsive (header height/2)
-					minHeight: `${headerHeight}vh`
+					minHeight: `${vh}vh`
 				}}/>
-				{ renderPaneTabs() }
-			</>}
-			second={<>
+	);
+
+	return (<>
+		<SplitColumns
+			first={<>
 				{ renderHeader(headerHeight) }
+				{ headerSpacer(headerHeight/2) }
 				<FlexColumn styles={{
 					width: '100%',
 					maxWidth: '100%', // limit to width of split columns
@@ -134,6 +163,10 @@ export default function WalletView (props) {
 					{ renderBalance() }
 					{ renderTransfer() }
 				</FlexColumn>
+			</>}
+			second={<>
+				{ headerSpacer(headerHeight*1.5) }
+				{ renderPaneTabs() }
 			</>}
 		/>
 	</>);

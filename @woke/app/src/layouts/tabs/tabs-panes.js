@@ -11,20 +11,20 @@ import TabPanel from './tab-panel';
 
 
 const useStyles = makeStyles(theme => ({
-	tabsWrapper: {
-		//height: '50%',
-		//width: '30vw',
+	tabsWrapper: styles => ({
+		width: '85%',
 		position: 'relative',
 		display: 'flex',
 		flexDirection: 'column',
-		//justifyContent: 'space-between',
 		justifyContent: 'flex-start',
-		//alignSelf: 'stretch',
-		height: '100%',
-		//flexGrow: 1,
-		//flexShrink: 1,
+		alignSelf: 'flex-end',
+		//height: '100%',
+
+		marginLeft: 'auto',
+		//marginRight: 'auto',
 		//backgroundColor: theme.palette.background.dark,
-	},
+		...styles,
+	}),
 
 	styledTabs: styles => ({
 		height: styles.tabHeight || '5vh',
@@ -32,8 +32,7 @@ const useStyles = makeStyles(theme => ({
 
 	swipeableView: {
 		height: '100%',
-		// overflow: 'scroll',
-		// flexShrink: 1,
+		width: 'inherit',
 	}
 }));
 
