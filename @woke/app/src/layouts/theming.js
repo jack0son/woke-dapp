@@ -55,6 +55,18 @@ const theme = createMuiTheme({
 				lineHeight: '100px',
 			}
 		},
+		h3: {
+			fontFamily: 'Inconsolata',
+			fontWeight: 500,
+			fontSize: '18px',
+			lineHeight: '24px',
+			[breakpoints.up('sm')]: {
+				fontSize: '26px',
+			},
+			[breakpoints.up('lg')]: {
+				fontSize: '28px',
+			},
+		},
 		h4: {
 			fontFamily: 'Inconsolata',
 			fontWeight: 700,
@@ -77,14 +89,11 @@ const theme = createMuiTheme({
 			[breakpoints.up('lg')]: {
 				fontSize: '1.15rem',
 			}
-			//color: 'primary'
-			//lineHeight: '24px',
 		},
 		body2: {
 			fontFamily: 'Inconsolata',
 			fontWeight: 400,
 			fontSize: '0.875rem',
-			//color: 'secondary',
 		},
 	},
 
