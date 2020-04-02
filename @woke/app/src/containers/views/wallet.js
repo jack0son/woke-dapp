@@ -35,9 +35,9 @@ const useStyles = makeStyles(theme => ({
 		border: '5px',
 	},
 
-	spacer: {
+	headerSpacer: {
 		width: '100%',
-		minHeight: `${headerHeight/2}vh`,
+		minHeight: `${headerHeight*1.5}vh`,
 		[theme.breakpoints.down('sm')]: {
 			minHeight: `${headerHeight/4}vh`,
 		},
@@ -88,18 +88,17 @@ export default function WalletView (props) {
 			usernamePlaceholder='username...'
 			amountPlaceholder='amount'
 			suggestions={friends}
+			balance={1320}
 		/>
 	);
 
 	const renderHeader = (heightVH) => (
-		<Hidden smDown>
 			<AvatarHeader order={0}
 				styles={{height: `${heightVH}vh`}}
 				alignSelf='flex-start'
 				src={avatar}
 				handle={props.user.handle}
 			/>
-		</Hidden>
 	);
 
 	const renderPaneTabs = () => (
@@ -116,9 +115,15 @@ export default function WalletView (props) {
 			<FlexColumn	styles={{}} //align='center'
 				label="Earnings"
 			>
+				<TransactionList
+					listItems={rewardEvents}
+				/> 
 				{ rewardEvents.length < 4 ? (<>
 					<LargeBody align='center'
 						styles={{
+							textAlign: 'justify',
+							fontSize: `${2*0.7}rem`,
+							linHeight: `${2*0.7}rem`,
 							marginTop: '8%',
 							marginBottom: '5%',
 							paddingLeft: '10%',
@@ -128,20 +133,15 @@ export default function WalletView (props) {
 						Tribute <WokeSpan>WOKENs</WokeSpan> to new users to earn an elightenment bonus when they join.
 					</LargeBody>
 				</>) : null }
-				<TransactionList
-					listItems={rewardEvents}
-				/> 
 			</FlexColumn>
 		</PaneTabs>
 	);
-
-	const headerSpacer = () => <div className={classes.spacer}/>;
 
 	const renderBalance = () => <Balance balance={balance}/>
 
 		return (<>
 			{ renderHeader(headerHeight) }
-			{ headerSpacer(headerHeight/2) }
+			<div className={classes.headerSpacer}/>
 			<SplitColumns
 				first={<>
 					<FlexColumn styles={{

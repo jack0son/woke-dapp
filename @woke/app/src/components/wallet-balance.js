@@ -32,7 +32,7 @@ const useStyles = makeStyles(theme => ({
 	}),
 }));
 
-export default function WalletBalance({ balance }, props) {
+export default function WalletBalance({ balance, ...props }) {
 	const { styles, ...other } = props;
 	const classes = useStyles(styles);
 

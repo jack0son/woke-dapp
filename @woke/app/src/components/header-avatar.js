@@ -12,6 +12,8 @@ const useStyles = makeStyles(theme => ({
 		alignSelf: 'flex-start',
 		minHeight: '76px',
 		height: `${avatarHeightVH}vh`,
+		marginTop: `-${avatarHeightVH/3}vh`,
+		//zIndex: 1000,
 		position: 'relative',
 		display: 'flex',
 		flexDirection: 'row',
@@ -22,13 +24,28 @@ const useStyles = makeStyles(theme => ({
 		...styles
 	}),
 
+	avatar: {
+		position: 'absolute',
+		width: '100%',
+		top: '100%',
+		left: 0,
+		height: `${avatarHeightVH}vh`,
+		marginTop: `-${avatarHeightVH/2}vh`,
+		display: 'flex',
+		flexDirection: 'row',
+		justifyContent: 'center',
+
+		[theme.breakpoints.down('sm')]: {
+		},
+	},
+
 	centreLine: styles => ({
 		//display: 'block',
-		overflow: 'hidden',
-		width: '105vw',
+		width: '100vw',
 		height: '50%',
 		position: 'absolute',
-		left: '-47.5vw',
+		//left: '-45vw',
+		left: '0',
 		//left: `${styles.gutterSizeP}vw` || '0',
 		//top: 0,
 		paddingLeft: `${avatarHeightVH*2}vh`, //`${avatarHeightVH}vh`,
@@ -71,11 +88,13 @@ export default function AvatarHeader (props) {
 			{...innerProps}
 		>
 			<div className={classes.centreLine}>
+					<div className={classes.avatar}>
+				<Avatar src={props.src}/>
+					</div>
 				<div className={classes.handle}>
 				@{props.handle}
 				</div>
 			</div>
-			<Avatar src={props.src}/>
 		</Box>
 	);
 }

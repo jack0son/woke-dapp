@@ -16,7 +16,9 @@ const useStyles = makeStyles(theme => ({
 			justifyContent: 'center',
 			alignItems: 'center',
 			flexWrap: 'wrap',
-			overflow: 'hidden',
+			//overflow: 'visible',
+			//overflowX: 'hidden',
+			//overflowY: 'visible',
 
 			// Size
 			width: '80%',
