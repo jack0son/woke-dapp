@@ -12,13 +12,14 @@ const useStyles = makeStyles(theme => ({
 		flexDirection: 'row',
 		justifyContent: 'center',
 		alignItems: 'center',
+		flexWrap: 'wrap',
 
 		// Size
 		width: '80%',
-		height: '80vh',
+		//height: '80vh',
 		[theme.breakpoints.down('sm')]: {
 			width: '95%',
-			height: '90vh',
+			//height: 'auto',
 		},
 
 		// Spacing

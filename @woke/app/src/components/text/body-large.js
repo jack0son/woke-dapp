@@ -4,19 +4,27 @@ import Typography from '@material-ui/core/Typography';
 import { makeStyles } from '@material-ui/styles';
 
 const useStyles = makeStyles(theme => ({
-	bodyLarge: styles => ({
-		// Layout
-		position: 'static',
-		textAlign: 'center',
+	bodyLarge: styles => {
+		const { small, ...other } = styles;
 
-		// Size
-		fontSize: '2rem',
-		fontWeight: '700',
-		width: '100%',
-		maxWidth: '100%',
+		return ({
+			// Layout
+			position: 'static',
+			textAlign: 'center',
 
-		...styles
-	})
+			// Size
+			fontSize: '2rem',
+			fontWeight: '700',
+			width: '100%',
+			maxWidth: '100%',
+
+			[theme.breakpoints.down('sm')]: {
+				...small,
+			},
+
+			...other
+		});
+	}
 }));
 
 export default function LargeBody(props) {
@@ -29,6 +37,6 @@ export default function LargeBody(props) {
 			variant='body1'
 			className={classes.bodyLarge}
 			{...innerProps}
-		gutterBottom/>
+			gutterBottom/>
 	);
 }

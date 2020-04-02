@@ -2,17 +2,21 @@ import React from 'react';
 import { makeStyles, useTheme } from '@material-ui/styles';
 import Typography from '@material-ui/core/Typography';
 import Box from '@material-ui/core/Box';
+import Hidden from '@material-ui/core/Hidden';
 
+// Layout
 import SplitColumns from '../../layouts/split-column';
 import PaneTabs from '../../layouts/tabs/tabs-panes';
 import TransactionList from '../../layouts/list-transactions';
 import FlexColumn from '../../layouts/flex-column'
+import LargeBody from '../../components/text/body-large';
 
+// Components
 import AvatarHeader from '../../components/header-avatar';
+import Balance from  '../../components/wallet-balance'
 import WokeSpan from '../../components/text/span-woke';
 import TransferTokensForm from  '../../components/forms/tokens-transfer'
 import SendTransferForm from  '../../components/forms/send-transfer'
-import LargeBody from '../../components/text/body-large';
 
 const useStyles = makeStyles(theme => ({
 	balanceText: {
@@ -29,6 +33,13 @@ const useStyles = makeStyles(theme => ({
 	//	height: '50vh',
 		minHeight: '50%',
 		border: '5px',
+	},
+
+	spaceer: {
+		[theme.breakpoints.down('sm')]: {
+			width: '100%',
+			maxWidth: '100%',
+		},
 	},
 }));
 
@@ -70,20 +81,6 @@ export default function WalletView (props) {
 	}
 	
 	const balanceSizeREM = 8;
-	const renderBalance = () => (<>
-		<Typography variant="h3"align="center" order={3}
-			style={{
-				//marginTop: '5%',
-				marginBottom: '5%',
-				fontSize: `${balanceSizeREM}rem`
-			}} 
-		>
-			<LargeBody alignSelf='flex-start' color='secondary' styles={{textAlign: 'left'}}> 
-				balance
-			</LargeBody>
-			{balance}<WokeSpan styles={{fontSize: `${balanceSizeREM*0.7}rem`}}> W</WokeSpan>
-		</Typography>
-	</>);
 
 	const renderTransferOld = () => (
 		<SendTransferForm order={4}
@@ -142,12 +139,16 @@ export default function WalletView (props) {
 	
 	const headerHeight = 15;
 	const headerSpacer = (vh) => (
+		<Hidden smDown>
 				<div style={{
 					display: 'inline-block',
 					// @fix Smaller height on repsonsive (header height/2)
 					minHeight: `${vh}vh`
 				}}/>
+		</Hidden>
 	);
+
+	const renderBalance = () => <Balance balance={balance}/>
 
 	return (<>
 		<SplitColumns
