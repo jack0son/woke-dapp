@@ -12,7 +12,7 @@ const useStyles = makeStyles(theme => ({
 	appBar: {
 		background: 'transparent',
 		boxShadow: 'none',
-		//zIndex: 500,	// behind wallet avatar header
+		zIndex: 1000,
 	},
 
 	toolBar: {

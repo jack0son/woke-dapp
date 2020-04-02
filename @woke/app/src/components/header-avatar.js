@@ -43,6 +43,7 @@ const useStyles = makeStyles(theme => ({
 	},
 
 	centerLine: styles => ({
+		zIndex: 100,
 		//display: 'block',
 		width: '100vw',
 		height: '50%',
