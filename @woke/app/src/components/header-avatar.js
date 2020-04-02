@@ -71,8 +71,10 @@ const useStyles = makeStyles(theme => ({
 		fontWeight: '700',
 		color: '#46dc9e',
 		border: '1px solid',
-		borderRight: '0px',
+		borderLeft: '0px',
 		[theme.breakpoints.down('sm')]: {
+			borderLeft: '1px solid',
+			borderRight: '0px',
 			paddingLeft: '10%',
 			paddingLeft: '10%',
 			marginLeft: '50%',
