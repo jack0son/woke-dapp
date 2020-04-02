@@ -77,7 +77,7 @@ const useStyles = makeStyles(theme => ({
 export default function Menu() {
 	const classes = useStyles();
 
-	const [showMenu, setShowMenu] = useState(true);
+	const [showMenu, setShowMenu] = useState(false);
 	const toggleMenu = () => setShowMenu(!showMenu);
 	const hideMenu = () => {
 		if (showMenu == true) {
