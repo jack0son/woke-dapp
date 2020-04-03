@@ -4,14 +4,17 @@ import TextField from '@material-ui/core/TextField';
 
 const useStyles = makeStyles(theme => ({
 	passwordField: {
+		width: '100%',
 		flexGrow: 1,
 	},
 
 	underline: {
 		'&:before': {
-		//border: '1px solid',
-		borderBottomColor: theme.palette.secondary.main,
-		//color: 'White',
+			borderBottomColor: theme.palette.secondary.main,
+		},
+
+		'&:after': {
+			//borderBottomColor: theme.palette.secondary.main,
 		}
 	}
 }));
