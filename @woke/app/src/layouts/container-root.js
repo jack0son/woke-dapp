@@ -11,15 +11,18 @@ import { makeStyles } from '@material-ui/styles';
 // No need to call useTheme
 const useStyles = makeStyles(theme => ({
 	root: {
-		background: theme.background,
-		height: '100vh',
+		minHeight: '100vh',
+		//height: '100%',
 		//width: '100vw',
+		background: theme.background,
+		height: '100%',
+		maxHeight: 'unset',
 	},
 
 	container: {
-		background: theme.palette.background.paper,
+		height: '100%',
+		//background: theme.palette.background.paper,
 		paddingLeft: 0,
-		maxWidth: 'unset',
 		paddingRight: 0,
 	},
 }));
