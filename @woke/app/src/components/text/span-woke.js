@@ -6,10 +6,14 @@ import Typography from '@material-ui/core/Typography';
 
 const useStyles = makeStyles(theme => ({
 	wokeSpan: styles => ({
+		display: 'inline-block',
 		fontFamily: 'Nervous',
 		fontWeight: 400,
 		textAlign: 'left',
 		lineHeight: '20px',
+		[theme.breakpoints.down('sm')]: {
+			...(styles.small || {}),
+		},
 		...styles
 		//px: theme.spacing(3),
 	})

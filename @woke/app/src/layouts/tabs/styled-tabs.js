@@ -9,13 +9,13 @@ export const StyledTabs = withStyles(theme => ({
 		backgroundColor: theme.palette.background.dark,
 		minHeight: theme.spacing(5),
 		//height: '5vh',
-		minHeight: theme.spacing(4),
-		marginBottom: theme.spacing(2),
-		marginTop: theme.spacing(2),
 		maxWidth: 'fit-content',
-		// width: 'auto',
-		// width: '100%',
 		position: 'relative',
+		[theme.breakpoints.down('sm')]: {
+			minHeight: 'fit-content',
+			maxWidth: '100%',
+			width: '100%',
+		},
 		//bottom: 0,
 	},
 

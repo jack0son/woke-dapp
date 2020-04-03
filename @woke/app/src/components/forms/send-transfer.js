@@ -23,6 +23,9 @@ const useStyles = makeStyles(theme => ({
 		alignItems: 'baseline',
 		//width: 'auto',
 		//marginTop: 0,
+		[theme.breakpoints.down('sm')]: {
+			width: '95%',
+		},
 	},
 
 	cancelButton: {

@@ -7,12 +7,7 @@ const useStyles = makeStyles(theme => ({
   avatarWrapper: {
 		//boxSizing: 'box-content !important',
 		position: 'relative',
-		//maxWidth: 76 + theme.spacing(4),
-		//maxWidth: '68px',
-		//minWidth: '68px',
 		height: '100%',
-		//marginLeft: theme.spacing(2),
-		marginRight: theme.spacing(2),
 		color: 'transparent',
 		borderStyle: 'solid',
 		borderWidth: '0.25vh',

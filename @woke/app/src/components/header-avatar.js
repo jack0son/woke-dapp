@@ -9,8 +9,11 @@ const avatarHeightVH = 18;
 const useStyles = makeStyles(theme => ({
 	avatarHeader: styles => ({
 		//width: '120%',
+		alignSelf: 'flex-start',
 		minHeight: '76px',
 		height: `${avatarHeightVH}vh`,
+		marginTop: `-${avatarHeightVH/3}vh`,
+		zIndex: 600,
 		position: 'relative',
 		display: 'flex',
 		flexDirection: 'row',
@@ -21,50 +24,74 @@ const useStyles = makeStyles(theme => ({
 		...styles
 	}),
 
-	centreLine: {
+	avatar: {
+		zIndex: 500,
+		position: 'absolute',
+		width: '100%',
+		top: '100%',
+		left: 0,
+		height: `${avatarHeightVH}vh`,
+		marginTop: `-${avatarHeightVH/2}vh`,
+		display: 'flex',
+		flexDirection: 'row',
+		justifyContent: 'center',
+
+		[theme.breakpoints.down('sm')]: {
+			height: `${2*avatarHeightVH/3}vh`,
+			marginTop: `-${2*avatarHeightVH/6}vh`,
+		},
+	},
+
+	centerLine: styles => ({
+		zIndex: 100,
 		//display: 'block',
-		overflow: 'hidden',
 		width: '100vw',
 		height: '50%',
 		position: 'absolute',
-		left: '-10vw',
+		//left: '-45vw',
+		left: '0',
+		//left: `${styles.gutterSizeP}vw` || '0',
 		//top: 0,
-		paddingLeft: `${avatarHeightVH*2}vh`, //`${avatarHeightVH}vh`,
+		//paddingLeft: `${avatarHeightVH*2}vh`, //`${avatarHeightVH}vh`,
 		//marginLeft: '-19vw',
 		//paddingRight: '10vw',
 		borderBottom: `${0.5}vh solid ${theme.palette.accents.secondary.main}`,
-	},
-
-	centreLineLeft: {
-		//display: 'block',
-		overflow: 'hidden',
-		width: '50%',
-		height: '50%',
-		position: 'absolute',
-		left: '-50%',
-		top: 0,
-		//paddingLeft: `${avatarHeightVH}vh`,
-		paddingTop: 0,
-		mx: theme.spacing(1),
-		borderBottom: `${0.5}vh solid ${theme.palette.accents.secondary.main}`,
-	},
+	}),
 
 	handle: {
-		height: '100%',
+		zIndex: 250,
+		position: 'relative',
+		top: '100%',
+		height: '50%',
+		width: '50%',
 		display: 'flex',
 		flexDirection: 'row',
-		justifyContent: 'flex-start',
-		alignItems: 'flex-end',
+		justifyContent: 'center',
+		alignItems: 'center',
 		fontSize: '2vh',
 		fontWeight: '700',
-		color: '#46dc9e'
+		color: '#46dc9e',
+		border: '0.15vh solid',
+		borderLeft: '0px',
+		[theme.breakpoints.down('sm')]: {
+			border: '1px solid',
+			borderLeft: '0.1vh solid',
+			borderRight: '0px',
+			paddingLeft: '10%',
+			paddingLeft: '10%',
+			marginLeft: '50%',
+			// Position under centerline
+			//paddingTop: '20%',
+			//marginBottom: '-50%', //,
+		},
 	}
-	
+
 }));
 
 const defaultImageSrc =  'images/avatar-getwoke.jpg';
 
 export default function AvatarHeader (props) {
+	// @TODO get gutter size from root context
 	const {styles, src, handle, ...innerProps} = props;
 	const classes = useStyles(styles);
 
@@ -81,12 +108,14 @@ export default function AvatarHeader (props) {
 			className={classes.avatarHeader}
 			{...innerProps}
 		>
-			<div className={classes.centreLine}>
+			<div className={classes.centerLine}>
+				<div className={classes.avatar}>
+					<Avatar src={props.src}/>
+				</div>
 				<div className={classes.handle}>
-				@{props.handle}
+					@{props.handle}
 				</div>
 			</div>
-			<Avatar src={props.src}/>
 		</Box>
 	);
 }

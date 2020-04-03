@@ -2,18 +2,22 @@ import React from 'react';
 import { makeStyles, useTheme } from '@material-ui/styles';
 import Typography from '@material-ui/core/Typography';
 import Box from '@material-ui/core/Box';
+import Hidden from '@material-ui/core/Hidden';
 
+// Layout
 import SplitColumns from '../../layouts/split-column';
 import PaneTabs from '../../layouts/tabs/tabs-panes';
 import TransactionList from '../../layouts/list-transactions';
 import FlexColumn from '../../layouts/flex-column'
-
-import AvatarHeader from '../../components/header-avatar';
-import WokeSpan from '../../components/text/span-woke';
-import TransferTokensForm from  '../../components/forms/tokens-transfer'
-import SendTransferForm from  '../../components/forms/send-transfer'
 import LargeBody from '../../components/text/body-large';
 
+// Components
+import AvatarHeader from '../../components/header-avatar';
+import Balance from  '../../components/wallet-balance'
+import WokeSpan from '../../components/text/span-woke';
+import TransferTokensForm from  '../../components/forms/tokens-transfer'
+
+const headerHeight = 15;
 const useStyles = makeStyles(theme => ({
 	balanceText: {
 		fontSize: '38px',
@@ -26,9 +30,17 @@ const useStyles = makeStyles(theme => ({
 		backgroundColor: 'white',
 		position: 'static',
 		flexGrow: 2,
-	//	height: '50vh',
+		//	height: '50vh',
 		minHeight: '50%',
 		border: '5px',
+	},
+
+	headerSpacer: {
+		width: '100%',
+		minHeight: `${headerHeight*1.5}vh`,
+		[theme.breakpoints.down('sm')]: {
+			minHeight: `${headerHeight/4}vh`,
+		},
 	},
 }));
 
@@ -68,45 +80,25 @@ export default function WalletView (props) {
 			order: 10
 		},
 	}
-	
-	const balanceSizeREM = 8;
-	const renderBalance = () => (<>
-		<Typography variant="h3"align="center" order={3}
-			style={{
-				//marginTop: '5%',
-				marginBottom: '5%',
-				fontSize: `${balanceSizeREM}rem`
-			}} 
-		>
-			<LargeBody alignSelf='flex-start' color='secondary' styles={{textAlign: 'left'}}> 
-				balance
-			</LargeBody>
-			{balance}<WokeSpan styles={{fontSize: `${balanceSizeREM*0.7}rem`}}> W</WokeSpan>
-		</Typography>
-	</>);
 
-	const renderTransferOld = () => (
-		<SendTransferForm order={4}
+	const renderTransfer = () => (
+		<TransferTokensForm order={2}
 			sendTransfers={sendTransfers}
 			pending={sendTransfers.pending}
 			usernamePlaceholder='username...'
 			amountPlaceholder='amount'
 			suggestions={friends}
-		/>
-	);
-
-	const renderTransfer = () => (
-		<TransferTokensForm 
+			balance={1320}
 		/>
 	);
 
 	const renderHeader = (heightVH) => (
-				<AvatarHeader order={0}
-					styles={{height: `${heightVH}vh`}}
-					alignSelf='flex-start'
-					src={avatar}
-					handle={props.user.handle}
-				/>
+			<AvatarHeader order={0}
+				styles={{height: `${heightVH}vh`}}
+				alignSelf='flex-start'
+				src={avatar}
+				handle={props.user.handle}
+			/>
 	);
 
 	const renderPaneTabs = () => (
@@ -116,58 +108,58 @@ export default function WalletView (props) {
 			<TransactionList
 				label="History"
 				itemHeightVH={5}
+				itemHeightVHSmall={4}
 				styles={{ }}
 				listItems={transferEvents}
 			/>
 			<FlexColumn	styles={{}} //align='center'
 				label="Earnings"
 			>
-				<LargeBody align='center'
-					styles={{
-						marginTop: '10%',
-						marginBottom: '10%',
-						paddingLeft: '10%',
-						paddingRight: '10%',
-						marginBottom: '10%',
-					}}
-				> 
-					Tribute <WokeSpan>WOKENs</WokeSpan> to new users to earn an elightenment bonus when they join.
-				</LargeBody>
 				<TransactionList
 					listItems={rewardEvents}
 				/> 
+				{ rewardEvents.length < 4 ? (<>
+					<LargeBody align='center'
+						styles={{
+							textAlign: 'justify',
+							fontSize: `${2*0.7}rem`,
+							linHeight: `${2*0.7}rem`,
+							marginTop: '8%',
+							marginBottom: '5%',
+							paddingLeft: '10%',
+							paddingRight: '10%',
+						}}
+					> 
+						Tribute <WokeSpan>WOKENs</WokeSpan> to new users to earn an elightenment bonus when they join.
+					</LargeBody>
+				</>) : null }
 			</FlexColumn>
 		</PaneTabs>
 	);
-	
-	const headerHeight = 15;
-	const headerSpacer = (vh) => (
-				<div style={{
-					display: 'inline-block',
-					// @fix Smaller height on repsonsive (header height/2)
-					minHeight: `${vh}vh`
-				}}/>
-	);
 
-	return (<>
-		<SplitColumns
-			first={<>
-				{ renderHeader(headerHeight) }
-				{ headerSpacer(headerHeight/2) }
-				<FlexColumn styles={{
-					width: '100%',
-					maxWidth: '100%', // limit to width of split columns
-					justifyContent: 'space-evenly',
-					alignSelf: 'stretch',
-				}}>
-					{ renderBalance() }
-					{ renderTransfer() }
-				</FlexColumn>
-			</>}
-			second={<>
-				{ headerSpacer(headerHeight*1.5) }
-				{ renderPaneTabs() }
-			</>}
-		/>
-	</>);
+	const renderBalance = () => <Balance balance={balance}/>
+
+		return (<>
+			{ renderHeader(headerHeight) }
+			<div className={classes.headerSpacer}/>
+			<SplitColumns
+				first={<>
+					<FlexColumn styles={{
+						width: '100%',
+						maxWidth: '100%', // limit to width of split columns
+						justifyContent: 'space-evenly',
+						alignSelf: 'stretch',
+						small: {
+							height: '100%',
+						}
+					}}>
+						{ renderBalance() }
+						{ renderTransfer() }
+					</FlexColumn>
+				</>}
+				second={<>
+					{ renderPaneTabs() }
+				</>}
+			/>
+		</>);
 }
