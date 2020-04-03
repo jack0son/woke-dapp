@@ -6,16 +6,21 @@ import FlexColumn from './flex-column';
 
 export default function OnboardingContainer(props) {
 	const { styles, ...other } = props;
+	const { small, ..._styles } = styles;
 
 	return <FlexColumn
 		styles={{
 			height: '70vh',
 			alignSelf: 'flex-start',
+			//justifyContent: 'space-around',
 
 			small: {
 				height: '80vh',
 				alignSelf: 'flex-start',
-			}
+				...(styles.small || {}),
+				//justifyContent: 'space-between',
+			},
+			..._styles,
 		}}
 		{ ...other }
 	/>
