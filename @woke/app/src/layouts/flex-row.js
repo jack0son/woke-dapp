@@ -9,26 +9,23 @@ const useStyles = makeStyles(theme => ({
 			// Flex child
 			flexGrow: 1,
 			flexShrink: 1,
-			flexBasis: 'auto',
 
 			// Layout
 			position: 'relative',
 			display: 'flex',
 			flexDirection: 'row',
 			justifyContent: 'center',
-			alignItems: 'center',
+			alignItems: 'flex-start',
+			//alignContent: 'flex-start',
 			flexWrap: 'wrap',
-			//overflow: 'visible',
-			//overflowX: 'hidden',
-			//overflowY: 'visible',
 
 			// Size
 			width: '80%',
-			//height: '80vh',
 			[theme.breakpoints.down('sm')]: {
+				//marginLeft: '10%',
+				//marginRight: '10%',
 				width: '100%',
 				...(styles.small || {}),
-				//height: 'auto',
 			},
 
 			// Spacing

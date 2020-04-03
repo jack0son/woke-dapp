@@ -10,7 +10,7 @@ import NavBar from '../../components/navbar'
 import { useRootContext } from '../../hooks/root-context'
 
 export default function RootView({children}) {
-	const { loading } = useRootContext();
+	const { loading, headerChildren } = useRootContext();
 
 	const makeNavBar = () => (
 		<NavBar
@@ -20,7 +20,7 @@ export default function RootView({children}) {
 
 	return (
 		<Theming>
-			<RootContainer NavBar={makeNavBar()}>
+			<RootContainer NavBar={makeNavBar()} headerChildren={headerChildren}>
 				{children}
 			</RootContainer>
 		</Theming>

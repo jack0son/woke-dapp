@@ -49,7 +49,7 @@ const useStyles = makeStyles(theme => ({
 		height: '50%',
 		position: 'absolute',
 		//left: '-45vw',
-		left: '0',
+		//left: '0',
 		//left: `${styles.gutterSizeP}vw` || '0',
 		//top: 0,
 		//paddingLeft: `${avatarHeightVH*2}vh`, //`${avatarHeightVH}vh`,
