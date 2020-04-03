@@ -48,8 +48,6 @@ export default function ButtonGroupBelow (props) {
 			<BodyStandard
 				color='secondary'
 				styles={{
-					paddingLeft: theme.spacing(3),
-					paddingRight: theme.spacing(3),
 					textAlign: 'center',
 				}}
 			>

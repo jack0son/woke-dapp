@@ -15,6 +15,10 @@ const useStyles = makeStyles(theme => ({
 			fontSize: '1.25rem',
 		}
 	},
+	
+	tweetIcon: {
+		color: theme.palette.secondary.main,
+	}
 }));
 
 export default function TweetButton (props) {
@@ -23,14 +27,14 @@ export default function TweetButton (props) {
 
 	return (
 		<>
-			<TwitterIcon />
+			<TwitterIcon className={classes.tweetIcon} />
 			<Button 
 				className={classes.tweetButton}
 				text="tweet"
 				color="secondary"
 				{...props}
 			/>
-			<TwitterIcon />
+			<TwitterIcon className={classes.tweetIcon} />
 		</>
 	);
 }
