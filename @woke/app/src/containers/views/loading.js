@@ -22,31 +22,23 @@ export default function LoadingView(props) {
 	}, [])
 
 	return (
-		<CentreHolder height='85vh'>
-			<CentreHolder
-				mt='0 !important'
-				mb={theme.spacing(0.5)}
-				height='5vh'
+
+			<FlexColumn
+				//height='5vh'
+				styles={{
+					justifyContent: 'space-between',
+					height: '20vh',
+					marginBottom: '20%',
+				}}
 			>
 					<Logo
 						src='images/eye-logo.png'
 					/>
-			</CentreHolder>
-
-			<FlexColumn
-				align='center'
-				height='5vh'
-				styles={{
-					paddingLeft: theme.spacing(5),
-					paddingRight: theme.spacing(5)
-				}}
-			>
 			{ props.children ? props.children : (
 				<Typography variant="h4" align="center" gutterBottom>
 					{props.message ? props.message : 'loading ...'}
 				</Typography>
 			)}
 			</FlexColumn>
-		</CentreHolder>
 	);
 }

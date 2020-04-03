@@ -10,16 +10,18 @@ import { makeStyles } from '@material-ui/styles';
 // Theme is default first arg to make styles
 // No need to call useTheme
 const useStyles = makeStyles(theme => ({
-	root: {
-		dipslay: 'flex',
-		//flexDirection: 'column',
-		flexFlow: 'column',
-		//justifyContent: 'flexStart',
-		minHeight: '100vh',
-		//height: '100%',
-		//width: '100vw',
+	rootColumn: {
+		position: 'static',
+		display: 'flex',
+		flexDirection: 'column',
+		justifyContent: 'flex-start',
+		alignItems: 'stretch',
+
 		background: theme.background,
+
+		width: '100%',
 		height: '100%',
+		minHeight: '100vh',
 		maxHeight: 'unset',
 	},
 
@@ -29,32 +31,36 @@ const useStyles = makeStyles(theme => ({
 		paddingLeft: 0,
 		paddingRight: 0,
 	},
+
+	footer: {
+		flexShrink: 1,
+		flexGrow: 0,
+		height: '5%',
+		[theme.breakpoints.down('sm')]: {
+		},
+	}
 }));
 
 
 export default function RootContainer(props) {
-	const { NavBar, gutterSizeP, children } = props;
-	const styles = useStyles();
+	const { NavBar, gutterSizeP, children, headerChildren } = props;
+	const classes = useStyles();
 
-	const width = 100 - (gutterSizeP*2);
+	//const width = 100 - (gutterSizeP*2);
 
 	return (
 		<>
 			<CssBaseline />
-			<Container className={styles.container}>
-				<Box component="div" position="relative" className={styles.root}>
+			<div className={classes.container}>
+				<div component="div" position="relative" className={classes.rootColumn}>
 					{ NavBar }
-					<FlexRow styles={{
-						//width,
-						small: {
-							//width: `${gutterSizeP}%`,
-						}
-						// Pass gutter sizes here
-					}}>
+					{ headerChildren }
+					<FlexRow> 
 						{ children }
 					</FlexRow>
-				</Box>
-			</Container>
+					<div className={classes.footer}/>
+				</div>
+			</div>
 		</>
   );
 }

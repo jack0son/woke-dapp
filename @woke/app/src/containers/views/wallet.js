@@ -17,6 +17,8 @@ import Balance from  '../../components/wallet-balance'
 import WokeSpan from '../../components/text/span-woke';
 import TransferTokensForm from  '../../components/forms/tokens-transfer'
 
+import { useRootContext } from '../../hooks/root-context';
+
 const headerHeight = 15;
 const useStyles = makeStyles(theme => ({
 	balanceText: {
@@ -37,7 +39,8 @@ const useStyles = makeStyles(theme => ({
 
 	headerSpacer: {
 		width: '100%',
-		minHeight: `${headerHeight*1.5}vh`,
+		alignSelf: 'flex-start',
+		minHeight: `${headerHeight/2}vh`,
 		[theme.breakpoints.down('sm')]: {
 			minHeight: `${headerHeight/4}vh`,
 		},
@@ -59,6 +62,10 @@ export default function WalletView (props) {
 	const classes = useStyles(styles);
 	const theme = useTheme();
 
+	const { setHeaderChildren } = useRootContext();
+
+	//setHeaderChildren(children => ([ ...children, renderHeader(headerHeight) ]));
+
 	friends.forEach(user => {
 		user.label = user.screen_name;
 		user.handle = user.screen_name;
@@ -71,6 +78,24 @@ export default function WalletView (props) {
 	if(avatar.endsWith(imageModifier)) {
 		avatar = avatar.slice(0, avatar.length - imageModifier.length) + '.jpg';
 	}
+
+	const renderHeader = heightVH => (<>
+		<AvatarHeader order={0}
+			styles={{height: `${heightVH}vh`}}
+			alignSelf='flex-start'
+			src={avatar}
+			handle={props.user.handle}
+		/>
+		<div className={classes.headerSpacer}/>
+	</>);
+
+	const avatarHeader = React.useMemo(() => renderHeader(headerHeight));
+	React.useEffect(() => {
+		setHeaderChildren([avatarHeader]);
+		return () => {
+			setHeaderChildren([]);
+		}
+	}, [])
 
 	const responsive = {
 		[theme.breakpoints.up('sm')]: {
@@ -92,14 +117,6 @@ export default function WalletView (props) {
 		/>
 	);
 
-	const renderHeader = (heightVH) => (
-			<AvatarHeader order={0}
-				styles={{height: `${heightVH}vh`}}
-				alignSelf='flex-start'
-				src={avatar}
-				handle={props.user.handle}
-			/>
-	);
 
 	const renderPaneTabs = () => (
 		<PaneTabs order={responsive.order} styles={{
@@ -140,15 +157,14 @@ export default function WalletView (props) {
 	const renderBalance = () => <Balance balance={balance}/>
 
 		return (<>
-			{ renderHeader(headerHeight) }
-			<div className={classes.headerSpacer}/>
+
 			<SplitColumns
 				first={<>
 					<FlexColumn styles={{
 						width: '100%',
 						maxWidth: '100%', // limit to width of split columns
 						justifyContent: 'space-evenly',
-						alignSelf: 'stretch',
+						//alignSelf: 'stretch',
 						small: {
 							height: '100%',
 						}

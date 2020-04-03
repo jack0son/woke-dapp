@@ -8,7 +8,7 @@ import FlexColumn from './flex-column';
 const useStyles = makeStyles(theme => ({
 	splitPane: styles => ({
 		// Layout
-		alignSelf: 'stretch',
+		alignSelf: 'flex-start',
 		alignItems: 'flex-start',
 		justifyContent: 'flex-start',
 

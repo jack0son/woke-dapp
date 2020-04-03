@@ -2,6 +2,7 @@ import React from 'react';
 import Typography from '@material-ui/core/Typography';
 
 import FlexColumn from '../../layouts/flex-column';
+import OnboardingContainer from '../../layouts/container-onboarding';
 import Footer from '../../layouts/footer';
 import BottomHolder from '../../layouts/holder-bottom';
 import ButtonGroup from '../../layouts/button-group';
@@ -14,14 +15,7 @@ import HL from '../../components/text/span-highlight'
 
 export default function LoginView(props) {
 	return (<>
-		<FlexColumn styles={{
-			justifyContent: 'space-around',
-			height: '60% !important',
-			small: {
-				justifyContent: 'space-between',
-				alignSelf: 'center',
-				//height: '50%',
-			},
+		<OnboardingContainer styles={{
 		}}>
 			<LargeBody styles={{textAlign: 'center', marginTop: '10%'}}>
 				Login
@@ -45,6 +39,6 @@ export default function LoginView(props) {
 				<br/><br/>
 				Remember your password. Stay woke.
 			</StandardBody>
-		</FlexColumn>
+		</OnboardingContainer>
 	</>);
 }

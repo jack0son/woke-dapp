@@ -44,6 +44,7 @@ export default function WalletBalance({ balance, ...props }) {
 		<Typography variant="h3" align="center" order={3} className={classes.amount}>
 			<LargeBody align='center' color='secondary' styles={{
 				fontWeight: '400',
+				fontSize: '1.5rem',
 				//marginBottom: '15%',
 				textAlign: 'left',
 				small: {

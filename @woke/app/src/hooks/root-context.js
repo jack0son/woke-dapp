@@ -12,6 +12,7 @@ export function RootContextProvider({children}) {
 	const [loading, setLoading] = useState(false);
 	const [escapeHatch, setEscapeHatch] = useState(null);
 	const [styles, setStyles] = useState({});
+	const [headerChildren, setHeaderChildren] = useState([]);
 
 	return (
 		<Context.Provider
@@ -22,14 +23,18 @@ export function RootContextProvider({children}) {
 				setEscapeHatch,
 				styles,
 				setStyles,
+				headerChildren,
+				setHeaderChildren,
 			}),
 				[
-					styles,
-					setStyles,
 					loading,
 					setLoading,
 					escapeHatch,
 					setEscapeHatch,
+					styles,
+					setStyles,
+					headerChildren,
+					setHeaderChildren,
 				]
 			)}
 		>
