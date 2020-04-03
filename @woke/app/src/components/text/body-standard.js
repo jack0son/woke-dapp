@@ -8,7 +8,12 @@ const useStyles = makeStyles(theme => ({
 		// Layout
 		position: 'static',
 		textAlign: 'center',
+		fontSize: '2rem',
 
+		[theme.breakpoints.down('sm')]: {
+			textAlign: 'left',
+			fontSize: '1rem',
+		},
 		// Size
 		//width: '100%',
 		maxWidth: '100%',

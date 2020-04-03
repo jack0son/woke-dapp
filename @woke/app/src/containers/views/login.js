@@ -10,7 +10,7 @@ import ButtonGroup from '../../layouts/button-group';
 import EnterPassword from '../../components/forms/password-enter'
 import StandardBody from '../../components/text/body-standard'
 import LargeBody from '../../components/text/body-large'
-import HL from '../../components/text/span-highlight'
+import RememberPasswordText from '../../components/text/remember-password'
 
 
 export default function LoginView(props) {
@@ -33,12 +33,7 @@ export default function LoginView(props) {
 					color: 'primary'
 				}}
 			/>
-
-			<StandardBody styles={{marginBottom: '10%', marginTop: '10%'}}>
-				Your password can <HL>never</HL> be recovered.
-				<br/><br/>
-				Remember your password. Stay woke.
-			</StandardBody>
+			<RememberPasswordText/>
 		</OnboardingContainer>
 	</>);
 }

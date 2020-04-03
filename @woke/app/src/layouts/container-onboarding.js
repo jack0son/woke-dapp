@@ -10,12 +10,12 @@ export default function OnboardingContainer(props) {
 
 	return <FlexColumn
 		styles={{
-			height: '70vh',
+			height: '80vh',
 			alignSelf: 'flex-start',
 			//justifyContent: 'space-around',
 
 			small: {
-				height: '80vh',
+				height: '90vh',
 				alignSelf: 'flex-start',
 				...(styles.small || {}),
 				//justifyContent: 'space-between',

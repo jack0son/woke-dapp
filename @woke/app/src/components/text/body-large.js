@@ -14,12 +14,13 @@ const useStyles = makeStyles(theme => ({
 			textAlign: 'center',
 
 			// Size
-			fontSize: '2rem',
+			fontSize: '4rem',
 			fontWeight: '700',
 			//width: '100%',
 			//maxWidth: '100%',
 
 			[theme.breakpoints.down('sm')]: {
+				fontSize: '2rem',
 				textAlign: 'left',
 				...small,
 			},

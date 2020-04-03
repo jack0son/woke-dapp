@@ -11,18 +11,18 @@ const useStyles = makeStyles(theme => ({
 		position: 'relative',
 		display: 'flex',
 		flexDirection: 'column',
-		justifyContent: 'flex-end',
+		justifyContent: 'space-evenly',
 		alignItems: 'center',
-		bottom: 0,
 		width: 'auto',
-		height: 'auto',
-		marginTop: 'auto',
+		minHeight: '30vh',
+		//marginTop: 'auto',
 		paddingTop: theme.spacing(2),
 		paddingBottom: theme.spacing(2),
 	}
 }));
 
 export default function ButtonGroup (props) {
+	const { reverse } = props;
 	const classes = useStyles();
 	const theme = useTheme();
 
@@ -30,28 +30,33 @@ export default function ButtonGroup (props) {
 	// TODO this is redundant
 	const {onClick, ...buttonProps} = props.buttonProps;
 
+	const buttonOrder = reverse ? 1 : 3;
+
+	const renderMessage = () => <BodyStandard order={2}
+		styles={{
+			paddingLeft: theme.spacing(3),
+			paddingRight: theme.spacing(3),
+		}}
+	>
+		{props.message}
+	</BodyStandard>
+
 	return (
 		<Box
 			className={classes.buttonGroup}
 		>
-			<BodyStandard
-				styles={{
-					paddingLeft: theme.spacing(3),
-					paddingRight: theme.spacing(3),
-				}}
-			>
-				{props.message}
-			</BodyStandard>
-
-			{ props.Button ? props.Button(buttonProps) : (
-				<Button 
+			{ reverse || renderMessage() }
+			{ props.Button ? props.Button({ ...buttonProps, order: buttonOrder}) : (
+				<Button order={buttonOrder}
 					onClick={onClick}
 					{...buttonProps}
-					styles={{marginTop: '15%'}}
+					styles={{
+					}}
 				>
 				{props.buttonText}
 				</Button>
 			)}
+			{ reverse && renderMessage() }
 		</Box>
 	);
 }

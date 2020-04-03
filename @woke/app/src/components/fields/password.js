@@ -4,6 +4,7 @@ import TextField from '@material-ui/core/TextField';
 
 const useStyles = makeStyles(theme => ({
 	passwordField: {
+		fontSize: '3rem',
 		width: '100%',
 		flexGrow: 1,
 	},

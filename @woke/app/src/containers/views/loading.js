@@ -1,6 +1,7 @@
 import React, { useEffect } from 'react';
 import { useTheme } from '@material-ui/styles';
 import Typography from '@material-ui/core/Typography';
+import BodyLarge from '../../components/text/body-large';
 
 import FlexColumn from '../../layouts/flex-column';
 import CentreHolder from '../../layouts/holder-centre';
@@ -32,7 +33,7 @@ export default function LoadingView(props) {
 					marginBottom: '20%',
 					small: {
 						width: '85%',
-						height: '20vh',
+						height: '25vh',
 					}
 				}}
 			>
@@ -40,9 +41,9 @@ export default function LoadingView(props) {
 						src='images/eye-logo.png'
 					/>
 			{ props.children ? props.children : (
-				<Typography variant="h4" align="center" gutterBottom>
-					{props.message ? props.message : 'loading ...'}
-				</Typography>
+				<BodyLarge gutterBottom>
+					{props.message ? props.message : ''}
+				</BodyLarge>
 			)}
 			</FlexColumn>
 	);

@@ -11,7 +11,8 @@ import ButtonGroup from '../../layouts/button-group';
 import NewPassword from '../../components/forms/password-new'
 import StandardBody from '../../components/text/body-standard'
 import LargeBody from '../../components/text/body-large'
-import HL from '../../components/text/span-highlight'
+import RememberPasswordText from '../../components/text/remember-password'
+
 import WokeSpan from '../../components/text/span-woke'
 
 
@@ -39,11 +40,7 @@ export default function SetPasswordView(props) {
 					}}
 				/>
 
-				<StandardBody styles={{textAlign: 'center'}}>
-					Your password can <HL>never</HL> be recovered.
-					<br/>
-					Remember your password. Stay woke.
-				</StandardBody>
+			<RememberPasswordText/>
 			</OnboardingContainer>
 		</>
 	);

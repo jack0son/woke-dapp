@@ -34,6 +34,7 @@ const useStyles = makeStyles(theme => ({
 		justifyContent: 'space-between',
 		width: '100%',
 		alignItems: 'stretch',
+		marginBottom: '10%',
 	}
 }));
 
