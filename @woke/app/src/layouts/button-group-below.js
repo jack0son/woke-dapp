@@ -10,10 +10,12 @@ const useStyles = makeStyles(theme => ({
 	buttonGroup: styles => ({
 		position: 'relative',
 		display: 'flex',
-		flexDirection: 'column',
-		justifyContent: 'space-between',
-		alignItems: 'stretch',
+		flexWrap: 'wrap',
+		flexDirection: 'row',
+		justifyContent: 'center',
+		alignItems: 'center',
 		height: 'auto',
+		width: 'inherit',
 		...styles
 	})
 }));
@@ -30,6 +32,7 @@ export default function ButtonGroupBelow (props) {
 
 	return (
 		<Box
+			{...props.flexContainerProps}
 			className={classes.buttonGroup}
 		>
 			{ PassedButton ? (

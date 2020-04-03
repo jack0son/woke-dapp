@@ -16,7 +16,7 @@ export default function LoginView(props) {
 	return (<>
 		<FlexColumn styles={{
 			justifyContent: 'space-around',
-			height: '80%',
+			height: '60% !important',
 			small: {
 				justifyContent: 'space-between',
 				alignSelf: 'center',
