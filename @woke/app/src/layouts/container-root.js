@@ -11,31 +11,46 @@ import { makeStyles } from '@material-ui/styles';
 // No need to call useTheme
 const useStyles = makeStyles(theme => ({
 	root: {
-		background: theme.background,
-		height: '100vh',
+		dipslay: 'flex',
+		//flexDirection: 'column',
+		flexFlow: 'column',
+		//justifyContent: 'flexStart',
+		minHeight: '100vh',
+		//height: '100%',
 		//width: '100vw',
+		background: theme.background,
+		height: '100%',
+		maxHeight: 'unset',
 	},
 
 	container: {
-		background: theme.palette.background.paper,
+		height: '100%',
+		//background: theme.palette.background.paper,
 		paddingLeft: 0,
-		maxWidth: 'unset',
 		paddingRight: 0,
 	},
 }));
 
 
 export default function RootContainer(props) {
-	const { navBar, children } = props;
+	const { NavBar, gutterSizeP, children } = props;
 	const styles = useStyles();
+
+	const width = 100 - (gutterSizeP*2);
 
 	return (
 		<>
 			<CssBaseline />
 			<Container className={styles.container}>
 				<Box component="div" position="relative" className={styles.root}>
-					{ navBar }
-					<FlexRow>
+					{ NavBar }
+					<FlexRow styles={{
+						//width,
+						small: {
+							//width: `${gutterSizeP}%`,
+						}
+						// Pass gutter sizes here
+					}}>
 						{ children }
 					</FlexRow>
 				</Box>

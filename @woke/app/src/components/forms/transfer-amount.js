@@ -31,6 +31,7 @@ export default function TokenAmountForm(props) {
 	return (
 		<div className={classes.amountForm}>{/* style={{width: '100%'}}> */}
 			<NumberField
+				order={2}
 				controlledValue={amount}
 				handleChange={handleFieldChange}
 
@@ -43,8 +44,10 @@ export default function TokenAmountForm(props) {
 				//controlledValue={amount} // causes slider to not render on drag
 				defaultAmount={defaults.value < balance ? defaults.value : Math.floor(balance/2)}
 				min={1}
+				order={1}
 				max={balance}
 				styles={{
+					order: 1,
 					marginLeft: '5%',
 					flexGrow: 8,
 				}}

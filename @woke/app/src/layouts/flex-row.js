@@ -6,26 +6,36 @@ import Box from '@material-ui/core/Box';
 
 const useStyles = makeStyles(theme => ({
 	flexRow: styles => ({
-		// Layout
-		position: 'relative',
-		display: 'flex',
-		flexDirection: 'row',
-		justifyContent: 'center',
-		alignItems: 'center',
+			// Flex child
+			flexGrow: 1,
+			flexShrink: 1,
+			flexBasis: 'auto',
 
-		// Size
-		width: '80%',
-		height: '80vh',
-		[theme.breakpoints.down('sm')]: {
-			width: '95%',
-			height: '90vh',
-		},
+			// Layout
+			position: 'relative',
+			display: 'flex',
+			flexDirection: 'row',
+			justifyContent: 'center',
+			alignItems: 'center',
+			flexWrap: 'wrap',
+			//overflow: 'visible',
+			//overflowX: 'hidden',
+			//overflowY: 'visible',
 
-		// Spacing
-		marginLeft: 'auto',
-		marginRight: 'auto',
+			// Size
+			width: '80%',
+			//height: '80vh',
+			[theme.breakpoints.down('sm')]: {
+				width: '100%',
+				...(styles.small || {}),
+				//height: 'auto',
+			},
 
-		...styles
+			// Spacing
+			marginLeft: 'auto',
+			marginRight: 'auto',
+
+			...styles
 	})
 }));
 

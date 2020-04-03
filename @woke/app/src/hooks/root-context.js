@@ -11,16 +11,21 @@ export const useRootContext = () => useContext(Context);
 export function RootContextProvider({children}) {
 	const [loading, setLoading] = useState(false);
 	const [escapeHatch, setEscapeHatch] = useState(null);
+	const [styles, setStyles] = useState({});
 
 	return (
 		<Context.Provider
 			value={useMemo(() => ({
-					setLoading,
-					loading,
-					escapeHatch,
-					setEscapeHatch,
+				setLoading,
+				loading,
+				escapeHatch,
+				setEscapeHatch,
+				styles,
+				setStyles,
 			}),
 				[
+					styles,
+					setStyles,
 					loading,
 					setLoading,
 					escapeHatch,
@@ -32,4 +37,4 @@ export function RootContextProvider({children}) {
 		</Context.Provider>
 	);
 }
-			//{props && props.children ? props.children : null}
+//{props && props.children ? props.children : null}

@@ -16,20 +16,12 @@ import WokeSpan from '../components/text/span-woke';
 
 const useStyles = makeStyles(theme => ({
 	transactionList: styles => ({
-		//flexGrow: 1,
-		//maxWidth: '60vw',
-		//maxWidth: styles.itemWidth || '100%',
-		//direction: 'rtl',
 		width: '100%',
 		height: 'inherit',
 		maxHeight: 'inherit',
 		position: 'relative',
-		//flexShrink: 1,
-		//overflow: 'scroll',
 		[theme.breakpoints.down('sm')]: {
 			width: '100%',
-			//paddingRight: '10%',
-			//paddingLeft: '10%',
 		},
 		backgroundColor: 'transparent',
 		...styles
@@ -38,7 +30,11 @@ const useStyles = makeStyles(theme => ({
 	avatarItem: {
 		height: '100%',
 		width: 'auto',
-		marginRight: '18%',
+		marginRight: '14%',
+		marginLeft: '5%',
+		[theme.breakpoints.down('sm')]: {
+			marginRight: '5%',
+		},
 	},
 
 	listItem: {
@@ -68,7 +64,7 @@ const useStyles = makeStyles(theme => ({
 }));
 
 export default function TransactionList (props) {
-	const {styles, itemHeightVH, listItems, ...innerProps} = props;
+	const {styles, itemHeightVH, itemHeightVHSmall, listItems, ...innerProps} = props;
 	const theme = useTheme();
 	const dense = false;
 
@@ -113,13 +109,18 @@ export default function TransactionList (props) {
 				<Avatar
 					alt={tx.counterParty ? tx.counterParty.handle : 'loading'}
 					src={tx.counterParty ? tx.counterParty.avatar : 'loading'}
+					m={0}
 					styles={{
-						marginTop: '10%',
-						marginBottom: '10%',
-						marginLeft: '10%',
-						marginRight: '10%',
+						//marginTop: '10%',
+						//marginBottom: '10%',
+						//paddingLeft: '10%',
+						//paddingRight: '10%',
 						height: `${itemHeightVH || defaultAvatarHeight}vh`, 
 						width:  `${itemHeightVH || defaultAvatarHeight}vh`,
+						small: {
+							//height: `${itemHeightVHSmall || itemHeightVH*0.8}vh`, 
+							//width:  `${itemHeightVHSmall || itemHeightVH*0.8}vh`,
+						},
 						minHeight: '32px', 
 						//borderStyle: 'solid',
 						borderWidth: '1px',

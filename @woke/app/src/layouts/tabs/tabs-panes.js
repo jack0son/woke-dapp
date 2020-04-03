@@ -16,18 +16,26 @@ const useStyles = makeStyles(theme => ({
 		position: 'relative',
 		display: 'flex',
 		flexDirection: 'column',
-		justifyContent: 'flex-start',
-		alignSelf: 'flex-end',
+		justifyContent: 'center',
+		alignSelf: 'stretch',
 		//height: '100%',
 
 		marginLeft: 'auto',
-		//marginRight: 'auto',
+		marginRight: 'auto',
+
+		[theme.breakpoints.down('sm')]: {
+			marginTop: '10%',
+			width: '100%',
+		},
 		//backgroundColor: theme.palette.background.dark,
 		...styles,
 	}),
 
 	styledTabs: styles => ({
 		height: styles.tabHeight || '5vh',
+		[theme.breakpoints.down('sm')]: {
+			width: '100%',
+		},
 	}),
 
 	swipeableView: {

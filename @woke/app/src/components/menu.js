@@ -8,7 +8,7 @@ import MenuOpenIcon from '@material-ui/icons/MenuOpen';
 import OutsideClickHandler from 'react-outside-click-handler';
 
 const useStyles = makeStyles(theme => ({
-  	showMenu: {
+	showMenu: {
 		'& > div': {
 			display: 'flex',
 			flexDirection: 'column',
@@ -16,6 +16,13 @@ const useStyles = makeStyles(theme => ({
 			alignItems: 'center',
 			justifyContent: 'center',
 			height: '20vh',
+
+			// @fix broken window
+			// To compensate for absolute position avatar-header on wallet
+			paddingTop: '2vh',
+			paddingBottom: '2vh',
+			marginBottom: '8vh',
+
 			[theme.breakpoints.up('sm')]: {
 				height: 'unset',
 				display: 'flex',
@@ -24,9 +31,10 @@ const useStyles = makeStyles(theme => ({
 				justifyContent: 'space-evenly',
 			},
 		}
-  	},
+	},
 
 	hideMenu: {
+		position: 'relative',
 		display: 'none',
 		[theme.breakpoints.up('sm')]: {
 			display: 'block',
@@ -66,23 +74,23 @@ const useStyles = makeStyles(theme => ({
 
 
 export default function Menu() {
-    const classes = useStyles();
+	const classes = useStyles();
 
-    const [showMenu, setShowMenu] = useState(false);
-    const toggleMenu = () => setShowMenu(!showMenu);
-    const hideMenu = () => {
+	const [showMenu, setShowMenu] = useState(false);
+	const toggleMenu = () => setShowMenu(!showMenu);
+	const hideMenu = () => {
 		if (showMenu == true) {
 			toggleMenu();
 		}
-    }
-    const toggleBurgerIcon = () => {
+	}
+	const toggleBurgerIcon = () => {
 		return showMenu ? 
 			<MenuOpenIcon className={classes.hamburger} onClick={toggleMenu} /> :
 			<MenuIcon className={classes.hamburger} onClick={toggleMenu} />
-    }
-    
-  	return (
-        <>   
+	}
+
+	return (
+		<>   
 			{ toggleBurgerIcon() }
 			<FlexColumn className={showMenu ? classes.showMenu : classes.hideMenu}>
 				<OutsideClickHandler
@@ -95,6 +103,6 @@ export default function Menu() {
 					<Link className={classes.menuItem} variant="h3" href="/logout">logout</Link>
 				</OutsideClickHandler>
 			</FlexColumn>
-        </>
-  	);
+		</>
+	);
 }

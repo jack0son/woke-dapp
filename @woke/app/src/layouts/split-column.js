@@ -12,17 +12,12 @@ const useStyles = makeStyles(theme => ({
 		alignItems: 'flex-start',
 		justifyContent: 'flex-start',
 
-		/*
-		position: 'relative',
-		display: 'flex',
-		flexDirection: 'row',
-		justifyContent: 'center',
-		alignItems: 'center',
-		*/
-
 		// Size
+		width: '50%',
 		maxWidth: '50%',
 		[theme.breakpoints.down('sm')]: {
+			width: '100%',
+			maxWidth: '100%',
 		},
 
 		// Spacing

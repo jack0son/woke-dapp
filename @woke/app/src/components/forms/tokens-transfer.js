@@ -7,7 +7,7 @@ import FlexRow from '../../layouts/flex-row';
 import AmountForm from './transfer-amount';
 import RecipientForm from './transfer-recipient';
 
-export default function TransferTokensForm(props) {
+export default function TransferTokensForm({ balance, ...props }) {
 	const {
 		sendTransfers,				// Transfer API (web3)
 		pending,							// Transfer tx status
@@ -16,7 +16,12 @@ export default function TransferTokensForm(props) {
 		amountPlaceholder,
 	} = props;
 
-	const [amount, setAmount] = useState(0);
+	const defaults = {
+		value: 5,
+	};
+
+	const defaultAmount = defaults.value < balance ? defaults.value : Math.floor(balance/3)
+	const [amount, setAmount] = useState(defaultAmount);
 	const [recipient, setRecipient] = useState(`  ... user's twitter handle goes here`);
 
 	const handleSetAmount = (amount) => {
@@ -28,10 +33,13 @@ export default function TransferTokensForm(props) {
 
 	return (
 		<FlexColumn styles={{
-			width: '70%',
-			widthSmall: '95%',
-			marginLeft: 'auto',
-			marginRight: 'auto',
+			width: '50%',
+			minWidth: '25vw',
+			//marginLeft: 'auto',
+			//marginRight: 'auto',
+			small: {
+				width: '85%',
+			}
 		}}>
 			<RecipientForm
 				flexGrow={5}
@@ -48,6 +56,7 @@ export default function TransferTokensForm(props) {
 				text='SEND'
 				onClick={popModal}
 				styles={{
+					marginTop: '5%',
 					fontSize: '1.5rem',
 					width: '100%',
 				}}
