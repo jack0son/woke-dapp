@@ -3,27 +3,13 @@ import Typography from '@material-ui/core/Typography';
 import FlexColumn from '../../layouts/flex-column';
 import ButtonGroup from '../../layouts/button-group';
 
-import { makeStyles } from '@material-ui/styles';
-
-const useStyles = makeStyles(theme => ({
-	flexColumn: styles => ({
-		display: 'relative',
-		minHeight: '100%',
-		// Layout
-		[theme.breakpoints.down('sm')]: {
-		},
-	})
-}));
-
 export default function SigninView(props) {
-	const classes = useStyles();
 
 	return (<>
 		<FlexColumn styles={{
 			alignSelf: 'center',
-			//height: '60%',
+			marginBottom: '10%',
 			small: {
-				//height: '50%',
 			},
 			justifyContent: 'space-evenly'
 		}}>

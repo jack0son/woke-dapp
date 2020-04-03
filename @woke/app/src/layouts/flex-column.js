@@ -16,7 +16,7 @@ const useStyles = makeStyles(theme => ({
 			justifyContent: 'space-evenly',
 			alignSelf: 'center', 
 			alignItems: 'center',
-			flexGrow: 1,
+			//flexGrow: 1,
 
 			// Size
 			//marginBottom: 'auto',

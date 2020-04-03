@@ -3,6 +3,7 @@ import Typography from '@material-ui/core/Typography';
 
 import FlexRow from '../../layouts/flex-row';
 import FlexColumn from '../../layouts/flex-column';
+import OnboardingContainer from '../../layouts/container-onboarding';
 import Footer from '../../layouts/footer';
 import BottomHolder from '../../layouts/holder-bottom';
 import ButtonGroup from '../../layouts/button-group';
@@ -17,12 +18,7 @@ import WokeSpan from '../../components/text/span-woke'
 export default function SetPasswordView(props) {
 	return (
 		<>
-			<FlexColumn styles={{
-				justifyContent: 'space-around',
-				height: '80%',
-				small: {
-					alignSelf: 'flex-start',
-				}
+			<OnboardingContainer styles={{
 			}}>
 				<div>
 					<LargeBody>
@@ -48,7 +44,7 @@ export default function SetPasswordView(props) {
 					<br/>
 					Remember your password. Stay woke.
 				</StandardBody>
-			</FlexColumn>
+			</OnboardingContainer>
 		</>
 	);
 }
