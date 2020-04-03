@@ -2,6 +2,7 @@ import React from 'react';
 import { useTheme, makeStyles } from '@material-ui/styles';
 
 import FlexColumn from './flex-column';
+import OnboardingContainer from './container-onboarding';
 import BelowButtonGroup from './button-group-below';
 
 import BodyLarge from '../components/text/body-large'
@@ -22,11 +23,12 @@ export default function ClaimPage(props) {
 
 	return (
 		<>
-			<FlexColumn styles={{
-				height: '50% !important',
-				smallHeight: '60%',
-				justifyContent: 'space-evenly',
-				alignItems: 'center',
+			<OnboardingContainer styles={{
+				small: {
+					width: '80%',
+					marginLeft: 'auto',
+					marginRight: 'auto',
+				}
 			}}>
 				<BodyLarge
 					styles={{
@@ -46,7 +48,7 @@ export default function ClaimPage(props) {
 					/>
 					{props.children}
 				</div>
-			</FlexColumn>
+			</OnboardingContainer>
 		</>
 	);
 }
