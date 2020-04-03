@@ -10,12 +10,10 @@ import HL from '../components/text/span-highlight'
 
 const useStyles = makeStyles(theme => ({
 	buttons: styles => ({
-		//paddingLeft: '30%',
-		//paddingRight: '30%',
-		layout: 'flex',
+		display: 'flex',
 		justifyContent: 'space-between',
-		alignItems: 'stretch',
 		width: '30vh',
+		flexWrap: 'wrap',
 	}),
 }));
 
@@ -46,6 +44,7 @@ export default function ClaimPage(props) {
 						message={props.buttonMessage}
 						Button={props.Button}
 						buttonProps={props.buttonProps}
+						flexContainerProps={props.flexContainerProps}
 					/>
 					{props.children}
 				</div>

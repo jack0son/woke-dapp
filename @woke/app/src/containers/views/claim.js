@@ -40,9 +40,10 @@ export default function ClaimView (props) {
 				<ClaimPage
 					instructionText={[`To securely claim any `, <WokeSpan key="WokeSpan">WOKENs</WokeSpan>, ` you've already been sent, we need to tweet a signed message.`]}
 					Button={TweetButton}
+					textAlign='center'
 					buttonProps={{
 						href: intentUrl,
-						onClick: handleTweeted
+						onClick: handleTweeted,
 					}}
 					buttonMessage="Don't alter the message"
 				/>
@@ -53,20 +54,26 @@ export default function ClaimView (props) {
 		<>
 		<ClaimPage
 			instructionText={`Did you tweet?`}
-			textAlign="center"
+			textAlign='center'
+			flexContainerProps={{
+				flexDirection: 'column !important',
+				alignItems: 'stretch !important',
+			}}
 			buttonProps={{
 				onClick: handleConfirmedTweeted,
+				textAlign: 'center',
 				text: `Yes, I tweeted!`,
 				color: 'primary',
 			}}
-			buttonMessage="Here is a  message button"
 		>
 			<Button
 				onClick={handleNotTweeted}
-				text={'No'}
+				text={'No, I did not tweet'}
 				styles={{
 					alignSelf: 'center',
 					background: theme.palette.common.black,
+					textAlign: 'center',
+					width: 'inherit',
 				}}
 		/>
 		</ClaimPage>

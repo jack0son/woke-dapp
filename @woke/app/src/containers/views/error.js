@@ -2,8 +2,8 @@ import React, { useEffect } from 'react';
 import { useTheme } from '@material-ui/styles';
 import Typography from '@material-ui/core/Typography';
 
+import FlexRow from '../../layouts/flex-row';
 import FlexColumn from '../../layouts/flex-column';
-import CentreHolder from '../../layouts/holder-centre';
 import Brain from '../../components/images/brain';
 
 // View hooks
@@ -23,30 +23,15 @@ export default function ErrorView(props) {
 	}, [])
 
 	return (
-		//<CentreHolder>
-		<CentreHolder styles={{height: '40vh'}}>
-			<FlexColumn
-				//align='center'
-				//height='0'
-				styles={{
-					height: '0',
-					paddingLeft: theme.spacing(5),
-					paddingRight: theme.spacing(5)
-				}}
-			>
-			{ props.children ? props.children : (
-				<Typography variant="h4" align="center" gutterBottom>
-					{props.message ? props.message : 'F&!K'} 
-				</Typography>
-			)}
-			</FlexColumn>
-			<CentreHolder
-				mt='0 !important'
-				mb={theme.spacing(0.5)}
-			>
+		<FlexRow>
+			<FlexColumn>
+				{ props.children ? props.children : (
+					<Typography variant="h4" align="center" gutterBottom>
+						{props.message ? props.message : 'F&!K'} 
+					</Typography>
+				)}
 				<Brain/>
-			</CentreHolder>
-
-		</CentreHolder>
+			</FlexColumn>
+		</FlexRow>
 	);
 }
