@@ -14,9 +14,12 @@ const useStyles = makeStyles(theme => ({
 			display: 'flex',
 			flexDirection: 'column',
 			justifyContent: 'space-evenly',
+			alignSelf: 'center', 
 			alignItems: 'center',
+			flexGrow: 1,
 
 			// Size
+			//marginBottom: 'auto',
 			height: '70%',
 			[theme.breakpoints.down('sm')]: {
 				height: '90%',
