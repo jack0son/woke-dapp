@@ -42,6 +42,7 @@ export default function EnterPassword (props) {
 	return (
 		<FlexColumn styles={{
 			justifyContent: 'space-around',
+			width: '100%',
 			height: '20%',
 			small: {
 				justifyContent: 'space-around',

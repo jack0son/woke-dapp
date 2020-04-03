@@ -1,7 +1,7 @@
 import React from 'react';
 import { makeStyles } from '@material-ui/styles';
 
-import Typography from '@material-ui/core/Typography';
+import StandardBody from './body-standard';
 
 
 const useStyles = makeStyles(theme => ({
@@ -20,11 +20,9 @@ export default function HighlightSpan(props) {
 	const classes = useStyles(styles);
 
 	return (
-		<Typography
-			variant="body1"
+		<StandardBody
 			component="span"
 			color="secondary"
-			className={classes.highlightSpan}
 			{...innerProps}
 		/>
 	);

@@ -2,14 +2,18 @@ import React from 'react';
 import { makeStyles } from '@material-ui/core/styles';
 import LinearProgress from '@material-ui/core/LinearProgress';
 
-import BodyLarge from '../text/body-large'
+import BodyLarge from '../text/body-large';
+import BodyStandard from '../text/body-standard';
 
 const useStyles = makeStyles({
-	wrapper: {
+	wrapper: styles => ({
+		marginTop: '10%',
 		width: '100%',
-	},
+		maxHeight: '20%',
+	}),
 
   bar: {
+		height: '20%',
 		width: '100%',
     flexGrow: 1,
   },
@@ -52,7 +56,7 @@ export default function LinearstageList(props) {
   return (
 		<>
 			<div className={classes.wrapper}>
-				<BodyLarge styles={{small: {fontSize: '1rem', textAlign: 'left'}}}>{label}</BodyLarge>
+				<BodyStandard styles={{small: {fontSize: '1rem', textAlign: 'left'}}}>{label}</BodyStandard>
 			<br/>
       <LinearProgress className={classes.bar} variant="determinate" value={completed} />
 				</div>
