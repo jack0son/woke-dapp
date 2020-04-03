@@ -26,9 +26,14 @@ export default function LoadingView(props) {
 			<FlexColumn
 				//height='5vh'
 				styles={{
+					minWidth: '40vh',
 					justifyContent: 'space-between',
 					height: '20vh',
 					marginBottom: '20%',
+					small: {
+						width: '85%',
+						height: '20vh',
+					}
 				}}
 			>
 					<Logo
