@@ -34,7 +34,7 @@ const useStyles = makeStyles(theme => ({
 	},
 
 	hideMenu: {
-		zIndex: 2000,
+		position: 'relative',
 		display: 'none',
 		[theme.breakpoints.up('sm')]: {
 			display: 'block',
@@ -49,7 +49,6 @@ const useStyles = makeStyles(theme => ({
 	},
 
 	hamburger: {
-		zIndex: 2000,
 		[theme.breakpoints.up('sm')]: {
 			display: 'none'
 		},

@@ -10,9 +10,9 @@ const gutterSize = '5%';
 
 const useStyles = makeStyles(theme => ({
 	appBar: {
+		zIndex: 1000,
 		background: 'transparent',
 		boxShadow: 'none',
-		zIndex: 1000,
 	},
 
 	toolBar: {
@@ -49,7 +49,7 @@ export default function NavBar(props) {
 	}
 
 	return (
-		<AppBar position="static"className={classes.appBar}>
+		<AppBar position="relative" className={classes.appBar}>
 			<Toolbar className={classes.navbar}>
 					{ renderNavItems() }
 			</Toolbar>
