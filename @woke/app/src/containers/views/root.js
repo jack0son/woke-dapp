@@ -20,7 +20,7 @@ export default function RootView({children}) {
 
 	return (
 		<Theming>
-			<RootContainer navBar={makeNavBar()}>
+			<RootContainer NavBar={makeNavBar()}>
 				{children}
 			</RootContainer>
 		</Theming>

@@ -11,6 +11,10 @@ import { makeStyles } from '@material-ui/styles';
 // No need to call useTheme
 const useStyles = makeStyles(theme => ({
 	root: {
+		dipslay: 'flex',
+		//flexDirection: 'column',
+		flexFlow: 'column',
+		//justifyContent: 'flexStart',
 		minHeight: '100vh',
 		//height: '100%',
 		//width: '100vw',
@@ -29,7 +33,7 @@ const useStyles = makeStyles(theme => ({
 
 
 export default function RootContainer(props) {
-	const { navBar, gutterSizeP, children } = props;
+	const { NavBar, gutterSizeP, children } = props;
 	const styles = useStyles();
 
 	const width = 100 - (gutterSizeP*2);
@@ -39,11 +43,11 @@ export default function RootContainer(props) {
 			<CssBaseline />
 			<Container className={styles.container}>
 				<Box component="div" position="relative" className={styles.root}>
-					{ navBar }
+					{ NavBar }
 					<FlexRow styles={{
-						width,
+						//width,
 						small: {
-							width: `${gutterSizeP}%`,
+							//width: `${gutterSizeP}%`,
 						}
 						// Pass gutter sizes here
 					}}>
