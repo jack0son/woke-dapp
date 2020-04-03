@@ -49,6 +49,7 @@ export default function ButtonGroupBelow (props) {
 				color='secondary'
 				styles={{
 					textAlign: 'center',
+					paddingTop: '10px',
 				}}
 			>
 				{props.message}
