@@ -7,8 +7,12 @@ import MenuIcon from '@material-ui/icons/Menu';
 import MenuOpenIcon from '@material-ui/icons/MenuOpen';
 import OutsideClickHandler from 'react-outside-click-handler';
 
+import { useRootContext } from '../hooks/root-context';
+
+const overlapPredicate = (styles, size) => styles && styles.headerOverlap && size;
+
 const useStyles = makeStyles(theme => ({
-	showMenu: {
+	showMenu: styles => ({
 		'& > div': {
 			display: 'flex',
 			flexDirection: 'column',
@@ -17,11 +21,11 @@ const useStyles = makeStyles(theme => ({
 			justifyContent: 'center',
 			height: '20vh',
 
+			paddingTop: '2vh',
 			// @fix broken window
 			// To compensate for absolute position avatar-header on wallet
-			paddingTop: '2vh',
-			paddingBottom: '2vh',
-			marginBottom: '8vh',
+			paddingBottom: overlapPredicate(styles, '2vh') || '0',
+			marginBottom: overlapPredicate(styles, '8vh') || '0',
 
 			[theme.breakpoints.up('sm')]: {
 				height: 'unset',
@@ -30,8 +34,9 @@ const useStyles = makeStyles(theme => ({
 				width: '25vw',
 				justifyContent: 'space-evenly',
 			},
+			...styles,
 		}
-	},
+	}),
 
 	hideMenu: {
 		position: 'relative',
@@ -73,8 +78,13 @@ const useStyles = makeStyles(theme => ({
 }));
 
 
-export default function Menu() {
-	const classes = useStyles();
+export default function Menu(props) {
+	const { headerChildren } = useRootContext();
+
+	const headerOverlap = headerChildren && headerChildren.length > 0;
+	console.log(headerOverlap)
+
+	const classes = useStyles({ ...props.styles, headerOverlap });
 
 	const [showMenu, setShowMenu] = useState(false);
 	const toggleMenu = () => setShowMenu(!showMenu);

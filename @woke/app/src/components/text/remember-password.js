@@ -7,6 +7,8 @@ import { makeStyles } from '@material-ui/styles';
 const useStyles = makeStyles(theme => ({
 	bodyStandard: styles => ({
 		[theme.breakpoints.down('sm')]: {
+			//position: 'absolute',
+			//bottom: 0,
 		},
 	})
 }));

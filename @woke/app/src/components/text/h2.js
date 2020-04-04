@@ -4,42 +4,34 @@ import Typography from '@material-ui/core/Typography';
 import { makeStyles } from '@material-ui/styles';
 
 const useStyles = makeStyles(theme => ({
-	bodyLarge: styles => {
-		const { small, ...other } = styles;
-
-		console.log(styles);
-		return ({
+	h2: styles => ({
 			// Layout
 			position: 'static',
 			textAlign: 'center',
 
 			// Size
-			fontSize: '2rem',
+			fontSize: '3rem',
 			fontWeight: '700',
 			//width: '100%',
 			//maxWidth: '100%',
 
 			[theme.breakpoints.down('sm')]: {
-				fontSize: '1.5rem',
+				fontSize: '1rem',
 				textAlign: 'left',
-				...small,
+				...(styles.small || {}),
 			},
 	
-			...other
-		});
-	}
+			...styles
+	})
 }));
 
-export default function LargeBody(props) {
-	// MUI Style Overwrite pattern
-	const {styles, ...innerProps} = props;
+export default function H2(props) {
+	const { styles, children, ...other } = props;
 	const classes = useStyles(styles);
 
 	return (
-		<Typography
-			variant='body1'
-			className={classes.bodyLarge}
-			{...innerProps}
-			gutterBottom/>
+		<Typography variant="h2" align="center" gutterBottom>
+			{ children }
+		</Typography>
 	);
 }

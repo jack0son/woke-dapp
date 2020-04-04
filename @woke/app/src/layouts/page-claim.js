@@ -24,7 +24,9 @@ export default function ClaimPage(props) {
 	return (
 		<>
 			<OnboardingContainer styles={{
+				width: '70%',
 				small: {
+					height: '80vh',
 					width: '80%',
 					marginLeft: 'auto',
 					marginRight: 'auto',

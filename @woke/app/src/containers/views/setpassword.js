@@ -10,7 +10,8 @@ import ButtonGroup from '../../layouts/button-group';
 
 import NewPassword from '../../components/forms/password-new'
 import StandardBody from '../../components/text/body-standard'
-import LargeBody from '../../components/text/body-large'
+import XLBody from '../../components/text/body-xl'
+import H2 from '../../components/text/h2'
 import RememberPasswordText from '../../components/text/remember-password'
 
 import WokeSpan from '../../components/text/span-woke'
@@ -22,9 +23,9 @@ export default function SetPasswordView(props) {
 			<OnboardingContainer styles={{
 			}}>
 				<div>
-					<LargeBody>
+					<XLBody>
 						Set your password
-					</LargeBody>
+					</XLBody>
 					<StandardBody color='secondary'>
 						We suggest a memorable sentence.
 					</StandardBody>
