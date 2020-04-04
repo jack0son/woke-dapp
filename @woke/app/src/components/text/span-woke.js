@@ -10,8 +10,11 @@ const useStyles = makeStyles(theme => ({
 		fontFamily: 'Nervous',
 		fontWeight: 400,
 		textAlign: 'left',
-		lineHeight: '20px',
+		fontSize: `${0.7*2}rem`,
+		lineHeight:  `${1.5}rem`,
 		[theme.breakpoints.down('sm')]: {
+		fontSize: `${0.7*1.5}rem`,
+		lineHeight:  `${1.5}rem`,
 			...(styles.small || {}),
 		},
 		...styles

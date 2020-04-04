@@ -12,7 +12,7 @@ const useStyles = makeStyles(theme => ({
 	buttons: styles => ({
 		display: 'flex',
 		justifyContent: 'space-between',
-		width: '30vh',
+		width: '40vh',
 		flexWrap: 'wrap',
 	}),
 }));
@@ -27,16 +27,20 @@ export default function ClaimPage(props) {
 				width: '70%',
 				small: {
 					height: '80vh',
-					width: '80%',
+					width: '85%',
 					marginLeft: 'auto',
 					marginRight: 'auto',
 				}
 			}}>
 				<BodyLarge
 					styles={{
-						paddingLeft: '0%',
-						paddingRight: '0%',
-						textAlign: props.textAlign || 'justify',
+						textAlign: 'justify',
+						paddingLeft: '10%',
+						paddingRight: '10%',
+						small: {
+							paddingLeft: '0%',
+							paddingRight: '0%',
+						},
 					}}
 				>
 					{props.instructionText}
@@ -44,6 +48,7 @@ export default function ClaimPage(props) {
 				<div className={classes.buttons}>
 					<BelowButtonGroup
 						message={props.buttonMessage}
+						messageColor={props.messageColor}
 						Button={props.Button}
 						buttonProps={props.buttonProps}
 						flexContainerProps={props.flexContainerProps}

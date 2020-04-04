@@ -17,7 +17,25 @@ const useStyles = makeStyles(theme => ({
 		height: 'auto',
 		width: 'inherit',
 		...styles
-	})
+	}),
+
+	buttonWrapper: {
+		alignItems: 'center',
+		flexGrow: 1,
+		display: 'flex',
+		flexWrap: 'nowrap',
+		marginLeft: '10%',
+		marginRight: '10%',
+	},
+
+	centerTextOverflow: {
+		textAlign: 'center',
+		whiteSpace: 'nowrap',
+		[theme.breakpoints.up('sm')]: {
+			marginLeft: '-100%',
+			marginRight: '-100%',
+		}
+	},
 }));
 
 export default function ButtonGroupBelow (props) {
@@ -26,7 +44,8 @@ export default function ButtonGroupBelow (props) {
 
 	// Catch prop duplication
 	// TODO this is redundant
-	const {onClick, ...buttonProps} = props.buttonProps;
+	const buttonStyles = { width: '80%' };
+	const {onClick, ...buttonProps} = { ...props.buttonProps, styles: buttonStyles };
 
 	const PassedButton = props.Button ? props.Button : null
 
@@ -35,6 +54,7 @@ export default function ButtonGroupBelow (props) {
 			{...props.flexContainerProps}
 			className={classes.buttonGroup}
 		>
+			<div className={classes.buttonWrapper}>
 			{ PassedButton ? (
 				<PassedButton 
 					{...props.buttonProps}
@@ -44,15 +64,18 @@ export default function ButtonGroupBelow (props) {
 					{...props.buttonProps}
 				/>
 			)}
+				</div>
 
 			<BodyStandard
-				color='secondary'
+				//color={theme.palette.accents.secondary.main || 'secondary'}
 				styles={{
+					marginTop: '10%',
+					color: theme.palette.accents.secondary.main || 'secondary',
 					textAlign: 'center',
 					paddingTop: '10px',
 				}}
 			>
-				{props.message}
+				<span className={classes.centerTextOverflow}>{props.message}</span>
 			</BodyStandard>
 		</Box>
 	);

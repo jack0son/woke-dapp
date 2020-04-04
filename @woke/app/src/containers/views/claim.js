@@ -45,7 +45,8 @@ export default function ClaimView (props) {
 						href: intentUrl,
 						onClick: handleTweeted,
 					}}
-					buttonMessage="Don't alter the message"
+					buttonMessage="🚨 Don't change the tweet text"
+					messageColor="primary"
 				/>
 			)
 	};
