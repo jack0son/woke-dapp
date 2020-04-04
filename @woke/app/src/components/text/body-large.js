@@ -7,7 +7,6 @@ const useStyles = makeStyles(theme => ({
 	bodyLarge: styles => {
 		const { small, ...other } = styles;
 
-		console.log(styles);
 		return ({
 			// Layout
 			position: 'static',

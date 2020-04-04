@@ -58,7 +58,7 @@ function reduceDomains(state, action) {
 	}
 }
 
-const isDefined = (obj) => obj !== undefined && obj !== null
+const isDefined = obj => obj !== undefined && obj !== null;
 
 // When true, don't discard the stage a previously active domain was in
 // i.e. when moving from auth to claim, forget we were in the loading stage
@@ -68,20 +68,22 @@ export const config = { PRESERVE_FINISHED_DOMAINS };
 
 const cache = makeObjectCache('design_mode');
 export function DesignContextProvider({children}) {
+	const [cacheOnRender, setCacheOnRender] = useState(() => cache.retrieve());
 	const [domains, dispatch] = useReducer(reduceDomains, () => {
 		const stored = cache.retrieve()
 		return stored && isDefined(stored.domains) || {};
 	});
+	const [save, setSave] = useState(false);
+	const [overlay, setOverlay] = useState(false);
 
-	const [save, setSave] = useState(() => {
-		const stored = cache.retrieve()
-		return stored && isDefined(stored.save) || false;
-	});
+	const restore = domains => dispatch({ type: 'restore', domains })	
 
-	const [overlay, setOverlay] = useState(() => {
-		const stored = cache.retrieve()
-		return stored && isDefined(stored.overlay) || true;
-	})
+	// Restore cache
+	useEffect(() => {
+		const stored = cacheOnRender;
+		if(stored && isDefined(stored.overlay)) setOverlay(stored.overlay);
+		if(stored && isDefined(stored.save)) setSave(stored.save);
+	}, [cacheOnRender])
 
 	function mapDomains(domains) {
 		const r = {};
@@ -117,7 +119,6 @@ export function DesignContextProvider({children}) {
 		dispatch({ type: 'update', name, stageIndex });
 	}
 
-	const restore = domains => dispatch({ type: 'restore', domains })	
 
 	return (
 		<Context.Provider

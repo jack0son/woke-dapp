@@ -80,10 +80,7 @@ const useStyles = makeStyles(theme => ({
 
 export default function Menu(props) {
 	const { headerChildren } = useRootContext();
-
 	const headerOverlap = headerChildren && headerChildren.length > 0;
-	console.log(headerOverlap)
-
 	const classes = useStyles({ ...props.styles, headerOverlap });
 
 	const [showMenu, setShowMenu] = useState(false);
