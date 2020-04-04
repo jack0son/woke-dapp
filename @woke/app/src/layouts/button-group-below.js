@@ -49,22 +49,23 @@ export default function ButtonGroupBelow (props) {
 
 	const PassedButton = props.Button ? props.Button : null
 
+
 	return (
 		<Box
 			{...props.flexContainerProps}
 			className={classes.buttonGroup}
 		>
-			<div className={classes.buttonWrapper}>
 			{ PassedButton ? (
-				<PassedButton 
-					{...props.buttonProps}
-				/>
+				<div className={classes.buttonWrapper}>
+					<PassedButton 
+						{...props.buttonProps}
+					/>
+				</div>
 			) : (
 				<Button 
 					{...props.buttonProps}
 				/>
 			)}
-				</div>
 
 			<BodyStandard
 				//color={theme.palette.accents.secondary.main || 'secondary'}
