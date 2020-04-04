@@ -5,10 +5,12 @@ import Link from '@material-ui/core/Link';
 
 const useStyles = makeStyles(theme => ({
 	gif: {
-		marginTop: theme.spacing(1),
-		//height: theme.spacing(5),
-		maxWidth: theme.spacing(20),
+		maxWidth: '30vh',
 		height: 'auto',
+		[theme.breakpoints.down('sm')]: {
+			maxWidth: '20vh',
+			fontSize: '1rem',
+		},
 	},
 }));
 

@@ -94,7 +94,7 @@ export default function ClaimView (props) {
 	);
 
 	const renderError = () => (
-		<Error/> //message={claimState.error}/>
+		<Error message={claimState.error}/>
 	);
 
 	
@@ -121,9 +121,6 @@ export default function ClaimView (props) {
 		<>
 		{ chooseRender() }
 		<FlexColumn align="center">
-			<StandardBody color="error">
-			{claimState.error}
-			</StandardBody>
 			{
 				(claimStatus && claimStatus ? 
 					<Spinner/>
