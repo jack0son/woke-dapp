@@ -13,6 +13,7 @@ const useStyles = makeStyles(theme => ({
 		[theme.breakpoints.down('sm')]: {
 			textAlign: 'left',
 			fontSize: '1rem',
+			...(styles.small || {}),
 		},
 		// Size
 		//width: '100%',

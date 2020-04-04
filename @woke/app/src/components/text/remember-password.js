@@ -2,24 +2,18 @@ import React from 'react';
 import StandardBody from './body-standard';
 import HL from './span-highlight';
 
-import { makeStyles } from '@material-ui/styles';
-
-const useStyles = makeStyles(theme => ({
-	bodyStandard: styles => ({
-		[theme.breakpoints.down('sm')]: {
-			//position: 'absolute',
-			//bottom: 0,
-		},
-	})
-}));
-
 export default function RememberPasswordText(props) {
 	// MUI Style Overwrite pattern
-	const {styles, ...innerProps} = props;
-	const classes = useStyles(styles);
 
 	return (
-		<StandardBody styles={{textAlign: 'justify', marginBottom: '10%', marginTop: '10%'}}>
+		<StandardBody styles={{
+			textAlign: 'justify',
+			marginBottom: '10%',
+			marginTop: '10%',
+			small: {
+				marginBottom: '15%',
+			}
+		}}>
 			Your password can <HL>never</HL> be recovered.
 			<br/>
 			Remember your password. Stay woke.
