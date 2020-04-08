@@ -104,7 +104,7 @@ export default function RecipientForm({recipient, handleSetRecipient, ...props }
 					)}
 					FieldComponent={ props => (
 						<TextFieldOutlined
-							label="Enter user's twitter handle"
+							labelText={'Twitter User'}
 							fullWidth={props.inputProps.value == '' || !props.inputProps.value ? false : true}
 							placeholder={placeholder ? placeholder : "Search…"}
 							type="search"
@@ -116,7 +116,7 @@ export default function RecipientForm({recipient, handleSetRecipient, ...props }
 							inputProps={{ 
 								'aria-label': 'search',
 								style: {
-									width: props.inputProps.value == '' || !props.inputProps.value ? undefined : '10%',
+									width: props.inputProps.value == '' || !props.inputProps.value ? undefined : '100%',
 								},
 								...props.inputProps,
 							}}

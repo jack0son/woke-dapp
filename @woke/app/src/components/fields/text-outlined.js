@@ -10,20 +10,18 @@ import InputAdornment from '@material-ui/core/InputAdornment';
 import FormHelperText from '@material-ui/core/FormHelperText';
 import FormControl from '@material-ui/core/FormControl';
 import TextField from '@material-ui/core/TextField';
-import Visibility from '@material-ui/icons/Visibility';
-import VisibilityOff from '@material-ui/icons/VisibilityOff';
 
 const useStyles = makeStyles((theme) => ({
-  root: {
-    display: 'flex',
-    flexWrap: 'wrap',
-  },
-  margin: {
-    margin: theme.spacing(1),
-  },
-  withoutLabel: {
-    marginTop: theme.spacing(3),
-  },
+	root: {
+		display: 'flex',
+		flexWrap: 'wrap',
+	},
+	margin: {
+		margin: theme.spacing(1),
+	},
+	withoutLabel: {
+		marginTop: theme.spacing(3),
+	},
 
 	notchedOutlineDisabled: {
 		//border: '4px solid',
@@ -36,24 +34,25 @@ const useStyles = makeStyles((theme) => ({
 	},
 
 	input: {
+		width: '100%',
 		backgroundColor: theme.palette.background.default,
 	},
 
 	// @fix move to global theme
 	overrides: {
-   MuiOutlinedInput: {
-      root: {
-        '&:hover:not($disabled):not($focused):not($error) $notchedOutline': {
-          borderColor: 'rgba(0,0,0,0.4)',
-        },
-      },
-    },
-  },
+		MuiOutlinedInput: {
+			root: {
+				'&:hover:not($disabled):not($focused):not($error) $notchedOutline': {
+					borderColor: 'rgba(0,0,0,0.4)',
+				},
+			},
+		},
+	},
 
-  textField: {
+	textField: {
 		flexGrow: 1,
-    //minWidth: '8ch',
-  },
+		//minWidth: '8ch',
+	},
 }));
 
 export default function TextFieldOutlined({ controlledValue, handleChange, ...props }) {
@@ -62,23 +61,21 @@ export default function TextFieldOutlined({ controlledValue, handleChange, ...pr
 	const classes = useStyles(styles);
 
 	return (
-		<FormControl variant="outlined" className={classes.margin}
-			//required
-			fullWidth
-		>
-			<InputLabel htmlFor="outlined-adornment-text">{labelText}</InputLabel>
-			<OutlinedInput
-				value={controlledValue}
-				onChange={handleChange}
-				className={classes.input}
-				//classes={{ notchedOutline: classes.notchedOutline }}
-				id="outlined-adornment-amount"
-				startAdornment={<InputAdornment position="start">Search</InputAdornment>}
-				error={error}
-				//helperText={ error ? errorText : null }
-				//labelWidth={60}
-				{ ...other }
-			/>
-		</FormControl>
+		<TextField fullWidth
+			label="Twitter User"
+			variant="outlined"
+			defaultValue='users twitter handle'
+			className={classes.input}
+			value={controlledValue}
+			onChange={handleChange}
+			id="outlined-adornment-amount"
+			InputProps={{
+				startAdornment: <InputAdornment position="start">Search</InputAdornment>
+			}}
+			error={error}
+			//helperText={ error ? errorText : null }
+			//labelWidth={60}
+			{ ...other }
+		/>
 	);
 }
