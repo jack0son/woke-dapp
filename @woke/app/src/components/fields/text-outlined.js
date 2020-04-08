@@ -62,7 +62,7 @@ export default function TextFieldOutlined({ controlledValue, handleChange, ...pr
 
 	return (
 		<TextField fullWidth
-			label="Twitter User"
+			label={labelText || 'Text'}
 			variant="outlined"
 			defaultValue='users twitter handle'
 			className={classes.input}

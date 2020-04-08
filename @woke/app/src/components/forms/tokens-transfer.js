@@ -5,7 +5,6 @@ import FlexColumn from '../../layouts/flex-column';
 import FlexRow from '../../layouts/flex-row';
 
 import AmountForm from './transfer-amount';
-import SearchField from '../fields/search';
 import RecipientForm from './transfer-recipient';
 import ConfirmTransferDialog from './transfer-confirm';
 

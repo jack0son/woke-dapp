@@ -31,10 +31,10 @@ export default function TokenAmountForm(props) {
 	return (
 		<div className={classes.amountForm}>{/* style={{width: '100%'}}> */}
 			<NumberField
+				labelText='Amount'
 				order={2}
 				controlledValue={amount}
 				handleChange={handleFieldChange}
-
 				flexGrow={1}
 				unitSymbol={'W'}
 				unitPosition={'right'}
