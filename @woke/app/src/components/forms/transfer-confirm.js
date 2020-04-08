@@ -43,8 +43,6 @@ export default function ConfirmTransferDialog({open, recipient, amount, handleCl
 				</DialogContent>
 	);
 
-	console.log(recipient);
-
 	return (
 		<div>
 			<Dialog
