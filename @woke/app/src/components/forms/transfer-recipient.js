@@ -68,9 +68,12 @@ const useStyles = makeStyles(theme => ({
 }));
 
 
-export default function RecipientForm({recipient, handleSetRecipient, ...props }) {
+export default function RecipientForm({recipient, handleSelectRecipient, ...props }) {
 	const { placeholder, handleChange, inputProps } = props;
-	const handleFieldChange =  event => handleSetRecipient(event.target.value)
+	const handleFieldChange =  event => {
+		console.log('handleFieldChange: ', event.target.value);
+		handleSelectRecipient(event.target.value);
+	}
 
 	return (
 			<Typeahead

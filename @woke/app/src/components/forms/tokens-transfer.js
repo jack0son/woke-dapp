@@ -61,7 +61,8 @@ export default function TransferTokensForm({ balance, ...props }) {
 			<RecipientForm
 				flexGrow={5}
 				recipient={recipient}
-				handleSetRecipient={handleSelectRecipient}
+				handleChange={handleChangeInput('screen_name')}
+				handleSelectRecipient={handleSelectRecipient}
 				suggestions={suggestions}
 				placeholder={usernamePlaceholder}
 				//handleChange={handleChangeInput('screen_name')}
@@ -85,7 +86,7 @@ export default function TransferTokensForm({ balance, ...props }) {
 				open={open}
 				handleClose={closeModal}
 				amount={amount}
-				recipient={{handle: 'jackjackD'}}
+				recipient={recipient}
 			/>
 		</FlexColumn>
 	);

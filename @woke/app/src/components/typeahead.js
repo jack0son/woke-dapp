@@ -172,6 +172,8 @@ export default function IntegrationDownshift(props) {
 								}
 							}
 
+							console.log('DFKHSDDFDS');
+
 							handleFieldChange(event);
 							selectItem(label);
 						},
