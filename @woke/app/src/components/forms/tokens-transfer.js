@@ -5,7 +5,9 @@ import FlexColumn from '../../layouts/flex-column';
 import FlexRow from '../../layouts/flex-row';
 
 import AmountForm from './transfer-amount';
+import SearchField from '../fields/search';
 import RecipientForm from './transfer-recipient';
+import ConfirmTransferDialog from './transfer-confirm';
 
 export default function TransferTokensForm({ balance, ...props }) {
 	const {
@@ -16,20 +18,35 @@ export default function TransferTokensForm({ balance, ...props }) {
 		amountPlaceholder,
 	} = props;
 
+	const {
+		handleSelectRecipient,
+		handleSubmitTransfer,
+		handleChangeInput,
+		handleClearRecipient,
+		recipient,
+		error,
+	} = sendTransfers;
+
 	const defaults = {
 		value: 5,
 	};
 
 	const defaultAmount = defaults.value < balance ? defaults.value : Math.floor(balance/3)
 	const [amount, setAmount] = useState(defaultAmount);
-	const [recipient, setRecipient] = useState(`  ... user's twitter handle goes here`);
 
 	const handleSetAmount = (amount) => {
 		setAmount(amount);
 	};
 
-	const popModal = () => {
-	};
+  const [open, setOpen] = React.useState(false);
+
+  const openModal = () => {
+    setOpen(true);
+  };
+
+  const closeModal = () => {
+    setOpen(false);
+  };
 
 	return (
 		<FlexColumn styles={{
@@ -44,7 +61,10 @@ export default function TransferTokensForm({ balance, ...props }) {
 			<RecipientForm
 				flexGrow={5}
 				recipient={recipient}
-				handleSetRecipient={setRecipient}
+				handleSetRecipient={handleSelectRecipient}
+				suggestions={suggestions}
+				placeholder={usernamePlaceholder}
+				//handleChange={handleChangeInput('screen_name')}
 			/>
 			<AmountForm
 				amount={amount}
@@ -54,12 +74,18 @@ export default function TransferTokensForm({ balance, ...props }) {
 			<Button
 				color='primary'
 				text='SEND'
-				onClick={popModal}
+				onClick={openModal}
 				styles={{
 					marginTop: '5%',
 					fontSize: '1.5rem',
 					width: '100%',
 				}}
+			/>
+			<ConfirmTransferDialog
+				open={open}
+				handleClose={closeModal}
+				amount={amount}
+				recipient={{handle: 'jackjackD'}}
 			/>
 		</FlexColumn>
 	);
