@@ -9,6 +9,7 @@ const useStyles = makeStyles(theme => ({
 	root: {
 		//flexGrow: 1,
 		height: theme.spacing(4),
+		zIndex: '1500',
 		display: 'flex',
 		flexDirection: 'column',
 		alignContent: 'center',
@@ -71,15 +72,6 @@ export default function RecipientForm({recipient, handleSetRecipient, ...props }
 	const { placeholder, handleChange, inputProps } = props;
 	const handleFieldChange =  event => handleSetRecipient(event.target.value)
 
-	if(false) return (
-		<TextFieldOutlined
-			controlledValue={recipient}
-			handleChange={handleFieldChange}
-			labelText={'Twitter User'}
-			{ ...props }
-		/>
-	);
-
 	return (
 			<Typeahead
 					handleFieldChange={handleFieldChange}
@@ -91,8 +83,8 @@ export default function RecipientForm({recipient, handleSetRecipient, ...props }
 							alt={props.suggestion.handle}
 							src={props.suggestion.avatar}
 							styles={{
-								height: '28px', 
-								width: '28px', 
+								height: '4vh', 
+								width: '4vh', 
 								borderWidth: '1px',
 								borderRadius: '50%',
 								marginLeft: '2%',

@@ -57,6 +57,8 @@ export default function NumberFieldOutlined({ controlledValue, handleChange, ...
 			value={controlledValue}
 			onChange={handleChange}
 			id="outlined-adornment-amount"
+			InputLabelProps={{ style: { zIndex: '0' } }}
+			zIndex={'-10000'}
 			InputProps={{
 				startAdornment: <InputAdornment position="start">{unitSymbol}</InputAdornment>
 			}}

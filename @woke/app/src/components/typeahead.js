@@ -52,8 +52,10 @@ function renderSuggestion(suggestionProps) {
 				backgroundColor: theme.palette.background.default,
 				paddingBottom: 0,
 				minHeight: '32px',
+				height: '6vh',
         fontWeight: isSelected ? 500 : 400,
-				fontSize: '14px'
+				fontSize: '14px',
+				zIndex: '2000',
       }}
 			disableGutters
     >

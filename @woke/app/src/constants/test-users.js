@@ -17,6 +17,15 @@ const users = {
 		profile_image_url: 'https://pbs.twimg.com/profile_images/1115644092329758721/AFjOr-K8_400x400.jpg'
 	},
 
+	'16': {
+		//account: stranger_a,
+		screen_name: 'angle',
+		handle: 'angle',
+		id: '16',
+		avatar: 'https://pbs.twimg.com/profile_images/1115644092329758721/AFjOr-K8_400x400.jpg',
+		profile_image_url: 'https://pbs.twimg.com/profile_images/1115644092329758721/AFjOr-K8_400x400.jpg'
+	},
+
 	'11': {
 		//account: stranger_a,
 		screen_name: 'jack',
