@@ -73,8 +73,14 @@ export function DesignContextProvider({children}) {
 		const stored = cache.retrieve()
 		return stored && isDefined(stored.domains) || {};
 	});
-	const [save, setSave] = useState(false);
-	const [overlay, setOverlay] = useState(false);
+	const [save, setSave] = useState(() => {
+		const stored = cache.retrieve()
+		return stored && isDefined(stored.save) || false;
+	});
+	const [overlay, setOverlay] = useState(() => {
+		const stored = cache.retrieve()
+		return stored && isDefined(stored.overlay) || false;
+	});
 
 	const restore = domains => dispatch({ type: 'restore', domains })	
 

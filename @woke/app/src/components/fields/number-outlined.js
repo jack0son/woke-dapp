@@ -49,20 +49,24 @@ export default function NumberFieldOutlined({ controlledValue, handleChange, ...
 	const classes = useStyles(styles);
 
 	return (
-		<FormControl variant="outlined" className={classes.textField}
-			//required
-			//fullWidth
-		>
-			<InputLabel htmlFor="outlined-adornment-amount">Amount</InputLabel>
-			<OutlinedInput type="number"
-				value={controlledValue}
-				onChange={handleChange}
-				className={classes.input}
-				classes={{ notchedOutline: classes.notchedOutline }}
-				id="outlined-adornment-amount"
-				startAdornment={<InputAdornment position="start">{unitSymbol}</InputAdornment>}
-				//labelWidth={60}
-			/>
-		</FormControl>
+		<TextField fullWidth type="number"
+			label="Number"
+			variant="outlined"
+			defaultValue='users twitter handle'
+			className={classes.input}
+			value={controlledValue}
+			onChange={handleChange}
+			id="outlined-adornment-amount"
+			InputLabelProps={{ style: { zIndex: '0' } }}
+			zIndex={'-10000'}
+			InputProps={{
+				startAdornment: <InputAdornment position="start">{unitSymbol}</InputAdornment>
+			}}
+			//error={error}
+			//classes={{ notchedOutline: classes.notchedOutline }}
+			//helperText={ error ? errorText : null }
+			//labelWidth={60}
+			{ ...other }
+		/>
 	);
 }

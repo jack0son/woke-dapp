@@ -16,6 +16,7 @@ const useStyles = makeStyles(theme => ({
 		//backgroundColor: '#46dc9e',
 		boxShadow: `1px 1px 5px 0 ${theme.palette.secondary.main}`,
 		fontSize: '2rem',
+		minHeight: '2rem',
 		fontWeight: 700,
 		textAlign: 'center',
 		whiteSpace: 'nowrap',
@@ -29,7 +30,7 @@ const useStyles = makeStyles(theme => ({
 }));
 
 export default function ContainedButton(props) {
-	const {text, styles, color,  ...innerProps} = props;
+	const {text, styles, color, children, ...innerProps} = props;
 	const classes = useStyles(styles);
 
 	return (
@@ -40,6 +41,7 @@ export default function ContainedButton(props) {
 			{...innerProps}
 		>
 			{text}
+			{children}
 		</Button>
 	);
 }
