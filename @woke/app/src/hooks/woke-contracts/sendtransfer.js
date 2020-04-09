@@ -78,6 +78,7 @@ export default function useSendTransferInput({
 		amount: input.amount,
 		pending: sendTransfers.pending,
 		txHash: sendTransfers.txHash,
+		currentTransfer: sendTransfers.currentTransfer,
 		error
 	};
 }
@@ -88,10 +89,12 @@ export function useSendTransfers (recipient, handleClearRecipient) {
 
 	const nullArgs = {userId: '', amount: 0}
 	const [sendQueued, setSendQueued] = useState(false);
-	const [pending, setPending] = useState(false);
 	const [transferArgs, setTransferArgs] = useState(nullArgs);
 	const [safeTxOpts, setSafeTxOpts] = useState();
 	const [txOptsError, setTxOptsError] = useState(null);
+	const [currentTransfer, setCurrentTransfer] = useState({
+		recipient: null, amount: null, txHash: null,
+	});
 
 	// TODO use network config and web3 utils to set gas
 	const gWei = 1000000000; // 1 GWei
@@ -127,6 +130,7 @@ export function useSendTransfers (recipient, handleClearRecipient) {
 		}
 	}, [account, recipientIsClaimed, transferArgs.userId])
 
+
 	// Need to use effect to wait for cacheCall result
 	useEffect(() => {
 		//console.log('Transfer:\tqueued ', sendQueued);
@@ -158,6 +162,12 @@ export function useSendTransfers (recipient, handleClearRecipient) {
 
 			if(!transferMethod.send('useOpts', transferArgs.userId, transferArgs.amount, safeTxOpts)) {
 				console.error('... Failed to send transfer');
+			} else {
+				setCurrentTransfer({
+					recipient,
+					amount: transferArgs.amount,
+					txHash: null,
+				});
 			}
 			//handleClearRecipient();
 			setSendQueued(false);
@@ -171,11 +181,20 @@ export function useSendTransfers (recipient, handleClearRecipient) {
 
 	const error = txOptsError || sendTransferClaimed.error || sendTransferUnclaimed.error;
 
+	const txHash = sendTransferClaimed.txHash || sendTransferUnclaimed.txHash;
+	const pending = sendQueued || sendTransferClaimed.pending || sendTransferUnclaimed.pending;
+
+	// Update pending transfers
+	useEffect(() => {
+		setCurrentTransfer(t => ({...t, txHash, pending }));
+	}, [txHash, pending])
+
 	return {
 		submit: submitTransfer,
 		error: error,
-		txHash: sendTransferClaimed.txHash || sendTransferUnclaimed.txHash,
-		pending: sendQueued || sendTransferClaimed.pending || sendTransferUnclaimed.pending,
+		txHash,
+		pending,
+		currentTransfer,
 	};
 }
 

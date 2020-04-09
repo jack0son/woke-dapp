@@ -9,6 +9,7 @@ import ListItemText from '@material-ui/core/ListItemText';
 import ListItemSecondaryAction from '@material-ui/core/ListItemSecondaryAction';
 import Icon from '@material-ui/core/Icon';
 
+import FlexRow from './flex-row';
 import Avatar from './avatar';
 import Spinner from '../components/progress/spinner-indeterminate';
 import TransactionAmount from '../components/text/transaction-amount';
@@ -56,6 +57,7 @@ const useStyles = makeStyles(theme => ({
 	},
 
 	handleLabel: {
+		flexGrow: 1,
 		display: 'flex',
 		flexDirection: 'row',
 		justifyContent: 'space-between',
@@ -65,7 +67,7 @@ const useStyles = makeStyles(theme => ({
 }));
 
 export default function TransactionList ({ listItems, ...props }) {
-	const {sendTransfers, recipient, styles, itemHeightVH, itemHeightVHSmall, ...innerProps} = props;
+	const {sendTransfers, recipient, styles, itemHeightVH, itemHeightVHSmall, fontSize, ...innerProps} = props;
 	const theme = useTheme();
 	const dense = false;
 
@@ -76,7 +78,7 @@ export default function TransactionList ({ listItems, ...props }) {
 	const handleProps = {
 		style: {
 			//paddingTop: '5%',
-			fontSize: '1.5rem',
+			fontSize: fontSize || '1.5rem',
 			lineHeight: '1.0',
 		}
 	}
@@ -111,41 +113,43 @@ export default function TransactionList ({ listItems, ...props }) {
 	const renderTransactions = () => listItems.map((tx, i) => (
 		<ListItem key={i} alignItems='flex-start' className={classes.listItem}>
 			<div className={classes.handleLabel}>
-			<ListItemAvatar className={classes.avatarItem}>
-				<Avatar
-					alt={tx.counterParty ? tx.counterParty.handle : 'loading'}
-					src={tx.counterParty ? tx.counterParty.avatar : 'loading'}
-					m={0}
-					styles={{
-						//marginTop: '10%',
-						//marginBottom: '10%',
-						//paddingLeft: '10%',
-						//paddingRight: '10%',
-						height: `${itemHeightVH || defaultAvatarHeight}vh`, 
-						width:  `${itemHeightVH || defaultAvatarHeight}vh`,
-						small: {
-							//height: `${itemHeightVHSmall || itemHeightVH*0.8}vh`, 
-							//width:  `${itemHeightVHSmall || itemHeightVH*0.8}vh`,
-						},
-						minHeight: '32px', 
-						//borderStyle: 'solid',
-						borderWidth: '1px',
-						borderColor: theme.palette.background.dark,
-						borderRadius: '50%',
-					}}
-				/>
-			</ListItemAvatar>
+				<ListItemAvatar className={classes.avatarItem}>
+					<Avatar
+						alt={tx.counterParty ? tx.counterParty.handle : 'loading'}
+						src={tx.counterParty ? tx.counterParty.avatar : 'loading'}
+						m={0}
+						styles={{
+							//marginTop: '10%',
+							//marginBottom: '10%',
+							//paddingLeft: '10%',
+							//paddingRight: '10%',
+							height: `${itemHeightVH || defaultAvatarHeight}vh`, 
+							width:  `${itemHeightVH || defaultAvatarHeight}vh`,
+							small: {
+								//height: `${itemHeightVHSmall || itemHeightVH*0.8}vh`, 
+								//width:  `${itemHeightVHSmall || itemHeightVH*0.8}vh`,
+							},
+							minHeight: '32px', 
+							//borderStyle: 'solid',
+							borderWidth: '1px',
+							borderColor: theme.palette.background.dark,
+							borderRadius: '50%',
+						}}
+					/>
+				</ListItemAvatar>
 				<ListItemText style={{display: 'flex', flexDirection: 'column', justifyContent: 'space-evenly'}}
-				primary={`@${tx.counterParty ? tx.counterParty.handle : 'loading'}`}
-				primaryTypographyProps={handleProps}
+					primary={`@${tx.counterParty ? tx.counterParty.handle : 'loading'}`}
+					primaryTypographyProps={handleProps}
 
-				secondary={tx.timeSince ? `${tx.timeSince}` : `...`}
-				secondaryTypographyProps={timeSinceProps}
-			/>
+					secondary={tx.timeSince ? `${tx.timeSince}` : `...`}
+					secondaryTypographyProps={timeSinceProps}
+				/>
 			</div>
-			{ isCurrentTransaction(i, tx) && <Spinner/> }
+			<FlexRow styles={{alignItems: 'flex-start', justifyContent: 'center'}}>
+				{ (tx.pending || isCurrentTransaction(i, tx)) && <Spinner/> }
+			</FlexRow>
 			<ListItemSecondaryAction>
-				<TransactionAmount type={tx.type} amount={tx.returnValues.amount}/>
+				<TransactionAmount type={tx.type} amount={tx.amount || tx.returnValues.amount}/>
 			</ListItemSecondaryAction>
 		</ListItem>
 	));

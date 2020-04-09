@@ -117,6 +117,42 @@ export default function WalletView (props) {
 		/>
 	);
 
+	const makePendingTransfers = () => {
+		console.log(sendTransfers.currentTransfer);
+		return [{
+			type: 'send',
+			counterParty: sendTransfers.currentTransfer.recipient,
+			pending: true,
+			...sendTransfers.currentTransfer,
+		}];
+	}
+
+	const renderPendingTransfer = () => {
+		// @brokenwindow wait until current transfer has been set
+		if(sendTransfers.pending && sendTransfers.currentTransfer.amount) {
+			return (
+		<FlexColumn styles={{
+			width: '50%',
+			minWidth: '25vw',
+			marginTop: '2%',
+			small: {
+				marginTop: '0%',
+				width: '100%',
+			}
+		}}>
+			<TransactionList
+				sendTransfers={sendTransfers}
+				fontSize="1.2rem"
+				label="Pending"
+				itemHeightVH={5}
+				itemHeightVHSmall={4}
+				styles={{ }}
+				listItems={makePendingTransfers()}
+			/>
+		</FlexColumn>
+			);
+		}
+	};
 
 	const renderPaneTabs = () => (
 		<PaneTabs order={responsive.order} styles={{
@@ -124,6 +160,7 @@ export default function WalletView (props) {
 		}}> 
 			<TransactionList
 				label="History"
+				fontSize="1.2rem"
 				itemHeightVH={5}
 				itemHeightVHSmall={4}
 				styles={{ }}
@@ -172,6 +209,7 @@ export default function WalletView (props) {
 					}}>
 						{ renderBalance() }
 						{ renderTransfer() }
+						{ renderPendingTransfer() }
 					</FlexColumn>
 				</>}
 				second={<>
