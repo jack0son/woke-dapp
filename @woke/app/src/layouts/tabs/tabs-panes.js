@@ -20,10 +20,12 @@ const useStyles = makeStyles(theme => ({
 		alignSelf: 'stretch',
 		//height: '100%',
 
+		maxHeight: '60vh',
 		marginLeft: 'auto',
 		marginRight: 'auto',
 
 		[theme.breakpoints.down('sm')]: {
+			maxHeight: '100%',
 			marginTop: '10%',
 			width: '100%',
 		},
