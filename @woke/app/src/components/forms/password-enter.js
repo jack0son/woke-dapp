@@ -43,7 +43,7 @@ export default function EnterPassword (props) {
 		<FlexColumn styles={{
 			justifyContent: 'space-around',
 			width: '100%',
-			height: '20%',
+			height: '30%',
 			small: {
 				justifyContent: 'space-around',
 				height: '40%',
@@ -57,8 +57,6 @@ export default function EnterPassword (props) {
 			<Button 
 				onClick={triggerLogin}
 				styles={{
-					marginTop: theme.spacing(4),
-					marginBottom: theme.spacing(2)
 				}}
 				{...buttonProps}
 			>
