@@ -107,7 +107,9 @@ export default function TransactionList ({ listItems, ...props }) {
 	const defaultAvatarHeight = 7;
 
 	const isCurrentTransaction = (i, tx) => {
-		return i == 0 && sendTransfers.pending && tx.transactionHash == sendTransfers.txHash;
+		return sendTransfers ?
+			i == 0 && sendTransfers.pending && tx.transactionHash == sendTransfers.txHash :
+			false;
 	}
 
 	const renderTransactions = () => listItems.map((tx, i) => (

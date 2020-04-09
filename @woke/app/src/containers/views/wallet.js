@@ -171,6 +171,9 @@ export default function WalletView (props) {
 				label="Earnings"
 			>
 				<TransactionList
+					fontSize="1.2rem"
+					itemHeightVH={5}
+					itemHeightVHSmall={4}
 					listItems={rewardEvents}
 				/> 
 				{ rewardEvents.length < 4 ? (<>
