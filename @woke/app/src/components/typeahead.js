@@ -119,7 +119,7 @@ const useStyles = makeStyles(theme => ({
 let popperNode;
 
 export default function IntegrationDownshift(props) {
-	const {FieldComponent, Suggestion, suggestions, handleFieldChange, ...innerProps} = props;
+	const {FieldComponent, Suggestion, suggestions, handleInputValueChange, handleFieldChange, ...innerProps} = props;
 	const theme = useTheme();
   const classes = useStyles();
 
@@ -145,10 +145,19 @@ export default function IntegrationDownshift(props) {
 
 	const itemToString = (item) => {
 		return item;
-	}
+	};
+
+	const onInputValueChange = (value, stateAndHelpers) => {
+		handleInputValueChange(value);
+		console.log('onInputValueChange', value);
+		//console.log('onInputValueChange', stateAndHelpers);
+	};
 
 	const renderSimple = () => (
-      <Downshift id="downshift-simple" itemToString={itemToString}>
+      <Downshift id="downshift-simple"
+				onSelect={onInputValueChange}
+				itemToString={itemToString}
+			>
         {({
           getInputProps,
           getItemProps,
@@ -159,6 +168,7 @@ export default function IntegrationDownshift(props) {
           isOpen,
           selectedItem,
 					selectItem,
+					onInputValueChange,
 					clearSelection,
         }) => {
 					//const {onFocus, ...inputProps } = getInputProps({
@@ -167,17 +177,18 @@ export default function IntegrationDownshift(props) {
 							let label = event.target.value;
 							//event.preventDefault();
 							if (selectedItem) {
+								console.log(selectedItem);
 								if (selectedItem.label === label) {
 									return;
 								}
 							}
 
-							handleFieldChange(event);
 							selectItem(label);
 						},
 
             placeholder: props.placeholder,
           });
+
 
           return ( <div className={classes.container}> {renderInput({
 								FieldComponent: FieldComponent,

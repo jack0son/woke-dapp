@@ -37,7 +37,6 @@ const useStyles = makeStyles((theme) => ({
   textField: {
     margin: theme.spacing(1),
 		marginLeft: 0,
-		flexGrow: 1,
 		//maxWidth: '40%',
     minWidth: '50px',
   },
@@ -58,14 +57,9 @@ export default function NumberFieldOutlined({ controlledValue, handleChange, ...
 			onChange={handleChange}
 			id="outlined-adornment-amount"
 			InputLabelProps={{ style: { zIndex: '0' } }}
-			zIndex={'-10000'}
 			InputProps={{
 				startAdornment: <InputAdornment position="start">{unitSymbol}</InputAdornment>
 			}}
-			//error={error}
-			//classes={{ notchedOutline: classes.notchedOutline }}
-			//helperText={ error ? errorText : null }
-			//labelWidth={60}
 			{ ...other }
 		/>
 	);

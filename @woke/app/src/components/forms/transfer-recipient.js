@@ -69,14 +69,18 @@ const useStyles = makeStyles(theme => ({
 
 
 export default function RecipientForm({recipient, handleSelectRecipient, ...props }) {
-	const { placeholder, handleChange, inputProps } = props;
-	const handleFieldChange =  event => {
+	const { error, placeholder, handleChange, inputProps } = props;
+
+	const handleInputValueChange = value => handleChange(value);
+
+	const handleFieldChange = event => {
 		console.log('handleFieldChange: ', event.target.value);
-		handleSelectRecipient(event.target.value);
+		handleChange(event.target.value);
 	}
 
 	return (
 			<Typeahead
+					handleInputValueChange={handleInputValueChange}
 					handleFieldChange={handleFieldChange}
 					placeholder={placeholder}
 					suggestions={props.suggestions}
@@ -99,11 +103,14 @@ export default function RecipientForm({recipient, handleSelectRecipient, ...prop
 					)}
 					FieldComponent={ props => (
 						<TextFieldOutlined
+							adornment={'Search @'}
+							error={ error ? true : false }
+							helperText={error}
 							labelText={'Twitter User'}
 							fullWidth={props.inputProps.value == '' || !props.inputProps.value ? false : true}
 							placeholder={placeholder ? placeholder : "Search…"}
 							type="search"
-							//onChange={onChange}
+							//handleChange={handleFieldChange}
 							classes={{
 								//root: classes.inputRoot,
 								//input: classes.inputInput,

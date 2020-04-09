@@ -1,19 +1,15 @@
-import React, { useEffect } from 'react';
+import React from 'react';
 import { useTheme } from '@material-ui/styles';
 
 import Loading from './loading'
 import Error from './error'
 import ClaimPage from '../../layouts/page-claim'
-import FlexColumn from '../../layouts/flex-column'
 
 import TweetButton from '../../components/buttons/button-tweet'
 import Button from '../../components/buttons/button-contained'
 import WokeSpan from '../../components/text/span-woke'
-import StandardBody from '../../components/text/body-standard'
 import LinearProgress from '../../components/progress/linear-stages'
-import Spinner from '../../components/progress/spinner-indeterminate'
 
-import { Share } from 'react-twitter-widgets';
 import { createShareIntentUrl } from '../../lib/utils';
 
 
@@ -35,49 +31,49 @@ export default function ClaimView (props) {
 
 	// Share intent url
 	const renderTweetClaim = () => {
-			const intentUrl = createShareIntentUrl(claimState.claimString);
-			return (
-				<ClaimPage
-					instructionText={[`To securely claim any `, <WokeSpan key="WokeSpan">WOKENs</WokeSpan>, ` you've already been sent, we need to tweet a signed message.`]}
-					Button={TweetButton}
-					textAlign='center'
-					buttonProps={{
-						href: intentUrl,
-						onClick: handleTweeted,
-					}}
-					buttonMessage="🚨 Don't change the tweet text"
-					messageColor="primary"
-				/>
-			)
+		const intentUrl = createShareIntentUrl(claimState.claimString);
+		return (
+			<ClaimPage
+				instructionText={[`To securely claim any `, <WokeSpan key="WokeSpan">WOKENs</WokeSpan>, ` you've already been sent, we need to tweet a signed message.`]}
+				Button={TweetButton}
+				textAlign='center'
+				buttonProps={{
+					href: intentUrl,
+					onClick: handleTweeted,
+				}}
+				buttonMessage="🚨 Don't change the tweet text"
+				messageColor="primary"
+			/>
+		)
 	};
 
 	const renderConfirmTweeted = () => (
 		<>
-		<ClaimPage
-			instructionText={`Did you tweet?`}
-			textAlign='center'
-			flexContainerProps={{
-				flexDirection: 'column !important',
-				alignItems: 'stretch !important',
-			}}
-			buttonProps={{
-				onClick: handleConfirmedTweeted,
-				textAlign: 'center',
-				text: `Yes, I tweeted!`,
-				color: 'primary',
-			}}
-		>
-			<Button
-				onClick={handleNotTweeted}
-				text={'No, I did not tweet'}
-				styles={{
-					alignSelf: 'center',
-					background: theme.palette.common.black,
-					textAlign: 'center',
-					width: 'inherit',
+			<ClaimPage
+				instructionText={`Did you tweet?`}
+				textAlign='center'
+				flexContainerProps={{
+					flexDirection: 'column !important',
+					alignItems: 'stretch !important',
 				}}
-		/>
-		</ClaimPage>
+				buttonProps={{
+					onClick: handleConfirmedTweeted,
+					textAlign: 'center',
+					text: `Yes, I tweeted!`,
+					color: 'primary',
+				}}
+			>
+				<Button
+					onClick={handleNotTweeted}
+					text={'No, I did not tweet'}
+					styles={{
+						alignSelf: 'center',
+						background: theme.palette.common.black,
+						textAlign: 'center',
+						width: 'inherit',
+					}}
+				/>
+			</ClaimPage>
 		</>
 	);
 
@@ -97,7 +93,6 @@ export default function ClaimView (props) {
 		<Error message={claimState.error}/>
 	);
 
-	
 	// Subsumption tree
 	let chooseRender = () => (<Loading message={'Analysing wokeness ...'}/>);
 	if(stage == sc.ERROR) {
@@ -117,22 +112,8 @@ export default function ClaimView (props) {
 	const claimStatus = claimState.transactions.sendClaimUser.pending;
 	const fulfillStatus = claimState.transactions.sendFulfillClaim.pending;
 
-	return (
-		<>
+	return (<>
 		{ chooseRender() }
-		<FlexColumn align="center">
-			{
-				(claimStatus && claimStatus ? 
-					<Spinner/>
-					: null)
-			}
-			{
-				(fulfillStatus && fulfillStatus ? 
-					<Spinner/>
-					: null)
-			}
-		</FlexColumn>
-		</>
-	);
+	</>);
 }
-	//const targetUrl = `javascript:window.open('${refUrl}', 'WOKE - Tweet claim string', 'width=500 height=300')`;
+//const targetUrl = `javascript:window.open('${refUrl}', 'WOKE - Tweet claim string', 'width=500 height=300')`;

@@ -16,8 +16,6 @@ import useTransferEvents from '../hooks/woke-contracts/transferevents'
 import useRewardEvents from '../hooks/woke-contracts/rewardevents'
 import useSendTransferInput from '../hooks/woke-contracts/sendtransfer'
 
-const getwoketoke_id = '932596541822419000'
-
 export default function WalletContainer(props) {
 	const {myUserId, myHandle} = props;
 	const {
@@ -62,7 +60,7 @@ export default function WalletContainer(props) {
 	}
 
 	const sendTransfers = useSendTransferInput({
-		defaultRecipient: 'getwoketoke',
+		defaultRecipient: '',
 		defaultAmount: 1,
 		checkUserExists: checkUserExists,
 		twitterUsers
