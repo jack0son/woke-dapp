@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
-import { makeStyles, useTheme } from '@material-ui/styles';
-import useScrollTrigger from '@material-ui/core/useScrollTrigger';
+import { makeStyles, useTheme } from '@material-ui/styles'; import useScrollTrigger from '@material-ui/core/useScrollTrigger';
 
 import Box from '@material-ui/core/Box';
 import List from '@material-ui/core/List';
@@ -18,39 +17,56 @@ import WokeSpan from '../components/text/span-woke';
 const useStyles = makeStyles(theme => ({
 	transactionList: styles => ({
 		width: '100%',
-		display: 'block',
+		height: 'inherit',
+		maxHeight: 'inherit',
 		position: 'relative',
-		overflow: 'hidden',
-		paddingRight: theme.spacing(0),
-		paddingLeft: theme.spacing(0),
+		[theme.breakpoints.down('sm')]: {
+			width: '100%',
+		},
 		backgroundColor: 'transparent',
 		...styles
 	}),
 
+	avatarItem: {
+		height: '100%',
+		width: 'auto',
+		marginRight: '14%',
+		marginLeft: '5%',
+		[theme.breakpoints.down('sm')]: {
+			marginRight: '5%',
+		},
+	},
+
 	listItem: {
+		display: 'flex',
+		flexDirection: 'row',
+		justifyContent: 'space-between',
 		width: '100%',
-		maxHeight: theme.spacing(5),
-		position: 'relative',
+		minHeight: theme.spacing(5),
+		//height: '8vh',
 		paddingRight: theme.spacing(1),
-		paddingLeft: theme.spacing(1),
+		paddingLeft: '2%', // theme.spacing(1),
 		paddingTop: theme.spacing(0.5),
 		paddingBottom: theme.spacing(0.5),
-		marginBottom: '3px',
+		marginBottom: '2%',
 		backgroundColor: theme.palette.background.dark,
+		//backgroundColor: theme.palette.common.black,
 		boxShadow: '0 1px 7px 0 #090117',
 	},
 
-	avatar: {
-		height: '100%',
+	handleLabel: {
+		display: 'flex',
+		flexDirection: 'row',
+		justifyContent: 'space-between',
+		minWidth: '40%',
 	},
-
 
 }));
 
 export default function TransactionList (props) {
-	const {styles, listItems, ...innerProps} = props;
+	const {styles, itemHeightVH, itemHeightVHSmall, listItems, ...innerProps} = props;
 	const theme = useTheme();
-	const dense = true;
+	const dense = false;
 
 	const [scrollTarget, setScrollTarget] = useState(undefined)
 	const scrollTrigger = useScrollTrigger({ target: scrollTarget });
@@ -58,41 +74,54 @@ export default function TransactionList (props) {
 
 	const handleProps = {
 		style: {
-			fontSize: '14px',
-			lineHeight: '14px',
+			//paddingTop: '5%',
+			fontSize: '1.5rem',
+			lineHeight: '1.0',
 		}
 	}
 
 	const timeSinceProps = {
 		style: {
-			fontSize: '12px',
+			fontSize: '1.0rem',
 			color: theme.palette.primary.contrastText,
-			lineHeight: '12px',
-			opacity: 0.5
+			lineHeight: '1.0rem',
+			opacity: 0.7
 		}
 	}
 
+
 	//TODO render inner border on scroll down 
 	const WithScrollTarget = props => (
-					<div ref={node => {
-							if (node) {
-									setScrollTarget(node);
-							}
-					}}>
-							{props.children}
-					</div>
+		<div ref={node => {
+			if (node) {
+				setScrollTarget(node);
+			}
+		}}>
+			{props.children}
+		</div>
 	);
 
+	const defaultAvatarHeight = 7;
 	const renderTransactions = () => listItems.map((tx, i) => (
-			<ListItem key={i} className={classes.listItem}>
-			<ListItemAvatar className={classes.avatar}>
+		<ListItem key={i} alignItems='flex-start' className={classes.listItem}>
+			<div className={classes.handleLabel}>
+			<ListItemAvatar className={classes.avatarItem}>
 				<Avatar
 					alt={tx.counterParty ? tx.counterParty.handle : 'loading'}
 					src={tx.counterParty ? tx.counterParty.avatar : 'loading'}
+					m={0}
 					styles={{
-						//height: '100%', 
-						height: '32px', 
-						width: '32px', 
+						//marginTop: '10%',
+						//marginBottom: '10%',
+						//paddingLeft: '10%',
+						//paddingRight: '10%',
+						height: `${itemHeightVH || defaultAvatarHeight}vh`, 
+						width:  `${itemHeightVH || defaultAvatarHeight}vh`,
+						small: {
+							//height: `${itemHeightVHSmall || itemHeightVH*0.8}vh`, 
+							//width:  `${itemHeightVHSmall || itemHeightVH*0.8}vh`,
+						},
+						minHeight: '32px', 
 						//borderStyle: 'solid',
 						borderWidth: '1px',
 						borderColor: theme.palette.background.dark,
@@ -100,30 +129,31 @@ export default function TransactionList (props) {
 					}}
 				/>
 			</ListItemAvatar>
-			<ListItemText
+				<ListItemText style={{display: 'flex', flexDirection: 'column', justifyContent: 'space-evenly'}}
 				primary={`@${tx.counterParty ? tx.counterParty.handle : 'loading'}`}
 				primaryTypographyProps={handleProps}
 
 				secondary={tx.timeSince ? `${tx.timeSince}` : `...`}
 				secondaryTypographyProps={timeSinceProps}
 			/>
+			</div>
 			<ListItemSecondaryAction>
 				<TransactionAmount type={tx.type} amount={tx.returnValues.amount}/>
 			</ListItemSecondaryAction>
-			</ListItem>
+		</ListItem>
 	));
 
 	return (
 		<>
-		{ 
-			listItems.length > 0 ? (
-				<List dense={dense} className={classes.transactionList} disablePadding>
-				{ renderTransactions() }
-				</List>
-			) : (
-				props.label == 'Transfers' ? <StandardBody align="center">Start sending <WokeSpan>WOKENs</WokeSpan></StandardBody> : null
-			)
-		}
+			{ 
+				listItems.length > 0 ? (
+					<List dense={dense} className={classes.transactionList} disablePadding>
+						{ renderTransactions() }
+					</List>
+				) : (
+					props.label == 'Transfers' ? <StandardBody align="center">Start sending <WokeSpan>WOKENs</WokeSpan></StandardBody> : null
+				)
+			}
 		</>
 	);
 }

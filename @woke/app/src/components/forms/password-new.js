@@ -10,16 +10,31 @@ import StandardBody from '../text/body-standard'
 
 const useStyles = makeStyles(theme => ({
 	centeredForm: {
+		// Layout
 		position: 'relative',
 		display: 'flex',
 		flexDirection: 'column',
-		justifyContent: 'flex-end',
+		justifyContent: 'space-between',
 		alignItems: 'center',
-		bottom: 0,
-		width: 'auto',
-		marginTop: 'auto',
-		paddingLeft: theme.spacing(3),
-		paddingRight: theme.spacing(3),
+
+		// Size
+		width: '100%',
+		//minHeight: '100%',
+		//marginTop: 'auto',
+
+		// Spacing
+		//paddingLeft: theme.spacing(3),
+		//paddingRight: theme.spacing(3),
+	},
+
+	inputs: {
+		position: 'relative',
+		display: 'flex',
+		flexDirection: 'column',
+		justifyContent: 'space-between',
+		width: '100%',
+		alignItems: 'stretch',
+		marginBottom: '10%',
 	}
 }));
 
@@ -44,23 +59,25 @@ export default function NewPassword (props) {
 	}
 
 	return (
-		<FieldWrapper>
+//		<FieldWrapper>
 			<Box
 				className={classes.centeredForm}
 			>
-				<Password 
-					type={'password'}
-					value={input.password}
-					onChange={handleChangeInput('password')}
-				/>
-				<Password 
-					type={'confirmation'}
-					value={input.confirmation}
-					onChange={handleChangeInput('confirmation')}
-				/>
+				<div className={classes.inputs}>
+					<Password 
+						type={'password'}
+						value={input.password}
+						onChange={handleChangeInput('password')}
+					/>
+					<Password 
+						type={'confirmation'}
+						value={input.confirmation}
+						onChange={handleChangeInput('confirmation')}
+					/>
+				</div>
 				<Button 
 					onClick={setPassword}
-					styles={{marginBottom: theme.spacing(2)}}
+					styles={{marginTop: theme.spacing(2), marginBottom: theme.spacing(2)}}
 					{...buttonProps}
 				>
 					{props.buttonText}
@@ -69,6 +86,6 @@ export default function NewPassword (props) {
 					{props.errorMessage}
 				</StandardBody>
 			</Box>
-		</FieldWrapper>
+//		</FieldWrapper>
 	);
 }

@@ -4,33 +4,44 @@ import React, { useEffect, useState } from 'react';
 import Claim from '../views/claim';
 import Loading from '../views/loading';
 
-
 // Dummy state 
-import { useRootContext } from '../../hooks/root-context'
-import useLinearStages from '../../hooks/linearstate';
-import StateFlicker from '../../components/stateflicker';
+import { useDesignContext } from '../../hooks/design/use-domain'
+import useDesignDomain from '../../hooks/design/use-domain'
+import useLinearStages from '../../hooks/fsm-linear';
 import * as claimStates from '../../hooks/woke-contracts/claimuser-states';
+import stageConfig from './stages'
 
-const {statesMap, statesList, statesLabels} = claimStates;
-const states = statesMap;
+
+const stages = stageConfig.claim;
+const { statesLabels } = claimStates;
+const states = stages.byName;
 
 export default function ClaimContainer (props) {
-	const dummyClaimState = useLinearStages({stageList: statesList, initialStage: states.ERROR});
-	const {dispatchNext, dummyAsyncJob} = dummyClaimState;
-	const rootContext = useRootContext();
+	const { handleClaimComplete } = props;
+
+	const claimState = useLinearStages({
+		stageList: stages.list,
+		initialStage: stages.initial || states.READY,
+		handleLastStage: handleClaimComplete,
+	});
+	useDesignDomain({									// Pass claim stage up to the state selector
+		domainName: 'claim',
+		linearStages: claimState,
+		stages,
+	});
+
+	const { dispatchNext, dummyOnChangeEvent } = claimState;
 	const [error, setError] = useState();
+	const [claiming, setClaiming] = useState(false);
 
 
-	// Pass claim stage up to the state selector
-	useEffect(() => {
-		rootContext.setEscapeHatch({
-			items: statesList,
-			onChange: (event) => dummyClaimState.select(event.target.value)
-		});
-	}, []);
+	const handleConfirmedTweeted = () => {
+		setClaiming(true);							// Simulate web3 claim process
+		dispatchNext();
+	}
 
-	const renderClaim = () => (
-		<Claim
+	const renderLoading = () => <Loading/>;
+	const renderClaim = () => <Claim
 			claimState={{
 				transactions: {
 					sendClaimUser: {
@@ -40,46 +51,34 @@ export default function ClaimContainer (props) {
 				},
 				error: error,
 				stageLabels: statesLabels,
-				...dummyClaimState
+				...claimState
 			}}
 			triggerPostTweet={() => dispatchNext()}
 			handleTweeted={() => dispatchNext()}
-			handleConfirmedTweeted={() => dispatchNext()}
-		/>
-	);
+			handleConfirmedTweeted={handleConfirmedTweeted}
+	/>;
 
-	const renderLoading = () => {
-		//dummyAsyncJob('auth_dummy:load-complete');
-		return (
-			<Loading
-				handleDone={() => setTimeout(() => dispatchNext('done loading'), 2000)}
-			/>
-		);
-	};
-
-	const stage = dummyClaimState.stageEnum[dummyClaimState.stage]; // stage string
-	const chooseRender = stage != states.CLAIMED ? renderClaim : renderLoading;
+	const chooseRender = claimState.stage != stages.byName.CLAIMED ? renderClaim : renderLoading;
 
 	useEffect(() => {
-		console.log('Claim Stage: ', stage);
-		if(dummyClaimState.stage ==  states.CONFIRMED) {
-			setInterval(() => {
-				dispatchNext();
-			}, 500);
+		const stageString = claimState.stageEnum[claimState.stage]; // stage string
+		console.log('Claim Stage: ', stageString);
+		if(claiming && claimState.stage >= stages.byName.CONFIRMED && claimState.stage < stages.byName.CLAIMED) {
+			dummyOnChangeEvent(700);
 		}
-	}, [stage])
+	}, [claimState.stage])
 
 	useEffect(() => {
-		if(dummyClaimState.stage == states.CLAIMED) {
-			props.handleComplete();
+		if(claimState.stage == states.CLAIMED) {
+			setTimeout(handleClaimComplete, 1000);
 		}
 
-		if(dummyClaimState.stage == states.ERROR) {
-			setError('Hint: Scroll down to use the state selector. Start at ready.');
+		if(claimState.stage == states.ERROR) {
+			setError('Hint: State overlay lets you flick everywhere. Hooray!');
 		} else {
 			setError(null);
 		}
-	}, [dummyClaimState.stage])
+	}, [claimState.stage])
 
 	return (
 		<>

@@ -1,7 +1,8 @@
 import React from 'react';
 import Typography from '@material-ui/core/Typography';
 
-import ContentWrapper from '../../layouts/wrapper-content';
+import FlexColumn from '../../layouts/flex-column';
+import OnboardingContainer from '../../layouts/container-onboarding';
 import Footer from '../../layouts/footer';
 import BottomHolder from '../../layouts/holder-bottom';
 import ButtonGroup from '../../layouts/button-group';
@@ -9,16 +10,15 @@ import ButtonGroup from '../../layouts/button-group';
 import EnterPassword from '../../components/forms/password-enter'
 import StandardBody from '../../components/text/body-standard'
 import LargeBody from '../../components/text/body-large'
-import HL from '../../components/text/span-highlight'
+import RememberPasswordText from '../../components/text/remember-password'
 
 
 export default function LoginView(props) {
-	return (
-		<>
-		<ContentWrapper
-			styles={{marginTop: '10%', paddingTop: '15%'}}
-		>
-			<LargeBody styles={{textAlign: 'center'}}>
+	return (<>
+		<OnboardingContainer styles={{
+		}}>
+			<LargeBody styles={{textAlign: 'center', marginTop: '10%'}}>
+				Login
 			</LargeBody>
 			<StandardBody
 				color='secondary'
@@ -33,18 +33,7 @@ export default function LoginView(props) {
 					color: 'primary'
 				}}
 			/>
-
-		</ContentWrapper>
-
-		<Footer>
-			<BottomHolder>
-				<StandardBody>
-					Your password can <HL>never</HL> be recovered.
-					<br/><br/>
-					Remember your password. Stay woke.
-				</StandardBody>
-			</BottomHolder>
-		</Footer>
-		</>
-	);
+			<RememberPasswordText/>
+		</OnboardingContainer>
+	</>);
 }

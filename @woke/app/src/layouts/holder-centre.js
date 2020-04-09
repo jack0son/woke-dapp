@@ -4,27 +4,32 @@ import Box from '@material-ui/core/Box';
 import { makeStyles } from '@material-ui/styles';
 
 const useStyles = makeStyles(theme => ({
-	centreHolder: {
+	centreHolder: styles => ({
+		// Layout
 		position: 'relative',
 		display: 'flex',
 		flexDirection: 'column',
-		justifyContent: 'flex-start',
+		justifyContent: 'center',
 		alignItems: 'center',
-		bottom: 0,
-		width: 'auto',
+
+		// Size
 		height: 'auto',
-		marginTop: '30%',
-		px: theme.spacing(2),
-	}
+		width: 'auto',
+
+		// Spacing
+
+		...styles
+	})
 }));
 
 export default function CentreHolder(props) {
-	const classes = useStyles();
+	const { styles, ...innerProps} = props;
+	const classes = useStyles(styles);
 
 	return (
 		<Box
 			className={classes.centreHolder}
-			{...props}
+			{...innerProps}
 		/>
 	);
 }

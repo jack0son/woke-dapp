@@ -1,12 +1,7 @@
 import React from 'react';
 import { fade, makeStyles, useTheme } from '@material-ui/core/styles';
 
-import AppBar from '@material-ui/core/AppBar';
-import Toolbar from '@material-ui/core/Toolbar';
-import IconButton from '@material-ui/core/IconButton';
-import Typography from '@material-ui/core/Typography';
 import InputBase from '@material-ui/core/InputBase';
-import MenuIcon from '@material-ui/icons/Menu';
 import SearchIcon from '@material-ui/icons/Search';
 
 import Typeahead from '../typeahead';
@@ -109,6 +104,7 @@ export default function SearchField(props) {
 					)}
 					FieldComponent={ props => (
 						<InputBase
+							label="Enter user's twitter handle"
 							fullWidth={props.inputProps.value == '' || !props.inputProps.value ? false : true}
 							placeholder={placeholder ? placeholder : "Search…"}
 							type="search"

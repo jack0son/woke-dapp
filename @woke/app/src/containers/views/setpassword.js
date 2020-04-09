@@ -1,50 +1,48 @@
 import React from 'react';
 import Typography from '@material-ui/core/Typography';
 
-import ContentWrapper from '../../layouts/wrapper-content';
+import FlexRow from '../../layouts/flex-row';
+import FlexColumn from '../../layouts/flex-column';
+import OnboardingContainer from '../../layouts/container-onboarding';
 import Footer from '../../layouts/footer';
 import BottomHolder from '../../layouts/holder-bottom';
 import ButtonGroup from '../../layouts/button-group';
 
 import NewPassword from '../../components/forms/password-new'
 import StandardBody from '../../components/text/body-standard'
-import LargeBody from '../../components/text/body-large'
-import HL from '../../components/text/span-highlight'
+import XLBody from '../../components/text/body-xl'
+import H2 from '../../components/text/h2'
+import RememberPasswordText from '../../components/text/remember-password'
+
 import WokeSpan from '../../components/text/span-woke'
 
 
 export default function SetPasswordView(props) {
 	return (
 		<>
-		<ContentWrapper
-			styles={{marginTop: '10%'}}
-		>
-			<LargeBody>
-				Set your woke wallet password
-			</LargeBody>
-			<StandardBody color='secondary'>
-				We suggest a memorable sentence.
-			</StandardBody>
+			<OnboardingContainer styles={{
+			}}>
+				<div>
+					<XLBody>
+						Set your password
+					</XLBody>
+					<StandardBody color='secondary'>
+						We suggest a memorable sentence.
+					</StandardBody>
+				</div>
 
-			<NewPassword
-				triggerSetPassword={props.triggerSetPassword}
-				errorMessage={props.errorMessage}
-				buttonProps={{
-					text: 'confirm',
-					color: 'primary'
-				}}
-			/>
-		</ContentWrapper>
+				<NewPassword
+					triggerSetPassword={props.triggerSetPassword}
+					errorMessage={props.errorMessage}
+					//flexGrow={4}
+					buttonProps={{
+						text: 'confirm',
+						color: 'primary'
+					}}
+				/>
 
-		<Footer>
-			<BottomHolder>
-				<StandardBody>
-					Your password can <HL>never</HL> be recovered.
-					<br/><br/>
-					Remember your password. Stay woke.
-				</StandardBody>
-			</BottomHolder>
-		</Footer>
+			<RememberPasswordText/>
+			</OnboardingContainer>
 		</>
 	);
 }

@@ -52,14 +52,14 @@ export function clearOldVersionStorage(version) {
 
 
 export function setSyncTimeout(ms) {
-	return new Promise((resolve, reject) => {
+	return new Promise(resolve => {
 		setTimeout(() => {
 			resolve();
 		}, ms);
 	})
 }
 
-export function createObjectCache (cacheKey) {
+export function makeObjectCache (cacheKey) {
 	function store (cache) {
 		window.localStorage.setItem(cacheKey, JSON.stringify(cache));
 	}

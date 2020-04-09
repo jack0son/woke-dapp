@@ -5,15 +5,18 @@ import Link from '@material-ui/core/Link';
 
 const useStyles = makeStyles(theme => ({
 	logo: {
-		marginTop: theme.spacing(1),
-		//height: theme.spacing(5),
-		maxWidth: theme.spacing(12),
+		maxWidth: '20vh',
 		height: 'auto',
 		//animation: '$wink 3s linear infinite, $rotate 4s ease-out infinite',
 		animationName: '$fadeInOut, $openClose',
 		animationDuration: '4s, 4s',
 		animationTimingFunction: 'ease-in, ease-out',
 		animationIterationCount: 'infinite',
+
+		[theme.breakpoints.down('sm')]: {
+			maxWidth: '20vh',
+			fontSize: '1rem',
+		},
 	},
 	'@keyframes fadeInOut': {
 		from: {

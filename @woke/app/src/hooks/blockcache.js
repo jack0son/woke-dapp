@@ -1,9 +1,9 @@
 import React, { useState, useMemo, useCallback, useEffect } from 'react';
 import { useWeb3Context } from './web3context';
-import { createObjectCache } from '../lib/utils';
+import { makeObjectCache } from '../lib/utils';
 
 
-const cache = createObjectCache('block_cache');
+const cache = makeObjectCache('block_cache');
 export default function useBlockCache() {
 	const {
 		web3,

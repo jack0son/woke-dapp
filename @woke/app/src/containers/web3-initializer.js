@@ -38,6 +38,7 @@ export default function Web3Initializer(props) {
 
 			) : <Loading message={<>A <Woken/> shared is a <Woken/> doubled.</>}/>
 					//) : <Loading message={'A Woken shared is a Woken doubled.'}/>
+					// 'Readin akashic record
 			}
 		</>
 	);

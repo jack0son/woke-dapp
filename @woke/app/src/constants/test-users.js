@@ -8,6 +8,24 @@ const users = {
 		profile_image_url: 'https://www.pngfind.com/pngs/m/43-430344_circle-twitter-logo-twitter-logo-red-round-hd.png'
 	},
 
+	'15': {
+		//account: stranger_a,
+		screen_name: 'angus',
+		handle: 'angus',
+		id: '15',
+		avatar: 'https://pbs.twimg.com/profile_images/1115644092329758721/AFjOr-K8_400x400.jpg',
+		profile_image_url: 'https://pbs.twimg.com/profile_images/1115644092329758721/AFjOr-K8_400x400.jpg'
+	},
+
+	'16': {
+		//account: stranger_a,
+		screen_name: 'angle',
+		handle: 'angle',
+		id: '16',
+		avatar: 'https://pbs.twimg.com/profile_images/1115644092329758721/AFjOr-K8_400x400.jpg',
+		profile_image_url: 'https://pbs.twimg.com/profile_images/1115644092329758721/AFjOr-K8_400x400.jpg'
+	},
+
 	'11': {
 		//account: stranger_a,
 		screen_name: 'jack',

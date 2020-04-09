@@ -2,11 +2,19 @@ import React from 'react';
 import { makeStyles } from '@material-ui/core/styles';
 import LinearProgress from '@material-ui/core/LinearProgress';
 
-import BodyLarge from '../text/body-large'
+import BodyLarge from '../text/body-large';
+import BodyStandard from '../text/body-standard';
 
 const useStyles = makeStyles({
-  root: {
-		width: 300,
+	wrapper: styles => ({
+		marginTop: '10%',
+		width: '100%',
+		maxHeight: '20%',
+	}),
+
+  bar: {
+		height: '20%',
+		width: '100%',
     flexGrow: 1,
   },
 });
@@ -17,14 +25,14 @@ export default function LinearstageList(props) {
 		//console.dir(props.stageList);
 		//throw new Error('Linear stageList only accepts an array');
 	}
-	const {stageList, stage, labelList} = props;
+	const {stageList, stage, labelList, styles} = props;
+	const classes = useStyles(styles);
 
 	const stageMap = {}
 	stageList.forEach((stage, i) => {
 		stageMap[stage] = i;
 	});
 
-  const classes = useStyles();
   const [completed, setCompleted] = React.useState(0);
 
   React.useEffect(() => {
@@ -47,9 +55,11 @@ export default function LinearstageList(props) {
 
   return (
 		<>
-			<BodyLarge>{label}</BodyLarge>
+			<div className={classes.wrapper}>
+				<BodyStandard styles={{small: {fontSize: '1rem', textAlign: 'left'}}}>{label}</BodyStandard>
 			<br/>
-      <LinearProgress variant="determinate" value={completed} />
+      <LinearProgress className={classes.bar} variant="determinate" value={completed} />
+				</div>
 		</>
   );
 }

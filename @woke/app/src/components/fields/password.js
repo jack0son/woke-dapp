@@ -4,8 +4,19 @@ import TextField from '@material-ui/core/TextField';
 
 const useStyles = makeStyles(theme => ({
 	passwordField: {
-		marginLeft: theme.spacing(0.25),
-		marginRight: theme.spacing(2),
+		fontSize: '3rem',
+		width: '100%',
+		flexGrow: 1,
+	},
+
+	underline: {
+		'&:before': {
+			borderBottomColor: theme.palette.secondary.main,
+		},
+
+		'&:after': {
+			//borderBottomColor: theme.palette.secondary.main,
+		}
 	}
 }));
 
@@ -41,6 +52,9 @@ export default function PasswordField(props) {
 			id={passwordProps.id}
 			label={passwordProps.label}
 			className={classes.passwordField}
+			InputProps={{
+				classes: { underline: classes.underline }
+			}}
 			type="password"
 			autoComplete="current-password"
 			margin="normal"

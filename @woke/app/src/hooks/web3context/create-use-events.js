@@ -13,7 +13,7 @@ export default web3 => (contractName, eventName, opts) => {
 	const contract = useContract(contractName);
 	const [events, setEvents] = useState([]);
 
-	const isMounted = useIsMounted()
+	const isMounted = useIsMounted() // ref
 
 	useEffect(() => {
 		let emitter;

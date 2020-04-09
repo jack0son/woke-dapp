@@ -1,39 +1,50 @@
 import React from 'react';
-import { makeStyles } from '@material-ui/styles';
+import { makeStyles, useTheme } from '@material-ui/styles';
 import Typography from '@material-ui/core/Typography';
+import Box from '@material-ui/core/Box';
+import Hidden from '@material-ui/core/Hidden';
 
-import Footer from '../../layouts/footer';
-import BottomHolder from '../../layouts/holder-bottom';
-import Tabs from '../../layouts/tabs';
+// Layout
+import SplitColumns from '../../layouts/split-column';
+import PaneTabs from '../../layouts/tabs/tabs-panes';
 import TransactionList from '../../layouts/list-transactions';
-import ContentWrapper from '../../layouts/wrapper-content'
-
-import AvatarHeader from '../../components/header-avatar';
-import WokeSpan from '../../components/text/span-woke';
-import SendTransferForm from  '../../components/forms/send-transfer'
+import FlexColumn from '../../layouts/flex-column'
 import LargeBody from '../../components/text/body-large';
 
-const useStyles = makeStyles(theme => ({
-	bottomHolder: styles => ({
-		position: 'relative',
-		display: 'flex',
-		flexDirection: 'column',
-		justifyContent: 'flex-end',
-		alignItems: 'center',
-		bottom: 0,
-		width: '100%',
-		height: 'auto',
-		//marginTop: 'auto',
-		paddingLeft: theme.spacing(2),
-		paddingRight: theme.spacing(2),
-		...styles,
-	}),
+// Components
+import AvatarHeader from '../../components/header-avatar';
+import Balance from  '../../components/wallet-balance'
+import WokeSpan from '../../components/text/span-woke';
+import TransferTokensForm from  '../../components/forms/tokens-transfer'
 
+import { useRootContext } from '../../hooks/root-context';
+
+const headerHeight = 15;
+const useStyles = makeStyles(theme => ({
 	balanceText: {
 		fontSize: '38px',
 		lineHeight: '40px',
 		fontWeight: 700,
-	}
+	},
+
+	placeholder: {
+		width: '100%',
+		backgroundColor: 'white',
+		position: 'static',
+		flexGrow: 2,
+		//	height: '50vh',
+		minHeight: '50%',
+		border: '5px',
+	},
+
+	headerSpacer: {
+		width: '100%',
+		alignSelf: 'flex-start',
+		minHeight: `${headerHeight/2}vh`,
+		[theme.breakpoints.down('sm')]: {
+			minHeight: `${headerHeight/4}vh`,
+		},
+	},
 }));
 
 export default function WalletView (props) {
@@ -49,6 +60,11 @@ export default function WalletView (props) {
 		sendTransfers,
 	} = props;
 	const classes = useStyles(styles);
+	const theme = useTheme();
+
+	const { setHeaderChildren } = useRootContext();
+
+	//setHeaderChildren(children => ([ ...children, renderHeader(headerHeight) ]));
 
 	friends.forEach(user => {
 		user.label = user.screen_name;
@@ -63,51 +79,103 @@ export default function WalletView (props) {
 		avatar = avatar.slice(0, avatar.length - imageModifier.length) + '.jpg';
 	}
 
-	return (
-		<>
-		<AvatarHeader
+	const renderHeader = heightVH => (<>
+		<AvatarHeader order={0}
+			styles={{height: `${heightVH}vh`}}
+			alignSelf='flex-start'
 			src={avatar}
 			handle={props.user.handle}
 		/>
+		<div className={classes.headerSpacer}/>
+	</>);
 
-		<Typography variant="h3" fontSize='38px' align="center">
-			{balance}<WokeSpan styles={{fontSize: '30px'}}> W</WokeSpan>
-		</Typography>
+	const avatarHeader = React.useMemo(() => renderHeader(headerHeight));
+	React.useEffect(() => {
+		setHeaderChildren([avatarHeader]);
+		return () => {
+			setHeaderChildren([]);
+		}
+	}, [])
 
-		<SendTransferForm
+	const responsive = {
+		[theme.breakpoints.up('sm')]: {
+			order: 1
+		},
+		[theme.breakpoints.up('md')]: {
+			order: 10
+		},
+	}
+
+	const renderTransfer = () => (
+		<TransferTokensForm order={2}
 			sendTransfers={sendTransfers}
 			pending={sendTransfers.pending}
 			usernamePlaceholder='username...'
 			amountPlaceholder='amount'
 			suggestions={friends}
+			balance={1320}
 		/>
-
-		<Footer minHeight='40% !important' height='40% !important'>
-			<BottomHolder
-				styles={{
-					height: '100%',
-					position: 'absolute',
-					bottom: 0,
-					paddingLeft: 0,
-					paddingRight: 0,
-				}}
-			>
-				<Tabs>
-					<TransactionList
-						label="Transfers"
-						listItems={transferEvents}
-					/>
-					<ContentWrapper	styles={{marginTop: 0}} align='center' label="Bounties">
-								<LargeBody align='center'> 
-									Send <WokeSpan>WOKENs</WokeSpan> to new users to receive a bonus when they join.
-								</LargeBody>
-								<TransactionList
-									listItems={rewardEvents}
-								/> 
-				</ContentWrapper>
-				</Tabs>
-			</BottomHolder>
-		</Footer>
-		</>
 	);
+
+
+	const renderPaneTabs = () => (
+		<PaneTabs order={responsive.order} styles={{
+			tabHeight: '6vh',
+		}}> 
+			<TransactionList
+				label="History"
+				itemHeightVH={5}
+				itemHeightVHSmall={4}
+				styles={{ }}
+				listItems={transferEvents}
+			/>
+			<FlexColumn	styles={{}} //align='center'
+				label="Earnings"
+			>
+				<TransactionList
+					listItems={rewardEvents}
+				/> 
+				{ rewardEvents.length < 4 ? (<>
+					<LargeBody align='center'
+						styles={{
+							textAlign: 'justify',
+							fontSize: `${2*0.7}rem`,
+							linHeight: `${2*0.7}rem`,
+							marginTop: '8%',
+							marginBottom: '5%',
+							paddingLeft: '10%',
+							paddingRight: '10%',
+						}}
+					> 
+						Tribute <WokeSpan>WOKENs</WokeSpan> to new users to earn an elightenment bonus when they join.
+					</LargeBody>
+				</>) : null }
+			</FlexColumn>
+		</PaneTabs>
+	);
+
+	const renderBalance = () => <Balance balance={balance}/>
+
+		return (<>
+
+			<SplitColumns
+				first={<>
+					<FlexColumn styles={{
+						width: '100%',
+						maxWidth: '100%', // limit to width of split columns
+						justifyContent: 'space-evenly',
+						//alignSelf: 'stretch',
+						small: {
+							height: '100%',
+						}
+					}}>
+						{ renderBalance() }
+						{ renderTransfer() }
+					</FlexColumn>
+				</>}
+				second={<>
+					{ renderPaneTabs() }
+				</>}
+			/>
+		</>);
 }

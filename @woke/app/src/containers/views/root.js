@@ -2,7 +2,7 @@ import React from 'react'
 
 // Layout
 import Theming from '../../layouts/theming'
-import PageContainer from '../../layouts/page-container'
+import RootContainer from '../../layouts/container-root'
 import NavBar from '../../components/navbar'
 
 // Hooks
@@ -10,18 +10,19 @@ import NavBar from '../../components/navbar'
 import { useRootContext } from '../../hooks/root-context'
 
 export default function RootView({children}) {
-	const {loading} = useRootContext();
+	const { loading, headerChildren } = useRootContext();
+
+	const makeNavBar = () => (
+		<NavBar
+			hideNavItems={loading}
+		/>
+	);
 
 	return (
 		<Theming>
-			<PageContainer>
-				<NavBar
-					hideLogo={loading}
-				/>
+			<RootContainer NavBar={makeNavBar()} headerChildren={headerChildren}>
 				{children}
-			</PageContainer>
+			</RootContainer>
 		</Theming>
 	);
 }
-
-				//{props && props.children ? props.children : null}
