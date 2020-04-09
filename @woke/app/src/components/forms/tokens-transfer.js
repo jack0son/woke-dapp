@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Button from '../buttons/button-contained';
 
 import FlexColumn from '../../layouts/flex-column';
@@ -8,21 +8,22 @@ import AmountForm from './transfer-amount';
 import RecipientForm from './transfer-recipient';
 import ConfirmTransferDialog from './transfer-confirm';
 
-export default function TransferTokensForm({ balance, ...props }) {
-	const {
-		sendTransfers,				// Transfer API (web3)
-		pending,							// Transfer tx status
-		suggestions,					// Recipient search typeahead
-		usernamePlaceholder,
-		amountPlaceholder,
-	} = props;
-
+export default function TransferTokensForm({
+	balance,
+	sendTransfers,				// Transfer API (web3)
+	pending,							// Transfer tx status
+	suggestions,					// Recipient search typeahead
+	usernamePlaceholder,
+	amountPlaceholder,
+	...props
+}) {
 	const {
 		handleSelectRecipient,
 		handleSubmitTransfer,
 		handleChangeInput,
 		handleClearRecipient,
 		recipient,
+		amount,
 		error,
 	} = sendTransfers;
 
@@ -31,21 +32,19 @@ export default function TransferTokensForm({ balance, ...props }) {
 	};
 
 	const defaultAmount = defaults.value < balance ? defaults.value : Math.floor(balance/3)
-	const [amount, setAmount] = useState(defaultAmount);
-
-	const handleSetAmount = (amount) => {
-		setAmount(amount);
-	};
 
   const [open, setOpen] = React.useState(false);
 
-  const openModal = () => {
-    setOpen(true);
-  };
+	// Check if valid recipient, if so, open confirm dialog
+	useEffect(() => {
+		if(recipient) {
+			openModal();
+		}
+	}, [recipient])
 
-  const closeModal = () => {
-    setOpen(false);
-  };
+	const handleClickSend = () => handleSelectRecipient();
+  const openModal = () => setOpen(true);
+  const closeModal = () => setOpen(false);
 
 	return (
 		<FlexColumn styles={{
@@ -64,17 +63,18 @@ export default function TransferTokensForm({ balance, ...props }) {
 				handleSelectRecipient={handleSelectRecipient}
 				suggestions={suggestions}
 				placeholder={usernamePlaceholder}
+				error={error}
 				//handleChange={handleChangeInput('screen_name')}
 			/>
 			<AmountForm
 				amount={amount}
-				handleSetAmount={handleSetAmount}
-				balance={1305}
+				handleSetAmount={handleChangeInput('amount')}
+				balance={balance}
 			/>
 			<Button
 				color='primary'
 				text='SEND'
-				onClick={openModal}
+				onClick={handleClickSend}
 				styles={{
 					marginTop: '5%',
 					fontSize: '1.5rem',

@@ -56,12 +56,14 @@ export default function ConfirmTransferDialog({open, recipient, amount, handleCl
 				aria-labelledby="alert-dialog-slide-title"
 				aria-describedby="alert-dialog-slide-description"
 			>
+				{ open ? <>
 				<DialogTitle id="alert-dialog-slide-title">
 					<BodyLarge>
 						Send <span style={{color: theme.palette.secondary.main}}>{amount}</span><WokeSpan> W</WokeSpan> to @{recipient.handle}?
 					</BodyLarge>
 				</DialogTitle>
 				{ renderContent() }
+				</> : null }
 				<DialogActions >
 					<FlexRow styles={{
 						height: '8vh',

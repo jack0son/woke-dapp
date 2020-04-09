@@ -13,14 +13,18 @@ export default function useSendTransferInput({
 }) {
 	const [recipient, setRecipient] = useState(null);
 	const [input, setInput] = useState({
-		handle: defaultRecipient,
+		screen_name: defaultRecipient,
 		amount: defaultAmount,
 	});
 	const [error, setError] = useState(null);
 
 	// Transfer input
-	const handleChangeInput = name => event => {
-		setInput({ ...input, [name]: event.target.value });
+	const handleInputEvent = name => event => {
+		event && event.target && setInput({ ...input, [name]: event.target.value });
+	};
+
+	const handleChangeInput = name => value => {
+		value && setInput({ ...input, [name]: value });
 	};
 
 	const handleSelectRecipient = () => {
@@ -65,11 +69,13 @@ export default function useSendTransferInput({
 
 	return {
 		handleChangeInput,
+		handleInputEvent,
 		handleSubmitTransfer,
 		handleSelectRecipient,
 		handleChangeInput,
 		handleClearRecipient,
 		recipient,
+		amount: input.amount,
 		pending: sendTransfers.pending,
 		error
 	};

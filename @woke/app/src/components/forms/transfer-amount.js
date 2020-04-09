@@ -16,8 +16,8 @@ const useStyles = makeStyles((theme) => ({
 	}
 }));
 
-export default function TokenAmountForm(props) {
-	const { styles, amount, handleSetAmount, balance } = props;
+export default function TokenAmountForm({ amount, handleSetAmount, balance, ...props}) {
+	const { styles } = props;
 
 	const classes = useStyles(styles);
 
@@ -43,6 +43,7 @@ export default function TokenAmountForm(props) {
 				onChangeCommitted={handleSliderChange}
 				//controlledValue={amount} // causes slider to not render on drag
 				defaultAmount={defaults.value < balance ? defaults.value : Math.floor(balance/2)}
+				step={Math.ceil(balance/100)}
 				min={1}
 				order={1}
 				max={balance}

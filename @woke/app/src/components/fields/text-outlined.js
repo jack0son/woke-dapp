@@ -56,8 +56,8 @@ const useStyles = makeStyles((theme) => ({
 }));
 
 export default function TextFieldOutlined({ controlledValue, handleChange, ...props }) {
-	const defaults = {error: false, errorText: 'error', labelText: 'Text'};
-	const { styles, labelText, error, errorText, ...other } = { ...defaults, ...props }
+	const defaults = {adornment: '', error: false, errorText: 'error', labelText: 'Text'};
+	const { styles, labelText, error, errorText, adornment, ...other } = { ...defaults, ...props }
 	const classes = useStyles(styles);
 
 	return (
@@ -70,7 +70,7 @@ export default function TextFieldOutlined({ controlledValue, handleChange, ...pr
 			onChange={handleChange}
 			id="outlined-adornment-amount"
 			InputProps={{
-				startAdornment: <InputAdornment position="start">Search</InputAdornment>
+				startAdornment: <InputAdornment position="start">{adornment}</InputAdornment>
 			}}
 			error={error}
 			//helperText={ error ? errorText : null }

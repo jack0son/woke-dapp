@@ -113,7 +113,7 @@ export default function WalletView (props) {
 			usernamePlaceholder='username...'
 			amountPlaceholder='amount'
 			suggestions={friends}
-			balance={1320}
+			balance={balance}
 		/>
 	);
 
