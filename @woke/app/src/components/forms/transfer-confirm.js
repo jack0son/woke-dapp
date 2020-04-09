@@ -18,7 +18,7 @@ const Transition = React.forwardRef(function Transition(props, ref) {
 	return <Slide direction="up" ref={ref} {...props} />;
 });
 
-export default function ConfirmTransferDialog({open, recipient, amount, handleClose, ...props}) {
+export default function ConfirmTransferDialog({open, recipient, amount, onConfirm, onCancel, handleClose, ...props}) {
 	const theme = useTheme();
 
 	const renderContent = () => (
@@ -70,10 +70,10 @@ export default function ConfirmTransferDialog({open, recipient, amount, handleCl
 						flexWrap: 'nowrap',
 						marginBottom: '5%',
 					}}>
-					<Button text={"YES"} onClick={handleClose} color="secondary" styles={{
+					<Button text={"YES"} onClick={onConfirm} color="secondary" styles={{
 						flexGrow: 1,
 					}}/>
-					<Button text={"NO"} onClick={handleClose} styles={{
+					<Button text={"NO"} onClick={onCancel} styles={{
 						flexGrow: 1,
 						//alignSelf: 'center',
 						background: theme.palette.common.black,

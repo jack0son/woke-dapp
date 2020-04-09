@@ -46,6 +46,11 @@ export default function TransferTokensForm({
   const openModal = () => setOpen(true);
   const closeModal = () => setOpen(false);
 
+	const handleConfirmTransfer = () => {
+		handleSubmitTransfer();
+		closeModal();
+	};
+
 	return (
 		<FlexColumn styles={{
 			width: '50%',
@@ -83,6 +88,8 @@ export default function TransferTokensForm({
 			/>
 			<ConfirmTransferDialog
 				open={open}
+				onConfirm={handleConfirmTransfer}
+				onCancel={closeModal}
 				handleClose={closeModal}
 				amount={amount}
 				recipient={recipient}
