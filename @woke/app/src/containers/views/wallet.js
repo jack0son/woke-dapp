@@ -127,6 +127,7 @@ export default function WalletView (props) {
 				itemHeightVH={5}
 				itemHeightVHSmall={4}
 				styles={{ }}
+				sendTransfers={sendTransfers}
 				listItems={transferEvents}
 			/>
 			<FlexColumn	styles={{}} //align='center'

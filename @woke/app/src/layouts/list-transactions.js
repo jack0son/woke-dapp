@@ -10,6 +10,7 @@ import ListItemSecondaryAction from '@material-ui/core/ListItemSecondaryAction';
 import Icon from '@material-ui/core/Icon';
 
 import Avatar from './avatar';
+import Spinner from '../components/progress/spinner-indeterminate';
 import TransactionAmount from '../components/text/transaction-amount';
 import StandardBody from '../components/text/body-standard';
 import WokeSpan from '../components/text/span-woke';
@@ -63,8 +64,8 @@ const useStyles = makeStyles(theme => ({
 
 }));
 
-export default function TransactionList (props) {
-	const {styles, itemHeightVH, itemHeightVHSmall, listItems, ...innerProps} = props;
+export default function TransactionList ({ listItems, ...props }) {
+	const {sendTransfers, recipient, styles, itemHeightVH, itemHeightVHSmall, ...innerProps} = props;
 	const theme = useTheme();
 	const dense = false;
 
@@ -102,6 +103,11 @@ export default function TransactionList (props) {
 	);
 
 	const defaultAvatarHeight = 7;
+
+	const isCurrentTransaction = (i, tx) => {
+		return i == 0 && sendTransfers.pending && tx.transactionHash == sendTransfers.txHash;
+	}
+
 	const renderTransactions = () => listItems.map((tx, i) => (
 		<ListItem key={i} alignItems='flex-start' className={classes.listItem}>
 			<div className={classes.handleLabel}>
@@ -137,6 +143,7 @@ export default function TransactionList (props) {
 				secondaryTypographyProps={timeSinceProps}
 			/>
 			</div>
+			{ isCurrentTransaction(i, tx) && <Spinner/> }
 			<ListItemSecondaryAction>
 				<TransactionAmount type={tx.type} amount={tx.returnValues.amount}/>
 			</ListItemSecondaryAction>

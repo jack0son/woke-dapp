@@ -77,6 +77,7 @@ export default function useSendTransferInput({
 		recipient,
 		amount: input.amount,
 		pending: sendTransfers.pending,
+		txHash: sendTransfers.txHash,
 		error
 	};
 }
@@ -158,7 +159,7 @@ export function useSendTransfers (recipient, handleClearRecipient) {
 			if(!transferMethod.send('useOpts', transferArgs.userId, transferArgs.amount, safeTxOpts)) {
 				console.error('... Failed to send transfer');
 			}
-			handleClearRecipient();
+			//handleClearRecipient();
 			setSendQueued(false);
 		}
 	}, [recipientIsClaimed, sendQueued, transferArgs.userId, transferArgs.amount]);
@@ -173,6 +174,7 @@ export function useSendTransfers (recipient, handleClearRecipient) {
 	return {
 		submit: submitTransfer,
 		error: error,
+		txHash: sendTransferClaimed.txHash || sendTransferUnclaimed.txHash,
 		pending: sendQueued || sendTransferClaimed.pending || sendTransferUnclaimed.pending,
 	};
 }

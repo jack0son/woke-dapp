@@ -37,7 +37,6 @@ const useStyles = makeStyles((theme) => ({
   textField: {
     margin: theme.spacing(1),
 		marginLeft: 0,
-		flexGrow: 1,
 		//maxWidth: '40%',
     minWidth: '50px',
   },
@@ -61,10 +60,6 @@ export default function NumberFieldOutlined({ controlledValue, handleChange, ...
 			InputProps={{
 				startAdornment: <InputAdornment position="start">{unitSymbol}</InputAdornment>
 			}}
-			//error={error}
-			//classes={{ notchedOutline: classes.notchedOutline }}
-			//helperText={ error ? errorText : null }
-			//labelWidth={60}
 			{ ...other }
 		/>
 	);

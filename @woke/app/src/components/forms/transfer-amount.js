@@ -35,7 +35,6 @@ export default function TokenAmountForm({ amount, handleSetAmount, balance, ...p
 				order={2}
 				controlledValue={amount}
 				handleChange={handleFieldChange}
-				flexGrow={1}
 				unitSymbol={'W'}
 				unitPosition={'right'}
 			/>
