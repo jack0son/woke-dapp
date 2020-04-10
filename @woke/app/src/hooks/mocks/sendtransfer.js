@@ -1,7 +1,8 @@
 import React, { useState, useEffect, useReducer } from 'react'
+import useTxTimer from '../woke-contracts/tx-timer';
 
 export default function useSendTransfer (users) {
-	const [recipient, setRecipient] = useState(null);
+	const [recipient, setRecipient] = useState(users[1]);
 	const [currentTransfer, setCurrentTransfer] = useState({
 		recipient: null, amount: null, txHash: null,
 	});
@@ -13,6 +14,8 @@ export default function useSendTransfer (users) {
 		amount: 1,
 	});
 
+	const txTimer = useTxTimer(5000, {steps: 8});
+
 	// Transfer input
 	const handleChangeInput = name => value => {
 		value && setInput({ ...input, [name]: value });
@@ -23,6 +26,7 @@ export default function useSendTransfer (users) {
 		console.log(newRecipient);
 		newRecipient ? resolve(newRecipient) : resolve(false);
 	});
+
 
 	const handleSelectRecipient = () => {
 		setError(null);
@@ -42,6 +46,7 @@ export default function useSendTransfer (users) {
 
 	const handleSubmitTransfer = () => {
 		//setRecipient(null);
+		txTimer.start();
 		setPending(true);
 		setCurrentTransfer({
 			recipient,
@@ -50,6 +55,7 @@ export default function useSendTransfer (users) {
 		});
 		setTimeout(() => {
 			setPending(false);
+			txTimer.stop();
 		}, 5000);
 	}
 
@@ -67,6 +73,7 @@ export default function useSendTransfer (users) {
 		recipient,
 		currentTransfer: currentTransfer,
 		amount: input.amount,
+		timer: txTimer,
 		error,
 	};
 }
