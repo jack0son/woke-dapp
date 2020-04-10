@@ -4,6 +4,7 @@ import React from 'react';
 // TODO unecessary import for build - bloat
 import DesignRoot from './containers/design/root'
 
+//const Root = LogicRoot;
 const Root = DesignRoot;
 //const Root = (process.env.REACT_APP_DEV_MODE == 'design') ? DesignRoot : LogicRoot;
 

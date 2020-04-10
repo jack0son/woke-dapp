@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useReducer, useRef } from 'react'
 import { useWeb3Context } from '../web3context';
 import { safePriceEstimate } from '../../lib/web3/web3-utils'
+import useTxTimer from './tx-timer';
 
 
 // User friendly send transfer with user ID checking
@@ -79,7 +80,8 @@ export default function useSendTransferInput({
 		txHash: sendTransfers.txHash,
 		currentTransfer: sendTransfers.currentTransfer,
 		pending: sendTransfers.pending,
-		error
+		timer: sendTransfers.timer,
+		error,
 	};
 }
 
@@ -108,6 +110,9 @@ export function useSendTransfers (recipient, handleClearRecipient) {
 		'userClaimed',
 		recipient ? recipient.id : ''
 	);
+
+	// @TODO get time estimate from config
+	const txTimer = useTxTimer(18000);
 
 	// Update gas estimate when recipient prop changes
 	const prevRecipient = useRef({id: '', ...recipient});
@@ -163,6 +168,7 @@ export function useSendTransfers (recipient, handleClearRecipient) {
 			if(!transferMethod.send('useOpts', transferArgs.userId, transferArgs.amount, safeTxOpts)) {
 				console.error('... Failed to send transfer');
 			} else {
+				txTimer.start();
 				setCurrentTransfer({
 					recipient,
 					amount: transferArgs.amount,
@@ -186,6 +192,10 @@ export function useSendTransfers (recipient, handleClearRecipient) {
 
 	// Update pending transfers
 	useEffect(() => {
+		if(!pending) {
+			txTimer.stop();
+		}
+
 		setCurrentTransfer(t => ({...t, txHash, pending }));
 	}, [txHash, pending])
 
@@ -195,6 +205,7 @@ export function useSendTransfers (recipient, handleClearRecipient) {
 		txHash,
 		pending,
 		currentTransfer,
+		timer: txTimer,
 	};
 }
 
