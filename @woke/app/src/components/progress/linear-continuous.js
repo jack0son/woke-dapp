@@ -7,18 +7,15 @@ import BodyStandard from '../text/body-standard';
 
 const useStyles = makeStyles({
 	wrapper: styles => ({
-		position: 'absolute',
-		bottom: '0',
-		left: '0',
-		marginTop: '8%',
 		width: '100%',
 		maxHeight: '2vh',
+		flexGrow: 1,
+		...styles,
 	}),
 
 	bar: {
 		height: '0.5vh',
 		width: '100%',
-		flexGrow: 1,
 	},
 });
 

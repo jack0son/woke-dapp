@@ -1,9 +1,13 @@
 import React, { useState, useEffect } from 'react'
 
-export default function useTxTimer(time, opts) {
-	const steps = opts.steps || 10;
+const averageBlockTime = 15000;
+export default function useTxTimer(time = averageBlockTime, opts) {
+	const steps = opts.steps || 8;
 	const [timer, setTimer] = React.useState(null);
 	const [timerVal, setTimerVal] = React.useState(0);
+
+	// TODO allow providing a callback on timer completion. e.g. indicating a tx
+	// is taking too long.
 
 	const start = () => {
 		console.log('Start tx timer');
@@ -18,7 +22,10 @@ export default function useTxTimer(time, opts) {
 			}), inc));
 	}
 
-	const stop = () => setTimer(timer => clearInterval(timer));
+	const stop = () => {
+		setTimerVal(0);
+		setTimer(timer => clearInterval(timer));
+	}
 
 	return {
 		start,

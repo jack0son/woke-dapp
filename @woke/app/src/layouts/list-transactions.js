@@ -116,14 +116,23 @@ export default function TransactionList ({ listItems, ...props }) {
 	const renderProgress = () => {
 		if(sendTransfers) {
 			return (
-				<ProgressBar value={sendTransfers.timer.value} endValue={sendTransfers.timer.transferTime}/>
+				<ProgressBar
+					value={sendTransfers.timer.value}
+					endValue={sendTransfers.timer.transferTime}
+					styles={{
+						position: 'absolute',
+						bottom: '0',
+						left: '0',
+						paddingTop: '2vh',
+					}}
+				/>
 			);
 		}
 	}
 
 	const renderTransactions = () => listItems.map((tx, i) => (
 		<ListItem key={i} alignItems='flex-start' className={classes.listItem}>
-				{ (tx.pending || isCurrentTransaction(i, tx)) && renderProgress() }
+			{ (tx.pending || isCurrentTransaction(i, tx)) && renderProgress() }
 			<div className={classes.handleLabel}>
 				<ListItemAvatar className={classes.avatarItem}>
 					<Avatar

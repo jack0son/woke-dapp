@@ -3,6 +3,7 @@ import useTxTimer from '../woke-contracts/tx-timer';
 
 export default function useSendTransfer (users) {
 	const [recipient, setRecipient] = useState(users[1]);
+	const [txHash, setTxHash] = useState(null);
 	const [currentTransfer, setCurrentTransfer] = useState({
 		recipient: null, amount: null, txHash: null,
 	});
@@ -48,6 +49,7 @@ export default function useSendTransfer (users) {
 		//setRecipient(null);
 		txTimer.start();
 		setPending(true);
+		setTxHash('0xRANDOM');
 		setCurrentTransfer({
 			recipient,
 			amount: input.amount,
@@ -74,6 +76,7 @@ export default function useSendTransfer (users) {
 		currentTransfer: currentTransfer,
 		amount: input.amount,
 		timer: txTimer,
+		txHash: txHash,
 		error,
 	};
 }
