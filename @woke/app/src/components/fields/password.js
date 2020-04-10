@@ -7,9 +7,6 @@ const useStyles = makeStyles(theme => ({
 		fontSize: '3rem',
 		width: '100%',
 		flexGrow: 1,
-		// '& > div > input': {
-		// 	fontSize: '24px',
-		// }
 	},
 
 	inputWrapper: {
