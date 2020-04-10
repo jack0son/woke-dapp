@@ -2,7 +2,8 @@ import React, { useState, useEffect } from 'react'
 
 const averageBlockTime = 15000;
 export default function useTxTimer(time = averageBlockTime, opts) {
-	const steps = opts.steps || 8;
+	const defaults = { steps: 8 };
+	const { steps } = {...defaults, ...opts};
 	const [timer, setTimer] = React.useState(null);
 	const [timerVal, setTimerVal] = React.useState(0);
 
