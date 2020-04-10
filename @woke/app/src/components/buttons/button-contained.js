@@ -1,7 +1,6 @@
 import React from 'react';
 import { makeStyles } from '@material-ui/core/styles';
-import Button from '@material-ui/core/Button';
-
+import { Button } from '@material-ui/core';
 
 const useStyles = makeStyles(theme => ({
 	button: styles => ({
@@ -24,6 +23,17 @@ const useStyles = makeStyles(theme => ({
 		[theme.breakpoints.down('sm')]: {
 			fontSize: '1rem',
 		},
+		'& > span': {
+			display: 'flex',
+			'& > span': {
+				'&:nth-child(1)': {
+					marginRight: '20px',
+				},
+				'&:nth-child(2)': {
+					marginLeft: '20px',
+				},
+			},
+		},
 		...styles
 	}),
 
@@ -34,11 +44,13 @@ export default function ContainedButton(props) {
 	const classes = useStyles(styles);
 
 	return (
-		<Button 
+		<Button
 			variant="contained"
 			color={color || "primary"}
 			className={classes.button}
 			{...innerProps}
+			startIcon={props.iconLeft}
+			endIcon={props.iconRight}
 		>
 			{text}
 			{children}

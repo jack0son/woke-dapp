@@ -50,8 +50,6 @@ export default function ButtonGroup (props) {
 				<Button order={buttonOrder}
 					onClick={onClick}
 					{...buttonProps}
-					styles={{
-					}}
 				>
 				{props.buttonText}
 				</Button>
