@@ -16,7 +16,7 @@ export default function useTxTimer(time = averageBlockTime, opts) {
 		setTimer(() => setInterval(
 			() => setTimerVal(t => {
 				if(t >= time) {
-					stop();
+					setTimer(timer => clearInterval(timer));
 					return time;
 				}
 				return t + inc;
