@@ -76,9 +76,9 @@ export default function useSendTransferInput({
 		handleClearRecipient,
 		recipient,
 		amount: input.amount,
-		pending: sendTransfers.pending,
 		txHash: sendTransfers.txHash,
 		currentTransfer: sendTransfers.currentTransfer,
+		pending: sendTransfers.pending,
 		error
 	};
 }

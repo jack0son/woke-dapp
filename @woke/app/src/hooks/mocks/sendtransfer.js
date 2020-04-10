@@ -1,29 +1,56 @@
 import React, { useState, useEffect, useReducer } from 'react'
 
 export default function useSendTransfer (users) {
-	const [recipient, setRecipient] = useState(users[1]);
+	const [recipient, setRecipient] = useState(null);
+	const [currentTransfer, setCurrentTransfer] = useState({
+		recipient: null, amount: null, txHash: null,
+	});
 	const [pending, setPending] = useState(null);
+	const [error, setError] = useState(null);
 
 	const [input, setInput] = useState({
-		handle: '',
-		amount: null,
+		screen_name: '',
+		amount: 1,
 	});
 
 	// Transfer input
-	const handleChangeInput = name => event => {
-		setInput({ ...input, [name]: event.target.value });
+	const handleChangeInput = name => value => {
+		value && setInput({ ...input, [name]: value });
 	};
 
+	const checkUserExists = (_, screen_name) => new Promise(resolve => {
+		const newRecipient = users.find(u => u.screen_name == screen_name);
+		console.log(newRecipient);
+		newRecipient ? resolve(newRecipient) : resolve(false);
+	});
+
 	const handleSelectRecipient = () => {
-		setRecipient(users[0]);
+		setError(null);
+		console.log('handleSelectRecipient() ', input.screen_name);
+		checkUserExists(null, input.screen_name)
+			.then(userObj => {
+				if(userObj) {
+					if(recipient && recipient.screen_name == userObj.screen_name)
+						setRecipient(null); // force re-render for confirm modal side effect
+
+					setRecipient(userObj);
+				} else {
+					setError('User does not exist');
+				}
+			})
 	}
 
 	const handleSubmitTransfer = () => {
-		setRecipient(null);
+		//setRecipient(null);
 		setPending(true);
+		setCurrentTransfer({
+			recipient,
+			amount: input.amount,
+			txHash: null,
+		});
 		setTimeout(() => {
 			setPending(false);
-		}, 1000);
+		}, 5000);
 	}
 
 	const handleClearRecipient = () => {
@@ -38,5 +65,8 @@ export default function useSendTransfer (users) {
 		handleClearRecipient,
 		pending,
 		recipient,
+		currentTransfer: currentTransfer,
+		amount: input.amount,
+		error,
 	};
 }
