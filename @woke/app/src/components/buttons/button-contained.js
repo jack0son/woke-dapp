@@ -49,8 +49,8 @@ export default function ContainedButton(props) {
 			color={color || "primary"}
 			className={classes.button}
 			{...innerProps}
-			startIcon={props.iconleft ? props.iconleft : null}
-			endIcon={props.iconright ? props.iconright : null}
+			startIcon={props.iconLeft}
+			endIcon={props.iconRight}
 		>
 			{text}
 			{children}
