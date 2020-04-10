@@ -112,7 +112,7 @@ export function useSendTransfers (recipient, handleClearRecipient) {
 	);
 
 	// @TODO get time estimate from config
-	const txTimer = useTxTimer();
+	const txTimer = useTxTimer(18000);
 
 	// Update gas estimate when recipient prop changes
 	const prevRecipient = useRef({id: '', ...recipient});

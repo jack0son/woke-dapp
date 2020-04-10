@@ -116,7 +116,7 @@ export default function TransactionList ({ listItems, ...props }) {
 	const renderProgress = () => {
 		if(sendTransfers) {
 			return (
-				<ProgressBar
+				<ProgressBar organic
 					value={sendTransfers.timer.value}
 					endValue={sendTransfers.timer.transferTime}
 					styles={{

@@ -12,6 +12,7 @@ export default function useTxTimer(time = averageBlockTime, opts) {
 
 	const start = () => {
 		console.log('Start tx timer');
+		setTimerVal(0);
 		const inc = time / steps;
 		setTimer(() => setInterval(
 			() => setTimerVal(t => {
@@ -23,10 +24,7 @@ export default function useTxTimer(time = averageBlockTime, opts) {
 			}), inc));
 	}
 
-	const stop = () => {
-		setTimerVal(0);
-		setTimer(timer => clearInterval(timer));
-	}
+	const stop = () => setTimer(timer => clearInterval(timer));
 
 	return {
 		start,

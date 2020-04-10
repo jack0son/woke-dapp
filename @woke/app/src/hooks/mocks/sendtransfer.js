@@ -15,7 +15,7 @@ export default function useSendTransfer (users) {
 		amount: 1,
 	});
 
-	const txTimer = useTxTimer(5000, {steps: 8});
+	const txTimer = useTxTimer(15000, {steps: 8});
 
 	// Transfer input
 	const handleChangeInput = name => value => {
@@ -58,7 +58,7 @@ export default function useSendTransfer (users) {
 		setTimeout(() => {
 			setPending(false);
 			txTimer.stop();
-		}, 5000);
+		}, 20000);
 	}
 
 	const handleClearRecipient = () => {

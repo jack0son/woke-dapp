@@ -118,7 +118,6 @@ export default function WalletView (props) {
 	);
 
 	const makePendingTransfers = () => {
-		console.log(sendTransfers.currentTransfer);
 		return [{
 			type: 'send',
 			counterParty: sendTransfers.currentTransfer.recipient,
