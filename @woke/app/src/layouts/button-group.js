@@ -42,9 +42,7 @@ export default function ButtonGroup (props) {
 	</BodyStandard>
 
 	return (
-		<Box
-			className={classes.buttonGroup}
-		>
+		<Box className={classes.buttonGroup}>
 			{ reverse || renderMessage() }
 			{ props.Button ? props.Button({ ...buttonProps, order: buttonOrder}) : (
 				<Button order={buttonOrder}

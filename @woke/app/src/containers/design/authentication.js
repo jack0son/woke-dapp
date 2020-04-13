@@ -1,5 +1,4 @@
 import React, { useEffect } from 'react';
-
 // Container view
 import SignIn from '../views/signin'
 import Loading from '../views/loading'
@@ -10,7 +9,6 @@ import Login from '../views/login'
 import useDesignDomain from '../../hooks/design/use-domain'
 import useLinearStages from '../../hooks/fsm-linear'
 import stageConfig from './stages'
-import { useIsMounted } from '../../hooks/util-hooks';
 
 
 const stages = stageConfig.authentication;

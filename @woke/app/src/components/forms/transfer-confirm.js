@@ -8,7 +8,6 @@ import Slide from '@material-ui/core/Slide';
 import { useTheme } from '@material-ui/styles';
 
 import Button from '../buttons/button-contained';
-import BodyStandard from '../text/body-standard';
 import Avatar from '../../layouts/avatar';
 import FlexRow from '../../layouts/flex-row';
 import BodyLarge from '../text/body-large';

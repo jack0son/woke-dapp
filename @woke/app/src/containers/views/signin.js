@@ -44,7 +44,7 @@ export default function SigninView(props) {
 					onClick: props.triggerSignIn,
 					text: 'sign in',
 					color: 'primary',
-					iconLeft: <TwitterIcon/>,
+					IconLeft: <TwitterIcon/>,
 				}}
 			/>
 		</FlexColumn>

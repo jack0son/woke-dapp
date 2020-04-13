@@ -61,7 +61,7 @@ export default function StageOverlay(props) {
 	const renderControls = () => (
 		<>
 		{ props.children }
-			<div order={5} alignSelf='flex-end'>
+			<div order={5}>
 				<Switch
 					order={5}
 					checked={save}
