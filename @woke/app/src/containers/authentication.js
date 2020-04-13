@@ -5,9 +5,6 @@ import SignIn from './views/signin'
 import Loading from './views/loading'
 import SetPassword from './views/setpassword'
 import Login from './views/login'
-
-// TODO move to view
-import Spinner from '../components/progress/spinner-indeterminate'
 import LargeBody from '../components/text/body-large'
 import WokeSpan from '../components/text/span-woke'
 
@@ -15,7 +12,6 @@ import WokeSpan from '../components/text/span-woke'
 import useAuthRouter, {states} from '../hooks/auth-router'
 import { useTwitterContext } from '../hooks/twitter/index.js'
 import useUserIsClaimed from '../hooks/woke-contracts/user-is-claimed'
-import useHedgehog from '../hooks/hedgehog'
 import messages from '../constants/messages-login'
 
 

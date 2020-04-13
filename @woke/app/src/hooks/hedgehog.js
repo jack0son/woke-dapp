@@ -50,7 +50,8 @@ export default function useHedgehog(wallet) {
 					setErrorMessage(messages.exists);
 				} else if(e.message) {
 					if(e.message.toLowerCase().includes('network')) {
-						setErrorMessage(e.response.data.error);
+						setErrorMessage('Failed to contact woke network.');
+						// TODO display a button to tweet / DM support 
 					} else {
 						setErrorMessage(e.message);
 					}
@@ -120,7 +121,7 @@ export default function useHedgehog(wallet) {
 			username,
 			//userId,
 			savedUser,
-			signedIn,
+			signedIn, // @fix should be loggedIn
 			loading,
 			errorMessage
 		}

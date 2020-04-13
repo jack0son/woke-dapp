@@ -47,15 +47,15 @@ export default function RootContainer(props) {
 	}, []);
 
 	return (
-		<RootContextProvider>
-			<Root>
-				<TwitterContextProvider>
+		<RootContextProvider hedgehog={hedgehog}>
+			<TwitterContextProvider>
+				<Root>
 					{	!hedgehog.state.signedIn ? 
 							renderAuthentication() : 
 							renderWeb3Initializer()
 					}
-				</TwitterContextProvider>
-			</Root>
+				</Root>
+			</TwitterContextProvider>
 		</RootContextProvider>
 	);
 }

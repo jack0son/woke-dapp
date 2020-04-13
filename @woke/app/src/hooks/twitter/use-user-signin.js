@@ -1,4 +1,4 @@
-import React, { useReducer, useEffect, useCallback } from 'react';
+import React, { useReducer, useEffect, useCallback, useState } from 'react';
 import { oAuthApi } from '../../lib/twitter'
 
 export default function useUserSignin() {
@@ -10,6 +10,8 @@ export default function useUserSignin() {
 		credentials: retrieveUserTokens(),
 		user: retrieveUser(),
 	});
+
+	const [error, setError] = useState(null);
 
 	const haveUser = useCallback(() => validUser(authState.user), [authState.user])
 	const haveCreds = useCallback(() => validCreds(authState.credentials), [authState.credentials])
@@ -23,7 +25,9 @@ export default function useUserSignin() {
 				if(validUser(state.user)) {
 					return state;
 				}
-				const {verifierResp} = action.payload;
+				const { verifierResp } = action.payload;
+
+				console.log(state);
 
 				if(verifierResp && state.verifierResp == null) {
 					return {
@@ -80,7 +84,8 @@ export default function useUserSignin() {
 
 	// @dev Extract callback response params from verifier callback
 	useEffect(() => {
-		handleCallback();
+		setError(null);
+		//handleCallback();
 	}, []);
 
 	useEffect(() => {
@@ -89,7 +94,8 @@ export default function useUserSignin() {
 				const accessTokens = await oAuthApi.getUserAccessToken(requestToken, verifierToken);
 				dispatch({type: 'got-access-tokens', payload: {accessTokens}});
 			} catch (error) {
-				console.error('Error fetching user access tokens');
+				console.log(error);
+				setError('Error fetching user access tokens');
 			}
 		}
 
@@ -98,15 +104,15 @@ export default function useUserSignin() {
 		}
 	}, [authState.verifierResp, haveUser])
 
-
-
 	return {
 		handleStartAuth,
+		handleOAuthCallback: handleCallback,
 		isSignedIn,
 		haveCreds,
 		haveUser,
 		user: authState.user,
 		credentials: authState.credentials,
+		error,
 	}
 }
 
