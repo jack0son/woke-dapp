@@ -1,17 +1,7 @@
 import React from 'react';
-import clsx from 'clsx';
 import { makeStyles } from '@material-ui/core/styles';
-import IconButton from '@material-ui/core/IconButton';
-import Input from '@material-ui/core/Input';
-import FilledInput from '@material-ui/core/FilledInput';
-import OutlinedInput from '@material-ui/core/OutlinedInput';
-import InputLabel from '@material-ui/core/InputLabel';
 import InputAdornment from '@material-ui/core/InputAdornment';
-import FormHelperText from '@material-ui/core/FormHelperText';
-import FormControl from '@material-ui/core/FormControl';
 import TextField from '@material-ui/core/TextField';
-import Visibility from '@material-ui/icons/Visibility';
-import VisibilityOff from '@material-ui/icons/VisibilityOff';
 
 const useStyles = makeStyles((theme) => ({
   root: {
@@ -20,7 +10,9 @@ const useStyles = makeStyles((theme) => ({
   },
 
 	input: {
-		backgroundColor: theme.palette.background.default,
+		'& > div': {
+			backgroundColor: theme.palette.background.default,
+		}
 	},
 
 	// @fix move to global theme
@@ -28,7 +20,7 @@ const useStyles = makeStyles((theme) => ({
    MuiOutlinedInput: {
       root: {
         '&:hover:not($disabled):not($focused):not($error) $notchedOutline': {
-          borderColor: 'rgba(0,0,0,0.4)',
+		  borderColor: 'rgba(0,0,0,0.4)',
         },
       },
     },
@@ -56,7 +48,7 @@ export default function NumberFieldOutlined({ controlledValue, handleChange, ...
 			value={controlledValue}
 			onChange={handleChange}
 			id="outlined-adornment-amount"
-			InputLabelProps={{ style: { zIndex: '0' } }}
+			InputLabelProps={{ style: { zIndex: '1' } }}
 			InputProps={{
 				startAdornment: <InputAdornment position="start">{unitSymbol}</InputAdornment>
 			}}
