@@ -31,7 +31,7 @@ const useStyles = makeStyles(theme => ({
 	centerTextOverflow: {
 		textAlign: 'center',
 		whiteSpace: 'nowrap',
-		[theme.breakpoints.up('sm')]: {
+		[theme.breakpoints.up('md')]: {
 			marginLeft: '-100%',
 			marginRight: '-100%',
 		}
