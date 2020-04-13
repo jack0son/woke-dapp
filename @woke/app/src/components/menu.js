@@ -79,7 +79,7 @@ const useStyles = makeStyles(theme => ({
 
 
 export default function Menu(props) {
-	const { headerChildren, hedgehog: { logout} } = useRootContext();
+	const { headerChildren, hedgehog } = useRootContext();
 	const headerOverlap = headerChildren && headerChildren.length > 0;
 	const classes = useStyles({ ...props.styles, headerOverlap });
 
@@ -99,7 +99,7 @@ export default function Menu(props) {
 
 	const handleLogout = () => {
 		console.log('logout');
-		logout();
+		hedgehog.api.logout();
 	};
 
 	return (
@@ -113,10 +113,13 @@ export default function Menu(props) {
 				>
 					<Link className={classes.menuItem} variant="h3" href="/how">how</Link>
 					<Link className={classes.menuItem} variant="h3" href="https://about.getwoke.me">about</Link>
-					<Link className={classes.menuItem} variant="h3"
+					{ hedgehog.state.signedIn ? 
+						<Link className={classes.menuItem} variant="h3"
 						//href="/logout"
 						onClick={handleLogout}
-					>logout</Link>
+						>logout</Link>
+						: null
+					}
 				</OutsideClickHandler>
 			</FlexColumn>
 		</>
