@@ -85,7 +85,7 @@ export default function useUserSignin() {
 	// @dev Extract callback response params from verifier callback
 	useEffect(() => {
 		setError(null);
-		handleCallback();
+		//handleCallback();
 	}, []);
 
 	useEffect(() => {
