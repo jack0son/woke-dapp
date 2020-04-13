@@ -23,7 +23,9 @@ export default function useUserSignin() {
 				if(validUser(state.user)) {
 					return state;
 				}
-				const {verifierResp} = action.payload;
+				const { verifierResp } = action.payload;
+
+				console.log(action);
 
 				if(verifierResp && state.verifierResp == null) {
 					return {
@@ -102,6 +104,7 @@ export default function useUserSignin() {
 
 	return {
 		handleStartAuth,
+		handleOAuthCallback: handleCallback,
 		isSignedIn,
 		haveCreds,
 		haveUser,

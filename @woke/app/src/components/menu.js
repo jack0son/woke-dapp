@@ -79,7 +79,7 @@ const useStyles = makeStyles(theme => ({
 
 
 export default function Menu(props) {
-	const { headerChildren } = useRootContext();
+	const { headerChildren, hedgehog: { logout} } = useRootContext();
 	const headerOverlap = headerChildren && headerChildren.length > 0;
 	const classes = useStyles({ ...props.styles, headerOverlap });
 
@@ -89,12 +89,18 @@ export default function Menu(props) {
 		if (showMenu == true) {
 			toggleMenu();
 		}
-	}
+	};
+
 	const toggleBurgerIcon = () => {
 		return showMenu ? 
 			<MenuOpenIcon className={classes.hamburger} onClick={toggleMenu} /> :
 			<MenuIcon className={classes.hamburger} onClick={toggleMenu} />
-	}
+	};
+
+	const handleLogout = () => {
+		console.log('logout');
+		logout();
+	};
 
 	return (
 		<>   
@@ -107,7 +113,10 @@ export default function Menu(props) {
 				>
 					<Link className={classes.menuItem} variant="h3" href="/how">how</Link>
 					<Link className={classes.menuItem} variant="h3" href="https://about.getwoke.me">about</Link>
-					<Link className={classes.menuItem} variant="h3" href="/logout">logout</Link>
+					<Link className={classes.menuItem} variant="h3"
+						//href="/logout"
+						onClick={handleLogout}
+					>logout</Link>
 				</OutsideClickHandler>
 			</FlexColumn>
 		</>
