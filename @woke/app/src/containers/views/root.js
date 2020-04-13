@@ -1,12 +1,13 @@
 import React from 'react'
 
 //Router
-import { BrowserRouter as Switch, Route } from 'react-router-dom';
+import { BrowserRouter as Switch, Route, Redirect } from 'react-router-dom';
 import { Router, useParams, useLocation } from 'react-router-dom';
 import { createBrowserHistory } from 'history';
 import How from '../../layouts/how/index';
 
 // Layout
+import Loading from '../views/loading';
 import Theming from '../../layouts/theming';
 import RootContainer from '../../layouts/container-root';
 import NavBar from '../../components/navbar';
@@ -26,9 +27,12 @@ function AuthResponse(props) {
 	userSignin.handleOAuthCallback();
 
 	return (
-		<div>
-			Catch Auth Response
-		</div>
+		userSignin.isSignedIn() || userSignin.error ? <Redirect
+            to={{
+              pathname: "/",
+              state: {}
+            }}
+		/> : <Loading/>
 	);
 }
 
