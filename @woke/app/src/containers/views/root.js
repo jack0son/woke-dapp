@@ -7,7 +7,6 @@ import { createBrowserHistory } from 'history';
 
 // Routes
 import How from '../../layouts/how/index';
-import TwitterAuth from '../twitter-auth';
 
 // Layout
 import Theming from '../../layouts/theming';
@@ -20,7 +19,10 @@ import { useRootContext } from '../../hooks/root-context';
 
 const history = createBrowserHistory();
 
-export default function RootView({children}) {
+// @brokenwindow
+//  View container should not be responsible for app state like twitter Auth
+//  Workaround: pass TwitterAuth component from root.
+export default function RootView({TwitterAuth, children}) {
 	const { loading, headerChildren } = useRootContext();
 
 	const makeNavBar = () => (

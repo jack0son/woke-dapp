@@ -9,6 +9,7 @@ import RootView from '../views/root'
 import { RootContextProvider } from '../../hooks/root-context'
 import { DesignContextProvider } from '../../hooks/design/design-context'
 import useDesignDomain from '../../hooks/design/use-domain'
+import Loading from '../views/loading'
 
 // Dummy state 
 import useLinearStages from '../../hooks/fsm-linear'
@@ -49,12 +50,25 @@ export default function RootContainer() {
 	const stage = dummyState.stageEnum[dummyState.stage]; // stage string
 	const chooseRender = renderMap[stage];
 
+	const twitterAuth = () => {
+		dummyState.dummyOnChangeEvent();
+		return <Loading/>
+	}
+
+	const [loggedIn, setLoggedIn] = React.useState(true);
+	const hedgehogDummy = {
+		state: { signedIn: loggedIn },
+		api: {
+			logout: () => setLoggedIn(false),
+		},
+	}
+
 	return (
-		<RootContextProvider>
+		<RootContextProvider hedgehog={hedgehogDummy}>
 			<DesignContextProvider>
-				<RootView>
+				<RootView TwitterAuth={twitterAuth}>
 					<UseRootContext
-						linearStages={dummyState}i
+						linearStages={dummyState}
 						styles={{
 							rootContainer: {
 								gutterSizeP: 10,

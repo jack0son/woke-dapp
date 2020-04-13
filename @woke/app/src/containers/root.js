@@ -3,6 +3,7 @@ import React, {useState, useEffect} from 'react'
 // Logical containers
 import Authentication from './authentication'
 import Web3Initializer from './web3-initializer'
+import TwitterAuth from './twitter-auth';
 
 // View container
 import Root from './views/root'
@@ -49,7 +50,7 @@ export default function RootContainer(props) {
 	return (
 		<RootContextProvider hedgehog={hedgehog}>
 			<TwitterContextProvider>
-				<Root>
+				<Root TwitterAuth={TwitterAuth}>
 					{	!hedgehog.state.signedIn ? 
 							renderAuthentication() : 
 							renderWeb3Initializer()

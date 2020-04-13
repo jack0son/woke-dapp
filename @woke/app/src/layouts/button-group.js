@@ -34,27 +34,31 @@ export default function ButtonGroup (props) {
 
 	const renderMessage = () => <BodyStandard order={2}
 		styles={{
-			paddingLeft: theme.spacing(3),
-			paddingRight: theme.spacing(3),
+			paddingLeft: '0',
+			paddingRight: '0',
+			small: {
+				paddingLeft: '10%',
+				paddingRight: '10%',
+			}
 		}}
 	>
 		{props.message}
 	</BodyStandard>
 
-	return (
-		<Box
-			className={classes.buttonGroup}
-		>
-			{ reverse || renderMessage() }
-			{ props.Button ? props.Button({ ...buttonProps, order: buttonOrder}) : (
-				<Button order={buttonOrder}
-					onClick={onClick}
-					{...buttonProps}
-				>
-				{props.buttonText}
-				</Button>
-			)}
-			{ reverse && renderMessage() }
-		</Box>
-	);
+		return (
+			<Box
+				className={classes.buttonGroup}
+			>
+				{ reverse || renderMessage() }
+				{ props.Button ? props.Button({ ...buttonProps, order: buttonOrder}) : (
+					<Button order={buttonOrder}
+						onClick={onClick}
+						{...buttonProps}
+					>
+						{props.buttonText}
+					</Button>
+				)}
+				{ reverse && renderMessage() }
+			</Box>
+		);
 }

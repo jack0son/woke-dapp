@@ -7,7 +7,7 @@ function useQuery() {
   return new URLSearchParams(useLocation().search);
 }
 
-export default function TwitterAuth(props) {
+export default function TwitterAuth() {
 	const query = useQuery();
 	const { userSignin } = useTwitterContext();
 	console.log('auth', query.get('oauth_token'), query.get('oauth_verifier'));
