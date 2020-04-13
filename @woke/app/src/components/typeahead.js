@@ -93,7 +93,7 @@ const useStyles = makeStyles(theme => ({
   },
   paper: {
     position: 'absolute',
-    zIndex: 1,
+    zIndex: 2,
 		//marginTop: theme.spacing(1),
 		height: theme.spacing(4),
 		minHeight: theme.spacing(4),
