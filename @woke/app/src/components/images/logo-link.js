@@ -62,7 +62,6 @@ export default function BrandLink(props) {
 				href={props.url} 
 				className={classes.link} 
 				position="relative" 
-				target="_blank"
 				{ ...other }
 			>
 				<img position="static" src={src} alt={alt} className={classes.logo}/>

@@ -40,7 +40,7 @@ export default function NavBar(props) {
 				<LogoLink
 					className={classes.logo}
 					src='images/eye-logo.png'
-					url='https://getwoke.me'
+					url='/'
 				/>
 				<Menu />
 				</>

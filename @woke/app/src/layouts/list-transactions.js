@@ -12,6 +12,7 @@ import Icon from '@material-ui/core/Icon';
 import FlexRow from './flex-row';
 import Avatar from './avatar';
 import Spinner from '../components/progress/spinner-indeterminate';
+import ProgressBar from '../components/progress/linear-continuous';
 import TransactionAmount from '../components/text/transaction-amount';
 import StandardBody from '../components/text/body-standard';
 import WokeSpan from '../components/text/span-woke';
@@ -47,7 +48,7 @@ const useStyles = makeStyles(theme => ({
 		minHeight: theme.spacing(5),
 		//height: '8vh',
 		paddingRight: theme.spacing(1),
-		paddingLeft: '2%', // theme.spacing(1),
+		paddingLeft: '0', // theme.spacing(1),
 		paddingTop: theme.spacing(0.5),
 		paddingBottom: theme.spacing(0.5),
 		marginBottom: '2%',
@@ -112,8 +113,26 @@ export default function TransactionList ({ listItems, ...props }) {
 			false;
 	}
 
+	const renderProgress = () => {
+		if(sendTransfers) {
+			return (
+				<ProgressBar organic
+					value={sendTransfers.timer.value}
+					endValue={sendTransfers.timer.transferTime}
+					styles={{
+						position: 'absolute',
+						bottom: '0',
+						left: '0',
+						paddingTop: '2vh',
+					}}
+				/>
+			);
+		}
+	}
+
 	const renderTransactions = () => listItems.map((tx, i) => (
 		<ListItem key={i} alignItems='flex-start' className={classes.listItem}>
+			{ (tx.pending || isCurrentTransaction(i, tx)) && renderProgress() }
 			<div className={classes.handleLabel}>
 				<ListItemAvatar className={classes.avatarItem}>
 					<Avatar
@@ -147,9 +166,6 @@ export default function TransactionList ({ listItems, ...props }) {
 					secondaryTypographyProps={timeSinceProps}
 				/>
 			</div>
-			<FlexRow styles={{alignItems: 'flex-start', justifyContent: 'center'}}>
-				{ (tx.pending || isCurrentTransaction(i, tx)) && <Spinner/> }
-			</FlexRow>
 			<ListItemSecondaryAction>
 				<TransactionAmount type={tx.type} amount={tx.amount || tx.returnValues.amount}/>
 			</ListItemSecondaryAction>

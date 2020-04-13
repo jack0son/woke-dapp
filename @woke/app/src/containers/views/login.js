@@ -1,25 +1,18 @@
 import React from 'react';
-import Typography from '@material-ui/core/Typography';
-
-import FlexColumn from '../../layouts/flex-column';
 import OnboardingContainer from '../../layouts/container-onboarding';
-import Footer from '../../layouts/footer';
-import BottomHolder from '../../layouts/holder-bottom';
-import ButtonGroup from '../../layouts/button-group';
-
-import EnterPassword from '../../components/forms/password-enter'
-import StandardBody from '../../components/text/body-standard'
-import LargeBody from '../../components/text/body-large'
-import RememberPasswordText from '../../components/text/remember-password'
+import EnterPassword from '../../components/forms/password-enter';
+import StandardBody from '../../components/text/body-standard';
+import XLBody from '../../components/text/body-xl';
+import RememberPasswordText from '../../components/text/remember-password';
 
 
 export default function LoginView(props) {
 	return (<>
 		<OnboardingContainer styles={{
 		}}>
-			<LargeBody styles={{textAlign: 'center', marginTop: '10%'}}>
+			<XLBody styles={{textAlign: 'center', marginTop: '10%'}}>
 				Login
-			</LargeBody>
+			</XLBody>
 			<StandardBody
 				color='secondary'
 			>

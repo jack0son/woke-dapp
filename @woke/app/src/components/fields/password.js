@@ -9,14 +9,11 @@ const useStyles = makeStyles(theme => ({
 		flexGrow: 1,
 	},
 
-	underline: {
+	inputWrapper: {
+		fontSize: '24px',
 		'&:before': {
 			borderBottomColor: theme.palette.secondary.main,
 		},
-
-		'&:after': {
-			//borderBottomColor: theme.palette.secondary.main,
-		}
 	}
 }));
 
@@ -53,7 +50,7 @@ export default function PasswordField(props) {
 			label={passwordProps.label}
 			className={classes.passwordField}
 			InputProps={{
-				classes: { underline: classes.underline }
+				className: classes.inputWrapper
 			}}
 			type="password"
 			autoComplete="current-password"

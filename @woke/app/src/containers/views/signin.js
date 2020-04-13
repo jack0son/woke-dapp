@@ -1,5 +1,6 @@
 import React from 'react';
 import Typography from '@material-ui/core/Typography';
+import TwitterIcon from '@material-ui/icons/Twitter';
 import FlexColumn from '../../layouts/flex-column';
 import ButtonGroup from '../../layouts/button-group';
 
@@ -42,7 +43,8 @@ export default function SigninView(props) {
 				buttonProps={{
 					onClick: props.triggerSignIn,
 					text: 'sign in',
-					color: 'primary'
+					color: 'primary',
+					iconLeft: <TwitterIcon/>,
 				}}
 			/>
 		</FlexColumn>
