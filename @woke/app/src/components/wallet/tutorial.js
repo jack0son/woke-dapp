@@ -4,8 +4,10 @@ import FlexRow from '../../layouts/flex-row';
 import WokeSpan from '../text/span-woke';
 import LargeBody from '../text/body-large';
 import StandardBody from '../text/body-standard';
-import TweetButton from '../buttons/button-tweet';
 
+// Tweet buttton
+import TweetButton from '../buttons/button-tweet';
+import { Share } from 'react-twitter-widgets';  // NB: necessary import
 import { createShareIntentUrl } from '../../lib/utils';
 
 export default function Tutorial(props) {
@@ -22,6 +24,8 @@ export default function Tutorial(props) {
 			fontWeight: `400`,
 		}
 	}
+	
+	const tipStr = `${'%2B'}${amount || 3} $WOKE`;
 
 	const choose = () => {
 		switch(choice) {
@@ -32,7 +36,7 @@ export default function Tutorial(props) {
 
 					<FlexRow styles={{justifyContent: 'space-evenly', alignItems: 'center'}}>
 						<TweetButton lower 
-							href={createShareIntentUrl(`+${amount || 3} $WOKE Have some wokens Kimmy!\n@KimKardashian`)}
+							href={createShareIntentUrl(`Have some wokens Kimmy!\n  ${tipStr} 💖💖💖\n@KimKardashian`, true)}
 							styles={{
 								flexGrow: '0',
 								fontSize: '1rem',

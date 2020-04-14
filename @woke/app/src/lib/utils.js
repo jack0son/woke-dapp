@@ -27,9 +27,10 @@ export function timeSince(date, startDate = Date.now()) {
 	return `${t} ${periods[i][2]}${t > 1 ? 's' : ''}`;
 }
 
-export function createShareIntentUrl(claimString) {
+export function createShareIntentUrl(claimString, noEncode) {
 	//return encodeURI(`https://twitter.com/intent/tweet?amp;ref_src=twsrc%5Etfw&amp;related=getwoketoke&amp;text=${claimString}&amp;tw_p=tweetbutton`)
-	return encodeURI(`https://twitter.com/intent/tweet?&related=getwoketoke&text=${claimString}&amp;tw_p=tweetbutton`)
+	const str = `https://twitter.com/intent/tweet?&related=getwoketoke&text=${claimString}&amp;tw_p=tweetbutton`;
+	return noEncode && str || encodeURI(str);
 }
 
 export function clearOldVersionStorage(version) {
