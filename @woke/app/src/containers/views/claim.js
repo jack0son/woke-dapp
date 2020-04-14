@@ -10,6 +10,10 @@ import Button from '../../components/buttons/button-contained'
 import WokeSpan from '../../components/text/span-woke'
 import LinearProgress from '../../components/progress/linear-stages'
 
+// @fix shouldn't need this whole library
+// Need widget so that tweet intent works as popup
+import { Share } from 'react-twitter-widgets';  // NB: necessary import
+
 import { createShareIntentUrl } from '../../lib/utils';
 
 
