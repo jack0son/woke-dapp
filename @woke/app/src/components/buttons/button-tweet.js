@@ -8,6 +8,7 @@ const useStyles = makeStyles(theme => ({
 	tweetButton: styles => ({
 		fontSize: '1.3rem',
 		letterSpacing: '.20rem',
+		textTransform: 'lower', // remove capitalization
 		fontWeight: 700,
 		flexGrow: '1',
 		marginLeft: '10px',
@@ -30,7 +31,7 @@ const useStyles = makeStyles(theme => ({
 }));
 
 export default function TweetButton (props) {
-	const { memeMode, lower, styles, ...other } = props;
+	const { memeMode, lowerCase, styles, ...other } = props;
 	const classes = useStyles(styles);
 	const theme = useTheme();
 
@@ -39,7 +40,7 @@ export default function TweetButton (props) {
 			{ memeMode && <TwitterIcon className={classes.tweetIcon}/> }
 			<Button 
 				className={classes.tweetButton}
-				text={lower && "tweet" || "TWEET"}
+				text={lowerCase && "tweet" || "TWEET"}
 				color="secondary"
 				iconLeft={!memeMode && <TwitterIcon/>}
 				{...other}

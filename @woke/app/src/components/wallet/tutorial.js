@@ -19,6 +19,8 @@ export default function Tutorial(props) {
 	}
 
 	const hlStyles = {
+		fontWeight: `400`,
+		fontSize: `${1.5}rem`,
 		small: {
 			fontSize: `${1.2}rem`,
 			fontWeight: `400`,
@@ -31,18 +33,21 @@ export default function Tutorial(props) {
 		switch(choice) {
 			case 'transfers':
 				return (<>
-					Send <WokeSpan styles={wokeSpanStyles}>WOKENs</WokeSpan> from twitter by replying to a tweet with <LargeBody styles={hlStyles} component='span' color='secondary'>
-						+10 $WOKE</LargeBody>.<br/><br/>
+					Send <WokeSpan styles={wokeSpanStyles}>WOKENs</WokeSpan> from twitter by replying  <LargeBody styles={hlStyles} component='span' color='secondary'>
+						+10 $WOKE</LargeBody> to a tweet.<br/><br/>
 
 					<FlexRow styles={{justifyContent: 'space-evenly', alignItems: 'center'}}>
-						<TweetButton lower 
+						<TweetButton lowerCase
 							href={createShareIntentUrl(`Have some wokens Kimmy!\n  ${tipStr} 💖💖💖\n@KimKardashian`, true)}
 							styles={{
 								flexGrow: '0',
 								fontSize: '1rem',
-								small: { flexGrow: '0' },
+								small: {
+									flexGrow: '0',
+									fontSize: '1rem',
+								},
 							}}/>
-						<StandardBody styles={{fontSize: '1.5rem'}} component='span' color='primary'>
+						<StandardBody styles={{fontWeight: '700', fontSize: '1.5rem'}} component='span' color='primary'>
 							try it out!
 						</StandardBody>
 					</FlexRow>
@@ -61,10 +66,11 @@ export default function Tutorial(props) {
 				textAlign: 'justify',
 				fontSize: `${2*0.7}rem`,
 				linHeight: `${2*0.7}rem`,
+				fontWeight: '400',
 				marginTop: '8%',
 				marginBottom: '5%',
 				paddingLeft: '10%',
-				paddingRight: '5%',
+				paddingRight: '8%',
 				small: {
 					fontSize: `${1.2}rem`,
 					linHeight: `${1.2}rem`,
