@@ -38,6 +38,7 @@ export default function ClaimView (props) {
 				Button={TweetButton}
 				textAlign='center'
 				buttonProps={{
+					memeMode: true,
 					href: intentUrl,
 					onClick: handleTweeted,
 				}}

@@ -2,7 +2,7 @@ import React from 'react';
 import { makeStyles } from '@material-ui/styles';
 
 import Box from '@material-ui/core/Box';
-import Avatar from '../components/images/avatar-wrapped'
+import Avatar from '../images/avatar-wrapped'
 
 
 const avatarHeightVH = 18;

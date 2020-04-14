@@ -4,7 +4,7 @@ import React from 'react';
 import WalletView from '../views/wallet';
 
 // Dummy state
-import useSendTransfers from '../../hooks/mocks/sendtransfer';
+import useSendTransfers from '../../hooks/design/sendtransfer';
 import users from '../../constants/test-users';
 
 // Lib
@@ -20,6 +20,7 @@ export default function WalletContainer() {
 
 	const friends = Object.values(users);
 	const sendTransfers = useSendTransfers(friends);
+	const transferEvents = transferList.slice(0,2);
 
 	return (
 		<WalletView
@@ -27,8 +28,7 @@ export default function WalletContainer() {
 			friends={friends}
 			userData={users}
 			balance={1305}
-			transferEvents={transferList.slice(0,15)}
-			//transferEvents={[]} //transferList.slice(0,5)}
+			transferEvents={transferEvents}
 			rewardEvents={rewardList}
 			sendTransfers={sendTransfers}
 		/>
