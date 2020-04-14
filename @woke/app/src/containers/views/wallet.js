@@ -157,16 +157,36 @@ export default function WalletView (props) {
 		<PaneTabs order={responsive.order} styles={{
 			tabHeight: '6vh',
 		}}> 
-			<TransactionList
+			<FlexColumn	styles={{
+					width: '100%',
+				}}
 				label="History"
+			>
+			<TransactionList
 				fontSize="1.2rem"
 				itemHeightVH={5}
 				itemHeightVHSmall={4}
-				styles={{ }}
+				//styles={{ }}
 				sendTransfers={sendTransfers}
 				listItems={transferEvents}
 			/>
-			<FlexColumn	styles={{}} //align='center'
+				{ transferEvents.length < 3 ? (<>
+					<LargeBody align='center'
+						styles={{
+							textAlign: 'justify',
+							fontSize: `${2*0.7}rem`,
+							linHeight: `${2*0.7}rem`,
+							marginTop: '8%',
+							marginBottom: '5%',
+							paddingLeft: '10%',
+							paddingRight: '10%',
+						}}
+					> 
+						Tribute <WokeSpan>WOKENs</WokeSpan> to new users to earn an elightenment bonus when they join.
+					</LargeBody>
+				</>) : null }
+		</FlexColumn>
+			<FlexColumn	styles={{}}
 				label="Earnings"
 			>
 				<TransactionList

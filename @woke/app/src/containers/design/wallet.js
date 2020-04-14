@@ -27,7 +27,8 @@ export default function WalletContainer() {
 			friends={friends}
 			userData={users}
 			balance={1305}
-			transferEvents={transferList.slice(0,5)}
+			transferEvents={transferList.slice(0,15)}
+			//transferEvents={[]} //transferList.slice(0,5)}
 			rewardEvents={rewardList}
 			sendTransfers={sendTransfers}
 		/>
