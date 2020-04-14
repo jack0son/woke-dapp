@@ -161,6 +161,7 @@ export default function WalletView (props) {
 			}}
 				label="History"
 			>
+				{ transferEvents.length < 3 ? <Tutorial choice='transfers'/> : null }
 				<TransactionList
 					fontSize="1.2rem"
 					itemHeightVH={5}
@@ -169,7 +170,6 @@ export default function WalletView (props) {
 					sendTransfers={sendTransfers}
 					listItems={transferEvents}
 				/>
-				{ transferEvents.length < 4 ? <Tutorial choice='transfers'/> : null }
 			</FlexColumn>
 			<FlexColumn	styles={{
 				width: '100%',
