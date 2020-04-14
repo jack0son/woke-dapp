@@ -14,6 +14,7 @@ export default function Tutorial(props) {
 	const { choice, amount } = props;
 
 	const wokeSpanStyles = {
+		whiteSpace: 'nowrap',
 		fontSize: `${2*0.7}rem`,
 		linHeight: `${2*0.7}rem`,
 	}
@@ -33,8 +34,8 @@ export default function Tutorial(props) {
 		switch(choice) {
 			case 'transfers':
 				return (<>
-					Send <WokeSpan styles={wokeSpanStyles}>WOKENs</WokeSpan> from twitter by replying  <LargeBody styles={hlStyles} component='span' color='secondary'>
-						+10 $WOKE</LargeBody> to a tweet.<br/><br/>
+					Send <WokeSpan styles={wokeSpanStyles}>WOKENs</WokeSpan> from twitter by replying <LargeBody styles={hlStyles} component='span' color='secondary'>
+						+10&nbsp;$WOKE</LargeBody> to a tweet.<br/><br/>
 
 					<FlexRow styles={{justifyContent: 'space-evenly', alignItems: 'center'}}>
 						<TweetButton lowerCase
@@ -69,9 +70,11 @@ export default function Tutorial(props) {
 				fontWeight: '400',
 				marginTop: '8%',
 				marginBottom: '5%',
-				paddingLeft: '10%',
-				paddingRight: '8%',
+				paddingLeft: '15%',
+				paddingRight: '15%',
 				small: {
+					paddingLeft: '10%',
+					paddingRight: '8%',
 					fontSize: `${1.2}rem`,
 					linHeight: `${1.2}rem`,
 				}
