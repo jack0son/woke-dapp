@@ -40,7 +40,10 @@ export default function TweetButton (props) {
 			{ memeMode && <TwitterIcon className={classes.tweetIcon}/> }
 			<Button 
 				className={classes.tweetButton}
-				text={lowerCase && "tweet" || "TWEET"}
+				style={{
+					textTransform: lowerCase ? 'lowercase' : 'uppercase',
+				}}
+				text={'tweet'}
 				color="secondary"
 				iconLeft={!memeMode && <TwitterIcon/>}
 				{...other}
