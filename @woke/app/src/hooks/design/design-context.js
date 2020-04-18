@@ -125,6 +125,12 @@ export function DesignContextProvider({children}) {
 		dispatch({ type: 'update', name, stageIndex });
 	}
 
+	const [twitterSignedIn, setTwitterSignedIn] = useState(false);
+
+	const twitterAuth = {
+		signIn: () => {console.log('twitter: signed in'); setTwitterSignedIn(true)},
+		isSignedIn: () => twitterSignedIn,
+	};
 
 	return (
 		<Context.Provider
@@ -137,6 +143,7 @@ export function DesignContextProvider({children}) {
 				registerDomain,
 				deregisterDomain,
 				updateDomain,
+				twitterAuth,
 			}),
 				[
 					overlay,
@@ -147,6 +154,7 @@ export function DesignContextProvider({children}) {
 					registerDomain,
 					deregisterDomain,
 					updateDomain,
+					twitterAuth,
 				]
 			)}
 		>

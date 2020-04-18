@@ -6,8 +6,8 @@ import Web3Initializer from './web3-initializer'
 
 // View containers
 import RootView from '../views/root'
-import { RootContextProvider } from '../../hooks/root-context'
-import { DesignContextProvider } from '../../hooks/design/design-context'
+import { RootContextProvider, useRootContext } from '../../hooks/root-context'
+import { DesignContextProvider, useDesignContext } from '../../hooks/design/design-context'
 import useDesignDomain from '../../hooks/design/use-domain'
 import Loading from '../views/loading'
 
@@ -20,27 +20,56 @@ import stageConfig from './stages';
 
 const stages = stageConfig.root;
 
+// Access root context
 function UseRootContext({ linearStages }) {
 	useDesignDomain({ domainName: 'root', linearStages, stages });
+	const { setTwitterAuth } = useRootContext();
+	const { twitterAuth } = useDesignContext();
+	setTwitterAuth(twitterAuth); //  set the signed in state getter
+
+	return null;
+}
+
+// Access design context
+function UseDesignContext({ twitterSignedIn }) {
 	return null;
 }
 
 export default function RootContainer() {
 	const dummyState = useLinearStages({stageList: stages.list, initialStage: stages.initial ||  stages.byName.AUTH });
 
-	// useDesignContext must be called inside design context
+	const [loggedIn, setLoggedIn] = React.useState(false);
+	const hedgehogDummy = {
+		state: { loggedIn },
+		api: {
+			login: () => setLoggedIn(true),
+			logout: () => setLoggedIn(false),
+		},
+	}
+
+	React.useEffect(() => {
+		if(dummyState.stage == stages.byName.WEB3 && !hedgehogDummy.state.loggedIn) {
+			dummyState.select('AUTH');
+		}
+	}, [hedgehogDummy.state.loggedIn])
 
 	const renderAuth = () => (
 		<Authentication
+			hedgehog={hedgehogDummy}
 			handleAuthComplete={dummyState.dispatchNext}
 		/>
 	);
 
 	const renderWeb3 = () => (
 		<Web3Initializer
-			wallet="dummywallet"
+			wallet={hedgehogDummy}
 		/>
 	);
+
+	const twitterAuthComponent = () => {
+		dummyState.dummyOnChangeEvent();
+		return <Loading/>
+	}
 
 	const renderMap = {
 		AUTH: renderAuth,
@@ -50,23 +79,10 @@ export default function RootContainer() {
 	const stage = dummyState.stageEnum[dummyState.stage]; // stage string
 	const chooseRender = renderMap[stage];
 
-	const twitterAuth = () => {
-		dummyState.dummyOnChangeEvent();
-		return <Loading/>
-	}
-
-	const [loggedIn, setLoggedIn] = React.useState(true);
-	const hedgehogDummy = {
-		state: { signedIn: loggedIn },
-		api: {
-			logout: () => setLoggedIn(false),
-		},
-	}
-
 	return (
 		<RootContextProvider hedgehog={hedgehogDummy}>
 			<DesignContextProvider>
-				<RootView TwitterAuth={twitterAuth}>
+				<RootView TwitterAuth={twitterAuthComponent}>
 					<UseRootContext
 						linearStages={dummyState}
 						styles={{

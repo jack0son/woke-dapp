@@ -15,6 +15,7 @@ export function RootContextProvider({ children, ...props }) {
 	const [escapeHatch, setEscapeHatch] = useState(null);
 	const [styles, setStyles] = useState({});
 	const [headerChildren, setHeaderChildren] = useState([]);
+	const [twitterAuth, setTwitterAuth] = useState(null);
 
 	return (
 		<Context.Provider
@@ -28,6 +29,8 @@ export function RootContextProvider({ children, ...props }) {
 				setStyles,
 				headerChildren,
 				setHeaderChildren,
+				twitterAuth, // design only
+				setTwitterAuth,
 			}),
 				[
 					hedgehog,
@@ -39,6 +42,8 @@ export function RootContextProvider({ children, ...props }) {
 					setStyles,
 					headerChildren,
 					setHeaderChildren,
+					twitterAuth, // design only
+					setTwitterAuth,
 				]
 			)}
 		>

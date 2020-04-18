@@ -77,16 +77,15 @@ const useStyles = makeStyles(theme => ({
 	}
 }));
 
-
 export default function Menu(props) {
-	const { headerChildren, hedgehog } = useRootContext();
+	const { headerChildren, hedgehog, twitterAuth, goToLogin } = useRootContext();
 	const headerOverlap = headerChildren && headerChildren.length > 0;
 	const classes = useStyles({ ...props.styles, headerOverlap });
 
 	const [showMenu, setShowMenu] = useState(false);
 	const toggleMenu = () => setShowMenu(!showMenu);
 	const hideMenu = () => {
-		if (showMenu == true) {
+		if(showMenu == true) {
 			toggleMenu();
 		}
 	};
@@ -102,6 +101,49 @@ export default function Menu(props) {
 		hedgehog.api.logout();
 	};
 
+	// ------------- Auth option states -------------
+	// Scenario 1
+	const previouslySignedIn = () => {
+		// We have the user's ID cached, or the twitter access tokens indicating
+		// auth was successful. More stringently the 
+
+		// This needs to come from the twitter context, which does not exist in
+		// design mode. For other situations like this I generally create a dummy
+		// version of the 'live' state.
+		// Because of where the menu sits in the component hierarchy we can't just
+		// pass in the usualy dummy state (linear-fsm).
+		return twitterAuth && twitterAuth.isSignedIn();
+	};
+
+	// Scenario 2
+	const isLoggedIn = () => hedgehog.state.loggedIn;
+	// Scenario 3,  redundant don't need to specify
+	const notAuthenticated = () => !isLoggedIn() && !previouslySignedIn(); 
+
+	const renderAuthOption = () => {
+		// Note the ordering of if statements set's the precendence of the different
+		// auth option states
+		console.log(previouslySignedIn());
+		if(isLoggedIn()) { 
+			// Logout will always be displayed if logged in
+			return <Link className={classes.menuItem} variant="h3"
+				onClick={handleLogout}
+			>logout</Link>;
+
+		} else if(previouslySignedIn()) { //
+			// Otherwise, we can log in if we have the user id.
+			return <Link className={classes.menuItem} variant="h3"
+				onClick={goToLogin}
+			>login</Link>;
+
+		} else { // Not logged in, and not signed in
+			// By default, root container will route to the sign in page, no need to
+			// link to sign in page, but display an option anyway so it's more obvious
+			// how to get back from the How page or any future routes.
+			return <Link className={classes.menuItem} variant="h3" href="/">signin</Link>;
+		}
+	};
+
 	return (
 		<>   
 			{ toggleBurgerIcon() }
@@ -113,13 +155,7 @@ export default function Menu(props) {
 				>
 					<Link className={classes.menuItem} variant="h3" href="/how">how</Link>
 					<Link className={classes.menuItem} variant="h3" href="https://about.getwoke.me">about</Link>
-					{ hedgehog.state.signedIn ? 
-						<Link className={classes.menuItem} variant="h3"
-						//href="/logout"
-						onClick={handleLogout}
-						>logout</Link>
-						: null
-					}
+					{ renderAuthOption() }
 				</OutsideClickHandler>
 			</FlexColumn>
 		</>
