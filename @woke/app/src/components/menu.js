@@ -97,7 +97,6 @@ export default function Menu(props) {
 	};
 
 	const handleLogout = () => {
-		console.log('logout');
 		hedgehog.api.logout();
 	};
 
@@ -123,7 +122,6 @@ export default function Menu(props) {
 	const renderAuthOption = () => {
 		// Note the ordering of if statements set's the precendence of the different
 		// auth option states
-		console.log(previouslySignedIn());
 		if(isLoggedIn()) { 
 			// Logout will always be displayed if logged in
 			return <Link className={classes.menuItem} variant="h3"

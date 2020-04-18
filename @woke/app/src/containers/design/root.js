@@ -42,8 +42,8 @@ export default function RootContainer() {
 	const hedgehogDummy = {
 		state: { loggedIn },
 		api: {
-			login: () => setLoggedIn(true),
-			logout: () => setLoggedIn(false),
+			login: () => { console.log('hedgehog: login'); setLoggedIn(true) },
+			logout: () => { console.log('hedgehog: logout'); setLoggedIn(false) },
 		},
 	}
 
