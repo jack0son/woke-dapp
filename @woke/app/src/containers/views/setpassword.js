@@ -6,7 +6,6 @@ import XLBody from '../../components/text/body-xl';
 import RememberPasswordText from '../../components/text/remember-password';
 
 
-
 export default function SetPasswordView(props) {
 	return (
 		<>
