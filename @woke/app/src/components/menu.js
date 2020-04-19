@@ -125,6 +125,7 @@ export default function Menu(props) {
 		if(isLoggedIn()) { 
 			// Logout will always be displayed if logged in
 			return <Link className={classes.menuItem} variant="h3"
+				href="/"
 				onClick={handleLogout}
 			>logout</Link>;
 

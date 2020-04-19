@@ -45,10 +45,10 @@ export default function RootContainer() {
 	const { history } = useRouterContext();
 	const dummyState = useLinearStages({stageList: stages.list, initialStage: stages.initial ||  stages.byName.AUTH });
 
-	const handleLogin = () => {
+	const handleLogin = (callback) => {
 		history.push('/');
 		setLoggedIn(true);
-		dummyState.dummyOnChangeEvent();
+		//callback && callback();
 	}
 
 	const [loggedIn, setLoggedIn] = React.useState(false);
