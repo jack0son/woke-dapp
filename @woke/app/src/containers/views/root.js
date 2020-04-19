@@ -41,7 +41,7 @@ export default function RootView({TwitterAuth, children}) {
 					<Switch>
 						<Route exact path='/'>{children}</Route>
 						<Route exact path='/how' component={How} />
-						<Route path='/login'><Login/></Route>
+						<Route exact path='/login'><Login/></Route>
 						<Route path='/oauth_twitter'><TwitterAuth/></Route>
 					</Switch>
 				</Router>

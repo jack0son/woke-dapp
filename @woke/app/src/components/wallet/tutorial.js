@@ -39,7 +39,7 @@ export default function Tutorial(props) {
 
 					<FlexRow styles={{justifyContent: 'space-evenly', alignItems: 'center'}}>
 						<TweetButton lowerCase
-							href={createShareIntentUrl(`Have some wokens Kimmy!\n  ${tipStr} 💖💖💖\n@KimKardashian`, true)}
+							href={createShareIntentUrl(`Have some wokens Kimmy!\n  ${tipStr} 💖💖💖\n@KimKardashian %23WakeUpKimmy`, true)}
 							styles={{
 								flexGrow: '0',
 								fontSize: '1rem',

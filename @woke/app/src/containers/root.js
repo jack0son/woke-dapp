@@ -52,7 +52,7 @@ export default function RootContainer(props) {
 		<RootContextProvider hedgehog={hedgehog}>
 			<TwitterContextProvider>
 				<Root TwitterAuth={TwitterAuth}>
-					{	!hedgehog.state.signedIn ? 
+					{	!hedgehog.state.loggedIn ? 
 							renderAuthentication() : 
 							renderWeb3Initializer()
 					}
