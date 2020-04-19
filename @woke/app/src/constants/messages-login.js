@@ -1,5 +1,5 @@
 export default {
-  signedIn: {
+  loggedIn: {
     header: `YOU GOT WOKE.`,
     body: `Remember your password. We can't keep it.`
   },

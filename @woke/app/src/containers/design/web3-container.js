@@ -16,13 +16,14 @@ const stages = stageConfig.web3;
 
 export default function Web3Container(props) {
 	// Dummy state 
+	React.useEffect(() => props.wallet.api.login(), []);
 	const state = useLinearStages({stageList: stages.list, initialStage: stages.initial ||stages.byName.CLAIM});
 	useDesignDomain({ // Enable stage saving by stage-overlay
 		domainName: 'web3',
 		linearStages: state,
 		stages,
 	}, { preserve: true });
-
+	 
 	const renderClaimProcess = () => (
 		<Claim
 			// TODO change loading to use avatar image

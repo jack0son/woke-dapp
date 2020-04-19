@@ -2,15 +2,16 @@ import React, {useState, useEffect} from 'react'
 
 // Logical containers
 import Authentication from './authentication'
+import Login from './login'
 import Web3Initializer from './web3-initializer'
 import TwitterAuth from './twitter-auth';
 
 // View container
-import Root from './views/root'
+import RootView from './views/root'
 
 // Hooks
 import { RootContextProvider } from '../hooks/root-context'
-import TwitterContextProvider from '../hooks/twitter/index.js'
+import TwitterContextProvider, { useTwitterContext } from '../hooks/twitter/index.js'
 import useHedgehog from '../hooks/hedgehog'
 import { clearOldVersionStorage } from '../lib/utils'
 
@@ -50,12 +51,12 @@ export default function RootContainer(props) {
 	return (
 		<RootContextProvider hedgehog={hedgehog}>
 			<TwitterContextProvider>
-				<Root TwitterAuth={TwitterAuth}>
-					{	!hedgehog.state.signedIn ? 
+				<RootView TwitterAuth={TwitterAuth} useTwitterContext={useTwitterContext}>
+					{	!hedgehog.state.loggedIn ? 
 							renderAuthentication() : 
 							renderWeb3Initializer()
 					}
-				</Root>
+				</RootView>
 			</TwitterContextProvider>
 		</RootContextProvider>
 	);

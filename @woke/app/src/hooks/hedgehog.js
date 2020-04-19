@@ -18,10 +18,10 @@ export default function useHedgehog(wallet) {
   const [passwordConfirmation, setPasswordConfirmation] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
   const [loading, setLoading] = useState(false);
-  const [signedIn, setSignedIn] = useState(wallet.checkStatus());
+  const [loggedIn, setLoggedIn] = useState(wallet.checkStatus());
 
 	const updateWalletStatus = () => {
-		setSignedIn(wallet.checkStatus())
+		setLoggedIn(wallet.checkStatus())
 	}
 
   const handleSignup = async (_password, _confirmation) => {
@@ -91,7 +91,7 @@ export default function useHedgehog(wallet) {
 
   const logout = () => {
     wallet.logout();
-    setUsername("");
+    //setUsername("");
     setPassword("");
     setPasswordConfirmation("");
     updateWalletStatus();
@@ -121,7 +121,7 @@ export default function useHedgehog(wallet) {
 			username,
 			//userId,
 			savedUser,
-			signedIn, // @fix should be loggedIn
+			loggedIn, 
 			loading,
 			errorMessage
 		}
