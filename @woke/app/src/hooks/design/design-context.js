@@ -125,7 +125,7 @@ export function DesignContextProvider({children}) {
 		dispatch({ type: 'update', name, stageIndex });
 	}
 
-	const [twitterSignedIn, setTwitterSignedIn] = useState(false);
+	const [twitterSignedIn, setTwitterSignedIn] = useState(true);
 
 	const twitterAuth = {
 		signIn: () => {console.log('twitter: signed in'); setTwitterSignedIn(true)},

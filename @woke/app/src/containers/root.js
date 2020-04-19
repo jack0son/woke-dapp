@@ -2,6 +2,7 @@ import React, {useState, useEffect} from 'react'
 
 // Logical containers
 import Authentication from './authentication'
+import Login from './login'
 import Web3Initializer from './web3-initializer'
 import TwitterAuth from './twitter-auth';
 

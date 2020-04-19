@@ -2,7 +2,8 @@ import React from 'react';
 
 //import LogicRoot from './containers/root'
 // TODO unecessary import for build - bloat
-import DesignRoot from './containers/design/root'
+import DesignRoot from './containers/design/root';
+import { RouterContextProvider } from './hooks/router-context';
 
 //const Root = LogicRoot;
 const Root = DesignRoot;
@@ -13,7 +14,9 @@ function App() {
 		<div className="App">
 			<header className="App-header">
 			</header>
+			<RouterContextProvider>
 				<Root/>
+			</RouterContextProvider>
 		</div>
 	);
 }

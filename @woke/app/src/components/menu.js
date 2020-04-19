@@ -131,7 +131,8 @@ export default function Menu(props) {
 		} else if(previouslySignedIn()) { //
 			// Otherwise, we can log in if we have the user id.
 			return <Link className={classes.menuItem} variant="h3"
-				onClick={goToLogin}
+				href="/login"
+				//onClick={goToLogin}
 			>login</Link>;
 
 		} else { // Not logged in, and not signed in
