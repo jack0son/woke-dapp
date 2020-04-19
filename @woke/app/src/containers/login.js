@@ -2,22 +2,20 @@ import React from 'react';
 import { Redirect } from 'react-router-dom';
 
 import { useRootContext } from '../hooks/root-context';
-import { useTwitterContext } from '../hooks/twitter';
 
 import Login from './views/login';
 import Loading from './views/loading';
 
 
-export default function LoginContainer() {
+export default function LoginContainer({ twitterSignin }) {
 	const { hedgehog } = useRootContext();
-	const { userSignin } = useTwitterContext();
 
 	// @brokenwindow twitter auth attached after render (should be pre-draw
 	// effect)
-	const authAttached = userSignin !== undefined && userSignin !== null;
+	const authAttached = twitterSignin !== undefined && twitterSignin !== null;
 	hedgehog.api.restoreUsername();
 
-	return hedgehog.state.loggedIn || !userSignin.haveUser() ? <Redirect to="/"/>
+	return hedgehog.state.loggedIn || !twitterSignin.haveUser() ? <Redirect to="/"/>
 		: hedgehog.state.loading ? <Loading/>
 		: <Login
 				handleLogin={hedgehog.api.handleLogin}

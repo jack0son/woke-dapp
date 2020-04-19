@@ -42,7 +42,7 @@ export default function NavBar(props) {
 					src='images/eye-logo.png'
 					url='/'
 				/>
-				<Menu />
+				<Menu twitterSignin={props.twitterSignin}/>
 				</>
 			);
 		}

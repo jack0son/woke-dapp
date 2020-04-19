@@ -126,16 +126,6 @@ export function DesignContextProvider({children}) {
 	}
 
 
-	const [twitterSignedIn, setTwitterSignedIn] = useState(window.localStorage.getItem('design-twitter_auth') || false)
-	const setSignedIn = (state) => {
-		window.localStorage.setItem('design-twitter_auth', state)
-		setTwitterSignedIn(state);
-	};
-
-	const twitterAuth = {
-		signIn: () => {console.log('twitter: signed in'); setSignedIn(true)},
-		isSignedIn: () => twitterSignedIn,
-	};
 
 	return (
 		<Context.Provider
@@ -148,7 +138,6 @@ export function DesignContextProvider({children}) {
 				registerDomain,
 				deregisterDomain,
 				updateDomain,
-				twitterAuth,
 			}),
 				[
 					overlay,
@@ -159,7 +148,6 @@ export function DesignContextProvider({children}) {
 					registerDomain,
 					deregisterDomain,
 					updateDomain,
-					twitterAuth,
 				]
 			)}
 		>

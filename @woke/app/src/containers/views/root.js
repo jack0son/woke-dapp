@@ -22,15 +22,17 @@ import { useRouterContext } from '../../hooks/router-context';
 // @brokenwindow
 //  View container should not be responsible for app state like twitter Auth
 //  Workaround: pass TwitterAuth component from root.
-export default function RootView({TwitterAuth, children}) {
+export default function RootView({TwitterAuth, useTwitterContext, children}) {
 	const { loading, headerChildren } = useRootContext();
 	const { history } = useRouterContext();
+	const { userSignin } = useTwitterContext();
 
 	// TODO attach browser history
 
 	const makeNavBar = () => (
 		<NavBar
 			hideNavItems={loading}
+			twitterSignin={userSignin}
 		/>
 	);
 
@@ -41,7 +43,7 @@ export default function RootView({TwitterAuth, children}) {
 					<Switch>
 						<Route exact path='/'>{children}</Route>
 						<Route exact path='/how' component={How} />
-						<Route exact path='/login'><Login/></Route>
+						<Route exact path='/login'><Login twitterSignin={userSignin}/></Route>
 						<Route path='/oauth_twitter'><TwitterAuth/></Route>
 					</Switch>
 				</Router>

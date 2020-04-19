@@ -8,7 +8,6 @@ import MenuOpenIcon from '@material-ui/icons/MenuOpen';
 import OutsideClickHandler from 'react-outside-click-handler';
 
 import { useRootContext } from '../hooks/root-context';
-import { useTwitterContext } from '../hooks/twitter';
 
 const overlapPredicate = (styles, size) => styles && styles.headerOverlap && size;
 
@@ -78,9 +77,8 @@ const useStyles = makeStyles(theme => ({
 	}
 }));
 
-export default function Menu(props) {
+export default function Menu({ twitterSignin, ...props }) {
 	const { headerChildren, hedgehog } = useRootContext();
-	const { userSignin } = useTwitterContext();
 	const headerOverlap = headerChildren && headerChildren.length > 0;
 	const classes = useStyles({ ...props.styles, headerOverlap });
 
@@ -113,7 +111,7 @@ export default function Menu(props) {
 		// version of the 'live' state.
 		// Because of where the menu sits in the component hierarchy we can't just
 		// pass in the usualy dummy state (linear-fsm).
-		return userSignin && userSignin.haveUser();
+		return twitterSignin && twitterSignin.haveUser();
 	};
 
 	// Scenario 2

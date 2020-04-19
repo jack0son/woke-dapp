@@ -9,6 +9,7 @@ import Login from '../views/login'
 // Dummy state 
 import useDesignDomain from '../../hooks/design/use-domain'
 import { useDesignContext } from  '../../hooks/design/design-context'
+import { useTwitterContext } from  '../../hooks/design/twitter'
 import useLinearStages from '../../hooks/fsm-linear'
 import stageConfig from './stages'
 import { useIsMounted } from '../../hooks/util-hooks';
@@ -18,7 +19,7 @@ const stages = stageConfig.authentication;
 
 export default function AuthContainer (props) {
 	const { handleAuthComplete } = props;
-	const { twitterAuth } = useDesignContext();
+	const { userSignin } = useTwitterContext();
 	const dummyState = useLinearStages({
 		stageList: stages.list,
 		initialStage: stages.initial || stages.byName.SIGNIN,
@@ -38,7 +39,7 @@ export default function AuthContainer (props) {
 	}
 
 	const renderSignin = () => <SignIn triggerSignIn={() => {
-		twitterAuth.signIn();
+		userSignin.signIn();
 		delayedNext('twitter-signin');
 	}}/>;
 	const renderLoading = () => <Loading/>;

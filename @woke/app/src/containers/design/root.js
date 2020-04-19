@@ -7,6 +7,7 @@ import Web3Initializer from './web3-initializer'
 // Context
 import { RootContextProvider, useRootContext } from '../../hooks/root-context'
 import { DesignContextProvider, useDesignContext } from '../../hooks/design/design-context'
+import TwitterContextProvider, { useTwitterContext } from '../../hooks/design/twitter'
 import { useRouterContext } from '../../hooks/router-context'
 
 // View containers
@@ -29,15 +30,7 @@ const stages = stageConfig.root;
 // Access root context
 function UseRootContext({ linearStages, }) {
 	useDesignDomain({ domainName: 'root', linearStages, stages });
-	const { setTwitterAuth } = useRootContext();
-	const { twitterAuth } = useDesignContext();
-	setTwitterAuth(twitterAuth); //  set the signed in state getter
 
-	return null;
-}
-
-// Access design context
-function UseDesignContext({ twitterSignedIn }) {
 	return null;
 }
 
@@ -59,6 +52,7 @@ export default function RootContainer() {
 			setPassword: () => true,
 			login: () => { console.log('hedgehog: login'); setLoggedIn(true) },
 			logout: () => { console.log('hedgehog: logout'); setLoggedIn(false) },
+			restoreUsername: () => true,
 		},
 	}
 
@@ -96,26 +90,29 @@ export default function RootContainer() {
 
 	return (
 		<RootContextProvider hedgehog={hedgehogDummy}>
-			<DesignContextProvider>
-				<UseRootContext
-					linearStages={dummyState}
-					styles={{
-						rootContainer: {
-							gutterSizeP: 10,
-						}
-					}}
-				/>
-				<RootView TwitterAuth={twitterAuthComponent}>
-					{ chooseRender() }
-				</RootView>
+			<TwitterContextProvider>
+				<DesignContextProvider>
+					<UseRootContext
+						linearStages={dummyState}
+						styles={{
+							rootContainer: {
+								gutterSizeP: 10,
+							}
+						}}
+					/>
+					<RootView useTwitterContext={useTwitterContext}>
 
-				<StageOverlay >
-					<StageSelector domainName={'root'}/>
-					<StageSelector domainName={'authentication'}/>
-					<StageSelector domainName={'claim'}/>
-				</StageOverlay>
+						{ chooseRender() }
+					</RootView>
 
-			</DesignContextProvider>
+						<StageOverlay >
+							<StageSelector domainName={'root'}/>
+							<StageSelector domainName={'authentication'}/>
+							<StageSelector domainName={'claim'}/>
+						</StageOverlay>
+
+				</DesignContextProvider>
+			</TwitterContextProvider>
 		</RootContextProvider>
-	);
-}
+						);
+						}
