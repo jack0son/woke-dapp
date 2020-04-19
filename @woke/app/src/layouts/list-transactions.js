@@ -31,6 +31,8 @@ const useStyles = makeStyles(theme => ({
 	}),
 
 	avatarItem: {
+		paddingTop: 0,
+		marginTop: 0,
 		height: '100%',
 		width: 'auto',
 		marginRight: '14%',
@@ -44,12 +46,12 @@ const useStyles = makeStyles(theme => ({
 		display: 'flex',
 		flexDirection: 'row',
 		justifyContent: 'space-between',
+		alignItems: 'center',
 		width: '100%',
 		minHeight: theme.spacing(5),
 		//height: '8vh',
 		paddingRight: theme.spacing(1),
 		paddingLeft: '0', // theme.spacing(1),
-		paddingTop: theme.spacing(0.5),
 		paddingBottom: theme.spacing(0.5),
 		marginBottom: '2%',
 		backgroundColor: theme.palette.background.dark,
@@ -140,10 +142,7 @@ export default function TransactionList ({ listItems, ...props }) {
 						src={tx.counterParty ? tx.counterParty.avatar : 'loading'}
 						m={0}
 						styles={{
-							//marginTop: '10%',
-							//marginBottom: '10%',
-							//paddingLeft: '10%',
-							//paddingRight: '10%',
+							marginTop: '0',
 							height: `${itemHeightVH || defaultAvatarHeight}vh`, 
 							width:  `${itemHeightVH || defaultAvatarHeight}vh`,
 							small: {
