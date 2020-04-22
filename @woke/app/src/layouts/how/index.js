@@ -61,7 +61,9 @@ export default function How () {
 				Why would I share my wokens?
 			</BL>
 			<BS>
-				The Woke Network is a <SHL>social game</SHL> for rewarding woke content on twitter. In the coming beta, wokens will be used to give users more <SHL color='primary'>power over their social feed</SHL>.
+				The Woke Network is a <SHL>social game</SHL> for rewarding woke content on twitter. In the coming beta, wokens will be used to give users more <SHL color='primary'>power over their social feed</SHL>.<br/><br/>
+
+				Wokens can be:
 				<ul>
 					<li>Pooled by a community to power-up tweets</li>
 					<li>Sacrificed to your tweets to encourage engagement</li>
@@ -73,7 +75,7 @@ export default function How () {
 				Why do I need to tweet a weird message to join?
 			</BL>
 			<BS>
-				The proof tweet contains a cryptographically signed message which uniquely links your twitter account to your new Woke Wallet. Using a public tweet allows your account ownership to be verified by a <SHL>decentralised server network</SHL> without the central control of the Woke Network developers.
+				The proof tweet contains a cryptographically signed message which uniquely links your twitter account to your Woke Wallet. Using a public tweet allows your account ownership to be verified by a <SHL>decentralised server network</SHL> without the central control of the Woke Network developers.
 			<br/><br/>
 			</BS>
 			<BL>
