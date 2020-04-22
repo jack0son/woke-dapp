@@ -2,7 +2,7 @@ import React, { useState, useEffect, useReducer } from 'react'
 import useTxTimer from '../woke-contracts/tx-timer';
 
 export default function useSendTransfer (users) {
-	const [recipient, setRecipient] = useState(users[1]);
+	const [recipient, setRecipient] = useState(null);
 	const [txHash, setTxHash] = useState(null);
 	const [currentTransfer, setCurrentTransfer] = useState({
 		recipient: null, amount: null, txHash: null,

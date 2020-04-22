@@ -5,18 +5,21 @@ import TwitterIcon from '@material-ui/icons/Twitter';
 
 // TODO Sytle as version of layered button
 const useStyles = makeStyles(theme => ({
-	tweetButton: {
+	tweetButton: styles => ({
 		fontSize: '1.3rem',
 		letterSpacing: '.20rem',
+		textTransform: 'lower', // remove capitalization
 		fontWeight: 700,
 		flexGrow: '1',
 		marginLeft: '10px',
 		marginRight: '10px',
 		color: theme.palette.primary.contrastText,
+		...(styles && styles.small),
 		[theme.breakpoints.up('sm')]: {
 			fontSize: '2.2rem',
+			...(() => {const {small, ...large} = styles; return large;})(),
 		}
-	},
+	}),
 
 	tweetIcon: {
 		fontSize: '2rem', // icon size
@@ -28,19 +31,24 @@ const useStyles = makeStyles(theme => ({
 }));
 
 export default function TweetButton (props) {
-	const classes = useStyles();
+	const { memeMode, lowerCase, styles, ...other } = props;
+	const classes = useStyles(styles);
 	const theme = useTheme();
 
 	return (
 		<>
-			<TwitterIcon className={classes.tweetIcon} />
+			{ memeMode && <TwitterIcon className={classes.tweetIcon}/> }
 			<Button 
 				className={classes.tweetButton}
-				text="tweet"
+				style={{
+					textTransform: lowerCase ? 'lowercase' : 'uppercase',
+				}}
+				text={'tweet'}
 				color="secondary"
-				{...props}
+				iconLeft={!memeMode && <TwitterIcon/>}
+				{...other}
 			/>
-			<TwitterIcon className={classes.tweetIcon} />
+			{ memeMode && <TwitterIcon className={classes.tweetIcon}/> }
 		</>
 	);
 }

@@ -9,12 +9,11 @@ import SplitColumns from '../../layouts/split-column';
 import PaneTabs from '../../layouts/tabs/tabs-panes';
 import TransactionList from '../../layouts/list-transactions';
 import FlexColumn from '../../layouts/flex-column'
-import LargeBody from '../../components/text/body-large';
 
 // Components
-import AvatarHeader from '../../components/header-avatar';
-import Balance from  '../../components/wallet-balance'
-import WokeSpan from '../../components/text/span-woke';
+import AvatarHeader from '../../components/wallet/header-avatar';
+import Balance from  '../../components/wallet/balance';
+import Tutorial from  '../../components/wallet/tutorial';
 import TransferTokensForm from  '../../components/forms/tokens-transfer'
 
 import { useRootContext } from '../../hooks/root-context';
@@ -130,25 +129,25 @@ export default function WalletView (props) {
 		// @brokenwindow wait until current transfer has been set
 		if(sendTransfers.pending && sendTransfers.currentTransfer.amount) {
 			return (
-		<FlexColumn styles={{
-			width: '50%',
-			minWidth: '25vw',
-			marginTop: '2%',
-			small: {
-				marginTop: '0%',
-				width: '100%',
-			}
-		}}>
-			<TransactionList
-				sendTransfers={sendTransfers}
-				fontSize="1.2rem"
-				label="Pending"
-				itemHeightVH={5}
-				itemHeightVHSmall={4}
-				styles={{ }}
-				listItems={makePendingTransfers()}
-			/>
-		</FlexColumn>
+				<FlexColumn styles={{
+					width: '50%',
+					minWidth: '25vw',
+					marginTop: '2%',
+					small: {
+						marginTop: '0%',
+						width: '100%',
+					}
+				}}>
+					<TransactionList
+						sendTransfers={sendTransfers}
+						fontSize="1.2rem"
+						label="Pending"
+						itemHeightVH={5}
+						itemHeightVHSmall={4}
+						styles={{ }}
+						listItems={makePendingTransfers()}
+					/>
+				</FlexColumn>
 			);
 		}
 	};
@@ -157,16 +156,24 @@ export default function WalletView (props) {
 		<PaneTabs order={responsive.order} styles={{
 			tabHeight: '6vh',
 		}}> 
-			<TransactionList
+			<FlexColumn	styles={{
+				width: '100%',
+			}}
 				label="History"
-				fontSize="1.2rem"
-				itemHeightVH={5}
-				itemHeightVHSmall={4}
-				styles={{ }}
-				sendTransfers={sendTransfers}
-				listItems={transferEvents}
-			/>
-			<FlexColumn	styles={{}} //align='center'
+			>
+				{ transferEvents.length < 3 ? <Tutorial choice='transfers'/> : null }
+				<TransactionList
+					fontSize="1.2rem"
+					itemHeightVH={5}
+					itemHeightVHSmall={4}
+					//styles={{ }}
+					sendTransfers={sendTransfers}
+					listItems={transferEvents}
+				/>
+			</FlexColumn>
+			<FlexColumn	styles={{
+				width: '100%',
+			}}
 				label="Earnings"
 			>
 				<TransactionList
@@ -175,21 +182,7 @@ export default function WalletView (props) {
 					itemHeightVHSmall={4}
 					listItems={rewardEvents}
 				/> 
-				{ rewardEvents.length < 4 ? (<>
-					<LargeBody align='center'
-						styles={{
-							textAlign: 'justify',
-							fontSize: `${2*0.7}rem`,
-							linHeight: `${2*0.7}rem`,
-							marginTop: '8%',
-							marginBottom: '5%',
-							paddingLeft: '10%',
-							paddingRight: '10%',
-						}}
-					> 
-						Tribute <WokeSpan>WOKENs</WokeSpan> to new users to earn an elightenment bonus when they join.
-					</LargeBody>
-				</>) : null }
+				{ transferEvents.length < 4 ? <Tutorial choice='rewards'/> : null }
 			</FlexColumn>
 		</PaneTabs>
 	);

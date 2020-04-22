@@ -25,7 +25,7 @@ function createUserName(id) {
 // TODO fix the loading state
 // TODO after signed in with twitter should check if account exists at server
 export default function AuthContainer(props) {
-	const {hedgehog} = props;
+	const { hedgehog } = props;
 	const twitter = useTwitterContext();
 	const twitterSignedIn = twitter.userSignin.isSignedIn()
 
@@ -144,11 +144,11 @@ export default function AuthContainer(props) {
 
 	useEffect(() => {
 		// @TODO Saved user needs to be verified on the server
-		if(hedgehog.state.signedIn === true) {
+		if(hedgehog.state.loggedIn === true) {
 			console.log('dispatching hedgehog-authenticated')
 			router.dispatch({type: 'hedgehog-authenticated'});
 		}
-	}, [hedgehog.state.signedIn]);
+	}, [hedgehog.state.loggedIn]);
 
 	useEffect(() => {
 		console.log('Auth state: ', router.state);

@@ -7,8 +7,8 @@ import { withStyles } from '@material-ui/core/styles';
 export const StyledTabs = withStyles(theme => ({
 	root: {
 		backgroundColor: theme.palette.background.dark,
-		minHeight: theme.spacing(5),
-		//height: '5vh',
+		//minHeight: theme.spacing(5),
+		minHeight: '5vh',
 		maxWidth: 'fit-content',
 		position: 'relative',
 		[theme.breakpoints.down('sm')]: {
@@ -26,7 +26,6 @@ export const StyledTabs = withStyles(theme => ({
 
 		// Underline
 		'& > div': {
-      //maxWidth: 60,
       width: '100%',
 			backgroundColor: theme.palette.primary.main,
     },
@@ -47,4 +46,4 @@ export const StyledTab = withStyles(theme => ({
       color: theme.palette.secondary.main,
     },
   },
-}))(props => <Tab disableRipple {...props} />);
+}))(props => <Tab {...props} />);

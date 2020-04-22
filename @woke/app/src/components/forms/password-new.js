@@ -3,10 +3,10 @@ import { makeStyles, useTheme } from '@material-ui/styles';
 import Box from '@material-ui/core/Box';
 
 import FieldWrapper from '../../layouts/wrapper-field';
-
 import Password from '../fields/password'
 import Button from '../buttons/button-contained'
 import StandardBody from '../text/body-standard'
+import { registerEnterKey } from '../../lib/utils';
 
 const useStyles = makeStyles(theme => ({
 	centeredForm: {
@@ -57,6 +57,8 @@ export default function NewPassword (props) {
 	const setPassword = () => {
 		props.triggerSetPassword(input.password, input.confirmation);
 	}
+
+	registerEnterKey(setPassword);
 
 	return (
 //		<FieldWrapper>

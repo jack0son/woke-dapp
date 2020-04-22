@@ -6,7 +6,7 @@ const useStyles = makeStyles(theme => ({
 	button: styles => ({
 		margin: theme.spacing(1),
 		display: 'block',
-		textTransform: 'none', // remove capitalization
+		textTransform: 'lower', // remove capitalization
 		//maxWidth: '100px',
 		//marginTop: '15%',
 		paddingRight: '25px',

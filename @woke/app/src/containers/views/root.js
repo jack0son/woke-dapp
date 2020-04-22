@@ -3,11 +3,10 @@ import React from 'react'
 //Router
 import { BrowserRouter as Switch, Route, Redirect } from 'react-router-dom';
 import { Router, useParams, useLocation } from 'react-router-dom';
-import { createBrowserHistory } from 'history';
 
 // Routes
 import How from '../../layouts/how/index';
-import TwitterAuth from '../twitter-auth';
+import Login from '../login';
 
 // Layout
 import Theming from '../../layouts/theming';
@@ -17,15 +16,23 @@ import NavBar from '../../components/navbar';
 // Hooks
 // @TODO views should not contain app state
 import { useRootContext } from '../../hooks/root-context';
+import { useRouterContext } from '../../hooks/router-context';
 
-const history = createBrowserHistory();
 
-export default function RootView({children}) {
+// @brokenwindow
+//  View container should not be responsible for app state like twitter Auth
+//  Workaround: pass TwitterAuth component from root.
+export default function RootView({TwitterAuth, useTwitterContext, children}) {
 	const { loading, headerChildren } = useRootContext();
+	const { history } = useRouterContext();
+	const { userSignin } = useTwitterContext();
+
+	// TODO attach browser history
 
 	const makeNavBar = () => (
 		<NavBar
 			hideNavItems={loading}
+			twitterSignin={userSignin}
 		/>
 	);
 
@@ -35,7 +42,8 @@ export default function RootView({children}) {
 				<Router history={history}>
 					<Switch>
 						<Route exact path='/'>{children}</Route>
-						<Route exact path='/How' component={How} />
+						<Route exact path='/how' component={How} />
+						<Route exact path='/login'><Login twitterSignin={userSignin}/></Route>
 						<Route path='/oauth_twitter'><TwitterAuth/></Route>
 					</Switch>
 				</Router>

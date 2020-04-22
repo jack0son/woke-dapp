@@ -5,8 +5,8 @@ import { makeStyles } from '@material-ui/styles';
 import Box from '@material-ui/core/Box';
 import Typography from '@material-ui/core/Typography';
 
-import LargeBody from './text/body-large';
-import WokeSpan from './text/span-woke';
+import LargeBody from '../text/body-large';
+import WokeSpan from '../text/span-woke';
 
 const balanceSizeREM = 8;
 const balanceSizeSmallREM = 6;

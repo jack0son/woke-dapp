@@ -38,10 +38,11 @@ export default function ClaimView (props) {
 		const intentUrl = createShareIntentUrl(claimState.claimString);
 		return (
 			<ClaimPage
-				instructionText={[`To securely claim any `, <WokeSpan key="WokeSpan">WOKENs</WokeSpan>, ` you've already been sent, we need to tweet a signed message.`]}
+				instructionText={[`To securely claim any `, <WokeSpan key="WokeSpan">WOKENs</WokeSpan>, ` you've already been sent, we need to tweet a proof message.`]}
 				Button={TweetButton}
 				textAlign='center'
 				buttonProps={{
+					memeMode: true,
 					href: intentUrl,
 					onClick: handleTweeted,
 				}}
