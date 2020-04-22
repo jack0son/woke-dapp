@@ -6,6 +6,7 @@ import Error from './error'
 import ClaimPage from '../../layouts/page-claim'
 
 import TweetButton from '../../components/buttons/button-tweet'
+import StandardBody from '../../components/text/body-standard'
 import Button from '../../components/buttons/button-contained'
 import WokeSpan from '../../components/text/span-woke'
 import LinearProgress from '../../components/progress/linear-stages'
@@ -33,12 +34,23 @@ export default function ClaimView (props) {
 	const stage = claimState.stage;
 	const stageString = claimState.stageList[claimState.stage]; // stage string
 
+	const tweetInstruction = () => (<>
+		To securely claim any <WokeSpan key="WokeSpan">WOKENs</WokeSpan> you've already been sent, we need to tweet a proof message. <br/><br/>
+			<StandardBody color='primary' styles={{
+				fontSize: '1.5rem',
+				//color: theme.palette.error.main,
+			}}>
+			You can delete the tweet once your account is created
+			</StandardBody>
+		</>);
+
 	// Share intent url
 	const renderTweetClaim = () => {
 		const intentUrl = createShareIntentUrl(claimState.claimString);
 		return (
 			<ClaimPage
-				instructionText={[`To securely claim any `, <WokeSpan key="WokeSpan">WOKENs</WokeSpan>, ` you've already been sent, we need to tweet a proof message.`]}
+				//instructionText={[`To securely claim any `, <WokeSpan key="WokeSpan">WOKENs</WokeSpan>, ` you've already been sent, we need to tweet a proof message.`]}
+				instructionText={tweetInstruction()}
 				Button={TweetButton}
 				textAlign='center'
 				buttonProps={{
@@ -48,7 +60,8 @@ export default function ClaimView (props) {
 				}}
 				buttonMessage="🚨 Don't change the tweet text"
 				messageColor="primary"
-			/>
+			>
+			</ClaimPage>
 		)
 	};
 
