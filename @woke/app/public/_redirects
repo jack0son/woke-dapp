@@ -1,4 +1,5 @@
-/*   /index.html   200
+/how   /index.html   200
+/login /index.html   200
 
 /oauth_twitter /index.html 200
 /twitter_api/* https://api.twitter.com/:splat 200
