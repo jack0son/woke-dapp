@@ -11,18 +11,18 @@ const useStyles = makeStyles(theme => ({
 		position: 'relative',
 		display: 'flex',
 		flexDirection: 'column',
-		justifyContent: 'space-evenly',
+		justifyContent: 'space-around',
 		alignItems: 'center',
 		width: 'auto',
 		minHeight: '30vh',
-		//marginTop: 'auto',
+		marginTop: '10%',
 		paddingTop: theme.spacing(2),
 		paddingBottom: theme.spacing(2),
 	}
 }));
 
 export default function ButtonGroup (props) {
-	const { reverse } = props;
+	const { reverse, Message } = props;
 	const classes = useStyles();
 	const theme = useTheme();
 
@@ -32,7 +32,7 @@ export default function ButtonGroup (props) {
 
 	const buttonOrder = reverse ? 1 : 3;
 
-	const renderMessage = () => <BodyStandard order={2}
+	const renderMessage = () => <Message/> || <BodyStandard order={2}
 		styles={{
 			paddingLeft: '0',
 			paddingRight: '0',
@@ -43,7 +43,7 @@ export default function ButtonGroup (props) {
 		}}
 	>
 		{props.message}
-	</BodyStandard>
+	</BodyStandard>;
 
 		return (
 			<Box

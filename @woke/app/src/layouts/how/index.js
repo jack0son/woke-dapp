@@ -38,13 +38,15 @@ export default function How () {
 
 	return (
 		<FlexCol styles={{
-			width: '70%',
+			width: '60%',
 		}}>
 			<BL>
 				Who can receive wokens?
 			</BL>
 			<BS>
-				Anyone, on twitter. Once someone joins Woke Network, they will have access to all wokens they have ever been tributed.
+				<SHL>Anyone</SHL>, on twitter. Use their <SHL color='secondary'>twitter handle</SHL> in the app, or reply to one of their tweets with <SHL>+5 $WOKE</SHL>.
+			<br/><br/>
+				Once someone joins Woke Network, they will have access to all wokens they have ever been tributed.
 			<br/><br/>
 			</BS>
 			<BL>
@@ -59,24 +61,24 @@ export default function How () {
 				Why would I share my wokens?
 			</BL>
 			<BS>
-				The Woke Network is a <SHL>social game</SHL> for rewarding woke content on twitter. In the coming beta phase, wokens will be used to give users more <SHL color='primary'>power over their social feed</SHL>.
+				The Woke Network is a <SHL>social game</SHL> for rewarding woke content on twitter. In the coming beta, wokens will be used to give users more <SHL color='primary'>power over their social feed</SHL>.
 				<ul>
 					<li>Pooled by a community to power-up tweets</li>
 					<li>Sacrificed to your tweets to encourage engagement</li>
 					<li>Exchanged for unique digital items</li>
 				</ul>
-			<br/><br/>
-			</BS>
-			<BL>
-			</BL>
-			<BS>
-			<br/><br/>
+			<br/>
 			</BS>
 			<BL>
 				Why do I need to tweet a weird message to join?
 			</BL>
 			<BS>
 				The proof tweet contains a cryptographically signed message which uniquely links your twitter account to your new Woke Wallet. Using a public tweet allows your account ownership to be verified by a <SHL>decentralised server network</SHL> without the central control of the Woke Network developers.
+			<br/><br/>
+			</BS>
+			<BL>
+			</BL>
+			<BS>
 			<br/><br/>
 			</BS>
 		</FlexCol>

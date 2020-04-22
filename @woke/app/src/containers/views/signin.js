@@ -3,6 +3,7 @@ import Typography from '@material-ui/core/Typography';
 import TwitterIcon from '@material-ui/icons/Twitter';
 import FlexColumn from '../../layouts/flex-column';
 import ButtonGroup from '../../layouts/button-group';
+import BodyStandard from '../../components/text/body-standard';
 
 import { makeStyles } from '@material-ui/styles';
 
@@ -17,6 +18,21 @@ const useStyles = makeStyles(theme => ({
 		},
 	}
 }));
+
+const SHL = (props) => BodyStandard({ component: 'span', color: 'secondary', ...props});
+const Message = () => 
+ <BodyStandard order={2}
+		styles={{
+			paddingLeft: '0',
+			paddingRight: '0',
+			small: {
+				paddingLeft: '10%',
+				paddingRight: '10%',
+			}
+		}}
+	>
+	 Sign in with <SHL>twitter</SHL> to claim your enlightenment bonus and spread the wokeness.
+	</BodyStandard>;
 
 export default function SigninView(props) {
 	const classes = useStyles();
@@ -39,7 +55,8 @@ export default function SigninView(props) {
 				Share social impact.
 			</Typography>
 			<ButtonGroup reverse
-				message='Sign in with twitter to claim your join bonus and spread the wokeness.'
+				message='Sign in with twitter to claim your enlightenment bonus and spread the wokeness.'
+				Message={Message}
 				buttonProps={{
 					onClick: props.triggerSignIn,
 					text: 'sign in',
