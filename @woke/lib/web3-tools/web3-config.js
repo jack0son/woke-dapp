@@ -22,10 +22,28 @@ const rinkeby = {
 	},
 }
 
-const goerli = {
+// GCloud conf
+const goerliInfura = {
 	id: 5,
 	protocol: 'wss',
 	host: `goerli.infura.io/ws/v3/${infuraApiKey}`,
+	gasPrice: 20*GWei,
+	gasLimit:  '8000000',
+	defaultCommon: {
+		customChain: {
+			name: 'goerli',
+			networkId: 5,
+			chainId: 5,
+		},
+		baseChain: 'goerli', 
+		//hardfork: 'petersburg',
+	},
+}
+
+const goerli = {
+	id: 5,
+	protocol: 'wss',
+	host: `geth-goerli-1-internal`,
 	gasPrice: 20*GWei,
 	gasLimit:  '8000000',
 	defaultCommon: {
@@ -69,6 +87,8 @@ module.exports = {
 			},
 
 			rinkeby,
+
+			goerliInfura,
 
 			goerli,
 
