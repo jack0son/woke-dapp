@@ -42,9 +42,9 @@ const goerliInfura = {
 
 const goerli = {
 	id: 5,
-	protocol: 'wss',
-	host: `geth-goerli-1-internal`,
-	port: 3334,
+	protocol: 'ws',
+	host: `geth-goerli-1.us-west2-a.c.woke-network-services.internal`,
+	port: 8546,
 	gasPrice: 20*GWei,
 	gasLimit:  '8000000',
 	defaultCommon: {

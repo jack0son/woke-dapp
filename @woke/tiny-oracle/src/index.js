@@ -8,6 +8,10 @@ const debug = Logger('oracle');
 
 const oracleMockInterface = artifacts[process.env.NODE_ENV !== 'development' ? 'production' : 'development'].TwitterOracleMock; 
 
+const INFURA_WS_TIMEOUT = 5*60*1000;
+const GETH_NODE = 60*60*1000;
+const DEFAULT_WATCHDOG_INTERVAL = GETH_NODE;
+
 function timeoutPromise(ms) {
 	return new Promise((resolve, reject) => setTimeout(() => {
 		resolve();
@@ -228,7 +232,7 @@ class TinyOracle {
 				debug.d(`... resubscribed ${eventName}`)
 				self.subscribedEvents[eventName].subscribe(handleUpdate);
 			});
-		}, 5*60*1000);
+		}, DEFAULT_WATCHDOG_INTERVAL);
 
 		debug.name('Subscriber', `Subscribed to ${eventName}.`);
 	}

@@ -13,7 +13,8 @@ const { initContract } = require('../lib/web3');
 		*/
 
 const INFURA_WS_TIMEOUT = 5*60*1000;
-const DEFAULT_WATCHDOG_INTERVAL = INFURA_WS_TIMEOUT;
+const GETH_NODE = 60*60*1000;
+const DEFAULT_WATCHDOG_INTERVAL = GETH_NODE;
 //const DEFAULT_WATCHDOG_INTERVAL = 4*1000;
 
 let idx = 0;
