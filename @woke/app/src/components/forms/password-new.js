@@ -56,7 +56,7 @@ export default function NewPassword (props) {
 	};
 
 	React.useEffect(() => {
-		if(input.password.length < MIN_PASSWORD_LENGTH) {
+		if(input.password.length < MIN_PASSWORD_LENGTH && input.confirmation.length > 0) {
 			setError(error => ({ ...error, password: 'Password must be longer than 6 characters'}));
 		} else {
 			setError(error => ({ ...error, password: null}));
