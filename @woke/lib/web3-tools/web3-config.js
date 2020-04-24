@@ -44,6 +44,7 @@ const goerli = {
 	id: 5,
 	protocol: 'wss',
 	host: `geth-goerli-1-internal`,
+	port: 3334,
 	gasPrice: 20*GWei,
 	gasLimit:  '8000000',
 	defaultCommon: {
