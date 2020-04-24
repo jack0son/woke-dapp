@@ -38,6 +38,7 @@ const useStyles = makeStyles(theme => ({
 	}
 }));
 
+const MIN_PASSWORD_LENGTH = 6;
 export default function NewPassword (props) {
 	const classes = useStyles();
 	const theme = useTheme();
@@ -48,11 +49,25 @@ export default function NewPassword (props) {
 		password: '',
 		confirmation: '',
 	});
+	const [error, setError] = useState({password: null, confirmation: null});
 
 	const handleChangeInput = name => event => {
 		setInput({ ...input, [name]: event.target.value });
 	};
 
+	React.useEffect(() => {
+		if(input.password.length < MIN_PASSWORD_LENGTH) {
+			setError(error => ({ ...error, password: 'Password must be longer than 6 characters'}));
+		} else {
+			setError(error => ({ ...error, password: null}));
+		}
+
+		if(input.confirmation !== input.password && input.confirmation.length > 0) {
+			setError(error => ({ ...error, confirmation: 'Passwords do not match'}));
+		} else {
+			setError(error => ({ ...error, confirmation: null }));
+		}
+	}, [input.password, input.confirmation]);
 
 	const setPassword = () => {
 		props.triggerSetPassword(input.password, input.confirmation);
@@ -70,14 +85,19 @@ export default function NewPassword (props) {
 						type={'password'}
 						value={input.password}
 						onChange={handleChangeInput('password')}
+						error={error.password}
+						helperText={error.password}
 					/>
 					<Password 
 						type={'confirmation'}
 						value={input.confirmation}
 						onChange={handleChangeInput('confirmation')}
+						error={error.confirmation}
+						helperText={error.confirmation}
 					/>
 				</div>
 				<Button 
+					disabled={error.password || error.confirmation || !input.confirmation.length}
 					onClick={setPassword}
 					styles={{marginTop: theme.spacing(2), marginBottom: theme.spacing(2)}}
 					{...buttonProps}
