@@ -277,7 +277,14 @@ const handleFindTweet = async (account, contract, query, txOpts) => {
 	}
 
 	debug.h(`Got query ${userData.handle}:${query.userId}, queryId: ${qid}, `);
-	let tweet = await twitter.findClaimTweet(query.userId);
+	//let tweet = await twitter.findClaimTweet(query.userId);
+	let tweets = await twitter.searchClaimTweets(userData.handle);
+	if(tweets.length < 1) {
+		throw new Error('No claim tweet found');
+	}
+
+	let tweet = tweets[0].full_text;
+	console.log(tweet);
 	debug.name(abr, `Found tweet: ${tweet}`);
 
 	const claimString = tweet.split(' ')[0] + ' ' + tweet.split(' ')[1]
