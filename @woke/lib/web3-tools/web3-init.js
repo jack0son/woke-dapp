@@ -50,6 +50,8 @@ module.exports = (opts) => {
 	} else {
 		console.log(`Selected priv key ${privKey}`);
 		wallet = web3.eth.accounts.wallet.add(privKey);
+		console.log(wallet.address);
+		console.dir(wallet);
 		web3.eth.defaultAccount = wallet.address;
 		web3.eth.defaultCommon = network.defaultCommon;
 	}
