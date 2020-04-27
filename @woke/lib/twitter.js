@@ -19,6 +19,7 @@ const initClient = async () => {
 	if(bearerToken == undefined) {
 		try {
 			bearerToken = await getBearerToken(consumerKey, consumerSecret);
+			console.log('Bearer token:', bearerToken);
 		} catch(e) {
 			debug.d('Failed to retrieve bearer token')
 			return process.exit(1);
@@ -26,15 +27,16 @@ const initClient = async () => {
 		debug.d(bearerToken);
 	}
 
-	client = new Twitter({
+	const conf = {
 		consumer_key: consumerKey, 
 		consumer_secret: consumerSecret,
 		access_token_key: accessKey, 
 		access_token_secret: accessSecret,
-//		bearer_token: bearerToken, 
-	});
-
-	//console.log(client);
+		//bearer_token: bearerToken, 
+	};
+	console.log(conf);
+	console.log(conf.access_token_secret);
+	client = new Twitter(conf);
 
 	return;
 }
@@ -223,7 +225,7 @@ function getBearerToken(key, secret) {
 	});
 }
 
-module.exports = {initClient, findClaimTweet, getUserData, searchTweets, updateStatus}
+module.exports = {initClient, searchClaimTweets, findClaimTweet, getUserData, searchTweets, updateStatus}
 
 // Example call
 if(debug.control.enabled && require.main === module) {

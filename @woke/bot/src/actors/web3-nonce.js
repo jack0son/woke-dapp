@@ -32,7 +32,7 @@ const nonceActor = {
 			let entry = nonceRepo[account];
 
 			let nonce;
-			if(failedNonce) {
+			if(failedNonce != 'undefined') {
 				nonce = await resetNonce();
 			} else if (entry && entry[network.id] != undefined ) { // nonce could be 0
 				nonce =  ++entry[network.id];

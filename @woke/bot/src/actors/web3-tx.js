@@ -111,7 +111,8 @@ const actions = {
 			const { error, tx } = msg;
 
 			let _error;
-			const retry = () => {
+			const retry = (opts) => {
+				const { failedNonce } = opts;
 				const _attempts = state.tx._attempts ? state.tx._attempts + 1 : 1;
 				if(_attempts > MAX_ATTEMPTS) {
 					_error = new Error('Tx failed too many times');
@@ -119,7 +120,7 @@ const actions = {
 				}
 
 				ctx.debug.d(msg, `Retrying tx: ${Object.values(state.tx)}`);
-				dispatch(ctx.self, { type: 'send', tx: { ...state.tx, _attempts } }, ctx.self);
+				dispatch(ctx.self, { type: 'send', tx: { ...state.tx, _attempts }, failedNonce }, ctx.self);
 				return state; // absorb the error
 			}
 
@@ -139,7 +140,7 @@ const actions = {
 				}
 				if(error instanceof ParamError) {
 					if(error.web3Error.message.includes('nonce')) {
-						return retry();
+						return retry({failedNonce: true});
 					} else {
 						throw error;
 					}
@@ -194,12 +195,13 @@ const actions = {
 	},
 
 	'send': async (msg, ctx, state) => {
-		const { tx } = msg; 
+		const { tx, failedNonce } = msg; 
 
 
 		tx.type = 'send';
 		const { web3Instance } = await block(state.a_web3, { type: 'get' });
 		const { nonce } = await block(state.a_nonce, { type: 'get_nonce',
+			failedNonce,
 			account: web3Instance.account,
 			network: web3Instance.network,
 		});
@@ -252,6 +254,8 @@ const actions = {
 		if(web3Instance.account) {
 			opts.from = web3Instance.account;
 		}
+
+		tx.nonce = nonce;
 
 		const contract = initContract(web3Instance, state.contractInterface);
 		contract.methods[tx.method](...tx.args).send(opts)
