@@ -94,7 +94,7 @@ const Web3Actor = (init_web3 = web3Tools.init, maxAttempts = MAX_ATTEMPTS, opts)
 
 					if(attempts == 1) {
 						ctx.debug.d(msg, `Using network ${web3Instance.network.id}:${web3Instance.network.host}`);
-						ctx.debug.d(`\tConnection URL ${web3Instance.rpcUrl}`);
+						ctx.debug.d(msg, `\tConnection URL ${web3Instance.rpcUrl}`);
 					}
 
 					try {
