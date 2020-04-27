@@ -402,9 +402,16 @@ contract WokeToken is Ownable, ERC20 {
 		return userCount;
 	}
 
+	function unclaimedBalance(string memory _userId) public view
+	returns (uint256)
+	{
+		return users[_userId].unclaimedBalance;
+	}
+
 	function userBalance(string memory _userId) public view
 	returns (uint256)
 	{
+		// unclaimed vs claimed?
 		return balanceOf(users[_userId].account);
 	}
 
