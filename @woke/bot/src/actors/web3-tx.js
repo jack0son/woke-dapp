@@ -194,12 +194,13 @@ const actions = {
 	},
 
 	'send': async (msg, ctx, state) => {
-		const { tx } = msg; 
+		const { tx, failedNonce } = msg; 
 
 
 		tx.type = 'send';
 		const { web3Instance } = await block(state.a_web3, { type: 'get' });
 		const { nonce } = await block(state.a_nonce, { type: 'get_nonce',
+			failedNonce,
 			account: web3Instance.account,
 			network: web3Instance.network,
 		});

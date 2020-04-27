@@ -32,7 +32,7 @@ const initClient = async () => {
 		consumer_secret: consumerSecret,
 		access_token_key: accessKey, 
 		access_token_secret: accessSecret,
-		bearer_token: bearerToken, 
+		//bearer_token: bearerToken, 
 	};
 	console.log(conf);
 	console.log(conf.access_token_secret);

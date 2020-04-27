@@ -1,10 +1,11 @@
+const src = '../src';
 const { spawnStateless, dispatch, query } = require('nact');
-const { Web3, contract } = require('./actors');
-const subscriberActor = require('./actors/subscriber');
+const { Web3, contract } = require(src + '/actors');
+const subscriberActor = require(src + '/actors/subscriber');
 
-const { bootstrap, start_actor, block } = require('./actor-system');
+const { bootstrap, start_actor, block } = require(src + '/actor-system');
 
-const loadContract = require('./lib/contracts').load;
+const loadContract = require(src + '/lib/contracts').load;
 const debug = require('@woke/lib').Logger('sys_tip');
 
 const WokeToken = loadContract('WokeToken');
