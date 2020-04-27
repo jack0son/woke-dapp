@@ -4,37 +4,39 @@ const network = config.web3.networks[process.env.ETH_ENV || process.env.NODE_ENV
 
 //const devPrivKey = '0x1aa8fa0e6762d47569b2aeb1fc53ee64ac0bc9d8070967f1c4970a35bc84ca7a';
 const devPrivKey = '0xe57d058bb90483a0ebf0ff0107a60d9250a0b9b5ab8c53d47217c9958025cce7'; // index 2
-const tipperPrivkey = '0x5af83b503129f5c2c32edb23ae02564762783ab1065d23fde5a6d6158762322c'; // index 1
+const tipperPrivkey = process.env.TIPPER_PRIV_KEY || '0x5af83b503129f5c2c32edb23ae02564762783ab1065d23fde5a6d6158762322c'; // index 1
 const ropstenPrivKey = process.env.ROPSTEN_PRIV_KEY;
+
+console.log(tipperPrivkey);
 
 const ETH_ENV = process.env.ETH_ENV || 'development';
 
-let privKey;
-switch(process.env.ETH_ENV) {
-	case 'development': {
-		switch(process.env.WOKE_ROLE) {
-			case 'tipper': {
-				privKey = tipperPrivkey;
-				break;
+function selectPrivKey() {
+	switch(process.env.ETH_ENV) {
+		case 'production':
+			switch(process.env.WOKE_ROLE) {
+				case 'notifier':
+				case 'tipper':
+					return tipperPrivkey;
+				case 'oracle':
+				default:
+					return devPrivKey;
 			}
 
-			default:
-			case 'oracle': {
-				privKey = devPrivKey;
+		case 'development':
+		default:
+			switch(process.env.WOKE_ROLE) {
+				case 'notifier':
+				case 'tipper':
+					return devPrivKey;
+				case 'oracle':
+				default:
+					return ropstenPrivKey;
 			}
-		}
-		break;
-	}
-
-		// TODO add mainnet
-	case 'production': {
-	}
-
-	default: {
-		privKey = ropstenPrivKey;
-		break;
 	}
 }
+
+let privKey = selectPrivKey();
 
 module.exports = (opts) => {
 	const rpcUrl = config.createRpcUrl(network);
