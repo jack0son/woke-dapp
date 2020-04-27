@@ -1,7 +1,7 @@
 // Subscribe to blockchain logs and notify users on twitter
 // Manages notifications in a transactional fashion
 const { start_actor, block } = require('../actor-system');
-const { spawnStateless, dispatch } = require('nact');
+const { spawnStateless, dispatch, query } = require('nact');
 
 const states = [
 	'SETTLED',	// notification sent
@@ -59,7 +59,7 @@ const notifier = {
 		},
 
 		// -- Source actions
-		'unclaimed_tx': (msg, ctx, state) => {
+		'unclaimed_tx': async (msg, ctx, state) => {
 			const { logRepo, a_tweeter } = state;
 			const { log } = msg;
 
@@ -78,10 +78,17 @@ const notifier = {
 					entry.fromId = log.event.fromId;
 					entry.amount = log.event.amount;
 
+					const balanceCall = query(a_wokenContract, {type: 'call', 
+						method: 'userBalance',
+						args: [entry.fromId],
+						sinks: [],
+					}, 15*1000)
+
 					dispatch(a_tweeter, { type: 'tweet_unclaimed_transfer',
 						toId: entry.toId,
 						fromId: entry.fromId,
 						amount: entry.amount,
+						balance: balanceCall.result,
 						i_want_the_error: a_promise, // ctx.sender not correct in onCrash on tweeter
 					}, a_promise);
 					console.log(`... got log @${entry.fromId} ==> @${entry.toId} : ${entry.amount}.W`)
