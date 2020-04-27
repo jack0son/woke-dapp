@@ -21,19 +21,21 @@ const nonceActor = {
 				throw new Error('Must be provided account and network');
 			}
 
-			const resetNonce = async () => {
+			const resetNonce = async (prevNonce) => {
 				ctx.debug.info(msg, `Reseting nonce...`);
 				const { web3Instance } = await block(state.a_web3, { type: 'get' });
 				state.web3Instance = web3Instance;
-				const totalConfirmed = await web3Instance.web3.eth.getTransactionCount(web3Instance.account);
+				let totalConfirmed = await web3Instance.web3.eth.getTransactionCount(web3Instance.account);
+				if(totalConfirmed == prevNonce) ++totalConfirmed;
 				return totalConfirmed;
 			}
 
 			let entry = nonceRepo[account];
 
 			let nonce;
-			if(failedNonce != 'undefined') {
-				nonce = await resetNonce();
+			if(failedNonce != undefined) {
+				ctx.debug.info(msg, `Got failed nonce ${failedNonce}`);
+				nonce = await resetNonce(failedNonce);
 			} else if (entry && entry[network.id] != undefined ) { // nonce could be 0
 				nonce =  ++entry[network.id];
 			} else {

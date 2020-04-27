@@ -140,7 +140,7 @@ const actions = {
 				}
 				if(error instanceof ParamError) {
 					if(error.web3Error.message.includes('nonce')) {
-						return retry({failedNonce: true});
+						return retry({ failedNonce: error.data.tx.nonce });
 					} else {
 						throw error;
 					}
