@@ -7,8 +7,6 @@ const devPrivKey = '0xe57d058bb90483a0ebf0ff0107a60d9250a0b9b5ab8c53d47217c99580
 const tipperPrivkey = process.env.TIPPER_PRIV_KEY || '0x5af83b503129f5c2c32edb23ae02564762783ab1065d23fde5a6d6158762322c'; // index 1
 const ropstenPrivKey = process.env.ROPSTEN_PRIV_KEY;
 
-console.log(tipperPrivkey);
-
 const ETH_ENV = process.env.ETH_ENV || 'development';
 
 function selectPrivKey() {
@@ -50,6 +48,7 @@ module.exports = (opts) => {
 		// If using ganache, unlock the accounts
 
 	} else {
+		console.log(`Selected priv key ${privKey}`);
 		wallet = web3.eth.accounts.wallet.add(privKey);
 		web3.eth.defaultAccount = wallet.address;
 		web3.eth.defaultCommon = network.defaultCommon;
