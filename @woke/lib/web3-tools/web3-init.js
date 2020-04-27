@@ -57,6 +57,7 @@ module.exports = (opts) => {
 		web3,
 		network,
 		account: wallet ? wallet.address : null,
+		rpcUrl,
 		//accounts: web3.eth.accounts,
 	}
 }
