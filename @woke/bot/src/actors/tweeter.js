@@ -88,6 +88,15 @@ const TweeterActor = (twitterStub) => ({
 	actions: {
 		'tweet_unclaimed_transfer': async (msg, ctx, state) => {
 			const { twitter } = state;
+			const { fromId, toId, amount, balance } = msg;
+			const tweet = await twitter.postUnclaimedTransfer(fromId, toId, amount, balance);
+			ctx.debug.d(msg, `tweeted '${tweet.text}'`);
+			dispatch(ctx.sender, { type: msg.type, tweet }, ctx.self);
+			// Tweet an invite
+		},
+
+		'tweet_tip_seen': async (msg, ctx, state) => {
+			const { twitter } = state;
 			const { fromId, toId, amount } = msg;
 			const tweet = await twitter.postUnclaimedTransfer(fromId, toId, amount);
 			ctx.debug.d(msg, `tweeted '${tweet.text}'`);

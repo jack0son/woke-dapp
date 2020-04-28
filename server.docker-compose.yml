@@ -17,6 +17,9 @@ services:
       - '3001:3001'
       - '8443:8443'
     environment:
+      WOKE_ROLE: funder
+      ETH_ENV: production
+      NODE_ENV: production
       WAIT_HOSTS: db:5432
 
 volumes:

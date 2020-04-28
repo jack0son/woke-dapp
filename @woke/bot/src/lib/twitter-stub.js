@@ -20,7 +20,7 @@ class TwitterStub {
 		return true;
 	}
 
-	async postUnclaimedTransfer(fromId, toId, amount) {
+	async postUnclaimedTransfer(fromId, toId, amount, balance) {
 		const { client } = this;
 
 		const [fromUser, toUser] = await Promise.all([
@@ -28,7 +28,11 @@ class TwitterStub {
 			client.getUserData(toId),
 		]);
 
-		const text = `${emojis.folded_hands}@${toUser.handle}${emojis.folded_hands} you've been voted ${amount} $WOKE by @${fromUser.handle}.\nGo to ${appUrl} to claim your $WOKE with a tweet. `
+		const balanceStr = () => balance ? 
+			`${balance} $WOKE with a tweet` :
+			`your $WOKE with a tweet`;
+
+		const text = `${emojis.folded_hands}@${toUser.handle}${emojis.folded_hands} you've been tributed ${amount} $WOKE from @${fromUser.handle}.\nGo to ${appUrl} to claim ${balanceStr()}.`
 		try {
 			const r = await client.updateStatus(text);
 			return r;

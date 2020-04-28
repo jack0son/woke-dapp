@@ -1,7 +1,7 @@
 // Subscribe to blockchain logs and notify users on twitter
 // Manages notifications in a transactional fashion
 const { start_actor, block } = require('../actor-system');
-const { spawnStateless, dispatch } = require('nact');
+const { spawnStateless, dispatch, query } = require('nact');
 
 const states = [
 	'SETTLED',	// notification sent
@@ -59,8 +59,8 @@ const notifier = {
 		},
 
 		// -- Source actions
-		'unclaimed_tx': (msg, ctx, state) => {
-			const { logRepo, a_tweeter } = state;
+		'unclaimed_tx': async (msg, ctx, state) => {
+			const { logRepo, a_tweeter, a_wokenContract } = state;
 			const { log } = msg;
 
 			//console.log(msg);
@@ -78,10 +78,24 @@ const notifier = {
 					entry.fromId = log.event.fromId;
 					entry.amount = log.event.amount;
 
+					let balance;
+					try {
+						// Contract version incompatible (missing unclaimedBalance method)
+						const balanceCall = await query(a_wokenContract, {type: 'call', 
+							method: 'unclaimedBalance',
+							args: [entry.toId],
+							sinks: [],
+						}, 5*1000)
+						balance = balanceCall.result;
+					} catch(error) {
+						ctx.debug.error(msg, 'call to wokenContract:unclaimedBalance() failed', error)
+					}
+
 					dispatch(a_tweeter, { type: 'tweet_unclaimed_transfer',
 						toId: entry.toId,
 						fromId: entry.fromId,
 						amount: entry.amount,
+						balance,
 						i_want_the_error: a_promise, // ctx.sender not correct in onCrash on tweeter
 					}, a_promise);
 					console.log(`... got log @${entry.fromId} ==> @${entry.toId} : ${entry.amount}.W`)
