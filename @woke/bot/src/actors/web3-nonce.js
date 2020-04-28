@@ -1,5 +1,5 @@
 const { dispatch, query } = require('nact');
-const { block } = require('../actor-system');
+const { block } = require('./nact-utils');
 
 // Keep track of the nonce
 const nonceActor = {

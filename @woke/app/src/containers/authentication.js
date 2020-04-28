@@ -90,7 +90,7 @@ export default function AuthContainer(props) {
 	const userIsClaimed = useUserIsClaimed(twitterSignedIn ? twitter.userSignin.user.id : null);
 	useEffect(() => {
 		if(userIsClaimed === true) {
-			console.log('Auth: Twitter user is claimed on-chain')
+			console.log('auth: Twitter user is claimed on-chain')
 			router.dispatch({type: 'hedgehog-account_exists'});
 		} else if(userIsClaimed === false) {
 		}
@@ -102,6 +102,7 @@ export default function AuthContainer(props) {
 			const savedUser = hedgehog.state.savedUser
 			if (savedUser && savedUser.length > 0) {
 				hedgehog.api.restoreUsername();
+				console.log('auth: User restored')
 				router.dispatch({type: 'hedgehog-account_exists'});
 			}
 		}
@@ -114,6 +115,7 @@ export default function AuthContainer(props) {
 
 	useEffect(() => {
 		if(hedgehog.state.errorMessage == messages.exists) {
+			console.log('auth:error: user exists')
 				router.dispatch({type: 'hedgehog-account_exists'});
 		}
 	}, [hedgehog.state.errorMessage])
@@ -124,6 +126,7 @@ export default function AuthContainer(props) {
 
 			const savedUser = hedgehog.state.savedUser
 			if (savedUser && savedUser.length > 0) {
+				console.log('auth: have saved user')
 				router.dispatch({type: 'hedgehog-account_exists'});
 			} else {
 				hedgehog.api.setUsername(createUserName(

@@ -1,10 +1,14 @@
-const {
+let {
 	Logger,
 	twitter,
 	web3Tools,
 } = require('@woke/lib');
 const artifacts = require('@woke/contracts');
 const debug = Logger('oracle');
+
+// TODO implement actor based oracle
+const { bootstrap, block } = require('../../bot/src/actor-system');
+const { contract, Web3, nonce } = require('../../bot/src/actors');
 
 const oracleMockInterface = artifacts[process.env.NODE_ENV !== 'development' ? 'production' : 'development'].TwitterOracleMock; 
 
@@ -20,7 +24,8 @@ function timeoutPromise(ms) {
 
 // @dev Minimal oracle server to respond to queries in the mock oracle contract.
 class TinyOracle {
-	constructor(web3, oracleInterface, address, network, opts) {
+	constructor(args, opts) {
+		const {web3, oracleInterface, address, network} = args;
 		this.address = address;
 		this.oracleInterface = oracleMockInterface;
 		this.network = network;
@@ -28,7 +33,8 @@ class TinyOracle {
 		this.subscribedEvents = {};
 
 		if(opts) {
-			twitter = opts.twitter;
+			twitter = opts.twitter || twitter;
+			this.director = opts.director;
 		} 
 	}
 
@@ -143,7 +149,7 @@ class TinyOracle {
 			let attempts = 3;
 			while(!success && attempts > 0) {
 				try {
-					await handleFindTweet(callbackAccount, self.oracle, query, txOpts);
+					await handleFindTweet(self.director, self.network)(callbackAccount, self.oracle, query, txOpts);
 					success = true;
 				} catch(error) {
 					debug.error('Failed to handle query: ', error);
@@ -255,7 +261,7 @@ class TinyOracle {
 	}
 }
 
-const handleFindTweet = async (account, contract, query, txOpts) => {
+const handleFindTweet = (director, network) => async (account, contract, query, txOpts) => {
 	// TODO: should try here until the tweet is found, or maxAttempts reached
 	const retryInterval = 2000;
 	const maxAttempts = 5;
@@ -290,6 +296,13 @@ const handleFindTweet = async (account, contract, query, txOpts) => {
 	const claimString = tweet.split(' ')[0] + ' ' + tweet.split(' ')[1]
 	debug.name(abr, `Claim string: ${claimString}`);
 
+	let getNonce = await block(director.a_nonce, { type: 'get_nonce',  
+			account,
+			network: network,
+	});
+
+	opts.nonce = getNonce.result;
+
 	let r = await contract.methods.__callback(
 		qid,
 		claimString,		// query result
@@ -302,6 +315,7 @@ const handleFindTweet = async (account, contract, query, txOpts) => {
 
 module.exports = TinyOracle;
 
+
 // Example usage
 if(debug.control.enabled() && require.main === module) {
 	var argv = process.argv.slice(2);
@@ -309,6 +323,15 @@ if(debug.control.enabled() && require.main === module) {
 
 	}
 
+	const RETRY_DELAY = 3000;
+	const MAX_ATTEMPTS = 5;
+	const director = bootstrap();
+	const a_web3 = director.start_actor('web3', Web3(undefined, MAX_ATTEMPTS, {
+		retryDelay: RETRY_DELAY,
+	}));
+	let a_nonce = director.start_actor('nonce', nonce, { a_web3 });
+
+	director.a_nonce = a_nonce;
 
 	(async () => {
 
@@ -320,7 +343,7 @@ if(debug.control.enabled() && require.main === module) {
 		//	debug.d('Web3 provider returned network ID: ', networkId);
 		//}
 
-		let oracleServer = new TinyOracle() //web3, undefined, account, network);
+		let oracleServer = new TinyOracle({}, { director }); //web3, undefined, account, network);
 		await oracleServer.start();
 
 		setTimeout(async () => {
