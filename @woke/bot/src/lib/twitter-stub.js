@@ -84,24 +84,9 @@ class TwitterStub {
 			tweetMode: 'extended',
 		}
 
-		const amountRegex = /\+(\d+)\s*\$/
 		try {
-			const tips = await client.searchTweets(params)
-			return tips.filter(t =>
-				notRetweet(t) &&
-				t.full_text.includes('+') && // @TODO replace with regex
-				t.in_reply_to_user_id_str != null  &&
-				nonEmptyArray(t.entities.user_mentions)
-			).filter(t => {
-				const matches = t.full_text.match(amountRegex);
-				const amount = matches && matches[1] ? parseInt(matches[1]) : false;
-				if(amount && amount !== NaN && amount > 0) {
-					t.tip_amount = amount;
-					return true
-				}
-				return false;
-			});
-
+			const tweets = await client.searchTweets(params)
+			const tips = client.filterTipTweets(tweets);
 		} catch (error) {
 			// Squash the error
 			//error: {"error":"Sorry, your query is too complex. Please reduce complexity and try again."}.
@@ -111,7 +96,31 @@ class TwitterStub {
 
 		return [];
 	}
+
+	// @NB if @mention starts the tweet text, in_reply_to_user_id_str will not be
+	// null
+	filterTipTweets(tweets) {
+		const amountRegex = /\+(\d+)\s*\$/
+		let temp = tweets.filter(t =>
+			notRetweet(t) &&
+			t.full_text.includes('+') && // @TODO replace with regex
+			//t.in_reply_to_user_id_str != null  &&
+			nonEmptyArray(t.entities.user_mentions)
+		)
+		temp.forEach(t => console.log(t.id_str, '\t', t.full_text));
+
+		return temp.filter(t => {
+			const matches = t.full_text.match(amountRegex);
+			const amount = matches && matches[1] ? parseInt(matches[1]) : false;
+			if(amount && amount !== NaN && amount > 0) {
+				t.tip_amount = amount;
+				return true
+			}
+			return false;
+		});
+	}
 }
+
 
 function notRetweet(tweet) {
 	const rt = tweet.retweeted_status;
