@@ -157,6 +157,7 @@ contract WokeToken is Ownable, ERC20 {
 
 		User memory user = users[_id];
 		mint(user.account, bonus);
+		emit Summoned(user.account, _followers, bonus);
 
 		uint unclaimedBalance = user.unclaimedBalance;
 
@@ -554,6 +555,7 @@ contract WokeToken is Ownable, ERC20 {
 	event Tip(string fromId, string toId, uint256 amount);
 
 	event Claimed (address indexed account, string userId, uint256 amount);
+	event Summoned (address indexed account, uint256 followers, uint256 amount);
 	event Reward (address indexed claimer, address indexed referrer, string claimerId, string referrerId, uint256 amount);
 	event Verification(bool value, address recovered, address claimer, string userId);
 	event Lodged (address indexed claimer, string userId, bytes32 queryId);
