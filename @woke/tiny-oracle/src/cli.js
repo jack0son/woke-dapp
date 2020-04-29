@@ -29,7 +29,9 @@ async function initWeb3() {
 		web3Instance = web3Tools.init();
 
 		if(attempts == 1) {
-			console.dir(web3Instance.network);
+			debug.d(web3Instance.network);
+			const network = web3Instance.network;
+			console.log(`Connecting to ethereum network ID ${network.id}:${network.defaultCommon.customChain.name} on ${network.host}`);
 		}
 
 		try {
@@ -124,14 +126,20 @@ const oracleSend = oracle => async (method, args, txOpts) => {
 	).send(opts);
 }
 
-const getTokenSupply = wokeToken => async (_opts) => {
+const getTokenSupply = wokeToken => (_opts) => {
 	let opts = {
 		..._opts,
 		//from: account
 	};
-	let supply = await wokeToken.methods.totalSupply.call(opts);
-	console.log(supply);
-	return supply;
+	return wokeToken.methods.totalSupply().call(opts);
+}
+
+const getUnclaimedPool = wokeToken => (_opts) => {
+	let opts = {
+		..._opts,
+		//from: account
+	};
+	return wokeToken.methods.balanceOf(wokeToken._address).call(opts);
 }
 
 
@@ -207,8 +215,8 @@ const createCommands = ctx => ({
 	wokeToken: {
 		supply: async () => {
 			const supply = await getTokenSupply(ctx.wokeToken)();
-			console.log(supply);
-			console.log(`Total supply: ${supply}.W`);
+			const bonusPool = await getUnclaimedPool(ctx.wokeToken)();
+			console.log(`Total supply: ${supply}.W, Unclaimed: ${bonusPool}.W, ${(100*bonusPool/supply).toFixed(3)}%`);
 		},
 	},
 

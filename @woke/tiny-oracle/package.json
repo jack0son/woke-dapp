@@ -15,7 +15,8 @@
     "goerli": "NODE_ENV=development ETH_ENV=goerli DEBUG=oracle*,twitter node src/index.js",
     "dev:with_client": "DEBUG=oracle:* node src/lib/client.js",
     "tweet": "DEBUG=twitter* node ../lib/twitter.js",
-    "cli": "DEBUG=* node src/cli.js"
+    "cli": "node src/cli.js",
+    "cli:verbose": "DEBUG=* node src/cli.js"
   },
   "author": "Jackson Virgo",
   "license": "ISC",
