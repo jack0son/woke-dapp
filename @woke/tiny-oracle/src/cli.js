@@ -276,7 +276,7 @@ const createCommands = ctx => ({
 					console.log(`${printId(e.returnValues.referrerId)}:\t${e.returnValues.amount}.W`);
 					rewardTotal += parseInt(e.returnValues.amount);
 				});
-				console.log(`Total claimed: ${bonusTotal}`);
+				console.log(`\nTotal claimed: ${bonusTotal}`);
 				console.log(`Total rewarded: ${rewardTotal}`);
 			}
 		},

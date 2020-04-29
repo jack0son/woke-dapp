@@ -168,6 +168,7 @@ contract WokeToken is Ownable, ERC20 {
 			if(user.referrers.length > 0) {
 				for(uint i = 0; i < user.referrers.length; i++) {
 					address referrer = user.referrers[i];
+					// Summon new tokens directly to referrers wallet
 					uint reward = mint(
 						referrer,
 						calculateReward(users[_id].referralAmount[referrer], _followers)
