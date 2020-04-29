@@ -86,7 +86,8 @@ class TwitterStub {
 
 		try {
 			const tweets = await client.searchTweets(params)
-			const tips = this.filterTipTweets(tweets);
+			return this.filterTipTweets(tweets);
+
 		} catch (error) {
 			// Squash the error
 			//error: {"error":"Sorry, your query is too complex. Please reduce complexity and try again."}.
