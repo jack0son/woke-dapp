@@ -124,6 +124,17 @@ const oracleSend = oracle => async (method, args, txOpts) => {
 	).send(opts);
 }
 
+const getTokenSupply = wokeToken => async (_opts) => {
+	let opts = {
+		..._opts,
+		//from: account
+	};
+	let supply = await wokeToken.methods.totalSupply.call(opts);
+	console.log(supply);
+	return supply;
+}
+
+
 const getUsers = wokeToken => async userId => {
 	let opts = { fromBlock: 0 };
 	let events = await wokeToken.getPastEvents('Claimed', opts);
@@ -193,6 +204,14 @@ const fetchUserHandles = twitterUsers => async userIds => {
 
 // Inefficient but convenient
 const createCommands = ctx => ({
+	wokeToken: {
+		supply: async () => {
+			const supply = await getTokenSupply(ctx.wokeToken)();
+			console.log(supply);
+			console.log(`Total supply: ${supply}.W`);
+		},
+	},
+
 	getTweetText: async (userId) => {
 		const tweet = await getTweetText(ctx.oracle)(userId);
 		if(!nonEmptyString(tweet)) {
@@ -288,12 +307,17 @@ if(require.main === module) {
 		getUser: 'getUser <userId>',
 		getRewardEvents: 'getRewardEvents [[claimer,referrer] <userId>]',
 		getTransferEvents: 'getTransferEvents [[from,to] <userId>]',
+		supply: 'supply [unclaimed]',
 	};
 
 	(async () => {
 		let commands = Object.keys(usage).includes(command) && (await bindCommands()); // don't work for nothing
 
 		switch(command) {
+			case 'supply': {
+				return commands.wokeToken.supply();
+			}
+
 			case 'getTweetText': {
 				const userId = args[0];
 				if(!nonEmptyString(userId)) {

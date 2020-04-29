@@ -19,7 +19,7 @@ const initClient = async () => {
 	if(bearerToken == undefined) {
 		try {
 			bearerToken = await getBearerToken(consumerKey, consumerSecret);
-			console.log('Bearer token:', bearerToken);
+			//console.log('Bearer token:', bearerToken);
 		} catch(e) {
 			debug.d('Failed to retrieve bearer token')
 			return process.exit(1);
@@ -34,8 +34,6 @@ const initClient = async () => {
 		access_token_secret: accessSecret,
 		//bearer_token: bearerToken, 
 	};
-	console.log(conf);
-	console.log(conf.access_token_secret);
 	client = new Twitter(conf);
 
 	return;
