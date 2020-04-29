@@ -251,6 +251,8 @@ const fetchUserHandles = twitterUsers => async userIds => {
 		await Promise.all(twitterUsers.userIds.map(id => twitterUsers.getHandle(id)));
 }
 
+const printId = id => id.padEnd(20, ' ');
+
 // Inefficient but convenient
 const createCommands = ctx => ({
 	wokeToken: {
@@ -265,16 +267,16 @@ const createCommands = ctx => ({
 
 				let bonusTotal = 0;
 				claimedEvents.forEach(e => {
-					console.log(`${e.returnValues.userId}:\t${e.returnValues.amount}.W`);
+					console.log(`${printId(e.returnValues.userId)}:\t${e.returnValues.amount}.W`);
 					bonusTotal += parseInt(e.returnValues.amount);
 				});
 
 				let rewardTotal = 0;
 				rewardEvents.forEach(e => {
-					console.log(`${e.returnValues.userId}:\t${e.returnValues.amount}.W`);
-					bonusTotal += parseInt(e.returnValues.amount);
+					console.log(`${printId(e.returnValues.referrerId)}:\t${e.returnValues.amount}.W`);
+					rewardTotal += parseInt(e.returnValues.amount);
 				});
-				console.log(`Total summoned: ${bonusTotal}`);
+				console.log(`Total claimed: ${bonusTotal}`);
 				console.log(`Total rewarded: ${rewardTotal}`);
 			}
 		},
@@ -298,7 +300,7 @@ const createCommands = ctx => ({
 		}
 		await fetchUserHandles(ctx.twitterUsers)(users.map(u => u.userId));
 
-		users.forEach((u,i) => console.log(`${i}:${ctx.twitterUsers.users[u.userId].padEnd(20, ' ')}\t${u.userId.padEnd(20, ' ')}\t${u.account}`));
+		users.forEach((u,i) => console.log(`${i}:${printId(ctx.twitterUsers.users[u.userId])}\t${printId(u.userId)}\t${u.account}`));
 
 		return;
 	},
