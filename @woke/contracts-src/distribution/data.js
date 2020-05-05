@@ -31,6 +31,24 @@ let whale = [
 	},
 ];
 
+let whales = [
+	{
+		amount: 100,
+		followers: 30000,
+		balance: 1000,
+	},
+	{
+		amount: 10,
+		followers: 50000,
+		balance: 20,
+	},
+	{
+		amount: 1000,
+		followers: 500000,
+		balance: 1500,
+	},
+];
+
 let tributors = [
 	{
 		amount: 50,
@@ -67,4 +85,5 @@ let tributors = [
 module.exports = {
 	even: tributors,
 	whale,
+	whales,
 }
