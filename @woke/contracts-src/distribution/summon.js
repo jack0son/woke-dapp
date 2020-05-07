@@ -25,10 +25,29 @@ function getTributeTable(tributors) {
 	return rows;
 }
 
+function getScenarioTable(scenario) {
+	const w = 12;
+	let rows = [`${'supply'.padEnd(w)}${'followers'.padEnd(w)}${'k_t'.padEnd(w/2)}${'tribute'.padEnd(w)}`];
+	rows.push(
+`${scenario.supply.toString().padEnd(w)}${scenario.followers.toString().padEnd(w)}${scenario.tributors.length.toString().padEnd(w/2)}${scenario.tributors.map(t => t.amount).reduce(getSum).toString().padEnd(w)}`
+	);
+	return rows;
+}
+
 const joinEvents = {
 	a: {
-		followers: 10000,
-		currentSuppy: 100e3,
+		followers: 10,
+		supply: 0,
+		tributors: tributors.even,
+	},
+	b: {
+		followers: 1000,
+		supply: 0,
+		tributors: tributors.even,
+	},
+	c: {
+		followers: 1000,
+		supply: 100e3,
 		tributors: tributors.even,
 	}
 };
@@ -41,25 +60,41 @@ c = 7e9;		// curve steepness
 function priceIntegral(currentSupply, amount) {
 	const s = currentSupply
 	const k = amount;
+	/*
 	let temp = Math.sqrt(c+(Math.pow(-b+k+s,2)))
 	console.log(temp);
-
 	let temp3 = Math.sqrt(c+(Math.pow(b-s,2)));
 	console.log(temp3);
-
 	let temp4 = k - temp3 + temp;
 	console.log(temp4);
+	//let costInFollowers = a * temp4;
+	*/
 
-	let costInFollowers = a * temp4;
+	let costInFollowers = a * (k - Math.sqrt(c+(Math.pow(b-s,2))) + Math.sqrt(c+(Math.pow(-b+k+s,2))));
 	console.log(`Cost in followers: ${costInFollowers}`);
+
 	return costInFollowers;
+}
+
+function mintingCurve (currentSupply, followers) {
+	const s = currentSupply;
+	const F = followers;
+	const pow = Math.pow;
+
+	let t = Math.sqrt(c+pow(s-b,2));
+
+	let k = ((pow(F,2)/pow(a,2))+(2*F*t/a))/((2*F/a)+(s-(2*b)+(2*t)));
+	console.log(`Amount to mint: ${k}`);
+
+	return k;
 }
 
 // @currentSupply:	tokens in existence
 // @followers:			num followers of new user (minting 'fee')
-// returns: amount tokens to mint
-function tokenPriceCurve(currentSupply) {
+// returns: price in followers per token
+function priceCurve(currentSupply) {
 	const x = currentSupply;
+	/*
 	let temp = (x-b);
 	console.log(temp);
 	let temp2 = Math.sqrt(Math.pow(x-b,2)+c);
@@ -68,6 +103,7 @@ function tokenPriceCurve(currentSupply) {
 	console.log(temp3);
 	let temp4 = temp3*a;
 	console.log(temp4);
+	*/
 
 	const startingPrice = a*(((x-b)/Math.sqrt(c+Math.pow(x-b,2)))+1);
 	//const startingPrice = a*(((x+b)/Math.sqrt(c+((x+b)^2)))-1);
@@ -135,13 +171,15 @@ function getSum(total, num) {
 function joinEvent(scenario) {
 	const { tributors, supply, followers } = scenario;
 
-	let amountToMint = priceIntegral(0, 1);
+	console.log(getScenarioTable(scenario).join('\n'), '\n');
 
-	let entryPrice = tokenPriceCurve(100);
-	console.log(`Entry price ${entryPrice} followers per token`);
-	console.log(`Summoning rate ${1/entryPrice} W/f`);
+	let amountToMint = Math.floor(mintingCurve(supply, followers));
+	console.log(`Minted: ${amountToMint}`);
 
-	entryPrice = tokenPriceCurve(followers);
+	let tokensPerFollower = priceIntegral(supply, amountToMint);
+	console.log(`Price integral: ${tokensPerFollower}`);
+
+	entryPrice = priceCurve(followers);
 	console.log(`Entry price ${entryPrice} followers per token`);
 	console.log(`Summoning rate ${1/entryPrice} W/f`);
 
