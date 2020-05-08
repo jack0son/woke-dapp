@@ -1,3 +1,11 @@
+let none = [
+	{
+		amount: 0,
+		followers: 1,
+		balance: 50,
+	},
+]
+
 let whale = [
 	{
 		amount: 50,
