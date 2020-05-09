@@ -38,6 +38,16 @@ function getScenarioTable(scenario) {
 }
 
 const joinEvents = {
+	x: {
+		followers: 100,
+		supply: 1,
+		tributors: [],
+	},
+	y: {
+		followers: 100,
+		supply: 1705,
+		tributors: [],
+	},
 	z: {
 		followers: 10,
 		supply: 1705,
@@ -66,9 +76,9 @@ const joinEvents = {
 };
 
 // Curve params
-a = 105;		// (max price)/2
-b = 2.23e6;	// linear price inflection
-c = 1e9;		// curve steepness
+const a = 105;		// (max price)/2
+const b = 2.72e6;	// linear price inflection
+const c = 1.4e9;		// curve steepness
 
 function priceIntegral(currentSupply, amount) {
 	const s = currentSupply
@@ -84,7 +94,7 @@ function priceIntegral(currentSupply, amount) {
 	*/
 
 	let costInFollowers = a * (k - Math.sqrt(c+(Math.pow(b-s,2))) + Math.sqrt(c+(Math.pow(-b+k+s,2))));
-	console.log(`Cost in followers: ${costInFollowers}`);
+	//console.log(`Cost in followers: ${costInFollowers}`);
 
 	return costInFollowers;
 }
@@ -96,8 +106,10 @@ function mintingCurve (currentSupply, followers) {
 
 	let t = Math.sqrt(c+pow(s-b,2));
 
-	let k = ((pow(F,2)/pow(a,2))+(2*F*t/a))/((2*F/a)+(s-(2*b)+(2*t)));
-	console.log(`Amount to mint: ${k}`);
+//	let k = ((pow(F,2)/pow(a,2))+(2*F*t/a))/((2*F/a)+(s-(2*b)+(2*t)));
+
+	let k = (pow(F,2)+2*F*a*t)/(2* (pow(a,2)*(s-b+t)+(a*F)))
+	console.log(`k: ${k}`);
 
 	return k;
 }
@@ -141,12 +153,12 @@ function calcMeansScale(tributors){
 		//z2 += t.amount;
 
 		mu += t.c;
-		console.log(`${i}, C: ${t.c}`);
+		//console.log(`${i}, C: ${t.c}`);
 	});
 
 	//mu = mu / (tributors.length);
 	console.log(`Means scale (mu): ${mu}`);
-	console.log(`Tribute pool: ${z} W\n`);
+	console.log(`Tribute pool: ${z} W`);
 	return { mu, z };
 }
 
@@ -155,7 +167,7 @@ function calcBonusRatios(tributors, mu) {
 	tributors.forEach((t, i) => {
 		let r = (t.c)/mu; //Math.sqrt(t.balance*t.followers)
 		//let r = (t.c)/(mu*Math.sqrt(t.balance)); //Math.sqrt(t.balance*t.followers)
-		console.log(`${i}, r: ${r}`);
+		//console.log(`${i}, r: ${r}`);
 		ratios.push(r);
 		t.r = r;
 	});
@@ -167,7 +179,7 @@ function calcBonuses(tributors, funds) {
 	let bonuses = [];
 	tributors.forEach((t, i) => {
 		let b = Math.floor(funds*t.r); //Math.sqrt(t.balance*t.followers)
-		console.log(`${i}, b: ${b.toString().padEnd(20,' ')} ${(b*100/funds).toFixed(5)}%`);
+		//console.log(`${i}, b: ${b.toString().padEnd(20,' ')} ${(b*100/funds).toFixed(5)}%`);
 		bonuses.push(b);
 		t.b = b;
 		t.proportion = b*100/funds;
@@ -175,7 +187,7 @@ function calcBonuses(tributors, funds) {
 	let smallest = tributors.reduce((min, t) => t.b < min.b ? t : min);
 	let smallIdx = tributors.indexOf(smallest)
 	smallest.b = funds - bonuses.reduce(getSum, 0);
-	console.log(`Smallest: ${smallIdx}, gets dust: ${smallest.b} W`);
+	//console.log(`Smallest: ${smallIdx}, gets dust: ${smallest.b} W`);
 	bonuses[smallIdx] = smallest.b;
 
 	tributors.forEach(t => t.proportion = t.b*100/funds);
@@ -193,11 +205,11 @@ function distribution(tributors, minted) {
 	const ratios = calcBonusRatios(T, mu);
 	let one = 0;
 	ratios.forEach(r => one += r);
-	console.log(`One: ${one}\n`);
+	one !== 1.0 && console.log(`One: ${one}\n`);
 
 	const bonuses = calcBonuses(T, z + minted);
 	let totalBonuses = bonuses.reduce(getSum, 0);
-	console.log(`Total bonuses: ${totalBonuses} W`);
+	console.log(`Total bonuses: ${totalBonuses} W\n`);
 	console.log(getTributeTable(T).reduce(getSum, ''));
 }
 
@@ -220,10 +232,21 @@ function joinEvent(scenario) {
 	if(scenario.tributors.length) 
 		distribution(tributors, amountToMint);
 	console.log('____________________________________________________');
+
+	return amountToMint;
 }
 
+function cumulativeJoins(scenarios) {
+	let supply = 0;
+	scenarios.forEach(s => {
+		s.supply = supply;
+		supply += joinEvent(s);
+	})
+}
 
-joinEvent(joinEvents.a);
-joinEvent(joinEvents.z);
+//joinEvent(joinEvents.a);
+//joinEvent(joinEvents.z);
+//joinEvent(joinEvents.y);
+//joinEvent(joinEvents.x);
 
-
+cumulativeJoins(Object.values(joinEvents));
