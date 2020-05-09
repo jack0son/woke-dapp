@@ -67,8 +67,8 @@ const joinEvents = {
 
 // Curve params
 a = 105;		// (max price)/2
-b = 2.16e6;	// linear price inflection
-c = 20.6e9;		// curve steepness
+b = 2.23e6;	// linear price inflection
+c = 1e9;		// curve steepness
 
 function priceIntegral(currentSupply, amount) {
 	const s = currentSupply
