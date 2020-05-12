@@ -17,13 +17,15 @@ y.forEach((v,i) => Number.isNaN(v) && console.log(i));
 
 function getTributeTable(tributors) {
 	const w = 12;
-	let rows = [`${'i'.padEnd(w/2)}${'amount'.padEnd(w)}${'balance'.padEnd(w)}${'followers'.padEnd(w)}${'dividend'.padEnd(w)}${'portion'.padEnd(w)}\n`];
-	rows.push('\n'.padStart(rows[0].length-1, '-'));
+	let rows = [`${'i'.padEnd(w/2)}${'amount'.padEnd(w)}${'balance'.padEnd(w)}${'followers'.padEnd(w)}${'weight'.padEnd(w)}${'dividend'.padEnd(w)}${'portion'.padEnd(w)}${'roi'.padEnd(w)}`];
+	rows.push(''.padStart(rows[0].length-1, '-'));
 	const p = (n, width = w) => n.toString().padEnd(width);
 
 	tributors.forEach((t,i) => {
 		rows.push(`${p(i,w/2)}${p(t.amount)}${p(t.balance)}${p(t.followers)}`);
-		rows[rows.length-1] += t.b ? `${p(t.b)}${p(t.proportion.toFixed(5))}\n` : '\n';
+		let roi = 0;
+		if(t.b) roi = t.b/t.amount;
+		rows[rows.length-1] += t.b ? `${p(t.r.toFixed(5))}${p(t.b)}${p(t.proportion.toFixed(5))}${p(roi.toFixed(5))}` : '';
 	});
 	return rows;
 }
@@ -72,46 +74,43 @@ const joinEvents = {
 		followers: 1000,
 		supply: 100e3,
 		tributors: tributors.even,
+	},
+	e: {
+		followers: 1000,
+		supply: 2.3e6,
+		tributors: tributors.even,
+	},
+	f: {
+		followers: 2000,
+		supply: 2.3e6,
+		tributors: tributors.whale,
+	},
+	g: {
+		followers: 350,
+		supply: 3.8e6,
+		tributors: tributors.whale,
 	}
 };
 
-// Curve params
+// Minting curve params
 const a = 105;		// (max price)/2
 const b = 2.72e6;	// linear price inflection
 const c = 1.4e9;		// curve steepness
 
-function priceIntegral(currentSupply, amount) {
-	const s = currentSupply
-	const k = amount;
-	/*
-	let temp = Math.sqrt(c+(Math.pow(-b+k+s,2)))
-	console.log(temp);
-	let temp3 = Math.sqrt(c+(Math.pow(b-s,2)));
-	console.log(temp3);
-	let temp4 = k - temp3 + temp;
-	console.log(temp4);
-	//let costInFollowers = a * temp4;
-	*/
-
-	let costInFollowers = a * (k - Math.sqrt(c+(Math.pow(b-s,2))) + Math.sqrt(c+(Math.pow(-b+k+s,2))));
-	//console.log(`Cost in followers: ${costInFollowers}`);
-
-	return costInFollowers;
-}
-
 function mintingCurve (currentSupply, followers) {
 	const s = currentSupply;
 	const F = followers;
-	const pow = Math.pow;
-
-	let t = Math.sqrt(c+pow(s-b,2));
-
-//	let k = ((pow(F,2)/pow(a,2))+(2*F*t/a))/((2*F/a)+(s-(2*b)+(2*t)));
-
-	let k = (pow(F,2)+2*F*a*t)/(2* (pow(a,2)*(s-b+t)+(a*F)))
+	let t = Math.sqrt(c+Math.pow(s-b,2));
+	let k = (Math.pow(F,2)+2*F*a*t)/(2* (Math.pow(a,2)*(s-b+t)+(a*F)))
 	console.log(`k: ${k}`);
-
 	return k;
+}
+
+function priceIntegral(currentSupply, amount) {
+	const s = currentSupply
+	const k = amount;
+	let costInFollowers = a * (k - Math.sqrt(c+(Math.pow(b-s,2))) + Math.sqrt(c+(Math.pow(-b+k+s,2))));
+	return costInFollowers;
 }
 
 // @currentSupply:	tokens in existence
@@ -119,34 +118,25 @@ function mintingCurve (currentSupply, followers) {
 // returns: price in followers per token
 function priceCurve(currentSupply) {
 	const x = currentSupply;
-	/*
-	let temp = (x-b);
-	console.log(temp);
-	let temp2 = Math.sqrt(Math.pow(x-b,2)+c);
-	console.log(temp2);
-	let temp3 = (temp/temp2) + 1;
-	console.log(temp3);
-	let temp4 = temp3*a;
-	console.log(temp4);
-	*/
-
 	const startingPrice = a*(((x-b)/Math.sqrt(c+Math.pow(x-b,2)))+1);
-	//const startingPrice = a*(((x+b)/Math.sqrt(c+((x+b)^2)))-1);
 	return startingPrice;
 }
 
 function claimUser(claimer) {
 }
 
+const logNormalPDF = x => x > y.length - 2 ? y[y.length - 2] : y[x];
+console.log(y[y.length-2]);
+
 // Generosity weighted influence scale
 function calcMeansScale(tributors){
 	let mu = 0;
 	let z = tributors.map(t => t.amount).reduce(getSum);
 	tributors.forEach((t, i) => {
+		t.c = logNormalPDF(t.followers);
 		//t.c = t.amount/(t.balance + Math.sqrt(t.balance * t.followers));
 		//t.c = t.amount/(t.followers + Math.sqrt(t.balance * t.followers));
 		//t.c = t.amount/(t.balance * t.followers)
-		t.c = t.followers > y.length - 1 ? y[y.length - 1] : y[t.followers];
 		//t.c = t.c / Math.cbrt(t.balance);
 		//t.c = t.c * Math.sqrt(t.amount/(t.balance*z));
 		//t.c *= t.balance;
@@ -162,14 +152,66 @@ function calcMeansScale(tributors){
 	return { mu, z };
 }
 
+function medianCeiling(xs){
+  if(xs.length ===0) return 0;
+	xs.sort((a,b) => a-b);
+  let half = Math.floor(xs.length / 2);
+
+  if (xs.length % 2)
+    return xs[half];
+
+  //return (xs[half - 1] + xs[half]) / 2.0;
+  return xs[Math.ceil(half)];
+}
+
+function weightingFunction(tributor) {
+	return logNormalPDF(tributor.followers);
+}
+
+// Calc new user ratio
+function calcNewUserPortion(newUser, minted, tributors){
+	let tributePool = tributors.map(t => t.amount).reduce(getSum);
+
+	tributors.forEach(t => t.lnpdf = logNormalPDF(t.followers));
+	const tf = tributors.reduce((max, t) => t.lnpdf > max.lnpdf ? t : max );
+
+	const groups = [
+		{
+			// new user
+			...newUser,
+			amount: minted,
+			balance: tributePool+minted,
+		},
+		{
+			// tributors
+			followers: tf.followers,
+			amount: tributePool, 
+			balance: tributePool + minted,
+		}
+	];
+	let mu = 0;
+	groups.forEach((t, i) => {
+		t.c = weightingFunction(t);
+		mu += t.c;
+	});
+
+
+	console.log(`New user scale (mu): ${mu}`);
+	//console.log(`Bonus pool: ${z} W`);
+
+	calcBonusRatios(groups, mu);
+	calcBonuses(groups, minted);
+	console.log(getTributeTable(groups).join('\n'), '\n');
+
+	return groups;
+}
+
 function calcBonusRatios(tributors, mu) {
 	let ratios = [];
 	tributors.forEach((t, i) => {
-		let r = (t.c)/mu; //Math.sqrt(t.balance*t.followers)
-		//let r = (t.c)/(mu*Math.sqrt(t.balance)); //Math.sqrt(t.balance*t.followers)
+		t.r = (t.c)/mu; //Math.sqrt(t.balance*t.followers)
+		ratios.push(t.r);
 		//console.log(`${i}, r: ${r}`);
-		ratios.push(r);
-		t.r = r;
 	});
 	return ratios;
 }
@@ -180,13 +222,14 @@ function calcBonuses(tributors, funds) {
 	tributors.forEach((t, i) => {
 		let b = Math.floor(funds*t.r); //Math.sqrt(t.balance*t.followers)
 		//console.log(`${i}, b: ${b.toString().padEnd(20,' ')} ${(b*100/funds).toFixed(5)}%`);
+
 		bonuses.push(b);
 		t.b = b;
 		t.proportion = b*100/funds;
 	});
 	let smallest = tributors.reduce((min, t) => t.b < min.b ? t : min);
 	let smallIdx = tributors.indexOf(smallest)
-	smallest.b = funds - bonuses.reduce(getSum, 0);
+	smallest.b += funds - bonuses.reduce(getSum, 0);
 	//console.log(`Smallest: ${smallIdx}, gets dust: ${smallest.b} W`);
 	bonuses[smallIdx] = smallest.b;
 
@@ -199,23 +242,35 @@ function getSum(total, num) {
 	return total + num;
 }
 
-function distribution(tributors, minted) {
+function getMin(min, num) {
+	return num < min ? num : min;
+}
+
+function distribution(newUser, minted, tributors) {
 	let T = tributors;
+
+	const bonusDistribution = calcNewUserPortion(newUser, minted, tributors);
+	const tributeBonusPool = bonusDistribution[1].b;
+	console.log(`Tribute bonus pool: ${tributeBonusPool} W\n`);
+
 	const { mu, z } = calcMeansScale(T);
 	const ratios = calcBonusRatios(T, mu);
 	let one = 0;
 	ratios.forEach(r => one += r);
 	one !== 1.0 && console.log(`One: ${one}\n`);
 
-	const bonuses = calcBonuses(T, z + minted);
-	let totalBonuses = bonuses.reduce(getSum, 0);
+	const bonuses = calcBonuses(T, tributeBonusPool);
+	let totalBonuses = bonuses.reduce(getSum);
 	console.log(`Total bonuses: ${totalBonuses} W\n`);
-	console.log(getTributeTable(T).reduce(getSum, ''));
+
+	console.log(getTributeTable(tributors).join('\n'), '\n');
+
 }
 
 function joinEvent(scenario) {
-	if(scenario.tributors.length) 
-		scenario.supply += scenario.tributors.map(t => t.amount).reduce(getSum);
+	const tributePool = scenario.tributors.map(t => t.amount).reduce(getSum);
+	if(scenario.tributors.length && scenario.supply < tributePool) 
+		scenario.supply += tributePool;
 
 	console.log(getScenarioTable(scenario).join('\n'), '\n');
 	const { tributors, supply, followers } = scenario;
@@ -230,8 +285,8 @@ function joinEvent(scenario) {
 	console.log(`Entry summoning rate: ${1/entryPrice} W/f, Price: ${entryPrice} followers per token\n`);
 
 	if(scenario.tributors.length) 
-		distribution(tributors, amountToMint);
-	console.log('____________________________________________________');
+		distribution({followers: followers}, amountToMint, tributors);
+	console.log('++++++++++++++++++++++++++++++++++++++++++++++++++++');
 
 	return amountToMint;
 }
@@ -247,6 +302,9 @@ function cumulativeJoins(scenarios) {
 //joinEvent(joinEvents.a);
 //joinEvent(joinEvents.z);
 //joinEvent(joinEvents.y);
-//joinEvent(joinEvents.x);
 
-cumulativeJoins(Object.values(joinEvents));
+//cumulativeJoins(Object.values(joinEvents));
+joinEvent(joinEvents.d);
+joinEvent(joinEvents.e);
+joinEvent(joinEvents.f);
+joinEvent(joinEvents.g);
