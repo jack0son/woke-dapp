@@ -32,7 +32,7 @@ function getTributeTable(tributors) {
 
 function getScenarioTable(scenario) {
 	const w = 12;
-	let rows = [`${'supply'.padEnd(w)}${'followers'.padEnd(w)}${'k_t'.padEnd(w/2)}${'tribute'.padEnd(w)}`];
+	let rows = [`${'supply'.padEnd(w)}${'followers'.padEnd(w)}${'N_t'.padEnd(w/2)}${'tribute'.padEnd(w)}`];
 	rows.push(
 `${scenario.supply.toString().padEnd(w)}${scenario.followers.toString().padEnd(w)}${scenario.tributors.length.toString().padEnd(w/2)}${scenario.tributors.map(t => t.amount).reduce(getSum, 0).toString().padEnd(w)}`
 	);
@@ -281,7 +281,7 @@ function joinEvent(scenario) {
 	let tokensPerFollower = priceIntegral(supply, amountToMint);
 	console.log(`Price integral: ${tokensPerFollower}`);
 
-	entryPrice = priceCurve(followers);
+	entryPrice = priceCurve(supply);
 	console.log(`Entry summoning rate: ${1/entryPrice} W/f, Price: ${entryPrice} followers per token\n`);
 
 	if(scenario.tributors.length) 
