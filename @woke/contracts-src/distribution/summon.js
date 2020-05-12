@@ -39,6 +39,15 @@ function getScenarioTable(scenario) {
 	return rows;
 }
 
+function getResultTable(supply, minted, tributeSum, userBonus, tributorRewards) {
+	const w = 15;
+	let rows = [`${'supply'.padEnd(w)}${'minted'.padEnd(w)}${'tributes'.padEnd(w)}${'user balance'.padEnd(w)}${'tributor rewards'.padEnd(w)}`];
+	rows.push(
+`${supply.toString().padEnd(w)}${minted.toString().padEnd(w)}${tributeSum.toString().padEnd(w)}${userBonus.toString().padEnd(w)}${tributorRewards.toString().padEnd(w)}`
+	);
+	return rows;
+}
+
 const joinEvents = {
 	x: {
 		followers: 100,
@@ -126,7 +135,6 @@ function claimUser(claimer) {
 }
 
 const logNormalPDF = x => x > y.length - 2 ? y[y.length - 2] : y[x];
-console.log(y[y.length-2]);
 
 // Generosity weighted influence scale
 function calcMeansScale(tributors){
@@ -250,7 +258,9 @@ function distribution(newUser, minted, tributors) {
 	let T = tributors;
 
 	const bonusDistribution = calcNewUserPortion(newUser, minted, tributors);
+	const userBonus = bonusDistribution[0].b;
 	const tributeBonusPool = bonusDistribution[1].b;
+	console.log(`User bonus: ${userBonus} W`);
 	console.log(`Tribute bonus pool: ${tributeBonusPool} W\n`);
 
 	const { mu, z } = calcMeansScale(T);
@@ -265,7 +275,10 @@ function distribution(newUser, minted, tributors) {
 
 	console.log(getTributeTable(tributors).join('\n'), '\n');
 
+	return { userBonus, tributeBonusPool, bonuses };
 }
+
+const printTable = rows => console.log(rows.join('\n'));
 
 function joinEvent(scenario) {
 	const tributePool = scenario.tributors.map(t => t.amount).reduce(getSum);
@@ -284,9 +297,32 @@ function joinEvent(scenario) {
 	entryPrice = priceCurve(supply);
 	console.log(`Entry summoning rate: ${1/entryPrice} W/f, Price: ${entryPrice} followers per token\n`);
 
-	if(scenario.tributors.length) 
-		distribution({followers: followers}, amountToMint, tributors);
+	function assertSupply(name, actual, expected) {
+		console.log(`${name}:`.padEnd(12), expected === actual);
+	}
+
+	const minted = amountToMint;
+	const newSupply = supply + minted;
+
+	if(scenario.tributors.length) {
+		const { userBonus, tributeBonusPool, bonuses } = distribution({followers: followers}, amountToMint, tributors);
+		const balance = userBonus + tributePool;
+		printTable(getResultTable(newSupply, minted, tributePool, balance, tributeBonusPool));
+
+		// shim for solidity
+		if(true) {
+			console.log();
+			assertSupply('supply', supply + minted, newSupply);
+			assertSupply('bonuses', tributeBonusPool + userBonus, minted);
+			assertSupply('balance', tributePool + userBonus, balance);
+			assertSupply('tributes', bonuses.reduce(getSum), tributeBonusPool);
+		}
+
+	}
+
 	console.log('++++++++++++++++++++++++++++++++++++++++++++++++++++');
+
+
 
 	return amountToMint;
 }
@@ -305,6 +341,6 @@ function cumulativeJoins(scenarios) {
 
 //cumulativeJoins(Object.values(joinEvents));
 joinEvent(joinEvents.d);
-joinEvent(joinEvents.e);
-joinEvent(joinEvents.f);
-joinEvent(joinEvents.g);
+//joinEvent(joinEvents.e);
+//joinEvent(joinEvents.f);
+//joinEvent(joinEvents.g);
