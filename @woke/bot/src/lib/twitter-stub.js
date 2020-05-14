@@ -86,7 +86,8 @@ class TwitterStub {
 
 		try {
 			const tweets = await client.searchTweets(params)
-			const tips = this.filterTipTweets(tweets);
+			return this.filterTipTweets(tweets);
+
 		} catch (error) {
 			// Squash the error
 			//error: {"error":"Sorry, your query is too complex. Please reduce complexity and try again."}.
@@ -101,15 +102,12 @@ class TwitterStub {
 	// null
 	filterTipTweets(tweets) {
 		const amountRegex = /\+(\d+)\s*\$/
-		let temp = tweets.filter(t =>
+		return tweets.filter(t =>
 			notRetweet(t) &&
 			t.full_text.includes('+') && // @TODO replace with regex
 			//t.in_reply_to_user_id_str != null  &&
 			nonEmptyArray(t.entities.user_mentions)
-		)
-		temp.forEach(t => console.log(t.id_str, '\t', t.full_text));
-
-		return temp.filter(t => {
+		).filter(t => {
 			const matches = t.full_text.match(amountRegex);
 			const amount = matches && matches[1] ? parseInt(matches[1]) : false;
 			if(amount && amount !== NaN && amount > 0) {
