@@ -2,15 +2,16 @@ pragma solidity ^0.5.0;
 import "./Strings.sol";
 
 library Helpers {
-	function bytesToBytes4(bytes memory _in) pure internal returns (bytes4 out)
-	{
-		if (_in.length == 0) {
-			return 0x0;
-		}
+	//https://github.com/GNSPS/solidity-bytes-utils/blob/master/contracts/BytesLib.sol
+	function toUint32(bytes memory _bytes, uint256 _start) internal pure returns (uint32) {
+		require(_bytes.length >= (_start + 4), "Read out of bounds");
+		uint32 tempUint;
 
 		assembly {
-			out := mload(add(_in, 4))
+			tempUint := mload(add(add(_bytes, 0x4), _start))
 		}
+
+		return tempUint;
 	}
 
 	// @param cs claim string
@@ -31,10 +32,10 @@ library Helpers {
 			sig[129 - i] = _cs[_cs.length - 3 - followersChunkLen - i];
 		}
 
-		bytes memory fBytes = Strings.fromHex(Strings.getSlice(_cs.length - followersChunkLen, _cs.length, _cs));
-		uint32 followersCount = uint32(bytesToBytes4(fBytes));
+		bytes memory fBytes = Strings.fromHex(Strings.getSlice(_cs.length - followersChunkLen + 1, _cs.length, _cs));
 		emit TraceBytes('fBytes', fBytes);
-		emit TraceUint32('followers', followersCount);
+		uint32 followersCount = toUint32(fBytes, 0);
+		//emit TraceUint32('followers', followersCount);
 
 		return (sig, byte(Strings.fromHexChar(uint8(version))), followersCount);
 	}

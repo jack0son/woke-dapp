@@ -305,8 +305,8 @@ contract('WokeToken', (accounts) => {
 
 // @param userObject: address, id, followersCount
 const bindClaimUser = (wt, to, oracleAddress) => async (userObject) => {
-	let r = await wt.claimUser(userObject.userId, {from: userObject.address});
-	const claimArgs = [userObject.address, userObject.userId, userObject.followersCount];
+	let r = await wt.claimUser(userObject.id, {from: userObject.address});
+	const claimArgs = [userObject.address, userObject.id, userObject.followersCount];
 	// let bn = r.receipt.blockNumber;
 	let queryId = r.logs[r.logs.length-1].args.queryId;
 	debug.t('Claim queryId: ', queryId);

@@ -101,7 +101,7 @@ contract WokeToken is Ownable, ERC20 {
 
 		if(queryId == bytes32(0)) {
 			// Query failure, revert
-			emit TraceBytes32('failed query', queryId);
+			//emit TraceBytes32('failed query', queryId);
 		}
 
 		emit Lodged(msg.sender, _user, queryId);
@@ -135,7 +135,7 @@ contract WokeToken is Ownable, ERC20 {
 		emit Claimed(claimer, _id, claimBonus(_id, _followers));
 		userCount += 1;
 
-		emit TraceUint256('balanceClaimed', balanceOf(users[_id].account));
+		//emit TraceUint256('balanceClaimed', balanceOf(users[_id].account));
 		if(DEFAULT_TIP_ALL) {
 			_setTipBalance(_id, balanceOf(users[_id].account));
 		}
@@ -368,8 +368,9 @@ contract WokeToken is Ownable, ERC20 {
 		bytes32 msgHash = ECDSA.messageHash(hash);
 
 		// Extract signature from claim string
-		(bytes memory sigHex, byte _authVersion, uint64 followersCount) = Helpers.parseClaim(bytes(_claimString));
-		emit TraceUint64('followers', followersCount);
+		(bytes memory sigHex, byte _authVersion, uint32 followers) = Helpers.parseClaim(bytes(_claimString));
+
+		//emit TraceUint32('followers', followersCount);
 		bytes memory sig = Strings.fromHex(sigHex);
 
 		require(_authVersion == authVersion, 'invalid auth version');
@@ -378,7 +379,7 @@ contract WokeToken is Ownable, ERC20 {
 		require(recovered == claimer, 'recovered address does not match claimer address');
 
 		bool result = (recovered == claimer);
-		emit Verification(result, recovered, claimer, _id);
+		emit Verification(result, recovered, claimer, _id, followers);
 
 		return result;
 	}
@@ -547,7 +548,8 @@ contract WokeToken is Ownable, ERC20 {
 	/* EVENTS */
 	event TraceString(string m, string v);
 	event TraceUint256(string m, uint256 v);
-	event TraceUint64(string m, uint64 v);
+	event TraceUint32(string m, uint32 v);
+	//event TraceUint64(string m, uint64 v);
 	event TraceBytes32(string m, bytes32 v);
 	//event TraceBytes(string m, bytes v);
 	//event TraceByte(string m, byte v);
@@ -560,6 +562,6 @@ contract WokeToken is Ownable, ERC20 {
 	event Claimed (address indexed account, string userId, uint256 amount);
 	event Summoned (address indexed account, uint256 followers, uint256 amount);
 	event Reward (address indexed claimer, address indexed referrer, string claimerId, string referrerId, uint256 amount);
-	event Verification(bool value, address recovered, address claimer, string userId);
+	event Verification(bool value, address recovered, address claimer, string userId, uint32 followers);
 	event Lodged (address indexed claimer, string userId, bytes32 queryId);
 }
