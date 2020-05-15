@@ -278,6 +278,7 @@ const handleFindTweet = (director, network) => async (account, contract, query, 
 	let userData = {};
 	try {
 		userData = await twitter.getUserData(query.userId);
+		console.log(userData);
 	} catch (error) {
 		debug.error(error);
 	}
@@ -293,8 +294,12 @@ const handleFindTweet = (director, network) => async (account, contract, query, 
 	console.log(tweet);
 	debug.name(abr, `Found tweet: ${tweet}`);
 
-	const claimString = tweet.split(' ')[0] + ' ' + tweet.split(' ')[1]
+	let claimString = tweet.split(' ')[0] + ' ' + tweet.split(' ')[1]
+	let followersCountHex = web3Tools.utils.uInt32ToHexString(userData.follwers_count);
+	console.log(`Followers count: ${userData.follwers_count}, ${followersCountHex}`);
+	claimString += `:${followersCountHex}`;
 	debug.name(abr, `Claim string: ${claimString}`);
+	debug.name(abr, `Len: ${claimString.lenght}`);
 
 	let getNonce = await block(director.a_nonce, { type: 'get_nonce',  
 			account,

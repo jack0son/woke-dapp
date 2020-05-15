@@ -2,6 +2,9 @@ const TwitterOracle = artifacts.require('TwitterOracle.sol')
 const debug = require('./debug/WokeToken_test');
 const { waitForEvent } = require('./utils');
 const truffleAssert = require('truffle-assertions');
+let {
+	web3Tools,
+} = require('@woke/lib');
 
 const printEvents = truffleAssert.prettyPrintEmittedEvents;
 
@@ -49,6 +52,8 @@ contract('WokeToken', (accounts) => {
 	const max_supply = 100000000;
 	let wt, to;
 	let claimUser;
+	let newUser = {};
+	let claimArgs = [];
 
 	context('Using mock TwitterOracle', () => {
 		beforeEach(async () => {
@@ -60,11 +65,16 @@ contract('WokeToken', (accounts) => {
 			wt = await WokeToken.new(to.address, tipAgent, max_supply, {from: owner})
 		});
 
+		newUser = { address: claimer, followers: 1000000, id: getwoketoke_id};
+		claimArgs = [newUser.address, newUser.id, newUser.followers];
+		
+
 		describe('WokeToken.sol', () => {
 
 			describe('Helper Functions', () => {
 				it('should verify a valid claim string', async () => {
-					let claimString = await genClaimString(claimer, getwoketoke_id);
+					let claimString = await genClaimString(...claimArgs);
+					console.log(claimString);
 					let result = await wt.verifyClaimString.call(claimer, getwoketoke_id, claimString);
 					assert.isTrue(result);
 				})
@@ -95,7 +105,7 @@ contract('WokeToken', (accounts) => {
 
 						wt.claimUser(getwoketoke_id, {from: claimer});
 						const {returnValues: {queryId: queryId}} = await waitForEvent(wt.Lodged);
-						let claimString = await genClaimString(claimer, getwoketoke_id);
+						let claimString = await genClaimString(...claimArgs);
 
 						let r = await to.__callback(
 							queryId,
@@ -120,7 +130,7 @@ contract('WokeToken', (accounts) => {
 						wt.claimUser(getwoketoke_id, {from: claimer});
 						let {returnValues: {queryId: queryId}} = await waitForEvent(wt.Lodged);
 
-						let claimString = await genClaimString(claimer, getwoketoke_id);
+						let claimString = await genClaimString(...claimArgs);
 						await to.__callback(queryId, claimString, '0x0', {from: oraclize_cb});
 						await wt._fulfillClaim(getwoketoke_id);
 
@@ -152,9 +162,9 @@ contract('WokeToken', (accounts) => {
 
 				it('should claim several users', async () => {
 					const cases = [
-						{address: cB, id: '212312122', handle: 'jack'},
-						{address: cC, id: '3313322', handle: 'realdonaldtrump'},
-						{address: claimer, id: getwoketoke_id, handle: 'getwoketoke'},
+						{address: cB, id: '212312122', handle: 'jack', followers: 30000},
+						{address: cC, id: '3313322', handle: 'realdonaldtrump', followers: 80e6},
+						{address: claimer, id: getwoketoke_id, handle: 'getwoketoke', followers: 100},
 					];
 
 					for(c of cases) {
@@ -163,7 +173,7 @@ contract('WokeToken', (accounts) => {
 						let queryId = r.logs[r.logs.length-1].args.queryId;
 						debug.t('queryId: ', queryId);
 
-						let claimString = await genClaimString(c.address, c.id);
+						let claimString = await genClaimString(c.address, c.id, c.followers);
 
 						r = await to.__callback(
 							queryId,
@@ -188,9 +198,9 @@ contract('WokeToken', (accounts) => {
 
 				it('should reward referrers with a bonus', async () => {
 					const cases = [
-						{address: cB, id: '212312122', handle: 'jack'},
-						{address: cC, id: '3313322', handle: 'realdonaldtrump'},
-						{address: claimer, id: getwoketoke_id, handle: 'getwoketoke'},
+						{address: cB, id: '212312122', handle: 'jack', followers: 30000},
+						{address: cC, id: '3313322', handle: 'realdonaldtrump', followers: 80e6},
+						{address: claimer, id: getwoketoke_id, handle: 'getwoketoke', followers: 100},
 					];
 
 					for(c of cases) {
@@ -199,7 +209,7 @@ contract('WokeToken', (accounts) => {
 						let queryId = r.logs[r.logs.length-1].args.queryId;
 						debug.t('queryId: ', queryId);
 
-						let claimString = await genClaimString(c.address, c.id);
+						let claimString = await genClaimString(c.address, c.id, c.followers);
 
 						r = await to.__callback(
 							queryId,
@@ -232,6 +242,11 @@ contract('WokeToken', (accounts) => {
 			})
 
 			context('#tip', function() {
+				const newUser = {
+					address: claimer,
+					followers: 3e6,
+					id: getwoketoke_id,
+				}
 				beforeEach(async function() {
 					claimUser = bindClaimUser(wt, to, oraclize_cb);
 					await claimUser(claimer, getwoketoke_id)
@@ -288,14 +303,16 @@ contract('WokeToken', (accounts) => {
 	})
 })
 
-const bindClaimUser = (wt, to, oracleAddress) => async (claimAddress, userId) => {
-	let r = await wt.claimUser(userId, {from: claimAddress});
+// @param userObject: address, id, followersCount
+const bindClaimUser = (wt, to, oracleAddress) => async (userObject) => {
+	let r = await wt.claimUser(userObject.userId, {from: userObject.address});
+	const claimArgs = [userObject.address, userObject.userId, userObject.followersCount];
 	// let bn = r.receipt.blockNumber;
 	let queryId = r.logs[r.logs.length-1].args.queryId;
 	debug.t('Claim queryId: ', queryId);
-	const claimString = await genClaimString( claimAddress, userId);
+	const claimString = await genClaimString(...claimArgs);
 	await to.__callback(queryId, claimString, '0x0', {from: oracleAddress});
-	await wt._fulfillClaim(userId, {from: claimAddress});
+	await wt._fulfillClaim(userId, {from: userObject.address});
 }
 
 
@@ -303,13 +320,16 @@ const bindClaimUser = (wt, to, oracleAddress) => async (claimAddress, userId) =>
 const example = '@getwoketoke 0xwoke:1224421374322,0x12312377134319222222312,1'
 // message_to_sign = <address><userId><appId>
 // token = '@getwoketoke 0xwoke:<userId>,<signature>,
-async function genClaimString(signatory, userId, app = 'twitter') {
+async function genClaimString(signatory, userId, followersCount, app = 'twitter') {
 	const appId = {
 		'default' : 0,
 		'twitter' : 10,
 		'youtube' : 20,
 		'reddit' : 30
 	}
+
+	console.log('Gen claim for: ', signatory, userId, followersCount);
+	let followersCountHex = web3Tools.utils.uInt32ToHexString(followersCount);
 
 	let msgHash = web3.utils.soliditySha3(
 		{t: 'uint256', v: signatory}, 
@@ -322,7 +342,7 @@ async function genClaimString(signatory, userId, app = 'twitter') {
 
 	//debug.h(`Signature for ${signatory}, uid ${userId}\n${sig}`);
 
-	let str = `@getwoketoke 0xWOKE:${userId},${sig},1`;
+	let str = `@getwoketoke 0xWOKE:${userId},${sig},1:${followersCountHex}`;
 	debug.h(`Gen. claim string: ${str}`);
 	return str;
 }
