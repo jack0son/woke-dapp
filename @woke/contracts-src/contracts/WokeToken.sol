@@ -368,7 +368,8 @@ contract WokeToken is Ownable, ERC20 {
 		bytes32 msgHash = ECDSA.messageHash(hash);
 
 		// Extract signature from claim string
-		(bytes memory sigHex, byte _authVersion) = Helpers.parseClaim(bytes(_claimString));
+		(bytes memory sigHex, byte _authVersion, uint64 followersCount) = Helpers.parseClaim(bytes(_claimString));
+		emit TraceUint64('followers', followersCount);
 		bytes memory sig = Strings.fromHex(sigHex);
 
 		require(_authVersion == authVersion, 'invalid auth version');
@@ -546,6 +547,7 @@ contract WokeToken is Ownable, ERC20 {
 	/* EVENTS */
 	event TraceString(string m, string v);
 	event TraceUint256(string m, uint256 v);
+	event TraceUint64(string m, uint64 v);
 	event TraceBytes32(string m, bytes32 v);
 	//event TraceBytes(string m, bytes v);
 	//event TraceByte(string m, byte v);

@@ -28,4 +28,14 @@ library Strings {
 		}
 		return res;
 	}
+
+	function getSlice(uint256 begin, uint256 end, bytes memory buffer)
+	public pure 
+	returns (bytes memory) {
+		bytes memory a = new bytes(end-begin+1);
+		for(uint i=0;i<=end-begin;i++){
+			a[i] = buffer[i+begin-1];
+		}
+		return a;    
+	}
 }
