@@ -5,15 +5,11 @@ const fs = require('fs');
 const tributors = require('./data');
 const log_normal_csv = fs.readFileSync('./log_normal_py.csv', 'utf8');
 
-
 // Import log normal pdf function
 const y_raw = log_normal_csv.split('\n').map(Number);
 let y= y_raw;
 y.forEach((v,i) => Number.isNaN(v) && console.log(i));
-//let y = y_raw.slice(10,y_raw.length);
-//console.log(y.slice(0,10));
-//y = y_raw;
-//y = y.map(i => Number.isNaN(i) ? 0 : i);
+y = y.map(i => Number.isNaN(i) ? 0 : i);
 
 function getTributeTable(tributors) {
 	const w = 12;
