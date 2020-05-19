@@ -1,5 +1,6 @@
 pragma solidity ^0.5.0;
 import "./Strings.sol";
+import "./libraries/ECDSA.sol";
 
 library Helpers {
 	//https://github.com/GNSPS/solidity-bytes-utils/blob/master/contracts/BytesLib.sol
@@ -12,6 +13,32 @@ library Helpers {
 		}
 
 		return tempUint;
+	}
+
+	function verifyClaimString(address claimer, string memory _id, string memory _claimString)
+	public
+	returns (bool, uint32)
+	{
+		// Reconstruct the message hash
+		// message = address + userId + appId // @fix + nonce
+		bytes32 hash = keccak256(abi.encodePacked(uint256(claimer), _id, appId));
+		bytes32 msgHash = ECDSA.messageHash(hash);
+
+		// Extract signature from claim string
+		(bytes memory sigHex, byte _authVersion, uint32 followers) = Helpers.parseClaim(bytes(_claimString));
+
+		//emit TraceUint32('followers', followersCount);
+		bytes memory sig = Strings.fromHex(sigHex);
+
+		require(_authVersion == authVersion, 'invalid auth version');
+
+		address recovered = ECDSA.recover(msgHash, sig);
+		require(recovered == claimer, 'recovered address does not match claimer address');
+
+		bool result = (recovered == claimer);
+		emit Verification(result, recovered, claimer, _id, followers);
+
+		return (result, followers);
 	}
 
 	// @param cs claim string
