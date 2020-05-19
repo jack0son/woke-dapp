@@ -1,8 +1,9 @@
 pragma solidity ^0.5.0;
 import "./Strings.sol";
-import "./libraries/ECDSA.sol";
+import "./ECDSA.sol";
 
 library Helpers {
+	byte constant authVersion = 0x01; // Claim string / auth token version
 	//https://github.com/GNSPS/solidity-bytes-utils/blob/master/contracts/BytesLib.sol
 	function toUint32(bytes memory _bytes, uint256 _start) internal pure returns (uint32) {
 		require(_bytes.length >= (_start + 4), "Read out of bounds");
@@ -15,17 +16,17 @@ library Helpers {
 		return tempUint;
 	}
 
-	function verifyClaimString(address claimer, string memory _id, string memory _claimString)
+	function verifyClaimString(address claimer, string memory _id, string memory _claimString, byte _appId)
 	public
 	returns (bool, uint32)
 	{
 		// Reconstruct the message hash
 		// message = address + userId + appId // @fix + nonce
-		bytes32 hash = keccak256(abi.encodePacked(uint256(claimer), _id, appId));
+		bytes32 hash = keccak256(abi.encodePacked(uint256(claimer), _id, _appId));
 		bytes32 msgHash = ECDSA.messageHash(hash);
 
 		// Extract signature from claim string
-		(bytes memory sigHex, byte _authVersion, uint32 followers) = Helpers.parseClaim(bytes(_claimString));
+		(bytes memory sigHex, byte _authVersion, uint32 followers) = parseClaim(bytes(_claimString));
 
 		//emit TraceUint32('followers', followersCount);
 		bytes memory sig = Strings.fromHex(sigHex);
@@ -36,7 +37,7 @@ library Helpers {
 		require(recovered == claimer, 'recovered address does not match claimer address');
 
 		bool result = (recovered == claimer);
-		emit Verification(result, recovered, claimer, _id, followers);
+		//emit Verification(result, recovered, claimer, _id, followers);
 
 		return (result, followers);
 	}
@@ -68,4 +69,5 @@ library Helpers {
 	}
 	event TraceUint32(string m, uint32 v);
 	event TraceBytes(string m, bytes v);
+	event Verification(bool value, address recovered, address claimer, string userId, uint32 followers);
 }

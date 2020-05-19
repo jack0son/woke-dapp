@@ -5,7 +5,9 @@ import "openzeppelin-solidity/contracts/token/ERC20/ERC20.sol";
 import "openzeppelin-solidity/contracts/math/SafeMath.sol";
 import "./libraries/Strings.sol";
 import "./libraries/Helpers.sol";
+import "./libraries/Curves.sol";
 
+import "./WokeFormula.sol";
 import "./mocks/TwitterOracleMock.sol";
 
 /*
@@ -17,11 +19,8 @@ import "./mocks/TwitterOracleMock.sol";
  *	Needs multisig with admin wallet that prevents spamming of claims to 
  *	large profile accounts.
  * TODO:
- *  - more rigourous invariant modifiers
- *  - could get a multiplier based on the size of the unclaimed pool
- *  - replace @notice tag with something clearer
- *  - Neccessity of sending userID with transaction with user is alread claimed?
- *  - look into replace 'Claimed' terminology with roles
+ *  - replace @notice tag with descrip or dev
+ *  - Duplication of formula constants
  */
 
 contract WokeToken is Ownable, ERC20 {
@@ -29,7 +28,7 @@ contract WokeToken is Ownable, ERC20 {
 
 	struct User {
 		address account;
-		uint256 followers;
+		uint32 followers;
 		uint256 unclaimedBalance;
 		uint256 tipBalance;
 		mapping(address => uint256) referralAmount;
@@ -39,17 +38,18 @@ contract WokeToken is Ownable, ERC20 {
 	/* CONTRACT STORAGE */
 	// Constants
 	bool DEFAULT_TIP_ALL = true;
+	uint256 public scale = 10**18; // same scale as ether
 
 	// Protocol contracts
 	address public wokeFormula;
 	address public tippingAgent;
 	address public twitterClient;
-	byte authVersion = 0x01; // Claim string / auth token version
 	byte appId = 0x0A;		// Auth app, only twitter for now
 
 
 	// Token generation parameters
 	uint256 public maxSupply;
+	uint256 public followerBalance = 0;
 	//uint32 public reward;
 	//uint32 public multiplier;
 	//uint32 public halving;
@@ -89,12 +89,13 @@ contract WokeToken is Ownable, ERC20 {
 		userCount = 0;
 	}
 
-	function _curvedMint(uint256 _followers)
-		validMint(_followers)
+	function _curvedMint(address recipient, uint256 _followers)
+		//validMint(_followers)
 		internal
 	returns (uint256) {
-		uint256 amount = calculateCurveMintAmount(_followers);
-		mint(msg.sender, amount);
+		WokeFormula forumula = WokeFormula(wokeFormula);
+		uint256 amount = forumula.calculatePurchaseReturn(totalSupply(),	_followers,	followerBalance);
+		mint(recipient, amount);
 		followerBalance = followerBalance.add(_followers);
 		emit Summoned(msg.sender, amount, _followers);
 		return amount;
@@ -136,7 +137,7 @@ contract WokeToken is Ownable, ERC20 {
 		require(bytes(claimString).length > 0, "claim string not stored");
 
 		address claimer = requester[_id];
-		(bool verified, uint32 followers) = Helpers.verifyClaimString(claimer, _id, claimString);
+		(bool verified, uint32 followers) = Helpers.verifyClaimString(claimer, _id, claimString, appId);
 		require(verified, "invalid claim string");
 
 		// address _claimer
@@ -144,12 +145,13 @@ contract WokeToken is Ownable, ERC20 {
 		// Link wallet and twitter handle
 		userIds[claimer] = _id;
 		users[_id].account = claimer;
+		users[_id].followers = followers;
+		userCount += 1;
 
-		uint256 joinBonus = distributeClaimBonus(_id, followers);
+		uint256 joinBonus = distributeClaimBonus(_id);
 
 		// Claim unclaimed transactions and join bonus
 		emit Claimed(claimer, _id, joinBonus);
-		userCount += 1;
 
 		//emit TraceUint256('balanceClaimed', balanceOf(users[_id].account));
 		if(DEFAULT_TIP_ALL) {
@@ -159,46 +161,84 @@ contract WokeToken is Ownable, ERC20 {
 		requester[_id] = address(0); // @fix delete this value
 	}
 
-	// @param _bonusPool: 
-	function _distributeTributeBonuses(uint256 _userId, uint256 _bonusBool)
+	// @notice Transfer a new userId's bonus to their account
+	// @param _id			User's ID
+	// @returns Total amount claimed
+	function distributeClaimBonus(string memory _id)
 		private
-		userNotClaimed(_id)
+		userIsClaimed(_id)
+	returns (uint256)
 	{
+		// 1. determine amount to mint (summon new tokens)
+		// 2. calc tribute bonus weighting
+		// 3. calculate tribute distribution
+		// 4. Distribute tribute bonuses
+		// 5. Transfer tributes to new user
+
 		User memory user = users[_id];
+		// 1. Mint new tokens
+		uint256 minted = _curvedMint(user.account, user.followers);
+
+		// 2. calculate tribute bonus weighting
+		//	tribute bonus pool = minted - join bonus
+		uint256 tributeBonusPool = _calcTributeBonus(_id, minted);
+
+		// 3. calculate tribute distribution
+		// 4. Distribute tribute bonuses
+		uint256 bonuses = _distributeTributeBonuses(_id, tributeBonusPool);
+		assert(bonuses == tributeBonusPool);
+
+		// 5. Transfer tributes 
+		uint unclaimedBalance = user.unclaimedBalance;
+		// Transfer the unclaimed amount and bonus from the token contract to the user
+		if(unclaimedBalance > 0) {
+			_transfer(address(this), user.account, unclaimedBalance); 
+			// @dev this conditional should always pass
+		}
+		user.unclaimedBalance = 0;
+
+		return (minted - tributeBonusPool) + unclaimedBalance;
+	}
+
+	// @param _bonusPool: 
+	function _distributeTributeBonuses(string memory _userId, uint256 _bonusBool)
+		internal
+		userIsClaimed(_userId)
+		returns (uint256)
+	{
+		User storage user = users[_userId];
 		User memory tributor;
 
 		// 1. Create weighting groups
-		WeightingGroup[user.referrers.length] memory groups;
+		WeightingGroup[] memory groups = new WeightingGroup[](user.referrers.length);
 		for(uint i = 0; i < user.referrers.length; i++) {
-			address referrer = users.referrers[i];
+			address referrer = user.referrers[i];
 			tributor = users[userIds[referrer]];
-			groups[i] = WeightingGroup(
-				tributor.followers,
-				user.referralAmount[referrer],
-				balanceOf(referrer),
-				0
-			);
+			uint256 amount = user.referralAmount[referrer]; // not available outside of storage
+			groups[i] = WeightingGroup(tributor.followers, amount, balanceOf(referrer), 0);
 		}
 
 		// 2. Calculae and transfer bonuses
-		uint256[user.referrers.length] bonuses = _calcAllocations(groups, _bonusBool);
+		uint256[] memory bonuses = _calcAllocations(groups, _bonusBool);
+		uint256 total = 0;
 		for(uint i = 0; i < user.referrers.length; i++) {
-			address referrer = users.referrers[i];
+			address referrer = user.referrers[i];
 			tributor = users[userIds[referrer]];
-			_transfer(user.account, tribtor.account, bonuses[i]);
+			_transfer(user.account, tributor.account, bonuses[i]);
+			total = total.add(bonuses[i]);
 		}
+
+		return total;
 	}
 
 	struct WeightingGroup {
-		uint32 followers,
-		uint256 amount,
-		uint256 balance,
-		uint256 weighting,
-		uint256 allocation,
+		uint32 followers;
+		uint256 amount;
+		uint256 balance;
+		uint256 weighting;
 	}
 
-	function _calcInfluenceWeight(User memory user, uint256 poolAmount)
-		public view
+	function _calcInfluenceWeight(User memory user, uint256 poolAmount) internal
 		returns (uint256)
 	{
 		uint256 numerator = Curves.logNormalPDF(user.followers);
@@ -206,9 +246,9 @@ contract WokeToken is Ownable, ERC20 {
 		return numerator;
 	}
 
-	function _calcAllocations(WeightingGroup[] groups, uint8 len, uint256 pool)
-		private internal
-		returns (uint256[len] allocations)
+	function _calcAllocations(WeightingGroup[] memory groups, uint256 pool)
+		internal
+		returns (uint256[] memory allocations)
 	{
 		uint256 ratio;
 		uint256 weighting;
@@ -223,9 +263,11 @@ contract WokeToken is Ownable, ERC20 {
 		uint256 total = 0;
 		for(uint i = 0; i < groups.length; i++) {
 			ratio = groups[i].weighting.div(normal);
-			alloactions[i] = Math.floor(pool.mul(ratio));
+			// TODO use integer division overflow to result in floor
+			//allocations[i] = Math.floor(pool.mul(ratio));
+			allocations[i] = pool.mul(ratio);
 
-			total += alloactions[i];
+			total += allocations[i];
 
 			if(ratio < minRatio) {
 				minRatio = ratio;
@@ -237,74 +279,40 @@ contract WokeToken is Ownable, ERC20 {
 		return allocations;
 	}
 
-	function _calcTributeBonus(uint256 _userId, uint265 minted)
-		private internal
+	function _calcTributeBonus(string memory _userId, uint256 minted) internal
 		returns (uint256)
 	{
-		User memory user = users[_id];
+		User storage user = users[_userId];
 		// 1. find highest influence weighting in tributors
 		uint256 maxWeight = 0;
 		uint32 followers;
 		User memory tributor;
 		uint256 tributePool = 0;
-		for(uint i = 0; i < user.referrers.lenght; i++) {
+		for(uint i = 0; i < user.referrers.length; i++) {
 			address referrer = user.referrers[i];
 			tributePool += user.referralAmount[referrer];
-			tributor = userIds[referrer];
-			uint256 lnpdf = Curves.logNormalPDF(tributor.followers, scale);
+			tributor = users[userIds[referrer]];
+			uint256 lnpdf = Curves.logNormalPDF(tributor.followers);
 			if(lnpdf > maxWeight) {
 				maxWeight = lnpdf;
 				followers = tributor.followers;
 			}
 		}
-		uint2456 balance = minted + tributePool;
+		uint256 balance = minted + tributePool;
 
 		// 2. Calc influence weights
 		WeightingGroup memory userWeights = WeightingGroup(user.followers, minted, balance, 0);
 		WeightingGroup memory tWeights = WeightingGroup(followers, tributePool, balance, 0);
-		uint256[2] alloactions = _calcAllocations([userWeights, tWeights]);
+		WeightingGroup[] memory groups = new WeightingGroup[](2);
+		groups[0] = userWeights;
+		groups[1] = tWeights;
+		//groups = [userWeights, tWeights];
+		//WeightingGroup[2] memory groups = [userWeights, tWeights];
+		uint256[] memory allocations = _calcAllocations(groups, minted);
 
 		return allocations[1];
 	}
 
-	// @notice Transfer a new userId's bonus to their account
-	// @param _id			User ID
-	// @param _followers	Number of follwers
-	// @returns Total amount claimed
-	function claimBonus(string memory _id, uint256 _followers)
-		private
-		userIsClaimed(_id)
-	returns (uint256)
-	{
-		// 1. determine amount to mint (summon new tokens)
-		// 2. calc tribute bonus weighting
-		// 3. calculate tribute distribution
-		// 4. Distribute tribute bonuses
-		// 5. Transfer tributes to new user
-
-		User memory user = users[_id];
-		// 1. mint
-		uint256 minted = _curvedMint(user.account, _followers);
-
-		// 2. calculate tribute bonus weighting
-		//	tribute bonus pool = minted - join bonus
-		uint256 tributeBonusPool = _calcTributeBonus(_id, minted);
-
-		// 3. calculate tribute distribution
-		// 4. Distribute tribute bonuses
-		uint256 result = _distributeTributeBonuses(_id, tributeBonusPool);
-
-		// 5. Transfer tributes 
-		uint unclaimedBalance = user.unclaimedBalance;
-		// Transfer the unclaimed amount and bonus from the token contract to the user
-		if(unclaimedBalance > 0) {
-			_transfer(address(this), user.account, unclaimedBalance); 
-			// @dev this conditional should always pass
-		}
-		user.unclaimedBalance = 0;
-
-		return (minted - tributeBonusPool) + unclaimedBalance;
-	}
 
 	// @notice Mint the given amount, or the remaining unminted supply
 	// @returns Amount minted
@@ -340,8 +348,6 @@ contract WokeToken is Ownable, ERC20 {
 
 		address from = users[_fromId].account;
 
-		User memory recipient = users[_toId];
-
 		// 1. Transfer the amount from the the sender to the token contract
 		// @TODO naughty naughty
 		//approve(tippingAgent, _amount);
@@ -349,18 +355,18 @@ contract WokeToken is Ownable, ERC20 {
 		_transfer(from, address(this), _amount); // @dev Use safe math
 
 		// 2. Set the unclaimed balance for the receiving user
-		if(recipient.referralAmount == 0) {
-			recipient.referrers.push(from);
+		if(users[_toId].referralAmount[from] == 0) {
+			users[_toId].referrers.push(from);
 		}
-		recipient.unclaimedBalance += _amount;
-		recipient.referralAmount[from] = _amount;
+		users[_toId].unclaimedBalance += _amount;
+		users[_toId].referralAmount[from] = _amount;
 
 		if(DEFAULT_TIP_ALL) {
 			_setTipBalance(_fromId, balanceOf(from));
 		}
 
 		//emit Tx(userIds[msg.sender], _toId, userIds[msg.sender], _toId, _amount, false);
-		emit Tx(from, recipient.account, _fromId, _toId, _amount, false);
+		emit Tx(from, users[_toId].account, _fromId, _toId, _amount, false);
 	}
 
 	// @notice Transfer tokens between claimed userIds
@@ -659,6 +665,5 @@ contract WokeToken is Ownable, ERC20 {
 	event Claimed (address indexed account, string userId, uint256 amount);
 	event Summoned (address indexed account, uint256 amount, uint256 followers);
 	event Reward (address indexed claimer, address indexed referrer, string claimerId, string referrerId, uint256 amount);
-	event Verification(bool value, address recovered, address claimer, string userId, uint32 followers);
 	event Lodged (address indexed claimer, string userId, bytes32 queryId);
 }
