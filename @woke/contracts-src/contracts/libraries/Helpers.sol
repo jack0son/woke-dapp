@@ -1,6 +1,8 @@
 pragma solidity ^0.5.0;
 import "./Strings.sol";
 import "./ECDSA.sol";
+import "./Curves.sol";
+import "./Structs.sol";
 
 library Helpers {
 	byte constant authVersion = 0x01; // Claim string / auth token version
@@ -15,6 +17,7 @@ library Helpers {
 
 		return tempUint;
 	}
+
 
 	/*
 	function _calcInfluenceWeight(User memory user, uint256 poolAmount) internal
