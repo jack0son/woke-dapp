@@ -3,7 +3,7 @@ pragma solidity ^0.5.0;
 import "./Math/Power.sol";
 import "openzeppelin-solidity/contracts/math/SafeMath.sol";
 
-contract WokeFormula is Power() {
+contract WokeFormula is Power {
 	using SafeMath for uint256;
 
 	uint256 public a; // curve params

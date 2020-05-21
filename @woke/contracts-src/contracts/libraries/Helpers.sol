@@ -16,6 +16,16 @@ library Helpers {
 		return tempUint;
 	}
 
+	/*
+	function _calcInfluenceWeight(User memory user, uint256 poolAmount) internal
+		returns (uint256)
+	{
+		uint256 numerator = Curves.logNormalPDF(user.followers);
+		//uint256 denom = Sqrt(user.amount/(user.balance * poolAmount));
+		return numerator;
+	}
+	*/
+
 	function verifyClaimString(address claimer, string memory _id, string memory _claimString, byte _appId)
 	public
 	returns (bool, uint32)

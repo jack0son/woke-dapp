@@ -238,14 +238,6 @@ contract WokeToken is Ownable, ERC20 {
 		uint256 weighting;
 	}
 
-	function _calcInfluenceWeight(User memory user, uint256 poolAmount) internal
-		returns (uint256)
-	{
-		uint256 numerator = Curves.logNormalPDF(user.followers);
-		//uint256 denom = Sqrt(user.amount/(user.balance * poolAmount));
-		return numerator;
-	}
-
 	function _calcAllocations(WeightingGroup[] memory groups, uint256 pool)
 		internal
 		returns (uint256[] memory allocations)
@@ -649,11 +641,11 @@ contract WokeToken is Ownable, ERC20 {
 	}
 
 	/* EVENTS */
-	event TraceString(string m, string v);
-	event TraceUint256(string m, uint256 v);
-	event TraceUint32(string m, uint32 v);
+	//event TraceString(string m, string v);
+	//event TraceUint256(string m, uint256 v);
+	//event TraceUint32(string m, uint32 v);
 	//event TraceUint64(string m, uint64 v);
-	event TraceBytes32(string m, bytes32 v);
+	//event TraceBytes32(string m, bytes32 v);
 	//event TraceBytes(string m, bytes v);
 	//event TraceByte(string m, byte v);
 
