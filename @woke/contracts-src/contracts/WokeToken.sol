@@ -3,13 +3,8 @@ pragma solidity ^0.5.0;
 import "openzeppelin-solidity/contracts/ownership/Ownable.sol";
 import "openzeppelin-solidity/contracts/token/ERC20/ERC20.sol";
 import "openzeppelin-solidity/contracts/math/SafeMath.sol";
-import "./libraries/Strings.sol";
-import "./libraries/Helpers.sol";
-import "./libraries/Curves.sol";
-import "./libraries/Structs.sol";
 
 import "./WokeFormula.sol";
-import "./mocks/TwitterOracleMock.sol";
 
 /*
  * @title WokeToken ERC20 Contract
@@ -33,8 +28,9 @@ contract WokeToken is Ownable, ERC20 {
 	uint256 public scale = 10**18; // same scale as ether
 
 	// Protocol contracts
-	address public wokeFormula;
+	address public wokeFormulaAddress;
 	address public userRegistry;
+	WokeFormula wokeFormula;
 
 
 	// Token generation parameters
@@ -56,8 +52,10 @@ contract WokeToken is Ownable, ERC20 {
 		address _wokeFormula,
 		uint32 _maxSupply
 	) public payable {
-		wokeFormula = _wokeFormula;
 		maxSupply = _maxSupply;
+		wokeFormulaAddress = _wokeFormula;
+		WokeFormula wokeFormula = WokeFormula(_wokeFormula);
+		wokeFormulaAddress = _wokeFormula;
 		//reward = _reward;
 		//multiplier = _multiplier;
 	}
@@ -82,8 +80,7 @@ contract WokeToken is Ownable, ERC20 {
 		public
 		returns (uint256)
 	{
-		WokeFormula forumula = WokeFormula(wokeFormula);
-		uint256 amount = forumula.calculatePurchaseReturn(totalSupply(),	_followers,	followerBalance);
+		uint256 amount = wokeFormula.calculatePurchaseReturn(totalSupply(),	_followers,	followerBalance);
 		mint(recipient, amount);
 		followerBalance = followerBalance.add(_followers);
 		emit Summoned(msg.sender, amount, _followers);

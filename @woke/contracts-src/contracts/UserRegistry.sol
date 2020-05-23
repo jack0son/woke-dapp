@@ -1,7 +1,9 @@
 pragma solidity ^0.5.0;
 
 import "./WokeToken.sol";
+import "./mocks/TwitterOracleMock.sol";
 import "openzeppelin-solidity/contracts/math/SafeMath.sol";
+import "./libraries/Helpers.sol";
 import "./libraries/Structs.sol";
 import "./libraries/Distribution.sol";
 

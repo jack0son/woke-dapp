@@ -1,7 +1,10 @@
 //const oracle = artifacts.require("TwitterOracle.sol");
 var OracleMock = artifacts.require("TwitterOracleMock.sol");
 var WokeFormula = artifacts.require("WokeFormula");
+var UserRegistry = artifacts.require("UserRegistry.sol");
 var Token = artifacts.require("WokeToken.sol");
+var Distribution = artifacts.require("Distribution.sol");
+var Structs = artifacts.require("Helpers.sol");
 var Helpers = artifacts.require("Helpers.sol");
 var Strings = artifacts.require("Strings.sol");
 var ECDSA = artifacts.require("ECDSA.sol");
@@ -33,23 +36,30 @@ const doDeploy = async (deployer, network, accounts) => {
 	let oracleInstance = await OracleMock.deployed();
 	console.log(`OracleMock deployed at ${oracleInstance.address}`);
 
+	console.log('Deploying Structs...');
+	await deployer.deploy(Structs);
+	await deployer.link(Structs, WokeFormula);
+	await deployer.link(Structs, UserRegistry);
 
 	console.log('Deploying Strings...');
 	await deployer.deploy(Strings);
 	await deployer.link(Strings, Helpers);
-	await deployer.link(Strings, Token);
+
+	console.log('Deploying ECDSA...');
+	await deployer.deploy(ECDSA);
+	await deployer.link(ECDSA, Helpers);
+
+	console.log('Deploying Curves...');
+	await deployer.deploy(Curves);
+	await deployer.link(Curves, Distribution);
 
 	console.log('Deploying Helpers...');
 	await deployer.deploy(Helpers);
 	await deployer.link(Helpers, Token);
 
-	console.log('Deploying ECDSA...');
-	await deployer.deploy(ECDSA);
-	await deployer.link(ECDSA, Token);
-
-	console.log('Deploying Curves...');
-	await deployer.deploy(Curves);
-	await deployer.link(Curves, Token);
+	console.log('Deploying Distribution...');
+	await deployer.deploy(Distribution);
+	await deployer.link(Distribution, Token);
 
 	const curveParams = {
 		maxPrice: 210,						// a/2
@@ -68,12 +78,16 @@ const doDeploy = async (deployer, network, accounts) => {
 	let formulaInstance = await WokeFormula.deployed();
 	console.log(`WokeFormula deployed at ${formulaInstance.address}`);
 
-
 	console.log('Deploying WokeToken...')
-	return await deployer.deploy(Token, formulaInstance.address, oracleInstance.address, owner, maxSupply, opts)
-		.then(tokenInsance => {
-			console.log(`WokeToken deployed at ${tokenInsance.address}`);
-			return tokenInsance;
+	await deployer.deploy(Token, formulaInstance.address, maxSupply, opts)
+	let tokenInstance = await Token.deployed();
+	console.log(`WokeToken deployed at ${tokenInstance.address}`);
+
+	console.log('Deploying UserRegistry...')
+	return await deployer.deploy(UserRegistry, tokenInstance.address, oracleInstance.address, owner, opts)
+		.then(registryInstance => {
+			console.log(`UserRegistry deployed at ${registryInstance.address}`);
+			return registryInstance;
 		});
 }
 

@@ -1,7 +1,7 @@
 pragma solidity ^0.5.0;
 import "./Strings.sol";
 import "./ECDSA.sol";
-import "./Curves.sol";
+//import "./Curves.sol";
 import "./Structs.sol";
 
 library Helpers {
