@@ -32,7 +32,8 @@ contract WokeFormula is Power {
 	returns (uint256)
 		//view
 	{
-		require(_currentSupply > 0);
+
+		require(_currentSupply > 0, 'supply is zero');
 
 		if(_depositAmount == 0) {
 			return 0;
@@ -49,6 +50,8 @@ contract WokeFormula is Power {
 		uint256 result;
 		uint256 squareTerm = _currentSupply < b ? b - _currentSupply : _currentSupply - b; 
 		uint256 baseN = c + squareTerm.mul(squareTerm);
+
+		//return baseN;
 
 		// (_baseN / _baseD) ^ (_expN / _expD) * 2 ^ precision 
 		(uint256 rootTerm, uint8 precision) = power(baseN, 1, 1, 2); // sqrt(c + (s-b)^2)

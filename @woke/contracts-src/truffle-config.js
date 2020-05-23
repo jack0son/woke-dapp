@@ -1,4 +1,5 @@
 var HDWalletProvider = require("@truffle/hdwallet-provider");
+const web3 = require('web3')
 require('dotenv').config();
 //var mnemonic = "large fountain love mountains supernatural bird fresh air through the swinging trees";
 var mnemonic = "nerve marine frozen use brave brief nasty then acid remain stereo riot";
@@ -19,11 +20,32 @@ module.exports = {
 			gasPrice: 20000000000,
 		},
 
+		development: {
+			host: "127.0.0.1",
+			port: 8545,
+			network_id: "*",
+			websockets: true,
+
+			gas: 7000000,
+			gasPrice: 20000000000,
+		},
+
+		test2: {
+			provider: () => {
+				return new web3.providers.WebsocketProvider("ws://127.0.0.1:8545");
+			},
+			network_id: "10",
+
+			gas: 7000000,
+			gasPrice: 20000000000,
+		},
+
 		develop: {
 			provider: () => {
 				return new HDWalletProvider(mnemonic, "http://127.0.0.1:8545/", 0, 10);
 			},
-			network_id: "11",
+			//network_id: "11",
+			network_id: "*",
 			websockets: true,
 
 			gas: 6000000,

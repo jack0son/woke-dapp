@@ -36,14 +36,11 @@ const doDeploy = async (deployer, network, accounts) => {
 	let oracleInstance = await OracleMock.deployed();
 	console.log(`OracleMock deployed at ${oracleInstance.address}`);
 
-	console.log('Deploying Structs...');
-	await deployer.deploy(Structs);
-	await deployer.link(Structs, WokeFormula);
-	await deployer.link(Structs, UserRegistry);
 
 	console.log('Deploying Strings...');
 	await deployer.deploy(Strings);
 	await deployer.link(Strings, Helpers);
+
 
 	console.log('Deploying ECDSA...');
 	await deployer.deploy(ECDSA);
@@ -53,13 +50,18 @@ const doDeploy = async (deployer, network, accounts) => {
 	await deployer.deploy(Curves);
 	await deployer.link(Curves, Distribution);
 
+	console.log('Deploying Structs...');
+	await deployer.deploy(Structs);
+	await deployer.link(Structs, WokeFormula);
+	await deployer.link(Structs, UserRegistry);
+
 	console.log('Deploying Helpers...');
 	await deployer.deploy(Helpers);
-	await deployer.link(Helpers, Token);
+	await deployer.link(Helpers, UserRegistry);
 
 	console.log('Deploying Distribution...');
 	await deployer.deploy(Distribution);
-	await deployer.link(Distribution, Token);
+	await deployer.link(Distribution, UserRegistry);
 
 	const curveParams = {
 		maxPrice: 210,						// a/2

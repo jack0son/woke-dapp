@@ -56,6 +56,8 @@ contract WokeToken is Ownable, ERC20 {
 		wokeFormulaAddress = _wokeFormula;
 		WokeFormula wokeFormula = WokeFormula(_wokeFormula);
 		wokeFormulaAddress = _wokeFormula;
+
+		_mint(address(this), 1);
 		//reward = _reward;
 		//multiplier = _multiplier;
 	}
@@ -80,8 +82,9 @@ contract WokeToken is Ownable, ERC20 {
 		public
 		returns (uint256)
 	{
-		uint256 amount = wokeFormula.calculatePurchaseReturn(totalSupply(),	_followers,	followerBalance);
-		return 0;
+		WokeFormula formula = WokeFormula(wokeFormulaAddress);
+		uint256 amount = formula.calculatePurchaseReturn(totalSupply(),	_followers,	followerBalance);
+		//uint256 amount = wokeFormula.calculatePurchaseReturn(totalSupply(),	_followers,	followerBalance);
 		mint(recipient, amount);
 		followerBalance = followerBalance.add(_followers);
 		emit Summoned(msg.sender, amount, _followers);
