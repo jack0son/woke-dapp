@@ -94,6 +94,11 @@ const joinEvents = {
 		followers: 350,
 		supply: 3.8e6,
 		tributors: tributors.whale,
+	},
+	testFile: {
+		followers: 30000,
+		supply: 1,
+		tributors: [],
 	}
 };
 
@@ -106,9 +111,39 @@ function mintingCurve (currentSupply, followers) {
 	const s = currentSupply;
 	const F = followers;
 	let t = Math.sqrt(c+Math.pow(s-b,2));
+	console.log('rootTerm:', t);
 	let k = (Math.pow(F,2)+2*F*a*t)/(2* (Math.pow(a,2)*(s-b+t)+(a*F)))
 	console.log(`k: ${k}`);
 	return k;
+}
+
+function calculatePurchaseReturn(currentSupply, followers) {
+	const scale = Math.pow(10,18);
+
+	const precision = 127;
+	let squareTerm = currentSupply < b ? b - currentSupply : currentSupply - b;
+	console.log('\nsquareTerm: ', squareTerm);
+	let baseN = c + Math.pow(squareTerm, 2);
+	console.log('baseN: ', baseN);
+	//console.log('baseN-scaled: ', baseN);
+	let rootTerm = Math.sqrt(baseN);
+	const powerScale = Math.pow(2, precision);
+
+	let power = rootTerm * powerScale;
+	console.log('rootTerm: ', rootTerm);
+	console.log('rootTerm-power: ', power);
+
+	const F = followers;
+	//let numerator = Math.pow(F,2) + (2*F*a*rootTerm);
+	let numerator = (Math.pow(F,2) * powerScale) + (2*F*a*power);
+	console.log('numerator: ', numerator);
+
+	let denom = a * ( a*((currentSupply - b)*powerScale + power) + (F * powerScale))
+	console.log('denom: ', denom);
+
+	let result = numerator/(denom * 2);
+	console.log('purchase return: ', result);
+	return result;
 }
 
 function priceIntegral(currentSupply, amount) {
@@ -277,7 +312,8 @@ function distribution(newUser, minted, tributors) {
 const printTable = rows => console.log(rows.join('\n'));
 
 function joinEvent(scenario) {
-	const tributePool = scenario.tributors.map(t => t.amount).reduce(getSum);
+
+	const tributePool = scenario.tributors.length ? scenario.tributors.map(t => t.amount).reduce(getSum) : 0;
 	if(scenario.tributors.length && scenario.supply < tributePool) 
 		scenario.supply += tributePool;
 
@@ -286,6 +322,8 @@ function joinEvent(scenario) {
 
 	let amountToMint = Math.floor(mintingCurve(supply, followers));
 	console.log(`Minted: ${amountToMint}`);
+
+	let contractCalc = calculatePurchaseReturn(supply, followers);
 
 	let tokensPerFollower = priceIntegral(supply, amountToMint);
 	console.log(`Price integral: ${tokensPerFollower}`);
@@ -331,12 +369,13 @@ function cumulativeJoins(scenarios) {
 	})
 }
 
+joinEvent(joinEvents.testFile);
 //joinEvent(joinEvents.a);
 //joinEvent(joinEvents.z);
 //joinEvent(joinEvents.y);
 
 //cumulativeJoins(Object.values(joinEvents));
-joinEvent(joinEvents.d);
+//joinEvent(joinEvents.d);
 //joinEvent(joinEvents.e);
 //joinEvent(joinEvents.f);
 //joinEvent(joinEvents.g);

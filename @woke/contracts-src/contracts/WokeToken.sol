@@ -30,7 +30,7 @@ contract WokeToken is Ownable, ERC20 {
 	// Protocol contracts
 	address public wokeFormulaAddress;
 	address public userRegistry;
-	WokeFormula wokeFormula;
+	//WokeFormula wokeFormula;
 
 
 	// Token generation parameters

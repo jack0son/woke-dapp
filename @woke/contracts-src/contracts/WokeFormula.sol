@@ -17,8 +17,8 @@ contract WokeFormula is Power {
 		uint256 _steepness
 	) public  
 	{
-		a = _maxPrice;
-		//a = _maxPrice.div(2);
+		//a = _maxPrice;
+		a = _maxPrice.div(2);
 		b = _inflectionSupply;
 		c = _steepness;
 	}
@@ -31,7 +31,9 @@ contract WokeFormula is Power {
 		public
 	returns (uint256)
 		//view
-	{
+	{ 
+
+		emit PurchaseReturn(_currentSupply, _depositAmount, _balance);
 
 		require(_currentSupply > 0, 'supply is zero');
 
@@ -46,24 +48,37 @@ contract WokeFormula is Power {
 			//deposit = carryingCapacity - _balance;
 		}
 		*/
-
 		uint256 result;
+
+		//_currentSupply = _currentSupply.mul(scale);
+		//uint256 _b = b.mul(scale);
 		uint256 squareTerm = _currentSupply < b ? b - _currentSupply : _currentSupply - b; 
 		uint256 baseN = c + squareTerm.mul(squareTerm);
+		//baseN = baseN.mul(scale);
+		emit TraceUint256('baseN', baseN);
 
 		//return baseN;
 
-		// (_baseN / _baseD) ^ (_expN / _expD) * 2 ^ precision 
+		//(_baseN / _baseD) ^ (_expN / _expD) * 2 ^ precision 
 		(uint256 rootTerm, uint8 precision) = power(baseN, 1, 1, 2); // sqrt(c + (s-b)^2)
 		emit TraceUint8('precision', precision);
+		emit TraceUint256('rootTerm', rootTerm);
+		emit TraceUint256('shifted', rootTerm >> precision);
 
-		uint256 F = _depositAmount;
+		//uint256 F = _depositAmount.mul(scale);
 
-		uint256 numerator = F.mul(F) + F.mul(a.mul(rootTerm));
-		uint256 denom = a.mul(a).mul(_currentSupply - b + rootTerm) + a.mul(F);
-		denom = denom.mul(2);
+		//uint256 numerator = _depositAmount.mul(_depositAmount) + 2*_depositAmount.mul(a.mul(rootTerm));
+		//uint256 numerator = _depositAmount.mul(_depositAmount) + ((2*_depositAmount.mul(a.mul(rootTerm))) >> precision);
+		uint256 numerator = (_depositAmount.mul(_depositAmount) << precision) + ((2*_depositAmount.mul(a.mul(rootTerm))));
+		emit TraceUint256('numerator', numerator);
 
-		result = numerator.div(denom);
+		//uint256 denom = (a*a*(_currentSupply - b + rootTerm)) >> precision) + a.mul(_depositAmount);
+		uint256 denom = a.mul( a*(((_currentSupply - b) << precision) + rootTerm) + (_depositAmount << precision));
+		emit TraceUint256('denom', denom);
+		//denom = denom.mul(2);
+
+		result = numerator.div(denom.mul(2));// >> precision;
+		//result = numerator;
 
 		if(result == 0) {
 			result = 1; // always mint at least one token
@@ -72,6 +87,12 @@ contract WokeFormula is Power {
 		return result;
 	}
 
+	event PurchaseReturn(
+		uint256 _currentSupply,		// tokens in existence
+		uint256 _depositAmount,		// new user num followers
+		uint256 _balance			// aggregate followers
+	);
+	event TraceUint256(string m, uint256 v);
 	event TraceUint8(string m, uint8 v);
 }
 
