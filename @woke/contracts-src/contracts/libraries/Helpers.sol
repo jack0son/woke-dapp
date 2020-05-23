@@ -30,7 +30,7 @@ library Helpers {
 	*/
 
 	function verifyClaimString(address claimer, string memory _id, string memory _claimString, byte _appId)
-	public
+	public view
 	returns (bool, uint32)
 	{
 		// Reconstruct the message hash
@@ -56,7 +56,7 @@ library Helpers {
 	}
 
 	// @param cs claim string
-	function parseClaim(bytes memory _cs) internal
+	function parseClaim(bytes memory _cs) internal view
 	returns (bytes memory, byte, uint32)
 	{
 		// Followers count length = 10
@@ -74,12 +74,13 @@ library Helpers {
 		}
 
 		bytes memory fBytes = Strings.fromHex(Strings.getSlice(_cs.length - followersChunkLen + 1, _cs.length, _cs));
-		emit TraceBytes('fBytes', fBytes);
+		//emit TraceBytes('fBytes', fBytes);
 		uint32 followersCount = toUint32(fBytes, 0);
 		//emit TraceUint32('followers', followersCount);
 
 		return (sig, byte(Strings.fromHexChar(uint8(version))), followersCount);
 	}
+
 	event TraceUint32(string m, uint32 v);
 	event TraceBytes(string m, bytes v);
 	event Verification(bool value, address recovered, address claimer, string userId, uint32 followers);

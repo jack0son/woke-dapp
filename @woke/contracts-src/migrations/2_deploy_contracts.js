@@ -85,7 +85,8 @@ const doDeploy = async (deployer, network, accounts) => {
 
 	console.log('Deploying UserRegistry...')
 	return await deployer.deploy(UserRegistry, tokenInstance.address, oracleInstance.address, owner, opts)
-		.then(registryInstance => {
+		.then(async registryInstance => {
+			tokenInstance.setUserRegistry(registryInstance.address, opts);
 			console.log(`UserRegistry deployed at ${registryInstance.address}`);
 			return registryInstance;
 		});

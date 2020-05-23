@@ -39,44 +39,65 @@ const BN = require('bignumber.js');
  *
  */
 
+const UserRegistry = artifacts.require('UserRegistry.sol')
 const WokeToken = artifacts.require('WokeToken.sol')
+const WokeFormula = artifacts.require('WokeFormula.sol')
 const MockTwitterOracle = artifacts.require('mocks/TwitterOracleMock.sol')
 
+const appId = web3.utils.asciiToHex('0x0A'); // twitter
 const getwoketoke_id = '932596541822419000';
 const stranger_id = '12345';
 
-contract('WokeToken', (accounts) => {
+contract('UserRegistry', (accounts) => {
 	const [defaultAccount, owner, oraclize_cb, claimer, tipAgent, stranger, cB, cC, ...rest] = accounts;
+
+	const users = [
+		{address: cB, id: '212312122', handle: 'jack', followers: 30000},
+		{address: cC, id: '3313322', handle: 'realdonaldtrump', followers: 80e6},
+		{address: claimer, id: getwoketoke_id, handle: 'getwoketoke', followers: 100},
+		{address: rest[0], id: '1224927413284120212342141', handle: 'botman', followers: 0},
+		{address: rest[1], id: '12249274132841202123429999', handle: 'megawhale', followers: Math.pow(2,32)-1}, // uint32 overflow
+	];
 
 	// Token Generation params
 	const max_supply = 100000000;
-	let wt, to;
+	let UR, WT, TO, WF;
 	let claimUser;
 	let newUser = {};
 	let claimArgs = [];
 
 	context('Using mock TwitterOracle', () => {
+		before('Deploy WokeToken', async function() {
+			WF = await WokeFormula.deployed();
+			WT = await WokeToken.deployed();
+		});
+
 		beforeEach(async () => {
 			debug.t('context 1: before each');
-			to = await MockTwitterOracle.new(oraclize_cb,
+			TO = await MockTwitterOracle.new(oraclize_cb,
 				{from: owner, value: web3.utils.toWei('0.1', 'ether')}
 			);
 
-			wt = await WokeToken.new(to.address, tipAgent, max_supply, {from: owner})
+			UR = await UserRegistry.new(WT.address, TO.address, tipAgent, {from: owner})
+			await WT.setUserRegistry(UR.address, {from: defaultAccount});
 		});
 
 		newUser = { address: claimer, followers: 1000000, id: getwoketoke_id};
 		claimArgs = [newUser.address, newUser.id, newUser.followers];
 		
 
-		describe('WokeToken.sol', () => {
+		describe('UserRegistry.sol', () => {
 
 			describe('Helper Functions', () => {
-				it('should verify a valid claim string', async () => {
-					let claimString = await genClaimString(...claimArgs);
-					console.log(claimString);
-					let result = await wt.verifyClaimString.call(claimer, getwoketoke_id, claimString);
-					assert.isTrue(result);
+				it('should parse valid claim strings', async () => {
+					// TODO test several claim strings
+
+					for(user of users) {
+						let claimString = await genClaimString(user.address, user.id, user.followers);
+						let result = await UR.verifyClaimString.call(user.address, user.id, claimString, appId);
+						assert.isTrue(result[0]);
+						assert.strictEqual(result[1].toNumber(), user.followers); // if using
+					}
 				})
 			})
 
@@ -84,12 +105,12 @@ contract('WokeToken', (accounts) => {
 				context('with a single valid claim', () => {
 					it('should submit a tweet request', async () => {
 
-						let qe = waitForEvent(to.LogNewQuery).then(e => {
+						let qe = waitForEvent(TO.LogNewQuery).then(e => {
 							debug.v('LogNewQuery event:', e.returnValues);
 						});
 
-						let r = await wt.claimUser(getwoketoke_id, {from: claimer, value: web3.utils.toWei('1', 'ether')});
-						let args = r.logs[r.logs.length - 1].args; // values of wt.Lodged event
+						let r = await UR.claimUser(getwoketoke_id, {from: claimer, value: web3.utils.toWei('1', 'ether')});
+						let args = r.logs[r.logs.length - 1].args; // values of UR.Lodged event
 
 						const queryId = args.queryId;
 
@@ -103,55 +124,56 @@ contract('WokeToken', (accounts) => {
 
 					it('should claim the user', async () => {
 
-						wt.claimUser(getwoketoke_id, {from: claimer});
-						const {returnValues: {queryId: queryId}} = await waitForEvent(wt.Lodged);
+						UR.claimUser(getwoketoke_id, {from: claimer});
+						const {returnValues: {queryId: queryId}} = await waitForEvent(UR.Lodged);
 						let claimString = await genClaimString(...claimArgs);
 
-						let r = await to.__callback(
+						let r = await TO.__callback(
 							queryId,
 							claimString,								// query result
 							'0x0',	// proof
 							{from: oraclize_cb}
 						);
 
-						wt._fulfillClaim(getwoketoke_id, {from: claimer});
-						let claimed = (await waitForEvent(wt.Claimed)).returnValues;
-						debug.v('event WokeToken.Claimed:', claimed);
+						console.log('Calling fulfill claim');
+						UR._fulfillClaim(getwoketoke_id, {from: claimer});
+						let claimed = (await waitForEvent(UR.Claimed)).returnValues;
+						debug.v('event UserRegistry.Claimed:', claimed);
 
 						assert.strictEqual(claimed.account, claimer);
 						assert.strictEqual(claimed.userId, getwoketoke_id);
 						assert.strictEqual(claimed.amount, '50');
-						assert(await wt.getUserCount.call(), 1);
+						assert(await UR.getUserCount.call(), 1);
 					})
 
 					it('should fail if a second claim is attempted', async () => {
 
 						// Claim the user
-						wt.claimUser(getwoketoke_id, {from: claimer});
-						let {returnValues: {queryId: queryId}} = await waitForEvent(wt.Lodged);
+						UR.claimUser(getwoketoke_id, {from: claimer});
+						let {returnValues: {queryId: queryId}} = await waitForEvent(UR.Lodged);
 
 						let claimString = await genClaimString(...claimArgs);
-						await to.__callback(queryId, claimString, '0x0', {from: oraclize_cb});
-						await wt._fulfillClaim(getwoketoke_id);
+						await TO.__callback(queryId, claimString, '0x0', {from: oraclize_cb});
+						await UR._fulfillClaim(getwoketoke_id);
 
 						// Attempt to claim the user again
 						await truffleAssert.reverts(
-							wt.claimUser(getwoketoke_id, {from: claimer}),
+							UR.claimUser(getwoketoke_id, {from: claimer}),
 							"sender already has user ID"
 						);
 						await truffleAssert.reverts(
-							wt.claimUser(getwoketoke_id, {from: stranger}),
+							UR.claimUser(getwoketoke_id, {from: stranger}),
 							"user already claimed"
 						);
 					})
 
 					it('should fail if more than one claim request is made from same address', async () => {
-						wt.claimUser(getwoketoke_id, {from: claimer});
-						let {returnValues: {queryId: queryId}} = await waitForEvent(wt.Lodged);
+						UR.claimUser(getwoketoke_id, {from: claimer});
+						let {returnValues: {queryId: queryId}} = await waitForEvent(UR.Lodged);
 
 						// Attempt second request before Oracale __callback() called
 						await truffleAssert.reverts(
-							wt.claimUser(getwoketoke_id, {from: claimer}),
+							UR.claimUser(getwoketoke_id, {from: claimer}),
 							"sender already has a request pending"
 						);
 					})
@@ -161,39 +183,35 @@ contract('WokeToken', (accounts) => {
 				})
 
 				it('should claim several users', async () => {
-					const cases = [
-						{address: cB, id: '212312122', handle: 'jack', followers: 30000},
-						{address: cC, id: '3313322', handle: 'realdonaldtrump', followers: 80e6},
-						{address: claimer, id: getwoketoke_id, handle: 'getwoketoke', followers: 100},
-					];
+					const cases = users;
 
 					for(c of cases) {
-						let r = await wt.claimUser(c.id, {from: c.address});
+						let r = await UR.claimUser(c.id, {from: c.address});
 						let bn = r.receipt.blockNumber;
 						let queryId = r.logs[r.logs.length-1].args.queryId;
 						debug.t('queryId: ', queryId);
 
 						let claimString = await genClaimString(c.address, c.id, c.followers);
 
-						r = await to.__callback(
+						r = await TO.__callback(
 							queryId,
 							claimString,								// query result
 							'0x0',	// proof
 							{from: oraclize_cb}
 						);
 
-						await wt._fulfillClaim(c.id, {from: c.address});
-						let claimed = (await wt.getPastEvents('Claimed', {from: bn, to: 'latest'}))[0].args
+						await UR._fulfillClaim(c.id, {from: c.address});
+						let claimed = (await UR.getPastEvents('Claimed', {from: bn, to: 'latest'}))[0].args
 
-						debug.v('event WokeToken.Claimed:', claimed);
+						debug.v('event UserRegistry.Claimed:', claimed);
 
 						assert.strictEqual(claimed.account, c.address);
 						assert.strictEqual(claimed.userId, c.id);
 						assert.strictEqual(claimed.amount.toNumber(), 50); // if using
 
-						assert(await wt.getUserCount.call(), cases.indexOf(c) + 1);
+						assert(await UR.getUserCount.call(), cases.indexOf(c) + 1);
 					}
-					assert(await wt.getUserCount.call(), cases.length);
+					assert(await UR.getUserCount.call(), cases.length);
 				})
 
 				it('should reward referrers with a bonus', async () => {
@@ -204,37 +222,37 @@ contract('WokeToken', (accounts) => {
 					];
 
 					for(c of cases) {
-						let r = await wt.claimUser(c.id, {from: c.address});
+						let r = await UR.claimUser(c.id, {from: c.address});
 						let bn = r.receipt.blockNumber;
 						let queryId = r.logs[r.logs.length-1].args.queryId;
 						debug.t('queryId: ', queryId);
 
 						let claimString = await genClaimString(c.address, c.id, c.followers);
 
-						r = await to.__callback(
+						r = await TO.__callback(
 							queryId,
 							claimString,								// query result
 							'0x0',	// proof
 							{from: oraclize_cb}
 						);
 
-						await wt._fulfillClaim(c.id, {from: c.address});
-						let claimed = (await wt.getPastEvents('Claimed', {from: bn, to: 'latest'}))[0].args
-						debug.v('event WokeToken.Claimed:', claimed);
+						await UR._fulfillClaim(c.id, {from: c.address});
+						let claimed = (await UR.getPastEvents('Claimed', {from: bn, to: 'latest'}))[0].args
+						debug.v('event UserRegistry.Claimed:', claimed);
 
-						let cb = await wt.balanceOf.call(wt.address);
+						let cb = await UR.balanceOf.call(UR.address);
 						debug.t('Contract bal: ', cb.toString());
 
-						let balance = await wt.balanceOf.call(c.address);
+						let balance = await UR.balanceOf.call(c.address);
 						debug.t(balance.toString());
 						if(c.id != getwoketoke_id) {
-							await wt.transferUnclaimed(cases[cases.length-1].id, 5, {from: c.address});
-						debug.t((await wt.balanceOf.call(c.address)).toString());
+							await UR.transferUnclaimed(cases[cases.length-1].id, 5, {from: c.address});
+						debug.t((await UR.balanceOf.call(c.address)).toString());
 						} 
 					}
 
 					for(c of cases) {
-						let bal = await wt.balanceOf.call(c.address);
+						let bal = await UR.balanceOf.call(c.address);
 						debug.t(bal.toString());
 					}
 				})
@@ -248,51 +266,51 @@ contract('WokeToken', (accounts) => {
 					id: getwoketoke_id,
 				}
 				beforeEach(async function() {
-					claimUser = bindClaimUser(wt, to, oraclize_cb);
+					claimUser = bindClaimUser(UR, TO, oraclize_cb);
 					await claimUser(claimer, getwoketoke_id)
 				})
 
 				it('should be able to tip an unclaimed user', async function () {
-					let r = await wt.tip(getwoketoke_id, stranger_id, 1, {from: tipAgent});
+					let r = await UR.tip(getwoketoke_id, stranger_id, 1, {from: tipAgent});
 				})
 
 				it('should be able to tip a claimed user', async function () {
 					await claimUser(stranger, stranger_id)
-					let r = await wt.tip(getwoketoke_id, stranger_id, 1, {from: tipAgent});
+					let r = await UR.tip(getwoketoke_id, stranger_id, 1, {from: tipAgent});
 				})
 
 				it('should revert if sender is not tip agent', async function () {
 					await truffleAssert.reverts(
-						wt.tip(getwoketoke_id, stranger_id, 1, {from: claimer}),
+						UR.tip(getwoketoke_id, stranger_id, 1, {from: claimer}),
 						"sender not tip agent"
 					);
 
 					await truffleAssert.reverts(
-						wt.tip(getwoketoke_id, stranger_id, 1, {from: stranger}),
+						UR.tip(getwoketoke_id, stranger_id, 1, {from: stranger}),
 						"sender not tip agent"
 					);
 				})
 
 				it('should revert if tip amount is zero', async function () {
 					await truffleAssert.reverts(
-						wt.tip(getwoketoke_id, stranger_id, 0, {from: tipAgent}),
+						UR.tip(getwoketoke_id, stranger_id, 0, {from: tipAgent}),
 						"cannot tip 0 tokens",
 					)
 				})
 
 				it('should revert if senders balance is zero', async function () {
-					const balance = (await wt.balanceOf.call(claimer)).toNumber();
-					await wt.transferUnclaimed(stranger_id, balance, {from: claimer}); // Empty balance
-					//await wt.tip(getwoketoke_id, stranger_id, 5, {from: tipAgent});
+					const balance = (await UR.balanceOf.call(claimer)).toNumber();
+					await UR.transferUnclaimed(stranger_id, balance, {from: claimer}); // Empty balance
+					//await UR.tip(getwoketoke_id, stranger_id, 5, {from: tipAgent});
 					await truffleAssert.reverts(
-						wt.tip(getwoketoke_id, stranger_id, 5, {from: tipAgent}),
+						UR.tip(getwoketoke_id, stranger_id, 5, {from: tipAgent}),
 						"cannot tip 0 tokens",
 					)
 				})
 
 				it('should succeed if tip amount is greater than users balance', async function () {
-					const balance = (await wt.balanceOf.call(claimer)).toNumber();
-					let r = await wt.tip(getwoketoke_id, stranger_id, balance + 4, {from: tipAgent}); // Empty balance
+					const balance = (await UR.balanceOf.call(claimer)).toNumber();
+					let r = await UR.tip(getwoketoke_id, stranger_id, balance + 4, {from: tipAgent}); // Empty balance
 					const tipLog = r.logs[r.logs.length - 1];
 					const tipAmount = tipLog.args.amount.toNumber();
 					assert.strictEqual(balance, tipAmount);
@@ -304,15 +322,15 @@ contract('WokeToken', (accounts) => {
 })
 
 // @param userObject: address, id, followersCount
-const bindClaimUser = (wt, to, oracleAddress) => async (userObject) => {
-	let r = await wt.claimUser(userObject.id, {from: userObject.address});
+const bindClaimUser = (ur, to, oracleAddress) => async (userObject) => {
+	let r = await UR.claimUser(userObject.id, {from: userObject.address});
 	const claimArgs = [userObject.address, userObject.id, userObject.followersCount];
 	// let bn = r.receipt.blockNumber;
 	let queryId = r.logs[r.logs.length-1].args.queryId;
 	debug.t('Claim queryId: ', queryId);
 	const claimString = await genClaimString(...claimArgs);
-	await to.__callback(queryId, claimString, '0x0', {from: oracleAddress});
-	await wt._fulfillClaim(userId, {from: userObject.address});
+	await TO.__callback(queryId, claimString, '0x0', {from: oracleAddress});
+	await UR._fulfillClaim(userId, {from: userObject.address});
 }
 
 

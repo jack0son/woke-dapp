@@ -68,6 +68,13 @@ contract UserRegistry {
 		return queryId;
 	}
 
+	function verifyClaimString(address claimer, string memory _id, string memory _claimString, byte _appId)
+		public view
+	returns (bool, uint32)
+	{
+		return Helpers.verifyClaimString(claimer, _id, _claimString, appId);
+	}
+
 	// @notice Receive claimer data from client and action claim
 	// @param _id user id
 	// @param _claimString tweet text which should contain a signed claim string
@@ -80,7 +87,7 @@ contract UserRegistry {
 		require(bytes(claimString).length > 0, "claim string not stored");
 
 		address claimer = requester[_id];
-		(bool verified, uint32 followers) = Helpers.verifyClaimString(claimer, _id, claimString, appId);
+		(bool verified, uint32 followers) = verifyClaimString(claimer, _id, claimString, appId);
 		require(verified, "invalid claim string");
 
 		// address _claimer
@@ -119,6 +126,8 @@ contract UserRegistry {
 
 		// 1. Mint new tokens
 		uint256 minted = wokeToken._curvedMint(users[_id].account, users[_id].followers);
+		return 0;
+
 
 		// 2. calculate tribute bonus weighting
 		//	tribute bonus pool = minted - join bonus
@@ -127,7 +136,8 @@ contract UserRegistry {
 		// 3. calculate tribute distribution
 		// 4. Distribute tribute bonuses
 		uint256 bonuses = _distributeTributeBonuses(_id, tributeBonusPool);
-		assert(bonuses == tributeBonusPool);
+		require(bonuses == tributeBonusPool, 'bonuses != tributeBonusPool');
+		//assert(bonuses == tributeBonusPool);
 
 		// 5. Transfer tributes 
 		uint unclaimedBalance = users[_id].unclaimedBalance;
