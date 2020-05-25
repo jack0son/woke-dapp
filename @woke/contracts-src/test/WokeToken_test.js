@@ -48,6 +48,7 @@ const appId = web3.utils.asciiToHex('0x0A'); // twitter
 const getwoketoke_id = '932596541822419000';
 const stranger_id = '12345';
 
+
 contract('UserRegistry', (accounts) => {
 	const [defaultAccount, owner, oraclize_cb, claimer, tipAgent, stranger, cB, cC, ...rest] = accounts;
 
@@ -65,6 +66,28 @@ contract('UserRegistry', (accounts) => {
 	let claimUser;
 	let newUser = {};
 	let claimArgs = [];
+
+	function joinEvent(newUser, tributors) {
+		const claimUser = bindClaimUser(UR, TO, oraclize_cb);
+		// 1. Claim all tributors
+		for(t of tributors) {
+			await claimUser(t);
+		}
+
+		// 2. Transfer tributes
+		for(t of tributors) {
+			let balance = await WT.balanceOf.call(t.address);
+			console.log(balance);
+			if(t.amount > balance) t.amount = balance;  // avoid reverts
+			let r = await UR.transferUnclaimed(newUser.id, t.amount, {from: t.address});
+		}
+
+		// 3. User joins
+		let r = await claimUser(newUser)
+
+		// 4. check user bonuses
+		// 5. check tributor bonuses
+	}
 
 	context('Using mock TwitterOracle', () => {
 		before('Deploy WokeToken', async function() {
@@ -209,7 +232,7 @@ contract('UserRegistry', (accounts) => {
 
 						assert.strictEqual(claimed.account, c.address);
 						assert.strictEqual(claimed.userId, c.id);
-						assert.strictEqual(claimed.amount.toNumber(), 50); // if using
+						//assert.strictEqual(claimed.amount.toNumber(), 50); // if using
 
 						assert(await UR.getUserCount.call(), cases.indexOf(c) + 1);
 					}
@@ -269,7 +292,7 @@ contract('UserRegistry', (accounts) => {
 				}
 				beforeEach(async function() {
 					claimUser = bindClaimUser(UR, TO, oraclize_cb);
-					await claimUser(claimer, getwoketoke_id)
+					await claimUser(newUser)
 				})
 
 				it('should be able to tip an unclaimed user', async function () {
