@@ -1,6 +1,7 @@
 //const oracle = artifacts.require("TwitterOracle.sol");
 var OracleMock = artifacts.require("TwitterOracleMock.sol");
-var WokeFormula = artifacts.require("WokeFormula");
+var WokeFormula = artifacts.require("WokeFormula.sol");
+var LogNormalPDF = artifacts.require("LogNormalPDF.sol");
 var UserRegistry = artifacts.require("UserRegistry.sol");
 var Token = artifacts.require("WokeToken.sol");
 var Distribution = artifacts.require("Distribution.sol");
@@ -69,6 +70,7 @@ const doDeploy = async (deployer, network, accounts) => {
 		steepness: 1.4e9,					// c
 	};
 
+	const val = opts.value;
 	opts.value = 0;
 	console.log('Deploying WokeFormula...');
 	await deployer.deploy(WokeFormula,
@@ -85,8 +87,14 @@ const doDeploy = async (deployer, network, accounts) => {
 	let tokenInstance = await Token.deployed();
 	console.log(`WokeToken deployed at ${tokenInstance.address}`);
 
+	console.log('Deploying LogNormalPDF...')
+	await deployer.deploy(LogNormalPDF, opts)
+	let lnpdfInstance = await LogNormalPDF.deployed();
+	console.log(`LogNormalPDF deployed at ${lnpdfInstance.address}`);
+
 	console.log('Deploying UserRegistry...')
-	return await deployer.deploy(UserRegistry, tokenInstance.address, oracleInstance.address, owner, opts)
+	opts.value = val;
+	return await deployer.deploy(UserRegistry, tokenInstance.address, lnpdfInstance.address, oracleInstance.address, owner, opts)
 		.then(async registryInstance => {
 			tokenInstance.setUserRegistry(registryInstance.address, opts);
 			console.log(`UserRegistry deployed at ${registryInstance.address}`);

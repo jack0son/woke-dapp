@@ -1,7 +1,8 @@
 pragma solidity ^0.5.0;
 
 import "./Structs.sol";
-import "./Curves.sol";
+import "../Math/LogNormalPDF.sol";
+//import "./Curves.sol";
 import "openzeppelin-solidity/contracts/math/SafeMath.sol";
 
 library Distribution {
@@ -11,12 +12,14 @@ library Distribution {
 		mapping(string => Structs.User) storage users,
 		mapping(address => string) storage userIds,
 		string memory _userId,
-		uint256 minted
+		uint256 minted,
+		address lnpdfAddress
 	)
 		internal
 		returns (uint256)
 	{
 		Structs.User storage user = users[_userId];
+		LogNormalPDF logNormalPDF = LogNormalPDF(lnpdfAddress);
 		// 1. find highest influence weighting in tributors
 		uint256 maxWeight = 0;
 		uint32 followers;
@@ -26,7 +29,7 @@ library Distribution {
 			address referrer = user.referrers[i];
 			tributePool += user.referralAmount[referrer];
 			tributor = users[userIds[referrer]];
-			uint256 lnpdf = Curves.logNormalPDF(tributor.followers);
+			uint256 lnpdf = logNormalPDF.lnpdf(tributor.followers);
 			if(lnpdf > maxWeight) {
 				maxWeight = lnpdf;
 				followers = tributor.followers;
@@ -42,20 +45,22 @@ library Distribution {
 		groups[1] = tWeights;
 		//groups = [userWeights, tWeights];
 		//Structs.WeightingGroup[2] memory groups = [userWeights, tWeights];
-		uint256[] memory allocations = _calcAllocations(groups, minted);
+		uint256[] memory allocations = _calcAllocations(groups, minted, lnpdfAddress);
 
 		return allocations[1];
 	}
 
-	function _calcAllocations(Structs.WeightingGroup[] memory groups, uint256 pool)
+	function _calcAllocations(Structs.WeightingGroup[] memory groups, uint256 pool, address lnpdfAddress)
 		internal
 		returns (uint256[] memory allocations)
 	{
+		LogNormalPDF logNormalPDF = LogNormalPDF(lnpdfAddress);
+		// 1. find highest influence weighting in tributors
 		uint256 ratio;
 		uint256 weighting;
 		uint256 normal = 0;
 		for(uint i = 0; i < groups.length; i++) {
-			groups[i].weighting = Curves.logNormalPDF(groups[i].followers);
+			groups[i].weighting = logNormalPDF.lnpdf(groups[i].followers);
 			normal += groups[i].weighting;
 		}
 

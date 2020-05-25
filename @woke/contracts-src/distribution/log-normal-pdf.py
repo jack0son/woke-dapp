@@ -54,15 +54,6 @@ chunks = [5e3, 10e3, 20e3, 30e3, 40e3, 50e3]
 last = 0;
 chunk = 0;
 
-def write_val(i, index, n):
-    tmp.write('{}\n'.format(i))
-    integer = 0 if np.isnan(y[i]) else int(y[i]*scale*sigFigs)
-    y2[i] = integer
-    approx[i] = integer
-    last = index
-    f.write('yArray{}[{}] = 0x{:02x};\n'.format(chunkSize, int(index), integer))
-
-
 chunks.append(len(y))
 chunkArrays = [[] for j in range(len(chunks))]
 
@@ -70,17 +61,53 @@ for i in range(len(chunks)):
     chunkSize = np.power(2, i+2)
     lower = 0 if i == 0 else chunks[i-1]
     for j in range(int(lower), int(chunks[i])):
+    #for j in y[int(lower):int(chunks[i])]:
         if j%chunkSize == 0:
-            integer = 0 if np.isnan(y[j]) else int(y[j]*scale*sigFigs)
+            integer = int(y[1]*scale*sigFigs/2) if np.isnan(y[j]) else int(y[j]*scale*sigFigs)
             chunkArrays[i].append((integer, j))
             approx[j] = integer
 
 with open('lnpdf-values.sol', 'w') as f:
+    f.write('// last val {0:#0{1}x};\n'.format(int(y[-1]*scale*sigFigs), 12))
+    for chunk in range(len(chunks)):
+        chunkSize = np.power(2, 2 + chunk) 
+        if(len(chunkArrays[chunk])):
+            f.write('uint40[{}] private yArray{};\n'.format(len(chunkArrays[chunk]), chunkSize))
+
+    f.write('\n')
+    for chunk in range(1, len(chunks)):
+        chunkSize = np.power(2, 1 + chunk) 
+        #if(len(chunkArrays[chunk])):
+        if True:
+            f.write('// yArray{}\n'.format(chunkSize))
+            print(len(chunkArrays[chunk]))
+            lower = chunkArrays[chunk - 1][0]
+            upper = chunkArrays[chunk][0] if len(chunkArrays[chunk]) else chunkArrays[chunk - 1][-1]
+            f.write('if(x >= {} || x < {}) {{\n'.format(lower[1], upper[1]))
+            f.write('index = x - {};\n'.format(lower[1],))
+            f.write('y = yArray{}[index/{}];\n}}\n\n'.format(chunkSize, chunkSize))
+
+    f.write('\n')
     for chunk in range(len(chunks)):
         for i in range(len(chunkArrays[chunk])):
             chunkSize = np.power(2, 2 + chunk) 
             val = chunkArrays[chunk][i]
-            f.write('yArray{}[{}] = 0x{:02x};\t\t//{}\n'.format(chunkSize, i, val[0], val[1]))
+            f.write('yArray{}[{}] = '.format(chunkSize, i))
+            f.write('{0:#0{1}x};'.format(val[0], 12))
+            f.write('\t\t//{}\n'.format(val[1]));
+        f.write('\n');
+
+        #chunkSize = np.power(2, 2 + chunk) 
+        #f.write('uint40[{}] private constant yArray{} = [\n'.format(len(chunkArrays[chunk]), chunkSize))
+        #for i in range(len(chunkArrays[chunk])):
+        #    val = chunkArrays[chunk][i]
+        #    #f.write('0x{:02x}'.format(val[0]))
+        #    f.write('{0:#0{1}x}'.format(val[0], 12))
+        #    if i < len(chunkArrays[chunk]) - 1:
+        #        f.write(',')
+        #    f.write('\t\t//{}\n'.format(val[1]))
+        #f.write('];\n');
+
 
 
 tmp.close()
@@ -92,4 +119,4 @@ ax[0].plot(x,y) # .. "plot f"
 #ax.plot(x,y2) # .. "plot f"
 ax[1].set_title("plot y = f(x,a)")
 ax[1].plot(x,approx) # .. "plot f"
-plt.show()
+#plt.show()

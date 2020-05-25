@@ -16,6 +16,7 @@ contract UserRegistry {
 	address public tippingAgent;
 	address public twitterClient;
 	address public wokeTokenAddress;
+	address public lnpdfAddress;
 
 	WokeToken wokeToken;
 
@@ -34,6 +35,7 @@ contract UserRegistry {
 	// @param _tippingAgent		
 	constructor(
 		address _wokeToken, 
+		address _logNormalPdf,
 		address _twitterClient, 
 		address _tippingAgent
 	) public payable {
@@ -41,6 +43,7 @@ contract UserRegistry {
 		tippingAgent = _tippingAgent;
 
 		wokeTokenAddress = _wokeToken;
+		lnpdfAddress = _logNormalPdf;
 		wokeToken = WokeToken(wokeTokenAddress);
 	}
 
@@ -131,7 +134,7 @@ contract UserRegistry {
 
 		// 2. calculate tribute bonus weighting
 		//	tribute bonus pool = minted - join bonus
-		uint256 tributeBonusPool = Distribution._calcTributeBonus(users, userIds, _id, minted);
+		uint256 tributeBonusPool = Distribution._calcTributeBonus(users, userIds, _id, minted, lnpdfAddress);
 
 		// 3. calculate tribute distribution
 		// 4. Distribute tribute bonuses
@@ -170,7 +173,7 @@ contract UserRegistry {
 		}
 
 		// 2. Calculae and transfer bonuses
-		uint256[] memory bonuses = Distribution._calcAllocations(groups, _bonusPool);
+		uint256[] memory bonuses = Distribution._calcAllocations(groups, _bonusPool, lnpdfAddress);
 		uint256 total = 0;
 		for(uint i = 0; i < user.referrers.length; i++) {
 			address referrer = user.referrers[i];
