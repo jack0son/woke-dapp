@@ -10,7 +10,7 @@ var Helpers = artifacts.require("Helpers.sol");
 var Strings = artifacts.require("Strings.sol");
 var ECDSA = artifacts.require("ECDSA.sol");
 
-const lndpfValues = require('../distribution/lnpdf-values.js');
+const fillLnpdfArrays = require('./fill_lnpdf');
 
 const {blog, verbose, inspect} = require('../test/debug/common');
 
@@ -77,30 +77,14 @@ const doDeploy = async (deployer, network, accounts) => {
 	let formulaInstance = await WokeFormula.deployed();
 	console.log(`WokeFormula deployed at ${formulaInstance.address}`);
 
+	const refreshLnpdf = true;
 	console.log('Deploying LogNormalPDF...')
-	await deployer.deploy(LogNormalPDF, opts)
+	await deployer.deploy(LogNormalPDF, { ...opts, overwrite: refreshLnpdf })
 	let lnpdfInstance = await LogNormalPDF.deployed();
 	console.log(`LogNormalPDF deployed at ${lnpdfInstance.address}`);
 
-	const batchSize = 64;
-	async function fillLnpdfChunk(chunkSize, values) {
-		console.log(`Filling yArray${chunkSize} with ${values.length} values...`);
-		for(let i = 0; i + batchSize < values.length; i+=batchSize) {
-			const arg = values.slice(i, i+batchSize);
-			await lnpdfInstance.fillArrayValues(chunkSize, arg);
-		}
-	}
-
-	async function fillLnpdfArrays() {
-		for(let i = 2; i <= 7; i++) {
-			let chunkSize = Math.pow(2, i);
-			await fillLnpdfChunk(chunkSize, lndpfValues[chunkSize]);
-		}
-
-		await lnpdfInstance.fillingComplete();
-	}
-
-	await fillLnpdfArrays();
+	if(refreshLnpdf)
+		await fillLnpdfArrays(defaultAccount, lnpdfInstance)();
 
 	opts.value = val;
 	console.log('Deploying WokeToken...')

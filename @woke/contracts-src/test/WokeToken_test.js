@@ -42,6 +42,7 @@ const BN = require('bignumber.js');
 const UserRegistry = artifacts.require('UserRegistry.sol')
 const WokeToken = artifacts.require('WokeToken.sol')
 const WokeFormula = artifacts.require('WokeFormula.sol')
+const LogNormalPDF = artifacts.require('LogNormalPDF.sol')
 const MockTwitterOracle = artifacts.require('mocks/TwitterOracleMock.sol')
 
 const appId = web3.utils.asciiToHex('0x0A'); // twitter
@@ -62,12 +63,12 @@ contract('UserRegistry', (accounts) => {
 
 	// Token Generation params
 	const max_supply = 100000000;
-	let UR, WT, TO, WF;
+	let UR, WT, TO, WF, LNDPF;
 	let claimUser;
 	let newUser = {};
 	let claimArgs = [];
 
-	function joinEvent(newUser, tributors) {
+	async function joinEvent(newUser, tributors) {
 		const claimUser = bindClaimUser(UR, TO, oraclize_cb);
 		// 1. Claim all tributors
 		for(t of tributors) {
@@ -93,6 +94,7 @@ contract('UserRegistry', (accounts) => {
 		before('Deploy WokeToken', async function() {
 			WF = await WokeFormula.deployed();
 			WT = await WokeToken.deployed();
+			LNPDF = await LogNormalPDF.deployed();
 		});
 
 		beforeEach(async () => {
@@ -101,7 +103,7 @@ contract('UserRegistry', (accounts) => {
 				{from: owner, value: web3.utils.toWei('0.1', 'ether')}
 			);
 
-			UR = await UserRegistry.new(WT.address, TO.address, tipAgent, {from: owner})
+			UR = await UserRegistry.new(WT.address, LNPDF.address, TO.address, tipAgent, {from: owner})
 			await WT.setUserRegistry(UR.address, {from: defaultAccount});
 		});
 
@@ -290,6 +292,13 @@ contract('UserRegistry', (accounts) => {
 					followers: 3e6,
 					id: getwoketoke_id,
 				}
+
+				const strangerUser = {
+					address: stranger,
+					followers: 3e6,
+					id: stranger_id,
+				}
+
 				beforeEach(async function() {
 					claimUser = bindClaimUser(UR, TO, oraclize_cb);
 					await claimUser(newUser)
@@ -300,7 +309,7 @@ contract('UserRegistry', (accounts) => {
 				})
 
 				it('should be able to tip a claimed user', async function () {
-					await claimUser(stranger, stranger_id)
+					await claimUser(strangerUser)
 					let r = await UR.tip(getwoketoke_id, stranger_id, 1, {from: tipAgent});
 				})
 
@@ -324,7 +333,7 @@ contract('UserRegistry', (accounts) => {
 				})
 
 				it('should revert if senders balance is zero', async function () {
-					const balance = (await UR.balanceOf.call(claimer)).toNumber();
+					const balance = (await WT.balanceOf.call(claimer)).toNumber();
 					await UR.transferUnclaimed(stranger_id, balance, {from: claimer}); // Empty balance
 					//await UR.tip(getwoketoke_id, stranger_id, 5, {from: tipAgent});
 					await truffleAssert.reverts(
@@ -334,7 +343,7 @@ contract('UserRegistry', (accounts) => {
 				})
 
 				it('should succeed if tip amount is greater than users balance', async function () {
-					const balance = (await UR.balanceOf.call(claimer)).toNumber();
+					const balance = (await WT.balanceOf.call(claimer)).toNumber();
 					let r = await UR.tip(getwoketoke_id, stranger_id, balance + 4, {from: tipAgent}); // Empty balance
 					const tipLog = r.logs[r.logs.length - 1];
 					const tipAmount = tipLog.args.amount.toNumber();
@@ -349,13 +358,13 @@ contract('UserRegistry', (accounts) => {
 // @param userObject: address, id, followersCount
 const bindClaimUser = (UR, TO, oracleAddress) => async (userObject) => {
 	let r = await UR.claimUser(userObject.id, {from: userObject.address});
-	const claimArgs = [userObject.address, userObject.id, userObject.followersCount];
+	const claimArgs = [userObject.address, userObject.id, userObject.followers];
 	// let bn = r.receipt.blockNumber;
 	let queryId = r.logs[r.logs.length-1].args.queryId;
 	debug.t('Claim queryId: ', queryId);
 	const claimString = await genClaimString(...claimArgs);
 	await TO.__callback(queryId, claimString, '0x0', {from: oracleAddress});
-	await UR._fulfillClaim(userId, {from: userObject.address});
+	await UR._fulfillClaim(userObject.id, {from: userObject.address});
 }
 
 

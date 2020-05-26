@@ -2,7 +2,6 @@ pragma solidity ^0.5.0;
 
 import "./Structs.sol";
 import "../Math/LogNormalPDF.sol";
-//import "./Curves.sol";
 import "openzeppelin-solidity/contracts/math/SafeMath.sol";
 
 library Distribution {

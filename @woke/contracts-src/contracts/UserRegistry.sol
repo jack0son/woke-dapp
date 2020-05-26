@@ -439,6 +439,13 @@ contract UserRegistry {
 		require(msg.sender == tippingAgent, "sender not tip agent");
 	}
 
+	function balanceOf(string memory _userId)
+		public view
+		returns (uint256)
+	{
+		return wokeToken.balanceOf(users[_userId].account);
+	}
+
 
 	// @notice Authenticate account is owner of user ID
 	// @dev This should be redundant given the user claiming process, but
