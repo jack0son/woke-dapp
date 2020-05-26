@@ -13,45 +13,57 @@ contract LogNormalPDF is LogNormalPDFValues {
 	//uint48[78] private yArray128;
 
 	function lnpdf(uint32 x)
-	public view
+		completed
+		public view
 	returns(uint40 y)
 	{
 		uint32 index;
+		uint8 chunkSize;
 		// yArray4
 		if(x < 5000) {
 			index = x - 0;
-			y = yArray4[index/4];
+			chunkSize = 4;
+			//y = yArray4[index/4];
 		}
 
-		else if(x >= 5000 || x < 10000) {
+		else if(x >= 5000 && x < 10000) {
 			index = x - 5000;
-			y = yArray8[index/8];
+			chunkSize = 8;
+			//y = yArray4[index/4];
+			//y = yArray8[index/8];
 		}
 
-		else if(x >= 10000 || x < 20000) {
+		else if(x >= 10000 && x < 20000) {
 			index = x - 10000;
-			y = yArray16[index/16];
+			chunkSize = 16;
+			//y = yArray16[index/16];
 		}
 
-		else if(x >= 20000 || x < 30016) {
+		else if(x >= 20000 && x < 30016) {
 			index = x - 20000;
-			y = yArray32[index/32];
+			chunkSize = 32;
+			//y = yArray32[index/32];
 		}
 
-		else if(x >= 30016 || x < 40064) {
+		else if(x >= 30016 && x < 40064) {
 			index = x - 30016;
-			y = yArray64[index/64];
+			chunkSize = 64;
+			//y = yArray64[index/64];
 		}
 
-		else if(x >= 40064 || x < 49920) {
+		else if(x >= 40064 && x < 49920) {
 			index = x - 40064;
-			y = yArray128[index/128];
+			chunkSize = 128;
+			//y = yArray128[index/128];
 		}
 
 		else {
 			y = 0x009e3a3f48;
 		}
 
+		if(y == 0) {
+			y = valueArrays[chunkSize][index/chunkSize];
+		}
 
 		return y;
 	}

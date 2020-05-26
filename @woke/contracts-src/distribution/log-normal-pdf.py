@@ -72,7 +72,7 @@ with open('lnpdf-values.sol', 'w') as f:
     for chunk in range(len(chunks)):
         chunkSize = np.power(2, 2 + chunk) 
         if(len(chunkArrays[chunk])):
-            f.write('uint40[{}] private yArray{};\n'.format(len(chunkArrays[chunk]), chunkSize))
+            f.write('uint40[{}] internal yArray{};\n'.format(len(chunkArrays[chunk]), chunkSize))
 
     f.write('\n')
     for chunk in range(1, len(chunks)):
@@ -83,31 +83,54 @@ with open('lnpdf-values.sol', 'w') as f:
             print(len(chunkArrays[chunk]))
             lower = chunkArrays[chunk - 1][0]
             upper = chunkArrays[chunk][0] if len(chunkArrays[chunk]) else chunkArrays[chunk - 1][-1]
-            f.write('if(x >= {} || x < {}) {{\n'.format(lower[1], upper[1]))
+            f.write('if(x >= {} && x < {}) {{\n'.format(lower[1], upper[1]))
             f.write('index = x - {};\n'.format(lower[1],))
             f.write('y = yArray{}[index/{}];\n}}\n\n'.format(chunkSize, chunkSize))
 
     f.write('\n')
     for chunk in range(len(chunks)):
-        for i in range(len(chunkArrays[chunk])):
-            chunkSize = np.power(2, 2 + chunk) 
-            val = chunkArrays[chunk][i]
-            f.write('yArray{}[{}] = '.format(chunkSize, i))
-            f.write('{0:#0{1}x};'.format(val[0], 12))
-            f.write('\t\t//{}\n'.format(val[1]));
-        f.write('\n');
-
-        #chunkSize = np.power(2, 2 + chunk) 
-        #f.write('uint40[{}] private constant yArray{} = [\n'.format(len(chunkArrays[chunk]), chunkSize))
         #for i in range(len(chunkArrays[chunk])):
+        #    chunkSize = np.power(2, 2 + chunk) 
         #    val = chunkArrays[chunk][i]
-        #    #f.write('0x{:02x}'.format(val[0]))
-        #    f.write('{0:#0{1}x}'.format(val[0], 12))
-        #    if i < len(chunkArrays[chunk]) - 1:
-        #        f.write(',')
-        #    f.write('\t\t//{}\n'.format(val[1]))
-        #f.write('];\n');
+        #    f.write('yArray{}[{}] = '.format(chunkSize, i))
+        #    f.write('{0:#0{1}x};'.format(val[0], 12))
+        #    f.write('\t\t//{}\n'.format(val[1]));
+        #f.write('\n');
 
+        chunkSize = np.power(2, 2 + chunk) 
+        f.write('uint40[{}] internal yArray{} = [\n'.format(len(chunkArrays[chunk]), chunkSize))
+        for i in range(len(chunkArrays[chunk])):
+            val = chunkArrays[chunk][i]
+            #f.write('0x{:02x}'.format(val[0]))
+            f.write('{0:#0{1}x}'.format(val[0], 12))
+            if i < len(chunkArrays[chunk]) - 1:
+                f.write(',')
+            f.write('\t\t//{}\n'.format(val[1]))
+        f.write('];\n');
+
+with open('lnpdf-values.js', 'w') as f:
+    f.write('module.exports = {\n');
+    for chunk in range(len(chunks)):
+        #for i in range(len(chunkArrays[chunk])):
+        #    chunkSize = np.power(2, 2 + chunk) 
+        #    val = chunkArrays[chunk][i]
+        #    f.write('yArray{}[{}] = '.format(chunkSize, i))
+        #    f.write('{0:#0{1}x};'.format(val[0], 12))
+        #    f.write('\t\t//{}\n'.format(val[1]));
+        #f.write('\n');
+
+        chunkSize = np.power(2, 2 + chunk) 
+        #f.write('uint40[{}] internal yArray{} = [\n'.format(len(chunkArrays[chunk]), chunkSize))
+        f.write('"{}": [\n'.format(chunkSize))
+        for i in range(len(chunkArrays[chunk])):
+            val = chunkArrays[chunk][i]
+            #f.write('0x{:02x}'.format(val[0]))
+            f.write('{0:#0{1}x}'.format(val[0], 12))
+            if i < len(chunkArrays[chunk]) - 1:
+                f.write(',')
+            f.write('\t\t//{}\n'.format(val[1]))
+        f.write('],\n');
+    f.write('\n}');
 
 
 tmp.close()

@@ -9,7 +9,8 @@ var Structs = artifacts.require("Helpers.sol");
 var Helpers = artifacts.require("Helpers.sol");
 var Strings = artifacts.require("Strings.sol");
 var ECDSA = artifacts.require("ECDSA.sol");
-var Curves = artifacts.require("Curves.sol");
+
+const lndpfValues = require('../distribution/lnpdf-values.js');
 
 const {blog, verbose, inspect} = require('../test/debug/common');
 
@@ -37,19 +38,13 @@ const doDeploy = async (deployer, network, accounts) => {
 	let oracleInstance = await OracleMock.deployed();
 	console.log(`OracleMock deployed at ${oracleInstance.address}`);
 
-
 	console.log('Deploying Strings...');
 	await deployer.deploy(Strings);
 	await deployer.link(Strings, Helpers);
 
-
 	console.log('Deploying ECDSA...');
 	await deployer.deploy(ECDSA);
 	await deployer.link(ECDSA, Helpers);
-
-	console.log('Deploying Curves...');
-	await deployer.deploy(Curves);
-	await deployer.link(Curves, Distribution);
 
 	console.log('Deploying Structs...');
 	await deployer.deploy(Structs);
@@ -82,21 +77,42 @@ const doDeploy = async (deployer, network, accounts) => {
 	let formulaInstance = await WokeFormula.deployed();
 	console.log(`WokeFormula deployed at ${formulaInstance.address}`);
 
-	console.log('Deploying WokeToken...')
-	await deployer.deploy(Token, formulaInstance.address, maxSupply, opts)
-	let tokenInstance = await Token.deployed();
-	console.log(`WokeToken deployed at ${tokenInstance.address}`);
-
 	console.log('Deploying LogNormalPDF...')
 	await deployer.deploy(LogNormalPDF, opts)
 	let lnpdfInstance = await LogNormalPDF.deployed();
 	console.log(`LogNormalPDF deployed at ${lnpdfInstance.address}`);
 
-	console.log('Deploying UserRegistry...')
+	const batchSize = 64;
+	async function fillLnpdfChunk(chunkSize, values) {
+		console.log(`Filling yArray${chunkSize} with ${values.length} values...`);
+		for(let i = 0; i + batchSize < values.length; i+=batchSize) {
+			const arg = values.slice(i, i+batchSize);
+			await lnpdfInstance.fillArrayValues(chunkSize, arg);
+		}
+	}
+
+	async function fillLnpdfArrays() {
+		for(let i = 2; i <= 7; i++) {
+			let chunkSize = Math.pow(2, i);
+			await fillLnpdfChunk(chunkSize, lndpfValues[chunkSize]);
+		}
+
+		await lnpdfInstance.fillingComplete();
+	}
+
+	await fillLnpdfArrays();
+
 	opts.value = val;
+	console.log('Deploying WokeToken...')
+	await deployer.deploy(Token, formulaInstance.address, maxSupply, opts)
+	let tokenInstance = await Token.deployed();
+	console.log(`WokeToken deployed at ${tokenInstance.address}`);
+
+	console.log('Deploying UserRegistry...')
 	return await deployer.deploy(UserRegistry, tokenInstance.address, lnpdfInstance.address, oracleInstance.address, owner, opts)
 		.then(async registryInstance => {
-			tokenInstance.setUserRegistry(registryInstance.address, opts);
+			opts.value = 0;
+			await tokenInstance.setUserRegistry(registryInstance.address, opts);
 			console.log(`UserRegistry deployed at ${registryInstance.address}`);
 			return registryInstance;
 		});
