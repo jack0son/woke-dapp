@@ -52,16 +52,16 @@ contract UserRegistry {
 
 	// @notice Connect a wallet to a Twitter user ID and claim any unclaimed TXs  
 	// @returns Provable query ID
-	function claimUser(string calldata _user) external payable
+	function claimUser(string calldata _userId) external payable
 		hasNoUser
-		userNotClaimed(_user)
+		userNotClaimed(_userId)
 		requestUnlocked
 	returns (bytes32)
 	{
-		requester[_user] = msg.sender;
+		requester[_userId] = msg.sender;
 
 		TwitterOracleMock client = TwitterOracleMock(twitterClient);
-		bytes32 queryId = client.query_findClaimTweet(_user);
+		bytes32 queryId = client.query_findClaimTweet(_userId);
 		//bytes32 queryId = bytes32(0);
 
 		if(queryId == bytes32(0)) {
@@ -69,7 +69,7 @@ contract UserRegistry {
 			//emit TraceBytes32('failed query', queryId);
 		}
 
-		emit Lodged(msg.sender, _user, queryId);
+		emit Lodged(msg.sender, _userId, queryId);
 
 		return queryId;
 	}
@@ -157,6 +157,7 @@ contract UserRegistry {
 				users,
 				userIds,
 				wokeTokenAddress,
+				lnpdfAddress,
 				_id,
 				tributeBonusPool
 			);

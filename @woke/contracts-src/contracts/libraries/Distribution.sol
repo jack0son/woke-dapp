@@ -14,6 +14,7 @@ library Distribution {
 		mapping(string => Structs.User) storage _users,
 		mapping(address => string) storage _userIds,
 		address _wokeTokenAddress,
+		address lnpdfAddress,
 		string memory _id,
 		uint256 _bonusPool
 	)
@@ -41,8 +42,8 @@ library Distribution {
 		}
 
 		// 2. Calculae and transfer bonuses
-		//uint256[] memory bonuses = Distribution._calcAllocations(groups, _bonusPool, lnpdfAddress);
-		uint256[] memory bonuses = new uint256[](groups.length);
+		uint256[] memory bonuses = _calcAllocations(groups, _bonusPool, lnpdfAddress);
+		//uint256[] memory bonuses = new uint256[](groups.length);
 		uint256 total = 0;
 		for(uint i = 0; i < user.referrers.length; i++) {
 			address referrer = user.referrers[i];
@@ -124,8 +125,8 @@ library Distribution {
 		for(uint32 i = 0; i < _groups.length; i++) {
 
 			// Calculate ratio of group weighting to total weightings
-			uint256 ratio = (uint256(_groups[i].weighting) << 6).div(sum);
-			allocations[i] = (ratio * _pool) >> 6;
+			uint256 ratio = (uint256(_groups[i].weighting) << 4).div(sum);
+			allocations[i] = (ratio * _pool) >> 4;
 			total += allocations[i];
 
 			emit Allocation(i, allocations[i], _groups[i].weighting);

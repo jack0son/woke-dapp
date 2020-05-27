@@ -151,7 +151,6 @@ contract('UserRegistry', (accounts) => {
 					})
 
 					it('should fulfill a user claim', async () => {
-
 						UR.claimUser(getwoketoke_id, {from: claimer});
 						const {returnValues: {queryId: queryId}} = await waitForEvent(UR.Lodged);
 						let claimString = await genClaimString(...claimArgs);
@@ -184,7 +183,7 @@ contract('UserRegistry', (accounts) => {
 
 						let claimString = await genClaimString(...claimArgs);
 						await TO.__callback(queryId, claimString, '0x0', {from: oraclize_cb});
-						await UR._fulfillClaim(getwoketoke_id);
+						await UR._fulfillClaim(getwoketoke_id, {from: claimer});
 
 						// Attempt to claim the user again
 						await truffleAssert.reverts(
@@ -216,6 +215,8 @@ contract('UserRegistry', (accounts) => {
 					const cases = users;
 
 					for(c of cases) {
+						console.log(`Claiming ${cases.indexOf(c)}:${c.id}...`);
+						console.log(c);
 						let r = await UR.claimUser(c.id, {from: c.address});
 						let bn = r.receipt.blockNumber;
 						let queryId = r.logs[r.logs.length-1].args.queryId;
@@ -230,7 +231,7 @@ contract('UserRegistry', (accounts) => {
 							{from: oraclize_cb}
 						);
 
-						await UR._fulfillClaim(c.id, {from: c.address});
+						debug(UR._fulfillClaim(c.id, {from: c.address}));
 						let claimed = (await UR.getPastEvents('Claimed', {from: bn, to: 'latest'}))[0].args
 
 						debug.v('event UserRegistry.Claimed:', claimed);
@@ -240,11 +241,15 @@ contract('UserRegistry', (accounts) => {
 						//assert.strictEqual(claimed.amount.toNumber(), 50); // if using
 
 						assert(await UR.getUserCount.call(), cases.indexOf(c) + 1);
+						console.log(`... claimed`);
 					}
 					assert(await UR.getUserCount.call(), cases.length);
 				})
 
 				it('should reward referrers with a bonus', async () => {
+
+					claimUser = bindClaimUser(UR, TO, oraclize_cb);
+
 					const cases = [
 						{address: cB, id: '212312122', handle: 'jack', followers: 30000},
 						{address: cC, id: '3313322', handle: 'realdonaldtrump', followers: 80e6},
@@ -252,23 +257,7 @@ contract('UserRegistry', (accounts) => {
 					];
 
 					for(c of cases) {
-						let r = await UR.claimUser(c.id, {from: c.address});
-						let bn = r.receipt.blockNumber;
-						let queryId = r.logs[r.logs.length-1].args.queryId;
-						debug.t('queryId: ', queryId);
-
-						let claimString = await genClaimString(c.address, c.id, c.followers);
-
-						r = await TO.__callback(
-							queryId,
-							claimString,								// query result
-							'0x0',	// proof
-							{from: oraclize_cb}
-						);
-
-						await UR._fulfillClaim(c.id, {from: c.address});
-						let claimed = (await UR.getPastEvents('Claimed', {from: bn, to: 'latest'}))[0].args
-						debug.v('event UserRegistry.Claimed:', claimed);
+						await claimUser(c);
 
 						let cb = await WT.balanceOf.call(UR.address);
 						debug.t('Contract bal: ', cb.toString());
