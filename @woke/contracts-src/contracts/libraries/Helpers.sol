@@ -30,7 +30,7 @@ library Helpers {
 	*/
 
 	function verifyClaimString(address claimer, string memory _id, string memory _claimString, byte _appId)
-	public view
+	public pure
 	returns (bool, uint32)
 	{
 		// Reconstruct the message hash
@@ -56,7 +56,7 @@ library Helpers {
 	}
 
 	// @param cs claim string
-	function parseClaim(bytes memory _cs) internal view
+	function parseClaim(bytes memory _cs) internal pure
 	returns (bytes memory, byte, uint32)
 	{
 		// Followers count length = 10

@@ -1,59 +1,31 @@
 import matplotlib.pyplot as plt
 import numpy as np
 
-#define the function
 #f = lambda x,a : a * x**2
 f = lambda x,theta,mu,sigma : np.exp((-(np.log(x-theta)-mu)**2)/(2*(sigma**2)))/(sigma*(x-theta)*np.sqrt(2*np.pi))
 
-#set values
-#a=3.1
-
+#set function parameters
 theta=0
 mu=9
 sigma=1.9
 
-domain = 50000
 #x = np.linspace(-200,8000)
+domain = 50000
 x = np.arange(0,domain, 1)
 y2 = np.empty(domain)
 y2.fill(0);
-
-#calculate the values of the function at the given points
 y = f(x,theta,mu,sigma)
-#y2 = np.log10(y)
-# y and y2 are now arrays which we can plot
-
-#plot the resulting arrays
-
-#ax[1].set_title("plot np.log10(y)")
-#ax[1].plot(x,y2) # .. "plot logarithm of f"
-#
-#ax[2].set_title("plot y on log scale")
-#ax[2].set_yscale("log", nonposy='clip')
-#ax[2].plot(x,y) # .. "plot f on logarithmic scale"
-
-# 1
-# 2. TO hex
-
-#for 
-
 
 # Fit into uint48, max val 281474976710656
 scale = 10e6;
 sigFigs = 10e7;
 
-approx = np.empty(domain);
+
+# Output csv for distribution js emulation 
 np.savetxt("log_normal_py.csv", y, delimiter=",")
 
-index = -1;
-tmp = open('indexes.txt', 'w')
-
-
 chunks = [5e3, 10e3, 20e3, 30e3, 40e3, 50e3] 
-
-last = 0;
-chunk = 0;
-
+approx = np.empty(domain);
 chunks.append(len(y))
 chunkArrays = [[] for j in range(len(chunks))]
 
@@ -84,8 +56,9 @@ with open('lnpdf-values.sol', 'w') as f:
             lower = chunkArrays[chunk - 1][0]
             upper = chunkArrays[chunk][0] if len(chunkArrays[chunk]) else chunkArrays[chunk - 1][-1]
             f.write('if(x >= {} && x < {}) {{\n'.format(lower[1], upper[1]))
-            f.write('index = x - {};\n'.format(lower[1],))
-            f.write('y = yArray{}[index/{}];\n}}\n\n'.format(chunkSize, chunkSize))
+            f.write('index = x - {};\n'.format(lower[1]))
+            f.write('chunkSize = {};\n}}\n'.format(chunkSize))
+            #f.write('y = yArray{}[index/{}];\n}}\n\n'.format(chunkSize, chunkSize))
 
     f.write('\n')
     for chunk in range(len(chunks)):
@@ -132,9 +105,7 @@ with open('lnpdf-values.js', 'w') as f:
         f.write('],\n');
     f.write('\n}');
 
-
-tmp.close()
-
+# Generate plot
 fig, ax = plt.subplots(1,2, figsize=(30,8))
 
 ax[0].set_title("plot y = f(x,a)")
@@ -142,4 +113,13 @@ ax[0].plot(x,y) # .. "plot f"
 #ax.plot(x,y2) # .. "plot f"
 ax[1].set_title("plot y = f(x,a)")
 ax[1].plot(x,approx) # .. "plot f"
+#ax[1].set_yscale("linear", nonposy='clip')
 #plt.show()
+
+#y2 = np.log10(y)
+
+#plot the resulting arrays
+
+#ax[1].set_title("plot np.log10(y)")
+#ax[2].set_yscale("log", nonposy='clip')
+#ax[2].plot(x,y) # .. "plot f on logarithmic scale"

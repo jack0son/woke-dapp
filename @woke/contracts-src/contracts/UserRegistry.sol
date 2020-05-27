@@ -71,7 +71,7 @@ contract UserRegistry {
 		return queryId;
 	}
 
-	function verifyClaimString(address claimer, string memory _id, string memory _claimString, byte _appId)
+	function verifyClaimString(address claimer, string memory _id, string memory _claimString)
 		public view
 	returns (bool, uint32)
 	{
@@ -90,7 +90,7 @@ contract UserRegistry {
 		require(bytes(claimString).length > 0, "claim string not stored");
 
 		address claimer = requester[_id];
-		(bool verified, uint32 followers) = verifyClaimString(claimer, _id, claimString, appId);
+		(bool verified, uint32 followers) = verifyClaimString(claimer, _id, claimString);
 		require(verified, "invalid claim string");
 
 		// address _claimer
@@ -129,8 +129,6 @@ contract UserRegistry {
 
 		// 1. Mint new tokens
 		uint256 minted = wokeToken._curvedMint(users[_id].account, users[_id].followers);
-		return 0;
-
 
 		// 2. calculate tribute bonus weighting
 		//	tribute bonus pool = minted - join bonus

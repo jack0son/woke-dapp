@@ -9,39 +9,33 @@ uint40[78] internal yArray128;
 // yArray4
 if(x >= 0 && x < 5000) {
 index = x - 0;
-y = yArray4[index/4];
+chunkSize = 4;
 }
-
 // yArray8
 if(x >= 5000 && x < 10000) {
 index = x - 5000;
-y = yArray8[index/8];
+chunkSize = 8;
 }
-
 // yArray16
 if(x >= 10000 && x < 20000) {
 index = x - 10000;
-y = yArray16[index/16];
+chunkSize = 16;
 }
-
 // yArray32
 if(x >= 20000 && x < 30016) {
 index = x - 20000;
-y = yArray32[index/32];
+chunkSize = 32;
 }
-
 // yArray64
 if(x >= 30016 && x < 40064) {
 index = x - 30016;
-y = yArray64[index/64];
+chunkSize = 64;
 }
-
 // yArray128
 if(x >= 40064 && x < 49920) {
 index = x - 40064;
-y = yArray128[index/128];
+chunkSize = 128;
 }
-
 
 uint40[1250] internal yArray4 = [
 0x0053f87f9e,		//0

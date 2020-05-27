@@ -54,7 +54,6 @@ contract WokeToken is Ownable, ERC20 {
 	) public payable {
 		maxSupply = _maxSupply;
 		wokeFormulaAddress = _wokeFormula;
-		WokeFormula wokeFormula = WokeFormula(_wokeFormula);
 		wokeFormulaAddress = _wokeFormula;
 
 		_mint(address(this), 1);

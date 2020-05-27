@@ -161,8 +161,8 @@ contract('UserRegistry', (accounts) => {
 						);
 
 						console.log('Calling fulfill claim');
-						UR._fulfillClaim(getwoketoke_id, {from: claimer});
-						//debug(UR._fulfillClaim(getwoketoke_id, {from: claimer}));
+						//UR._fulfillClaim(getwoketoke_id, {from: claimer});
+						debug(await UR._fulfillClaim(getwoketoke_id, {from: claimer}));
 						let claimed = (await waitForEvent(UR.Claimed)).returnValues;
 						debug.v('event UserRegistry.Claimed:', claimed);
 
