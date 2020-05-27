@@ -52,19 +52,19 @@ contract WokeFormula is Power {
 
 		uint256 squareTerm = _currentSupply < b ? b - _currentSupply : _currentSupply - b; 
 		uint256 baseN = c + squareTerm.mul(squareTerm);
-		emit TraceUint256('baseN', baseN);
+		//emit TraceUint256('baseN', baseN);
 
 		//(_baseN / _baseD) ^ (_expN / _expD) * 2 ^ precision 
 		(uint256 rootTerm, uint8 precision) = power(baseN, 1, 1, 2); // sqrt(c + (s-b)^2)
-		emit TraceUint8('precision', precision);
-		emit TraceUint256('rootTerm', rootTerm);
-		emit TraceUint256('shifted', rootTerm >> precision);
+		//emit TraceUint8('precision', precision);
+		//emit TraceUint256('rootTerm', rootTerm);
+		//emit TraceUint256('shifted', rootTerm >> precision);
 
 		uint256 numerator = (_depositAmount.mul(_depositAmount) << precision) + ((2*_depositAmount.mul(a.mul(rootTerm))));
 		uint256 denom = a.mul( a*(((_currentSupply - b) << precision) + rootTerm) + (_depositAmount << precision));
 
-		emit TraceUint256('numerator', numerator);
-		emit TraceUint256('denom', denom);
+		//emit TraceUint256('numerator', numerator);
+		//emit TraceUint256('denom', denom);
 
 		result = numerator.div(denom.mul(2));
 

@@ -43,6 +43,8 @@ const UserRegistry = artifacts.require('UserRegistry.sol')
 const WokeToken = artifacts.require('WokeToken.sol')
 const WokeFormula = artifacts.require('WokeFormula.sol')
 const LogNormalPDF = artifacts.require('LogNormalPDF.sol')
+const Distribution = artifacts.require('Distribution.sol')
+const Helpers = artifacts.require('Helpers.sol')
 const MockTwitterOracle = artifacts.require('mocks/TwitterOracleMock.sol')
 
 const appId = web3.utils.asciiToHex('0x0A'); // twitter
@@ -119,7 +121,8 @@ contract('UserRegistry', (accounts) => {
 
 					for(user of users) {
 						let claimString = await genClaimString(user.address, user.id, user.followers);
-						let result = await UR.verifyClaimString.call(user.address, user.id, claimString, appId);
+						debug.t(claimString);
+						let result = await Helpers.deployed().then(h => h.verifyClaimString.call(user.address, user.id, claimString, appId));
 						assert.isTrue(result[0]);
 						assert.strictEqual(result[1].toNumber(), user.followers); // if using
 					}
@@ -161,8 +164,8 @@ contract('UserRegistry', (accounts) => {
 						);
 
 						console.log('Calling fulfill claim');
-						//UR._fulfillClaim(getwoketoke_id, {from: claimer});
-						debug(await UR._fulfillClaim(getwoketoke_id, {from: claimer}));
+						UR._fulfillClaim(getwoketoke_id, {from: claimer});
+						//debug(UR._fulfillClaim(getwoketoke_id, {from: claimer}));
 						let claimed = (await waitForEvent(UR.Claimed)).returnValues;
 						debug.v('event UserRegistry.Claimed:', claimed);
 

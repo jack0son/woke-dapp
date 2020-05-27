@@ -8,10 +8,10 @@ contract LogNormalPDFValues is Ownable {
 	mapping(uint8 => uint40[]) internal valueArrays;
 	bool private done = false;
 
-	function fillArrayValues(uint8 chunkSize, uint40[] memory values)
+	function fillArrayValues(uint8 chunkSize, uint40[] calldata values)
 		onlyOwner
 		notCompleted
-		public
+		external
 	{
 		for(uint32 i = 0; i < values.length; i++) {
 			valueArrays[chunkSize].push(values[i]);
@@ -25,7 +25,7 @@ contract LogNormalPDFValues is Ownable {
 	function fillingComplete() 
 		onlyOwner
 		notCompleted
-		public
+		external
 	{
 		done = true;
 	}

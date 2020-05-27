@@ -14,6 +14,6 @@ library Structs {
 		uint32 followers;
 		uint256 amount;
 		uint256 balance;
-		uint256 weighting;
+		uint40 weighting;
 	}
 }

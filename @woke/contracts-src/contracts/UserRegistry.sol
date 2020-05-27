@@ -21,14 +21,17 @@ contract UserRegistry {
 	WokeToken wokeToken;
 
 	// User accounts
-	mapping(string => Structs.User) users;
-	mapping(string => address) requester; // claim string needs a nonce
+	mapping(string => Structs.User) private users;
+	mapping(string => address) private requester; // claim string needs a nonce
 
-	mapping(address => string) userIds; // Mapping of addresses to twitter account IDs (handles are mutable alias for ID)
+	mapping(address => string) private userIds; // Mapping of addresses to twitter account IDs (handles are mutable alias for ID)
 	uint256 public userCount;
 
 	// Safety
 	mapping(address => bool) private requestMutexes; // Oracle requests are blocking
+
+	// Bonus pool received by smaller influence users
+	uint256 noTributePool;
 
 	// @dev Instantiate up user registry
 	// @param _twitterClient	Address of provable client contract for twitter api requests
@@ -49,7 +52,7 @@ contract UserRegistry {
 
 	// @notice Connect a wallet to a Twitter user ID and claim any unclaimed TXs  
 	// @returns Provable query ID
-	function claimUser(string memory _user) public payable
+	function claimUser(string calldata _user) external payable
 		hasNoUser
 		userNotClaimed(_user)
 		requestUnlocked
@@ -71,17 +74,17 @@ contract UserRegistry {
 		return queryId;
 	}
 
-	function verifyClaimString(address claimer, string memory _id, string memory _claimString)
-		public view
-	returns (bool, uint32)
-	{
-		return Helpers.verifyClaimString(claimer, _id, _claimString, appId);
-	}
+	//function verifyClaimString(address claimer, string memory _id, string memory _claimString)
+	//	public view
+	//returns (bool, uint32)
+	//{
+	//	return Helpers.verifyClaimString(claimer, _id, _claimString, appId);
+	//}
 
 	// @notice Receive claimer data from client and action claim
 	// @param _id user id
 	// @param _claimString tweet text which should contain a signed claim string
-	function _fulfillClaim(string memory _id) public
+	function _fulfillClaim(string calldata _id) external
 		userNotClaimed(_id)
 		requestLocked(requester[_id])
 	{
@@ -89,22 +92,21 @@ contract UserRegistry {
 		string memory claimString = client.getTweetText(_id);
 		require(bytes(claimString).length > 0, "claim string not stored");
 
-		address claimer = requester[_id];
-		(bool verified, uint32 followers) = verifyClaimString(claimer, _id, claimString);
+		(bool verified, uint32 followers) = Helpers.verifyClaimString(requester[_id], _id, claimString, appId);
 		require(verified, "invalid claim string");
 
 		// address _claimer
 
 		// Link wallet and twitter handle
-		userIds[claimer] = _id;
-		users[_id].account = claimer;
+		userIds[requester[_id]] = _id; // store user address
+		users[_id].account = requester[_id];
 		users[_id].followers = followers;
 		userCount += 1;
 
-		uint256 joinBonus = distributeClaimBonus(_id);
+		//uint256 joinBonus = distributeClaimBonus(_id);
 
 		// Claim unclaimed transactions and join bonus
-		emit Claimed(claimer, _id, joinBonus);
+		emit Claimed(users[_id].account, _id, wokeToken.balanceOf(users[_id].account), distributeClaimBonus(_id));
 
 		//emit TraceUint256('balanceClaimed', balanceOf(users[_id].account));
 		if(DEFAULT_TIP_ALL) {
@@ -116,17 +118,12 @@ contract UserRegistry {
 
 	// @notice Transfer a new userId's bonus to their account
 	// @param _id			User's ID
-	// @returns Total amount claimed
+	// @returns Join bonus
 	function distributeClaimBonus(string memory _id)
+		//userIsClaimed(_id)
 		private
 	returns (uint256)
 	{
-		// 1. determine amount to mint (summon new tokens)
-		// 2. calc tribute bonus weighting
-		// 3. calculate tribute distribution
-		// 4. Distribute tribute bonuses
-		// 5. Transfer tributes to new user
-
 		// 1. Mint new tokens
 		uint256 minted = wokeToken._curvedMint(users[_id].account, users[_id].followers);
 
@@ -134,10 +131,21 @@ contract UserRegistry {
 		//	tribute bonus pool = minted - join bonus
 		uint256 tributeBonusPool = Distribution._calcTributeBonus(users, userIds, _id, minted, lnpdfAddress);
 
+		//emit TraceUint256('tributeBonusPool', tributeBonusPool);
+
 		// 3. calculate tribute distribution
 		// 4. Distribute tribute bonuses
-		uint256 bonuses = _distributeTributeBonuses(_id, tributeBonusPool);
-		require(bonuses == tributeBonusPool, 'bonuses != tributeBonusPool');
+		(uint256 deducted, uint256 _noTributePool) = Distribution._distributeTributeBonuses(
+			users,
+			userIds,
+			wokeTokenAddress,
+			_id,
+			tributeBonusPool,
+			noTributePool
+		);
+		noTributePool = _noTributePool;
+		//emit TraceUint256('bonuses', deducted);
+
 		//assert(bonuses == tributeBonusPool);
 
 		// 5. Transfer tributes 
@@ -149,43 +157,64 @@ contract UserRegistry {
 		}
 		users[_id].unclaimedBalance = 0;
 
-		return (minted - tributeBonusPool) + unclaimedBalance;
+		//uint256 claimedAmount = (minted - tributeBonusPool) + unclaimedBalance;
+		return(minted - deducted);
 	}
 
 	// @param _bonusPool: 
-	function _distributeTributeBonuses(string memory _userId, uint256 _bonusPool)
-		internal
-		userIsClaimed(_userId)
-		returns (uint256)
-	{
-		Structs.User storage user = users[_userId];
-		Structs.User memory tributor;
+	// returns: Deducted tribute bonus amount 
+	//function _distributeTributeBonuses(string memory _userId, uint256 _bonusPool)
+	//	internal
+	//	returns (uint256)
+	//{
+	//	Structs.User storage user = users[_userId];
+	//	Structs.User memory tributor;
 
-		// 1. Create weighting groups
-		Structs.WeightingGroup[] memory groups = new Structs.WeightingGroup[](user.referrers.length);
-		for(uint i = 0; i < user.referrers.length; i++) {
-			address referrer = user.referrers[i];
-			tributor = users[userIds[referrer]];
-			uint256 amount = user.referralAmount[referrer]; // not available outside of storage
-			groups[i] = Structs.WeightingGroup(tributor.followers, amount, wokeToken.balanceOf(referrer), 0);
-		}
+	//	// No tributors
+	//	if(user.referrers.length == 0) {
+	//		// If the user's followers is less than aggregate followers, claim the pool
+	//		if(user.followers <= wokeToken.followerBalance() - user.followers) {
+	//			wokeToken.internalTransfer(address(this), user.account, noTributePool);
+	//			noTributePool = 0;
+	//			return 0; 
+	//		}
 
-		// 2. Calculae and transfer bonuses
-		uint256[] memory bonuses = Distribution._calcAllocations(groups, _bonusPool, lnpdfAddress);
-		uint256 total = 0;
-		for(uint i = 0; i < user.referrers.length; i++) {
-			address referrer = user.referrers[i];
-			tributor = users[userIds[referrer]];
-			wokeToken.internalTransfer(user.account, tributor.account, bonuses[i]);
-			total = total.add(bonuses[i]);
-		}
+	//		// If the user's followers is greater than aggregate followers, bonus goes to pool
+	//		if(user.followers > wokeToken.followerBalance() - user.followers) {
+	//			wokeToken.internalTransfer(user.account, address(this), _bonusPool);
+	//			noTributePool += _bonusPool;
+	//			return _bonusPool;
+	//		}
+	//	}
 
-		return total;
-	}
+	//	// 1. Create weighting groups
+	//	Structs.WeightingGroup[] memory groups = new Structs.WeightingGroup[](user.referrers.length);
+	//	Distribution._fillTributorWeightingGroups(users, userIds, wokeTokenAddress, _userId, groups);
+	//	//for(uint i = 0; i < user.referrers.length; i++) {
+	//	//	address referrer = user.referrers[i];
+	//	//	tributor = users[userIds[referrer]];
+	//	//	uint256 amount = user.referralAmount[referrer]; // not available outside of storage
+	//	//	groups[i] = Structs.WeightingGroup(tributor.followers, amount, wokeToken.balanceOf(referrer), 0);
+	//	//}
+
+	//	// 2. Calculae and transfer bonuses
+	//	//uint256[] memory bonuses = Distribution._calcAllocations(groups, _bonusPool, lnpdfAddress);
+	//	uint256[] memory bonuses = new uint256[](groups.length);
+	//	uint256 total = 0;
+	//	for(uint i = 0; i < user.referrers.length; i++) {
+	//		address referrer = user.referrers[i];
+	//		tributor = users[userIds[referrer]];
+	//		wokeToken.internalTransfer(user.account, tributor.account, bonuses[i]);
+	//		total = total.add(bonuses[i]);
+	//	}
+
+	//	require(total == _bonusPool, 'bonuses != tributeBonusPool');
+	//	return total;
+	//}
 
 	// @notice Transfer tokens between claimed userIds
-	function transferClaimed(string memory _toId, uint256 _amount) 
-		public
+	function transferClaimed(string calldata _toId, uint256 _amount) 
+		external
 		hasUser
 		userIsClaimed(_toId)
 		supplyInvariant
@@ -224,8 +253,8 @@ contract UserRegistry {
 	}
 	// @notice Trans
 	//function transferUnclaimed(uint32 _from, uint32 _to, uint32 _amount)
-	function transferUnclaimed(string memory _toId, uint256 _amount)
-		public
+	function transferUnclaimed(string calldata _toId, uint256 _amount)
+		external
 		hasUser
 	{
 		require(_amount > 0, 'cannot send 0 tokens');
@@ -340,12 +369,13 @@ contract UserRegistry {
 		return users[_userId].unclaimedBalance;
 	}
 
-	function userBalance(string memory _userId) public view
-	returns (uint256)
+	function balanceOf(string memory _userId)
+		public view
+		returns (uint256)
 	{
-		// unclaimed vs claimed?
 		return wokeToken.balanceOf(users[_userId].account);
 	}
+
 
 	/* MODIFIERS */
 	// @note using internal functions inside of modifiers reduces the amount of
@@ -437,12 +467,6 @@ contract UserRegistry {
 		require(msg.sender == tippingAgent, "sender not tip agent");
 	}
 
-	function balanceOf(string memory _userId)
-		public view
-		returns (uint256)
-	{
-		return wokeToken.balanceOf(users[_userId].account);
-	}
 
 
 	// @notice Authenticate account is owner of user ID
@@ -453,6 +477,14 @@ contract UserRegistry {
 		_;
 	}
 
+	function _isUser(string memory _userId) internal view
+	{
+		string memory temp = string(userIds[msg.sender]);
+		require(keccak256(abi.encodePacked((temp))) == keccak256(abi.encodePacked((_userId))),
+				"Sender not the owner of user ID");
+	}
+
+	// @notice Ensure function does not change supply
 	modifier supplyInvariant() {
 		uint256 supply = wokeToken.totalSupply();
 		_;
@@ -463,18 +495,13 @@ contract UserRegistry {
 		require(wokeToken.totalSupply() == original, "supply invariant");
 	}
 
-	function _isUser(string memory _userId) internal view
-	{
-		string memory temp = string(userIds[msg.sender]);
-		require(keccak256(abi.encodePacked((temp))) == keccak256(abi.encodePacked((_userId))),
-				"Sender not the owner of user ID");
-	}
 
 	/* EVENTS */
+	event TraceUint256(string m, uint256 v);
 	event Tx(address indexed from, address indexed to, string fromId, string toId, uint256 amount, bool claimed);
 	event Tip(string fromId, string toId, uint256 amount);
 
-	event Claimed (address indexed account, string userId, uint256 amount);
+	event Claimed (address indexed account, string userId, uint256 amount, uint256 bonus);
 	event Reward (address indexed claimer, address indexed referrer, string claimerId, string referrerId, uint256 amount);
 	event Lodged (address indexed claimer, string userId, bytes32 queryId);
 
