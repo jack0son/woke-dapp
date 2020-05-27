@@ -15,32 +15,14 @@ library Distribution {
 		mapping(address => string) storage _userIds,
 		address _wokeTokenAddress,
 		string memory _id,
-		uint256 _bonusPool,
-		uint256 _noTributePool
+		uint256 _bonusPool
 	)
-		internal
-		returns (uint256, uint256)
+		public
+		returns (uint256)
 	{
 		WokeToken wokeToken = WokeToken(_wokeTokenAddress);
 		Structs.User storage user = _users[_id];
 		Structs.User memory tributor;
-
-		// No tributors
-		if(user.referrers.length == 0) {
-			// If the user's followers is less than aggregate followers, claim the pool
-			if(user.followers <= wokeToken.followerBalance() - user.followers) {
-				wokeToken.internalTransfer(address(this), user.account, _noTributePool);
-				_noTributePool = 0;
-				return (0, _noTributePool); 
-			}
-
-			// If the user's followers is greater than aggregate followers, bonus goes to pool
-			if(user.followers > wokeToken.followerBalance() - user.followers) {
-				wokeToken.internalTransfer(user.account, address(this), _bonusPool);
-				_noTributePool += _bonusPool;
-				return (_bonusPool, _noTributePool);
-			}
-		}
 
 		// 1. Create weighting groups
 		Structs.WeightingGroup[] memory groups = new Structs.WeightingGroup[](user.referrers.length);
@@ -70,7 +52,7 @@ library Distribution {
 		}
 
 		require(total == _bonusPool, 'bonuses != tributeBonusPool');
-		return (total, _noTributePool);
+		return total;
 	}
 
 	function _calcTributeBonus(
@@ -80,24 +62,30 @@ library Distribution {
 		uint256 _minted,
 		address _lnpdfAddress
 	)
-		internal //view
+		public
 		returns (uint256)
 	{
 		LogNormalPDF logNormalPDF = LogNormalPDF(_lnpdfAddress);
 		// 1. find highest influence weighting in tributors
-		uint256 maxWeight = 0;
 		uint32 followers;
 		Structs.User memory tributor;
 		uint256 tributePool = 0;
-		emit TraceUint256('tributors', _users[_id].referrers.length);
-		for(uint i = 0; i < _users[_id].referrers.length; i++) {
-			address referrer = _users[_id].referrers[i];
-			tributePool += _users[_id].referralAmount[referrer];
-			tributor = _users[_userIds[referrer]];
-			uint256 lnpdf = logNormalPDF.lnpdf(tributor.followers);
-			if(lnpdf > maxWeight) {
-				maxWeight = lnpdf;
-				followers = tributor.followers;
+
+		if(_users[_id].referrers.length == 0) {
+			followers = logNormalPDF.max_x();
+		} else {
+			uint256 maxWeight = 0;
+			// TODO should always use max_x to avoid extra loop through referrers array
+			//emit TraceUint256('tributors', _users[_id].referrers.length);
+			for(uint i = 0; i < _users[_id].referrers.length; i++) {
+				address referrer = _users[_id].referrers[i];
+				tributePool += _users[_id].referralAmount[referrer];
+				tributor = _users[_userIds[referrer]];
+				uint256 lnpdf = logNormalPDF.lnpdf(tributor.followers);
+				if(lnpdf > maxWeight) {
+					maxWeight = lnpdf;
+					followers = tributor.followers;
+				}
 			}
 		}
 		uint256 balance = _minted + tributePool;
@@ -106,6 +94,7 @@ library Distribution {
 		Structs.WeightingGroup memory userWeights = Structs.WeightingGroup(_users[_id].followers, _minted, balance, 0);
 		Structs.WeightingGroup memory tWeights = Structs.WeightingGroup(followers, tributePool, balance, 0);
 		Structs.WeightingGroup[] memory groups = new Structs.WeightingGroup[](2);
+		//Structs.WeightingGroup[] storage groups = new Structs.WeightingGroup[](2);
 		groups[0] = userWeights;
 		groups[1] = tWeights;
 		//groups = [userWeights, tWeights];
@@ -135,10 +124,11 @@ library Distribution {
 		for(uint32 i = 0; i < _groups.length; i++) {
 
 			// Calculate ratio of group weighting to total weightings
-			allocations[i] = (((_groups[i].weighting << 8)/sum) * _pool) >> 8;
+			uint256 ratio = (uint256(_groups[i].weighting) << 6).div(sum);
+			allocations[i] = (ratio * _pool) >> 6;
 			total += allocations[i];
 
-			emit Allocation(i, allocations[i]);
+			emit Allocation(i, allocations[i], _groups[i].weighting);
 
 			if(allocations[i] < minAmount) {
 				minAmount = allocations[i];
@@ -149,10 +139,10 @@ library Distribution {
 
 		allocations[min] += _pool.sub(total); // give remainder to smallest beneficiary
 		total += _pool.sub(total);
-		emit Allocation(min, allocations[min]);
+		emit Allocation(min, allocations[min], _groups[min].weighting);
 		emit TraceUint256('totalAllocations', total);
 		return allocations;
 	}
-	event Allocation(uint32 i, uint256 amount);
+	event Allocation(uint32 i, uint256 amount, uint40 weighting);
 	event TraceUint256(string m, uint256 v);
 }

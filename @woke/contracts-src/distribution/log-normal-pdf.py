@@ -29,6 +29,13 @@ approx = np.empty(domain);
 chunks.append(len(y))
 chunkArrays = [[] for j in range(len(chunks))]
 
+maximum = np.max(y[1:]) 
+maxX = 0
+for i in range(len(y)):
+    if y[i] == maximum:
+        maxX = i
+        print('Max x: {}'.format(i))
+
 for i in range(len(chunks)):
     chunkSize = np.power(2, i+2)
     lower = 0 if i == 0 else chunks[i-1]
@@ -41,6 +48,8 @@ for i in range(len(chunks)):
 
 with open('lnpdf-values.sol', 'w') as f:
     f.write('// last val {0:#0{1}x};\n'.format(int(y[-1]*scale*sigFigs), 12))
+    f.write('// uint40 maximum = {0:#0{1}x};\n'.format(int(maximum*scale*sigFigs), 12))
+    f.write('// uint32 maxX = {};\n'.format(maxX))
     for chunk in range(len(chunks)):
         chunkSize = np.power(2, 2 + chunk) 
         if(len(chunkArrays[chunk])):

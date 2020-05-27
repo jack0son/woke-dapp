@@ -103,10 +103,10 @@ contract UserRegistry {
 		users[_id].followers = followers;
 		userCount += 1;
 
-		//uint256 joinBonus = distributeClaimBonus(_id);
+		uint256 joinBonus = distributeClaimBonus(_id);
 
 		// Claim unclaimed transactions and join bonus
-		emit Claimed(users[_id].account, _id, wokeToken.balanceOf(users[_id].account), distributeClaimBonus(_id));
+		emit Claimed(users[_id].account, _id, wokeToken.balanceOf(users[_id].account), joinBonus);//distributeClaimBonus(_id));
 
 		//emit TraceUint256('balanceClaimed', balanceOf(users[_id].account));
 		if(DEFAULT_TIP_ALL) {
@@ -134,16 +134,35 @@ contract UserRegistry {
 		//emit TraceUint256('tributeBonusPool', tributeBonusPool);
 
 		// 3. calculate tribute distribution
+		Structs.User storage user = users[_id];
+		//Structs.User memory tributor;
+		uint256 deducted;
+		// No tributors
+		if(user.referrers.length == 0) {
+			// If the user's followers is less than aggregate followers, claim the pool
+			if(user.followers <= wokeToken.followerBalance() - user.followers) {
+				uint256 credit = (noTributePool / user.followers);
+				wokeToken.internalTransfer(address(this), user.account, credit);
+				noTributePool -= credit;
+			}
+
+			// If the user's followers is greater than aggregate followers, bonus goes to pool
+			if(user.followers > wokeToken.followerBalance() - user.followers) {
+				wokeToken.internalTransfer(user.account, address(this), tributeBonusPool);
+				noTributePool += tributeBonusPool;
+				deducted = tributeBonusPool;
+			}
+		} else {
+			deducted = Distribution._distributeTributeBonuses(
+				users,
+				userIds,
+				wokeTokenAddress,
+				_id,
+				tributeBonusPool
+			);
+		}
+
 		// 4. Distribute tribute bonuses
-		(uint256 deducted, uint256 _noTributePool) = Distribution._distributeTributeBonuses(
-			users,
-			userIds,
-			wokeTokenAddress,
-			_id,
-			tributeBonusPool,
-			noTributePool
-		);
-		noTributePool = _noTributePool;
 		//emit TraceUint256('bonuses', deducted);
 
 		//assert(bonuses == tributeBonusPool);
@@ -160,57 +179,6 @@ contract UserRegistry {
 		//uint256 claimedAmount = (minted - tributeBonusPool) + unclaimedBalance;
 		return(minted - deducted);
 	}
-
-	// @param _bonusPool: 
-	// returns: Deducted tribute bonus amount 
-	//function _distributeTributeBonuses(string memory _userId, uint256 _bonusPool)
-	//	internal
-	//	returns (uint256)
-	//{
-	//	Structs.User storage user = users[_userId];
-	//	Structs.User memory tributor;
-
-	//	// No tributors
-	//	if(user.referrers.length == 0) {
-	//		// If the user's followers is less than aggregate followers, claim the pool
-	//		if(user.followers <= wokeToken.followerBalance() - user.followers) {
-	//			wokeToken.internalTransfer(address(this), user.account, noTributePool);
-	//			noTributePool = 0;
-	//			return 0; 
-	//		}
-
-	//		// If the user's followers is greater than aggregate followers, bonus goes to pool
-	//		if(user.followers > wokeToken.followerBalance() - user.followers) {
-	//			wokeToken.internalTransfer(user.account, address(this), _bonusPool);
-	//			noTributePool += _bonusPool;
-	//			return _bonusPool;
-	//		}
-	//	}
-
-	//	// 1. Create weighting groups
-	//	Structs.WeightingGroup[] memory groups = new Structs.WeightingGroup[](user.referrers.length);
-	//	Distribution._fillTributorWeightingGroups(users, userIds, wokeTokenAddress, _userId, groups);
-	//	//for(uint i = 0; i < user.referrers.length; i++) {
-	//	//	address referrer = user.referrers[i];
-	//	//	tributor = users[userIds[referrer]];
-	//	//	uint256 amount = user.referralAmount[referrer]; // not available outside of storage
-	//	//	groups[i] = Structs.WeightingGroup(tributor.followers, amount, wokeToken.balanceOf(referrer), 0);
-	//	//}
-
-	//	// 2. Calculae and transfer bonuses
-	//	//uint256[] memory bonuses = Distribution._calcAllocations(groups, _bonusPool, lnpdfAddress);
-	//	uint256[] memory bonuses = new uint256[](groups.length);
-	//	uint256 total = 0;
-	//	for(uint i = 0; i < user.referrers.length; i++) {
-	//		address referrer = user.referrers[i];
-	//		tributor = users[userIds[referrer]];
-	//		wokeToken.internalTransfer(user.account, tributor.account, bonuses[i]);
-	//		total = total.add(bonuses[i]);
-	//	}
-
-	//	require(total == _bonusPool, 'bonuses != tributeBonusPool');
-	//	return total;
-	//}
 
 	// @notice Transfer tokens between claimed userIds
 	function transferClaimed(string calldata _toId, uint256 _amount) 

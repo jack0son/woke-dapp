@@ -1,4 +1,6 @@
 // last val 0x009e3a3f48;
+// uint40 maximum = 0x24ae7a7ae6;
+// uint32 maxX = 219;
 uint40[1250] internal yArray4;
 uint40[625] internal yArray8;
 uint40[625] internal yArray16;

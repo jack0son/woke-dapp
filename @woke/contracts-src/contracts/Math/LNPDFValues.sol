@@ -6,6 +6,8 @@ import "openzeppelin-solidity/contracts/ownership/Ownable.sol";
 contract LogNormalPDFValues is Ownable {
 
 	mapping(uint8 => uint40[]) internal valueArrays;
+	uint40 public maximum = 0x24ae7a7ae6;
+	uint32 public max_x = 220;
 	bool private done = false;
 
 	function fillArrayValues(uint8 chunkSize, uint40[] calldata values)
