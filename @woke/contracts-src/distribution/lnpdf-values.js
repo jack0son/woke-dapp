@@ -1,6 +1,6 @@
 module.exports = {
 "4": [
-0x0053f87f9e,		//0
+0x00a7f0ff3c,		//0
 0x03fbb6bc29,		//4
 0x0809f7b50c,		//8
 0x0b65a86ddd,		//12
@@ -2979,6 +2979,7 @@ module.exports = {
 0x00dc4fe8ab		//39936
 ],
 "128": [
+0x00dc4fe8ab,		//39936
 0x00db4c34bc,		//40064
 0x00da4a5d29,		//40192
 0x00d94a5d3d,		//40320
@@ -3059,6 +3060,7 @@ module.exports = {
 0x009e9aaff2		//49920
 ],
 "256": [
+0x009e9aaff2		//49920
 ],
 
 }

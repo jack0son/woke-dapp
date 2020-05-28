@@ -6,9 +6,11 @@ let {
 	web3Tools,
 } = require('@woke/lib');
 
+//const web3 = require('web3');
+
 const printEvents = truffleAssert.prettyPrintEmittedEvents;
 
-const {fromAscii, toWei} = web3.utils;
+const {fromAscii, toWei, fromWei} = web3.utils;
 const BN = require('bignumber.js');
 
 //const Web3 = require('web3')
@@ -50,16 +52,18 @@ const MockTwitterOracle = artifacts.require('mocks/TwitterOracleMock.sol')
 const appId = web3.utils.asciiToHex('0x0A'); // twitter
 const getwoketoke_id = '932596541822419000';
 const stranger_id = '12345';
-
+const maxSupply = 4.2e6;
+const claimArgs = u => [u.address, u.id, u.followers];
 
 contract('UserRegistry', (accounts) => {
 	const [defaultAccount, owner, oraclize_cb, claimer, tipAgent, stranger, cB, cC, ...rest] = accounts;
 
+	const brokenUser = {address: stranger, id: '212312122', handle: 'jack', followers: 30000};
 	const users = [
-		{address: cB, id: '212312122', handle: 'jack', followers: 30000},
-		{address: cC, id: '3313322', handle: 'realdonaldtrump', followers: 80e6},
+		//{address: rest[0], id: '1224927413284120212342141', handle: 'botman', followers: 0},
 		{address: claimer, id: getwoketoke_id, handle: 'getwoketoke', followers: 100},
-		{address: rest[0], id: '1224927413284120212342141', handle: 'botman', followers: 0},
+		{address: cC, id: '3313322', handle: 'yanggang', followers: 80e6},
+		{address: rest[0], id: '1224927413284120212342141', handle: 'botman', followers: 1},
 		{address: rest[1], id: '12249274132841202123429999', handle: 'megawhale', followers: Math.pow(2,32)-1}, // uint32 overflow
 	];
 
@@ -67,8 +71,7 @@ contract('UserRegistry', (accounts) => {
 	const max_supply = 100000000;
 	let UR, WT, TO, WF, LNDPF;
 	let claimUser;
-	let newUser = {};
-	let claimArgs = [];
+	let newUser = { address: claimer, followers: 10000, id: getwoketoke_id};
 
 	async function joinEvent(newUser, tributors) {
 		const claimUser = bindClaimUser(UR, TO, oraclize_cb);
@@ -100,21 +103,22 @@ contract('UserRegistry', (accounts) => {
 		});
 
 		beforeEach(async () => {
-			debug.t('context 1: before each');
+			debug.t('ctx1:beforeEach');
 			TO = await MockTwitterOracle.new(oraclize_cb,
-				{from: owner, value: web3.utils.toWei('0.1', 'ether')}
+				{from: defaultAccount, value: web3.utils.toWei('0.1', 'ether')}
 			);
 
-			UR = await UserRegistry.new(WT.address, LNPDF.address, TO.address, tipAgent, {from: owner})
+			WT = await WokeToken.new(WF.address, maxSupply, {from: defaultAccount});
+			UR = await UserRegistry.new(WT.address, LNPDF.address, TO.address, tipAgent, {from: defaultAccount})
 			await WT.setUserRegistry(UR.address, {from: defaultAccount});
+			claimUser = bindClaimUser(UR, TO, oraclize_cb);
 		});
 
-		newUser = { address: claimer, followers: 1000000, id: getwoketoke_id};
-		claimArgs = [newUser.address, newUser.id, newUser.followers];
 		
 
 		describe('UserRegistry.sol', () => {
 
+			/*
 			describe('Helper Functions', () => {
 				it('should parse valid claim strings', async () => {
 					// TODO test several claim strings
@@ -128,9 +132,11 @@ contract('UserRegistry', (accounts) => {
 					}
 				})
 			})
+			*/
 
 			describe('#claimUser', () => {
 				context('with a single valid claim', () => {
+					/*
 					it('should submit a tweet request', async () => {
 
 						let qe = waitForEvent(TO.LogNewQuery).then(e => {
@@ -149,11 +155,13 @@ contract('UserRegistry', (accounts) => {
 
 						// Check Oracle lodges request
 					})
+					*/
 
 					it('should fulfill a user claim', async () => {
-						UR.claimUser(getwoketoke_id, {from: claimer});
-						const {returnValues: {queryId: queryId}} = await waitForEvent(UR.Lodged);
-						let claimString = await genClaimString(...claimArgs);
+						let user = brokenUser;
+						UR.claimUser(user.id, {from: user.address});
+						const {blockNumber, returnValues: {queryId: queryId}} = await waitForEvent(UR.Lodged);
+						let claimString = await genClaimString(...claimArgs(user));
 
 						let r = await TO.__callback(
 							queryId,
@@ -162,19 +170,27 @@ contract('UserRegistry', (accounts) => {
 							{from: oraclize_cb}
 						);
 
-						console.log('Calling fulfill claim');
-						UR._fulfillClaim(getwoketoke_id, {from: claimer});
+						console.log(`Sending _fulfillClaim(${user.id})...`);
+						//debug(UR._fulfillClaim(user.id, {from: user.address}))
+						r = await UR._fulfillClaim(user.id, {from: user.address});
+						console.log(`_fulfillClaim(): ${r.receipt.gasUsed} gas used, cumulative: ${r.receipt.cumulativeGasUsed}`);
 						//debug(UR._fulfillClaim(getwoketoke_id, {from: claimer}));
-						let claimed = (await waitForEvent(UR.Claimed)).returnValues;
+						//let claimed = (await waitForEvent(UR.Claimed)).returnValues;
+						let claimed = (await UR.getPastEvents('Claimed', {from: blockNumber, to: 'latest'}))[0].args
 						debug.v('event UserRegistry.Claimed:', claimed);
 
-						assert.strictEqual(claimed.account, claimer);
-						assert.strictEqual(claimed.userId, getwoketoke_id);
+						assert.strictEqual(claimed.account, user.address);
+						assert.strictEqual(claimed.userId, user.id);
 						console.log('Claimed amount: ', claimed.amount);
 						//assert.strictEqual(claimed.amount, '50');
 						assert(await UR.getUserCount.call(), 1);
 					})
 
+					it('should claim a user with zero followers', async () => {
+						await claimUser({ ...newUser, followers: 0 });
+					});
+
+						/*
 					it('should fail if a second claim is attempted', async () => {
 
 						// Claim the user
@@ -209,6 +225,7 @@ contract('UserRegistry', (accounts) => {
 
 					it('should fail if no oracle response has been received', async () => {
 					})
+					*/
 				})
 
 				it('should claim several users', async () => {
@@ -217,6 +234,8 @@ contract('UserRegistry', (accounts) => {
 					for(c of cases) {
 						console.log(`Claiming ${cases.indexOf(c)}:${c.id}...`);
 						console.log(c);
+						let balance = await web3.eth.getBalance(c.address);
+						console.log(`Balance: ${web3.utils.fromWei(balance)}`);
 						let r = await UR.claimUser(c.id, {from: c.address});
 						let bn = r.receipt.blockNumber;
 						let queryId = r.logs[r.logs.length-1].args.queryId;
@@ -231,7 +250,10 @@ contract('UserRegistry', (accounts) => {
 							{from: oraclize_cb}
 						);
 
-						debug(UR._fulfillClaim(c.id, {from: c.address}));
+						//debug(UR._fulfillClaim(c.id, {from: c.address}));
+						r = await UR._fulfillClaim(c.id, {from: c.address});
+						console.log(`_fulfillClaim(): ${r.receipt.gasUsed} gas used, cumulative: ${r.receipt.cumulativeGasUsed}`);
+						//debug(UR._fulfillClaim(getwoketoke_id, {from: claimer}));
 						let claimed = (await UR.getPastEvents('Claimed', {from: bn, to: 'latest'}))[0].args
 
 						debug.v('event UserRegistry.Claimed:', claimed);
@@ -251,33 +273,35 @@ contract('UserRegistry', (accounts) => {
 					claimUser = bindClaimUser(UR, TO, oraclize_cb);
 
 					const cases = [
-						{address: cB, id: '212312122', handle: 'jack', followers: 30000},
 						{address: cC, id: '3313322', handle: 'realdonaldtrump', followers: 80e6},
 						{address: claimer, id: getwoketoke_id, handle: 'getwoketoke', followers: 100},
+						//{address: cB, id: '212312122', handle: 'jack', followers: 30000},
 					];
 
 					for(c of cases) {
 						await claimUser(c);
 
 						let cb = await WT.balanceOf.call(UR.address);
-						debug.t('Contract bal: ', cb.toString());
+						debug.t('Contract balanace: ', cb.toString());
 
 						let balance = await WT.balanceOf.call(c.address);
-						debug.t(balance.toString());
-						if(c.id != getwoketoke_id) {
-							await UR.transferUnclaimed(cases[cases.length-1].id, 5, {from: c.address});
+						debug.t('New user balance: ', balance.toString());
+						if(c.id != cases[cases.length-1].id) {
+							await UR.transferUnclaimed(cases[cases.length-1].id, 10, {from: c.address});
 							debug.t('User balance: ', (await WT.balanceOf.call(c.address)).toString());
 						} 
 					}
 
 					for(c of cases) {
 						let bal = await WT.balanceOf.call(c.address);
-						debug.t(bal.toString());
+						debug.t(`${c.id} balance: ${bal.toString()}`);
 					}
 				})
 
 			})
 
+
+			/*
 			context('#tip', function() {
 				const newUser = {
 					address: claimer,
@@ -343,6 +367,7 @@ contract('UserRegistry', (accounts) => {
 				})
 
 			})
+			*/
 		})
 	})
 })
@@ -350,13 +375,14 @@ contract('UserRegistry', (accounts) => {
 // @param userObject: address, id, followersCount
 const bindClaimUser = (UR, TO, oracleAddress) => async (userObject) => {
 	let r = await UR.claimUser(userObject.id, {from: userObject.address});
-	const claimArgs = [userObject.address, userObject.id, userObject.followers];
 	// let bn = r.receipt.blockNumber;
 	let queryId = r.logs[r.logs.length-1].args.queryId;
 	debug.t('Claim queryId: ', queryId);
-	const claimString = await genClaimString(...claimArgs);
+	const claimString = await genClaimString(...claimArgs(userObject));
 	await TO.__callback(queryId, claimString, '0x0', {from: oracleAddress});
-	await UR._fulfillClaim(userObject.id, {from: userObject.address});
+	console.log(`Sending _fulfillClaim( ${userObject.id} ) ...`);
+	r = await UR._fulfillClaim(userObject.id, {from: userObject.address});
+	console.log(`_fulfillClaim(): ${r.receipt.gasUsed} gas used, cumulative: ${r.receipt.cumulativeGasUsed}`);
 }
 
 

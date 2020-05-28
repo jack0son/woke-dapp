@@ -16,7 +16,7 @@ const {blog, verbose, inspect} = require('../test/debug/common');
 
 const doDeploy = async (deployer, network, accounts) => {
 	const [defaultAccount, owner, oracleCallback, ...rest] = accounts;
-	const maxSupply = 10000000;
+	const maxSupply = 4.2e6;
 
 	console.log('Using network: ', network);
 	console.log('Deploy account: ', defaultAccount);

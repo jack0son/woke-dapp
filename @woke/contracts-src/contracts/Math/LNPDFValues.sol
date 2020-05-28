@@ -14,10 +14,13 @@ contract LogNormalPDFValues is Ownable {
 		onlyOwner
 		notCompleted
 		external
+		returns(uint32)
 	{
-		for(uint32 i = 0; i < values.length; i++) {
+		uint32 i;
+		for(; i < values.length; i++) {
 			valueArrays[chunkSize].push(values[i]);
 		}
+		return i;
 	}
 
 	constructor() public

@@ -6,6 +6,7 @@ import "openzeppelin-solidity/contracts/math/SafeMath.sol";
 import "./libraries/Helpers.sol";
 import "./libraries/Structs.sol";
 import "./libraries/Distribution.sol";
+import "./Math/LogNormalPDF.sol";
 
 contract UserRegistry {
 	using SafeMath for uint256;
@@ -19,12 +20,16 @@ contract UserRegistry {
 	address public lnpdfAddress;
 
 	WokeToken wokeToken;
+	LogNormalPDF logNormalPDF;
 
 	// User accounts
-	mapping(string => Structs.User) private users;
-	mapping(string => address) private requester; // claim string needs a nonce
+	mapping(string => Structs.User) private users;		// userId => User
+	mapping(address => string) private userIds;			// account => Twitter userId
+	mapping(string => address) private requester;		// claim string needs a nonce
+	mapping(string => uint48) private weightSums;	// userId => sum of referrer weightingss
+	mapping(string => uint40) private maxWeights;	// userId => max referrer weighting
+	mapping(string => uint40) private maxFollowers;	// userId => max referrer weighting
 
-	mapping(address => string) private userIds; // Mapping of addresses to twitter account IDs (handles are mutable alias for ID)
 	uint256 public userCount;
 
 	// Safety
@@ -48,6 +53,7 @@ contract UserRegistry {
 		wokeTokenAddress = _wokeToken;
 		lnpdfAddress = _logNormalPdf;
 		wokeToken = WokeToken(wokeTokenAddress);
+		logNormalPDF = LogNormalPDF(lnpdfAddress);
 	}
 
 	// @notice Connect a wallet to a Twitter user ID and claim any unclaimed TXs  
@@ -127,40 +133,47 @@ contract UserRegistry {
 		// 1. Mint new tokens
 		uint256 minted = wokeToken._curvedMint(users[_id].account, users[_id].followers);
 
-		// 2. calculate tribute bonus weighting
+		// 2. calculate tribute bonus weight
 		//	tribute bonus pool = minted - join bonus
-		uint256 tributeBonusPool = Distribution._calcTributeBonus(users, userIds, _id, minted, lnpdfAddress);
+		//uint256 tributeBonusPool = Distribution._calcTributeBonus(users, userIds, _id, minted, lnpdfAddress);
+		uint256 tributeBonusPool = Distribution._calcTributeBonus(users, maxWeights, _id, minted, lnpdfAddress);
 
+		require(tributeBonusPool <= minted, 'TRIBUTE MISCALC');
 		//emit TraceUint256('tributeBonusPool', tributeBonusPool);
 
 		// 3. calculate tribute distribution
 		Structs.User storage user = users[_id];
+		emit TraceUint256('followers', user.followers);
+
 		//Structs.User memory tributor;
 		uint256 deducted;
 		// No tributors
-		if(user.referrers.length == 0) {
-			// If the user's followers is less than aggregate followers, claim the pool
-			if(user.followers <= wokeToken.followerBalance() - user.followers) {
-				uint256 credit = (noTributePool / user.followers);
-				wokeToken.internalTransfer(address(this), user.account, credit);
-				noTributePool -= credit;
-			}
+		if(user.followers > 0) {
+			if(user.referrers.length == 0) {
+				// If the user's followers is less than aggregate followers, claim the pool
+				if(user.followers <= wokeToken.followerBalance() - user.followers + 100) {
+					uint256 credit = Distribution._calcAllocation(logNormalPDF.lnpdf(user.followers), logNormalPDF.maximum(), noTributePool);
+					//uint256 credit = (noTributePool / user.followers);
+					wokeToken.internalTransfer(address(this), user.account, credit);
+					noTributePool -= credit;
+				}
 
-			// If the user's followers is greater than aggregate followers, bonus goes to pool
-			if(user.followers > wokeToken.followerBalance() - user.followers) {
-				wokeToken.internalTransfer(user.account, address(this), tributeBonusPool);
-				noTributePool += tributeBonusPool;
-				deducted = tributeBonusPool;
+				// If the user's followers is greater than aggregate followers, bonus goes to pool
+				if(user.followers > wokeToken.followerBalance() - user.followers + 100) {
+					wokeToken.internalTransfer(user.account, address(this), tributeBonusPool);
+					noTributePool += tributeBonusPool;
+					deducted = tributeBonusPool;
+				}
+			} else {
+				deducted = Distribution._distributeTributeBonuses(
+					users,
+					userIds,
+					wokeTokenAddress,
+					lnpdfAddress,
+					_id,
+					tributeBonusPool
+				);
 			}
-		} else {
-			deducted = Distribution._distributeTributeBonuses(
-				users,
-				userIds,
-				wokeTokenAddress,
-				lnpdfAddress,
-				_id,
-				tributeBonusPool
-			);
 		}
 
 		// 4. Distribute tribute bonuses
@@ -243,14 +256,22 @@ contract UserRegistry {
 		address from = users[_fromId].account;
 
 		// 1. Transfer the amount from the the sender to the token contract
-		// @TODO naughty naughty
+		// @TODO should use built in approval functionality
 		//approve(tippingAgent, _amount);
 		//transferFrom(from, address(this), _amount); // @dev Use safe math
 		wokeToken.internalTransfer(from, address(this), _amount); // @dev Use safe math
+		//LogNormalPDFValues lnpdf = LogNormalPDF(lnpdfAddress);
 
 		// 2. Set the unclaimed balance for the receiving user
 		if(users[_toId].referralAmount[from] == 0) {
 			users[_toId].referrers.push(from);
+			// Update bonus weights to save gas in fulfillClaim() transaction
+			uint40 weight = logNormalPDF.lnpdf(users[_fromId].followers);
+			if(weight > maxWeights[_toId]) {
+				maxWeights[_toId] = weight;
+				maxFollowers[_toId] = users[_fromId].followers;
+			}
+			weightSums[_toId] += weight;
 		}
 		users[_toId].unclaimedBalance += _amount;
 		users[_toId].referralAmount[from] = _amount;

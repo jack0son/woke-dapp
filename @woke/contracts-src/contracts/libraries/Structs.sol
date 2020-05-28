@@ -10,10 +10,10 @@ library Structs {
 		address[] referrers;
 	}
 
-	struct WeightingGroup {
+	struct WeightGroup {
 		uint32 followers;
 		uint256 amount;
 		uint256 balance;
-		uint40 weighting;
+		uint40 weight;
 	}
 }

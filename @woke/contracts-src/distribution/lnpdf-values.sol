@@ -6,41 +6,42 @@ uint40[625] internal yArray8;
 uint40[625] internal yArray16;
 uint40[313] internal yArray32;
 uint40[156] internal yArray64;
-uint40[78] internal yArray128;
+uint40[79] internal yArray128;
+uint40[1] internal yArray256;
 
 // yArray4
-if(x >= 0 && x < 5000) {
+else if(x >= 0 && x < 5000) {
 index = x - 0;
 chunkSize = 4;
 }
 // yArray8
-if(x >= 5000 && x < 10000) {
+else if(x >= 5000 && x < 10000) {
 index = x - 5000;
 chunkSize = 8;
 }
 // yArray16
-if(x >= 10000 && x < 20000) {
+else if(x >= 10000 && x < 20000) {
 index = x - 10000;
 chunkSize = 16;
 }
 // yArray32
-if(x >= 20000 && x < 30016) {
+else if(x >= 20000 && x < 30016) {
 index = x - 20000;
 chunkSize = 32;
 }
 // yArray64
-if(x >= 30016 && x < 40064) {
+else if(x >= 30016 && x < 39936) {
 index = x - 30016;
 chunkSize = 64;
 }
 // yArray128
-if(x >= 40064 && x < 49920) {
-index = x - 40064;
+else if(x >= 39936 && x < 49920) {
+index = x - 39936;
 chunkSize = 128;
 }
 
 uint40[1250] internal yArray4 = [
-0x0053f87f9e,		//0
+0x00a7f0ff3c,		//0
 0x03fbb6bc29,		//4
 0x0809f7b50c,		//8
 0x0b65a86ddd,		//12
@@ -3018,7 +3019,8 @@ uint40[156] internal yArray64 = [
 0x00dcd276c1,		//39872
 0x00dc4fe8ab		//39936
 ];
-uint40[78] internal yArray128 = [
+uint40[79] internal yArray128 = [
+0x00dc4fe8ab,		//39936
 0x00db4c34bc,		//40064
 0x00da4a5d29,		//40192
 0x00d94a5d3d,		//40320
@@ -3098,5 +3100,6 @@ uint40[78] internal yArray128 = [
 0x009f37b2c1,		//49792
 0x009e9aaff2		//49920
 ];
-uint40[0] internal yArray256 = [
+uint40[1] internal yArray256 = [
+0x009e9aaff2		//49920
 ];

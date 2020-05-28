@@ -1,5 +1,7 @@
 import matplotlib.pyplot as plt
 import numpy as np
+import codecs, json 
+
 
 #f = lambda x,a : a * x**2
 f = lambda x,theta,mu,sigma : np.exp((-(np.log(x-theta)-mu)**2)/(2*(sigma**2)))/(sigma*(x-theta)*np.sqrt(2*np.pi))
@@ -15,19 +17,22 @@ x = np.arange(0,domain, 1)
 y2 = np.empty(domain)
 y2.fill(0);
 y = f(x,theta,mu,sigma)
+y[0] = y[1] # Set a value for x=0
 
 # Fit into uint48, max val 281474976710656
 scale = 10e6;
 sigFigs = 10e7;
 
-
 # Output csv for distribution js emulation 
 np.savetxt("log_normal_py.csv", y, delimiter=",")
 
+# Break function into domain chunks for solidity
 chunks = [5e3, 10e3, 20e3, 30e3, 40e3, 50e3] 
 approx = np.empty(domain);
 chunks.append(len(y))
 chunkArrays = [[] for j in range(len(chunks))]
+
+yHex = [int(y[i]*scale*sigFigs) for i in range(len(y))]
 
 maximum = np.max(y[1:]) 
 maxX = 0
@@ -38,7 +43,7 @@ for i in range(len(y)):
 
 for i in range(len(chunks)):
     chunkSize = np.power(2, i+2)
-    lower = 0 if i == 0 else chunks[i-1]
+    lower = 0 if i == 0 else chunkArrays[i-1][-1][1]
     for j in range(int(lower), int(chunks[i])):
     #for j in y[int(lower):int(chunks[i])]:
         if j%chunkSize == 0:
@@ -64,7 +69,7 @@ with open('lnpdf-values.sol', 'w') as f:
             print(len(chunkArrays[chunk]))
             lower = chunkArrays[chunk - 1][0]
             upper = chunkArrays[chunk][0] if len(chunkArrays[chunk]) else chunkArrays[chunk - 1][-1]
-            f.write('if(x >= {} && x < {}) {{\n'.format(lower[1], upper[1]))
+            f.write('else if(x >= {} && x < {}) {{\n'.format(lower[1], upper[1]))
             f.write('index = x - {};\n'.format(lower[1]))
             f.write('chunkSize = {};\n}}\n'.format(chunkSize))
             #f.write('y = yArray{}[index/{}];\n}}\n\n'.format(chunkSize, chunkSize))
@@ -113,6 +118,8 @@ with open('lnpdf-values.js', 'w') as f:
             f.write('\t\t//{}\n'.format(val[1]))
         f.write('],\n');
     f.write('\n}');
+
+json.dump(yHex, codecs.open('lnpdf-int_values.json', 'w', encoding='utf-8'), separators=(',', ':'), sort_keys=True, indent=4) ### this saves the array in .json format
 
 # Generate plot
 fig, ax = plt.subplots(1,2, figsize=(30,8))
