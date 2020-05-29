@@ -17,6 +17,7 @@ const Distribution = artifacts.require('Distribution.sol')
 const Helpers = artifacts.require('Helpers.sol')
 const MockTwitterOracle = artifacts.require('mocks/TwitterOracleMock.sol')
 
+const tributorData = require('../distribution/data-tributors');
 const appId = web3.utils.asciiToHex('0x0A'); // twitter
 const getwoketoke_id = '932596541822419000';
 const stranger_id = '12345';
@@ -28,22 +29,21 @@ const claimArgs = u => [u.address, u.id, u.followers];
 // JSONpath for multiple fields $.['full_text', 'user']
 
 contract('UserRegistry', (accounts) => {
-	const [defaultAccount, owner, oraclize_cb, claimer, tipAgent, stranger, cB, cC, ...rest] = accounts;
+	const [defaultAccount, owner, oraclize_cb, claimer, tipAgent, stranger, cA, cB, cC, cD, ...rest] = accounts;
 
-	const brokenUser = {address: stranger, id: '212312122', handle: 'jack', followers: 30000};
+	let newUser = {address: cA, id: '212312122', handle: 'jack', followers: 30000};
 	const users = [
+		newUser,
 		{address: claimer, id: getwoketoke_id, handle: 'getwoketoke', followers: 100},
 		{address: cC, id: '3313322', handle: 'yanggang', followers: 80e6},
-		brokenUser,
-		{address: rest[0], id: '1224927413284120212342141', handle: 'botman', followers: 1},
-		{address: rest[1], id: '12249274132841202123429999', handle: 'megawhale', followers: Math.pow(2,32)-1}, // uint32 overflow
+		{address: cD, id: '1224927413284120212342141', handle: 'botman', followers: 1},
+		{address: cB, id: '12249274132841202123429999', handle: 'megawhale', followers: Math.pow(2,32)-1}, // uint32 overflow
 	];
 
 	// Token Generation params
 	const max_supply = 100000000;
 	let UR, WT, TO, WF, LNDPF;
 	let claimUser;
-	let newUser = { address: claimer, followers: 10000, id: getwoketoke_id};
 
 	async function joinEvent(newUser, tributors) {
 		const claimUser = bindClaimUser(UR, TO, oraclize_cb);
@@ -53,16 +53,31 @@ contract('UserRegistry', (accounts) => {
 		}
 
 		// 2. Transfer tributes
+		let tributeTotal = 0;
 		for(t of tributors) {
-			let balance = await WT.balanceOf.call(t.address);
-			console.log(balance);
-			if(t.amount > balance) t.amount = balance;  // avoid reverts
+			t.balance = await WT.balanceOf.call(t.address);
+			if(t.amount > t.balance) t.amount = t.balance;  // avoid reverts
 			let r = await UR.transferUnclaimed(newUser.id, t.amount, {from: t.address});
+			console.log(`${tributors.indexOf(t)}:${t.id}, bal: ${t.balance.toString()}, tx: ${t.amount}`);
+			tributeTotal += t.amount;
 		}
 
 		// 3. User joins
 		let r = await claimUser(newUser)
+		let summoned = (await WT.getPastEvents('Summoned', {from: r.receipt.blockNumber, to: 'latest'}))[0].args
+		const tributePool = summoned.amount.toNumber() - r.claimed.bonus.toNumber()
+		console.log(`Minted: ${summoned.amount.toNumber()} Tribute pool: ${tributePool}`);
+		assert.equal((await WT.balanceOf.call(newUser.address)).toNumber(), r.claimed.bonus.toNumber() + tributeTotal);
 
+		let bonusTotal = 0;
+		for(t of tributors) {
+			let newBalance = await WT.balanceOf.call(t.address);
+			t.bonus = newBalance.toNumber() - t.balance.toNumber();
+			bonusTotal += t.bonus;
+			console.log(`${tributors.indexOf(t)}:${t.id}, bonus: ${t.bonus}`);//bal: ${t.balance.toString()}, newBal: ${newBalance.toString()}`);
+		}
+		console.log(`Tribute pool: ${tributePool}, Bonuses distributed: ${bonusTotal}, diff = ${tributePool - bonusTotal}`);
+		assert.equal(tributePool, bonusTotal, 'Tribute bonuses equal to tribute bonus pool');
 		// 4. check user bonuses
 		// 5. check tributor bonuses
 	}
@@ -128,7 +143,7 @@ contract('UserRegistry', (accounts) => {
 					//*/
 
 					it('should fulfill a user claim', async () => {
-						let user = brokenUser;
+						let user = newUser;
 						UR.claimUser(user.id, {from: user.address});
 						const {blockNumber, returnValues: {queryId: queryId}} = await waitForEvent(UR.Lodged);
 						let claimString = await genClaimString(...claimArgs(user));
@@ -162,14 +177,7 @@ contract('UserRegistry', (accounts) => {
 
 					//	/*
 					it('should fail if a second claim is attempted', async () => {
-
-						// Claim the user
-						UR.claimUser(newUser.id, {from: newUser.address});
-						let {returnValues: {queryId: queryId}} = await waitForEvent(UR.Lodged);
-
-						let claimString = await genClaimString(...claimArgs(newUser));
-						await TO.__callback(queryId, claimString, '0x0', {from: oraclize_cb});
-						await UR._fulfillClaim(newUser.id, {from: newUser.address});
+						await claimUser(newUser);
 
 						// Attempt to claim the user again
 						await truffleAssert.reverts(
@@ -177,7 +185,7 @@ contract('UserRegistry', (accounts) => {
 							"sender already has user ID"
 						);
 						await truffleAssert.reverts(
-							UR.claimUser(getwoketoke_id, {from: stranger}),
+							UR.claimUser(newUser.id, {from: stranger}),
 							"user already claimed"
 						);
 					})
@@ -237,7 +245,7 @@ contract('UserRegistry', (accounts) => {
 					assert(await UR.getUserCount.call(), cases.length);
 				})
 
-				it('should reward referrers with a bonus', async () => {
+				it('should reward tributors with a bonus', async () => {
 
 					claimUser = bindClaimUser(UR, TO, oraclize_cb);
 
@@ -283,6 +291,30 @@ contract('UserRegistry', (accounts) => {
 						}
 					}
 				})
+
+				it('should allow a large number of tributors', async () => {
+					// Fund tributors
+					const tributors = [];
+					let i = 0;
+					for(t of tributorData.whale) {
+						if(i > rest.length - 1) 
+							break;
+						t.address = rest[i];
+						//const txOpts = {
+						//	from: owner,
+						//	value: toWei('0.5'),
+						//	to: t.address,
+						//	//gas: self.network.gasLimit,
+						//	//gasPrice: self.network.gasPrice,
+						//};
+						//let r = await web3.eth.sendTransaction(txOpts)
+						t.id = genRandomUserId();
+						tributors.push(t);
+						i++;
+					}
+
+					await joinEvent(newUser, tributors);
+				});
 
 			})
 
@@ -401,6 +433,16 @@ async function genClaimString(signatory, userId, followersCount, app = 'twitter'
 	let str = `@getwoketoke 0xWOKE:${userId},${sig},1:${followersCountHex}`;
 	debug.h(`Oracle claim string: ${str}`);
 	return str;
+}
+
+function genRandomUserId() {
+	return getRandomInt(13, 4e12).toString();
+}
+
+function getRandomInt(min, max) {
+	min = Math.ceil(min);
+	max = Math.floor(max);
+	return Math.floor(Math.random() * (max - min + 1)) + min;
 }
 
 // Replicate Helper.verifyClaimString

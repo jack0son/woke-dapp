@@ -6,7 +6,6 @@ let none = [
 	},
 ]
 
-
 let whale = [
 	{
 		amount: 50,
@@ -129,9 +128,15 @@ let tributors = [
 	},
 ];
 
+let scale = [];
+for(let i = 0; i < 10; i++) {
+	scale = [...scale, ...tributors];
+}
+
 module.exports = {
 	even: tributors,
 	whale,
 	whaleBots,
 	whales,
+	scale,
 }

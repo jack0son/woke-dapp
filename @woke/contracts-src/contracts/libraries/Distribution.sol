@@ -1,4 +1,8 @@
 pragma solidity ^0.5.0;
+/*
+ * @title Token distribution 
+ * @desc Token distiribution algorithms.
+ */
 
 import "./Structs.sol";
 import "../Math/LogNormalPDF.sol";
@@ -44,15 +48,6 @@ library Distribution {
 		return _calcAllocation(tributeWeight, userWeight + tributeWeight, _minted);
 	}
 
-	function _calcAllocation(uint40 _weight, uint48 _sum, uint256 _pool)
-		internal pure
-		returns (uint256)
-	{
-		//uint256 ratio = (uint256(_weight) << 4).div(_sum);
-		//return (ratio * _pool) >> 4;
-		return ((uint256(_weight) << 4).div(_sum) * _pool) >> 4;
-	}
-
 	// @param _bonusPool: Pool of tokens to be distributed to tributors
 	// returns: Deducted tribute bonus amount 
 	function _distributeTributeBonuses(
@@ -95,6 +90,14 @@ library Distribution {
 		return total;
 	}
 
+	function _calcAllocation(uint40 _weight, uint48 _sum, uint256 _pool)
+		internal pure
+		returns (uint256)
+	{
+		//uint256 ratio = (uint256(_weight) << 4).div(_sum);
+		//return (ratio * _pool) >> 4;
+		return ((uint256(_weight) << 4).div(_sum) * _pool) >> 4;
+	}
 
 	function _calcAllocations(Structs.WeightGroup[] memory _groups, uint256 _pool, address _lnpdfAddress)
 		internal

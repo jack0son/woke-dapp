@@ -2,7 +2,7 @@
 //let tributeBonusRatio = (tributeAmount * meansScale)/sqrt(balance * followers);
 const fs = require('fs');
 
-const tributors = require('./data');
+const tributors = require('./data-tributors');
 const log_normal_csv = fs.readFileSync('./log_normal_py.csv', 'utf8');
 
 // Import log normal pdf function
@@ -369,7 +369,8 @@ function cumulativeJoins(scenarios) {
 	})
 }
 
-joinEvent(joinEvents.testFile);
+joinEvent(joinEvents.g);
+//joinEvent(joinEvents.testFile);
 //joinEvent(joinEvents.a);
 //joinEvent(joinEvents.z);
 //joinEvent(joinEvents.y);
@@ -378,4 +379,3 @@ joinEvent(joinEvents.testFile);
 //joinEvent(joinEvents.d);
 //joinEvent(joinEvents.e);
 //joinEvent(joinEvents.f);
-//joinEvent(joinEvents.g);
