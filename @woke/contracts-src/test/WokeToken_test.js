@@ -1,6 +1,6 @@
 const TwitterOracle = artifacts.require('TwitterOracle.sol')
 const debug = require('./debug/WokeToken_test');
-const { waitForEvent } = require('./utils');
+const { waitForEvent, genRandomUserId } = require('./utils');
 const truffleAssert = require('truffle-assertions');
 const printEvents = truffleAssert.prettyPrintEmittedEvents;
 const {fromAscii, toWei, fromWei} = web3.utils;
@@ -433,16 +433,6 @@ async function genClaimString(signatory, userId, followersCount, app = 'twitter'
 	let str = `@getwoketoke 0xWOKE:${userId},${sig},1:${followersCountHex}`;
 	debug.h(`Oracle claim string: ${str}`);
 	return str;
-}
-
-function genRandomUserId() {
-	return getRandomInt(13, 4e12).toString();
-}
-
-function getRandomInt(min, max) {
-	min = Math.ceil(min);
-	max = Math.floor(max);
-	return Math.floor(Math.random() * (max - min + 1)) + min;
 }
 
 // Replicate Helper.verifyClaimString

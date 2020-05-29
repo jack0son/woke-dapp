@@ -151,7 +151,7 @@ contract UserRegistry {
 		if(user.followers > 0) {
 			if(user.referrers.length == 0) {
 				// If the user's followers is less than aggregate followers, claim the pool
-				if(user.followers <= wokeToken.followerBalance() - user.followers + 100) {
+				if(user.followers <= wokeToken.followerBalance() - user.followers + 100 && noTributePool > 0) {
 					uint256 credit = Distribution._calcAllocation(logNormalPDF.lnpdf(user.followers), logNormalPDF.maximum(), noTributePool);
 					wokeToken.internalTransfer(address(this), user.account, credit);
 					noTributePool -= credit;
