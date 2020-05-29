@@ -11,51 +11,35 @@ library Distribution {
 	// @notice Calculate the proportion of minted tokens received by tributors vs new user
 	function _calcTributeBonus(
 		mapping(string => Structs.User) storage _users,
-		//mapping(address => string) storage _userIds,
-		//mapping(string => uint32) storage _maxFollowers,
 		mapping(string => uint40) storage _maxWeights,
 		string memory _id,
 		uint256 _minted,
 		address _lnpdfAddress
-	)
-		public //view
-		returns (uint256)
+	) public view
+	returns (uint256)
 	{
 		if(_minted == 0) {
 			return 0;
 		}
 
 		LogNormalPDF logNormalPDF = LogNormalPDF(_lnpdfAddress);
-		// 1. find highest influence weight in tributors
-		//uint32 followers;
-		//Structs.User storage tributor = _users[_id];
-		//uint256 tributePool = 0;
-
 		uint40 userWeight = logNormalPDF.lnpdf(_users[_id].followers);
 		uint40 tributeWeight;
 
+		// Use highest influence weight from tributors
 		if(_users[_id].referrers.length == 0) {
 			//followers = logNormalPDF.max_x();
 			tributeWeight = logNormalPDF.maximum();
 		} else {
-			//followers = _maxFollowers[_id];
-			tributeWeight = _maxWeights[_id];
 			// OR could use the sum of tribute weights to heavily skew the minted tokens
 			// towards tributors
+			//followers = _maxFollowers[_id];
+			tributeWeight = _maxWeights[_id];
 		}
-
 
 		// TODO incorporate amount tributed
 		//uint256 balance = _minted + tributePool;
 		// ---------------------------------------
-
-		// 2. Calc influence weights
-		//Structs.WeightGroup storage userWeights = Structs.WeightGroup(_users[_id].followers, _minted, balance, 0);
-		//Structs.WeightGroup storage tWeights = Structs.WeightGroup(followers, tributePool, balance, 0);
-		//Structs.WeightGroup[2] storage groups = [userWeights, tWeights];
-		//uint256[] memory allocations = _calcAllocations(groups, _minted, _lnpdfAddress);
-		//uint256[] memory allocations = new uint256[](groups.length);
-		//return allocations[1];
 
 		return _calcAllocation(tributeWeight, userWeight + tributeWeight, _minted);
 	}
@@ -64,11 +48,12 @@ library Distribution {
 		internal pure
 		returns (uint256)
 	{
-		uint256 ratio = (uint256(_weight) << 4).div(_sum);
-		return (ratio * _pool) >> 4;
+		//uint256 ratio = (uint256(_weight) << 4).div(_sum);
+		//return (ratio * _pool) >> 4;
+		return ((uint256(_weight) << 4).div(_sum) * _pool) >> 4;
 	}
 
-	// @param _bonusPool: 
+	// @param _bonusPool: Pool of tokens to be distributed to tributors
 	// returns: Deducted tribute bonus amount 
 	function _distributeTributeBonuses(
 		mapping(string => Structs.User) storage _users,
@@ -87,12 +72,6 @@ library Distribution {
 
 		// 1. Create weight groups
 		Structs.WeightGroup[] memory groups = new Structs.WeightGroup[](user.referrers.length);
-		//for(uint i = 0; i < user.referrers.length; i++) {
-		//	address referrer = user.referrers[i];
-		//	tributor = users[userIds[referrer]];
-		//	uint256 amount = user.referralAmount[referrer]; // not available outside of storage
-		//	groups[i] = Structs.WeightGroup(tributor.followers, amount, wokeToken.balanceOf(referrer), 0);
-		//}
 		for(uint32 i = 0; i < _users[_id].referrers.length; i++) {
 			address referrer = _users[_id].referrers[i];
 			tributor = _users[_userIds[referrer]];

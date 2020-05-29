@@ -1,4 +1,8 @@
 pragma solidity ^0.5.0;
+/*
+ * @title Woke Network User Registry Contract
+ * @desc Registers and stores user IDs and manages token transfers.
+ */
 
 import "./WokeToken.sol";
 import "./mocks/TwitterOracleMock.sol";
@@ -12,7 +16,8 @@ contract UserRegistry {
 	using SafeMath for uint256;
 
 	byte constant appId = 0x0A;		// Auth app, only twitter for now
-	bool DEFAULT_TIP_ALL = true;
+	bool DEFAULT_TIP_ALL = true;	// Tipping switch (alpha)
+
 	// Dapp Agents
 	address public tippingAgent;
 	address public twitterClient;
@@ -23,22 +28,21 @@ contract UserRegistry {
 	LogNormalPDF logNormalPDF;
 
 	// User accounts
-	mapping(string => Structs.User) private users;		// userId => User
-	mapping(address => string) private userIds;			// account => Twitter userId
-	mapping(string => address) private requester;		// claim string needs a nonce
+	uint256 public userCount;
+	mapping(string => Structs.User) private users;	// userId => User
+	mapping(address => string) private userIds;		// account => Twitter userId
+	mapping(string => address) private requester;	// claim string needs a nonce
 	mapping(string => uint48) private weightSums;	// userId => sum of referrer weightingss
 	mapping(string => uint40) private maxWeights;	// userId => max referrer weighting
 	mapping(string => uint40) private maxFollowers;	// userId => max referrer weighting
 
-	uint256 public userCount;
+	// Bonus pool received by smaller influence users
+	uint256 noTributePool; // Excess tokens minted by influence whales
 
 	// Safety
 	mapping(address => bool) private requestMutexes; // Oracle requests are blocking
 
-	// Bonus pool received by smaller influence users
-	uint256 noTributePool;
-
-	// @dev Instantiate up user registry
+	// @desc Instantiate user registry
 	// @param _twitterClient	Address of provable client contract for twitter api requests
 	// @param _tippingAgent		
 	constructor(
@@ -46,7 +50,8 @@ contract UserRegistry {
 		address _logNormalPdf,
 		address _twitterClient, 
 		address _tippingAgent
-	) public payable {
+	) public payable 
+	{
 		twitterClient = _twitterClient;
 		tippingAgent = _tippingAgent;
 
@@ -56,7 +61,7 @@ contract UserRegistry {
 		logNormalPDF = LogNormalPDF(lnpdfAddress);
 	}
 
-	// @notice Connect a wallet to a Twitter user ID and claim any unclaimed TXs  
+	// @desc Connect a wallet to a Twitter user ID and claim any unclaimed TXs  
 	// @returns Provable query ID
 	function claimUser(string calldata _userId) external payable
 		hasNoUser
@@ -80,16 +85,17 @@ contract UserRegistry {
 		return queryId;
 	}
 
-	//function verifyClaimString(address claimer, string memory _id, string memory _claimString)
-	//	public view
-	//returns (bool, uint32)
-	//{
-	//	return Helpers.verifyClaimString(claimer, _id, _claimString, appId);
-	//}
+	// @desc Verify proof message
+	// @param _claimString: Tweet text which should contain a signed claim string
+	function verifyClaimString(address claimer, string memory _id, string memory _claimString)
+		public pure
+	returns (bool, uint32)
+	{
+		return Helpers.verifyClaimString(claimer, _id, _claimString, appId);
+	}
 
-	// @notice Receive claimer data from client and action claim
-	// @param _id user id
-	// @param _claimString tweet text which should contain a signed claim string
+	// @desc Finalize user claim - create user, receive unclaimed transactions and bonus
+	// @param _id: User id
 	function _fulfillClaim(string calldata _id) external
 		userNotClaimed(_id)
 		requestLocked(requester[_id])
@@ -98,62 +104,55 @@ contract UserRegistry {
 		string memory claimString = client.getTweetText(_id);
 		require(bytes(claimString).length > 0, "claim string not stored");
 
-		(bool verified, uint32 followers) = Helpers.verifyClaimString(requester[_id], _id, claimString, appId);
+		(bool verified, uint32 followers) = verifyClaimString(requester[_id], _id, claimString);
 		require(verified, "invalid claim string");
 
-		// address _claimer
-
-		// Link wallet and twitter handle
+		// Link wallet to twitter id
 		userIds[requester[_id]] = _id; // store user address
 		users[_id].account = requester[_id];
 		users[_id].followers = followers;
 		userCount += 1;
 
-		uint256 joinBonus = distributeClaimBonus(_id);
+		uint256 joinBonus = _distributeClaimBonus(_id);
 
 		// Claim unclaimed transactions and join bonus
-		emit Claimed(users[_id].account, _id, wokeToken.balanceOf(users[_id].account), joinBonus);//distributeClaimBonus(_id));
+		emit Claimed(
+			users[_id].account, _id,
+			wokeToken.balanceOf(users[_id].account),
+			joinBonus
+		);
 
-		//emit TraceUint256('balanceClaimed', balanceOf(users[_id].account));
+		// Enable tipping
 		if(DEFAULT_TIP_ALL) {
 			_setTipBalance(_id, wokeToken.balanceOf(users[_id].account));
 		}
 
-		requester[_id] = address(0); // @fix delete this value
+		requester[_id] = address(0); 
 	}
 
-	// @notice Transfer a new userId's bonus to their account
-	// @param _id			User's ID
-	// @returns Join bonus
-	function distributeClaimBonus(string memory _id)
-		//userIsClaimed(_id)
-		private
-	returns (uint256)
+	// @desc Mint new tokens then allocate to user and tributors
+	// @param _id: User's twitter ID
+	// @returns joinBonus: amount of minted tokens received by new user
+	function _distributeClaimBonus(string memory _id) private
+	returns (uint256 minted)
 	{
 		// 1. Mint new tokens
-		uint256 minted = wokeToken._curvedMint(users[_id].account, users[_id].followers);
+		minted = wokeToken._curvedMint(users[_id].account, users[_id].followers);
 
-		// 2. calculate tribute bonus weight
-		//	tribute bonus pool = minted - join bonus
-		//uint256 tributeBonusPool = Distribution._calcTributeBonus(users, userIds, _id, minted, lnpdfAddress);
+		// 2. calculate tribute bonus weight, tribute bonus pool = minted - joinBonus
 		uint256 tributeBonusPool = Distribution._calcTributeBonus(users, maxWeights, _id, minted, lnpdfAddress);
-
 		require(tributeBonusPool <= minted, 'TRIBUTE MISCALC');
-		//emit TraceUint256('tributeBonusPool', tributeBonusPool);
 
 		// 3. calculate tribute distribution
 		Structs.User storage user = users[_id];
-		emit TraceUint256('followers', user.followers);
-
-		//Structs.User memory tributor;
 		uint256 deducted;
-		// No tributors
+
+		// No bonus for users without followers
 		if(user.followers > 0) {
 			if(user.referrers.length == 0) {
 				// If the user's followers is less than aggregate followers, claim the pool
 				if(user.followers <= wokeToken.followerBalance() - user.followers + 100) {
 					uint256 credit = Distribution._calcAllocation(logNormalPDF.lnpdf(user.followers), logNormalPDF.maximum(), noTributePool);
-					//uint256 credit = (noTributePool / user.followers);
 					wokeToken.internalTransfer(address(this), user.account, credit);
 					noTributePool -= credit;
 				}
@@ -165,6 +164,7 @@ contract UserRegistry {
 					deducted = tributeBonusPool;
 				}
 			} else {
+				// Distribute minted tokens to tributors
 				deducted = Distribution._distributeTributeBonuses(
 					users,
 					userIds,
@@ -176,25 +176,22 @@ contract UserRegistry {
 			}
 		}
 
-		// 4. Distribute tribute bonuses
-		//emit TraceUint256('bonuses', deducted);
-
-		//assert(bonuses == tributeBonusPool);
-
-		// 5. Transfer tributes 
-		uint unclaimedBalance = users[_id].unclaimedBalance;
-		// Transfer the unclaimed amount and bonus from the token contract to the user
+		// 4. Transfer tributes (unclaimed transactions) to new claimed user
+		uint256 unclaimedBalance = users[_id].unclaimedBalance;
 		if(unclaimedBalance > 0) {
-			wokeToken.transfer(users[_id].account, unclaimedBalance); // from address(this);
-			// @dev this conditional should always pass
+			// Transfer the unclaimed amount and bonus from the token contract to the user
+			wokeToken.internalTransfer(address(this), users[_id].account, unclaimedBalance);
 		}
 		users[_id].unclaimedBalance = 0;
 
 		//uint256 claimedAmount = (minted - tributeBonusPool) + unclaimedBalance;
-		return(minted - deducted);
+		//return(minted, deducted);
+		//return (minted, deducted);
+		return minted - deducted;
 	}
 
-	// @notice Transfer tokens between claimed userIds
+	// @desc Transfer tokens between claimed userIds
+	// @dev Off-chain interface
 	function transferClaimed(string calldata _toId, uint256 _amount) 
 		external
 		hasUser
@@ -211,7 +208,8 @@ contract UserRegistry {
 		emit Tx(msg.sender, users[_toId].account, userIds[msg.sender], _toId, _amount, true);
 	}
 
-	// @notice Transfer tokens between claimed userIds
+	// @desc Transfer tokens between claimed userIds
+	// @dev Internal user - e.g. tipping
 	function _transferClaimed(string memory _fromId, string memory _toId, uint256 _amount) 
 		internal
 		onlyTipAgent
@@ -233,8 +231,9 @@ contract UserRegistry {
 		//emit Tx(userIds[msg.sender], _toId, userIds[msg.sender], _toId, _amount, true);
 		emit Tx(from, to, _fromId, _toId, _amount, true);
 	}
-	// @notice Trans
-	//function transferUnclaimed(uint32 _from, uint32 _to, uint32 _amount)
+
+	// @desc Transfer tokens from a claimed user to an unclaimed user
+	// @dev Off-chain interface
 	function transferUnclaimed(string calldata _toId, uint256 _amount)
 		external
 		hasUser
@@ -244,7 +243,7 @@ contract UserRegistry {
 		_transferUnclaimed(myUser(), _toId, _amount);
 	}
 
-	// @notice Trans
+	// @desc Transfer tokens from a claimed user to an unclaimed user
 	function _transferUnclaimed(string memory _fromId, string memory _toId, uint256 _amount)
 		internal
 		userIsClaimed(_fromId)
@@ -284,11 +283,13 @@ contract UserRegistry {
 		emit Tx(from, users[_toId].account, _fromId, _toId, _amount, false);
 	}
 
+	// @desc Authorized transfer between users
+	// @dev Called by twitter tipping bot
 	function tip(string calldata _fromId, string calldata _toId, uint256 _amount)
 		external
 		onlyTipAgent
 		userIsClaimed(_fromId)
-		returns(uint256)
+	returns(uint256)
 	{
 		// @TODO should perform this check off chain
 		uint256 tipBalance = users[_fromId].tipBalance;
@@ -309,21 +310,15 @@ contract UserRegistry {
 		return amount;
 	}
 
-	function setTipBalance(uint256 _amount)
-		external
+	function setTipBalance(uint256 _amount) external
 		hasUser
 	{
 		_setTipBalance(myUser(), _amount);
 	}
 
-	function _setTipBalance(string memory _userId, uint256 _amount)
-		private
+	function _setTipBalance(string memory _userId, uint256 _amount) private
 	{
-		//uint256 userBalance = balanceOf(users[_userId].account);
-		//uint256 amount = _amount > balanceOf(users[_userId].account) ? balanceOf(users[_userId].account) : _amount;
-		
 		users[_userId].tipBalance = _amount > wokeToken.balanceOf(users[_userId].account) ? wokeToken.balanceOf(users[_userId].account) : _amount;
-		//users[_userId].tipBalance = amount;
 	}
 
 	/*
@@ -427,6 +422,8 @@ contract UserRegistry {
 		return false;
 	}
 
+	// @desc Acquire twitterClient request lock for sender iniating request
+	// @dev Require the request lock is available
 	modifier requestUnlocked() {
 		_requestUnlocked();
 		_;
@@ -436,7 +433,7 @@ contract UserRegistry {
 		requestMutexes[msg.sender] = true;
 	}
 
-	// @notice Release twitterClient for account that initiated request
+	// @desc Release twitterClient request lock for account that initiated request
 	// @dev Requires the request lock to be acquired
 	modifier requestLocked(address _requester) {
 		require(requestMutexes[_requester] == true, "sender has no request pending");
@@ -457,16 +454,13 @@ contract UserRegistry {
 		require(msg.sender == tippingAgent, "sender not tip agent");
 	}
 
-
-
-	// @notice Authenticate account is owner of user ID
+	// @desc Authenticate account is owner of user ID
 	// @dev This should be redundant given the user claiming process, but
 	//	    it is left in for added safety during development.
 	modifier isUser(string memory _userId) {
 		_isUser(_userId);
 		_;
 	}
-
 	function _isUser(string memory _userId) internal view
 	{
 		string memory temp = string(userIds[msg.sender]);
@@ -474,25 +468,19 @@ contract UserRegistry {
 				"Sender not the owner of user ID");
 	}
 
-	// @notice Ensure function does not change supply
+	// @desc Ensure function does not affect supply
 	modifier supplyInvariant() {
 		uint256 supply = wokeToken.totalSupply();
 		_;
 		_supplyInvariant(supply);
 	}
-
 	function _supplyInvariant(uint256 original) internal view {
 		require(wokeToken.totalSupply() == original, "supply invariant");
 	}
 
-
-	/* EVENTS */
-	event TraceUint256(string m, uint256 v);
+	event Lodged (address indexed claimer, string userId, bytes32 queryId);
+	event Claimed (address indexed account, string userId, uint256 amount, uint256 bonus);
 	event Tx(address indexed from, address indexed to, string fromId, string toId, uint256 amount, bool claimed);
 	event Tip(string fromId, string toId, uint256 amount);
-
-	event Claimed (address indexed account, string userId, uint256 amount, uint256 bonus);
 	event Reward (address indexed claimer, address indexed referrer, string claimerId, string referrerId, uint256 amount);
-	event Lodged (address indexed claimer, string userId, bytes32 queryId);
-
 }

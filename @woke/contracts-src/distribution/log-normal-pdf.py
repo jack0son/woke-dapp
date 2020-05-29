@@ -34,6 +34,11 @@ chunkArrays = [[] for j in range(len(chunks))]
 
 yHex = [int(y[i]*scale*sigFigs) for i in range(len(y))]
 
+
+# TODO
+#   - output edge cases for LNPDF_test
+#   - output log10 icreasing x values above 50e3
+
 maximum = np.max(y[1:]) 
 maxX = 0
 for i in range(len(y)):

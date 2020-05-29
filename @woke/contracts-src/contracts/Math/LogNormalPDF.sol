@@ -5,12 +5,8 @@ import "./LNPDFValues.sol";
 
 contract LogNormalPDF is LogNormalPDFValues {
 
-	event Trace(uint32 x, uint8 chunkSize, uint32 index, uint40 div);
-	event TraceLen(uint256 len, uint8 chunkSize);
-
-	function lnpdf(uint32 x)
-	completed
-	public //view
+	function lnpdf(uint32 x) public view
+		completed
 	returns(uint40 y)
 	{
 		uint32 index;
@@ -46,18 +42,13 @@ contract LogNormalPDF is LogNormalPDFValues {
 			index = x - 39936;
 			chunkSize = 128;
 		}
+
+		// x >= 49920
 		else {
 			return 0x009e3a3f48;
 		}
 
-		//index = index == 0 ? 0 : index - 1;
-
-		emit TraceLen(valueArrays[chunkSize].length, chunkSize);
-		emit Trace(x, chunkSize, index, index/chunkSize);
-		//return 0x009e3a3f48;
 		return valueArrays[chunkSize][index/chunkSize];
-
-		//return y;
 	}
 }
 

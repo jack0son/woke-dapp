@@ -11,9 +11,9 @@ contract LogNormalPDFValues is Ownable {
 	bool private done = false;
 
 	function fillArrayValues(uint8 chunkSize, uint40[] calldata values)
+		external
 		onlyOwner
 		notCompleted
-		external
 		returns(uint32)
 	{
 		uint32 i;
@@ -27,10 +27,9 @@ contract LogNormalPDFValues is Ownable {
 	{
 	}
 
-	function fillingComplete() 
+	function fillingComplete() external
 		onlyOwner
 		notCompleted
-		external
 	{
 		done = true;
 	}
