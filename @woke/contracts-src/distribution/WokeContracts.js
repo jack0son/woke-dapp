@@ -1,6 +1,7 @@
 const lndpfChunkedValues = require('./lnpdf-values.js');
 const lnpdfIntegers = require('./lnpdf-int_values.json');
 const BN = require('bn.js');
+const Uint256 = require('./uint256');
 
 const FOLLOWER_FLOOR = 100;
 const CONTRACT_ADDRESS = '0xCCCCCCCCCCCC';
@@ -19,8 +20,8 @@ class User {
 		this.id = _id;
 		this.followers = _followers;
 		this.tributors = [];
-		this.balance = 0;
-		this.unclaimed = 0;
+		this.balance = Uint256(new BN(0));
+		this.unclaimed = Uint256(new BN(0));
 		this.claimed = false;
 	}
 
