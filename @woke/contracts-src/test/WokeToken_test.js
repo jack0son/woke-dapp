@@ -54,6 +54,7 @@ contract('UserRegistry', (accounts) => {
 			t.supply = await WT.totalSupply.call();
 			t.pool = await UR.noTributePool.call()
 			t.circulation = t.supply - t.pool;
+			t.fb = await WT.followerBalance.call()
 		}
 
 		// 2. Transfer tributes
@@ -66,7 +67,8 @@ contract('UserRegistry', (accounts) => {
 				await UR.transferUnclaimed(newUser.id, t.amount, {from: t.address});
 			t.balance = await WT.balanceOf.call(t.address);
 			let supplyStr = `${t.summoned.toString().padStart(16)}, ${t.supply.toString().padStart(16)} ${t.circulation.toString().padStart(16)}${t.pool.toString().padStart(16)}`;
-			console.log(`${tributors.indexOf(t).toString().padStart(4)}:${t.id.padEnd(15)} fol: ${t.followers.toString().padStart(10)} bal: ${balance.toString().padStart(9)} ${t.rof.padStart(12)} tx: ${t.amount.toString().padStart(10)}` + supplyStr);
+			console.log(`${tributors.indexOf(t).toString().padStart(4)}:${t.id.padEnd(15)} fol: ${t.followers.toString().padStart(10)} bal: ${balance.toString().padStart(9)} ${t.rof.padStart(12)} fb: ${t.fb.toString().padStart(10)}` + supplyStr);
+			//console.log(`${tributors.indexOf(t).toString().padStart(4)}:${t.id.padEnd(15)} fol: ${t.followers.toString().padStart(10)} bal: ${balance.toString().padStart(9)} ${t.rof.padStart(12)} tx: ${t.amount.toString().padStart(10)}` + supplyStr);
 			//console.log(`${tributors.indexOf(t).toString().padStart(4)}:${t.id.padEnd(15)} fol: ${t.followers.toString().padStart(15)} bal: ${balance.toString().padStart(12)}, ${t.balance.toString().padStart(12)} tx: ${t.amount.toString().padStart(10)}` + supplyStr);
 			tributeTotal += t.amount;
 		}
@@ -324,7 +326,7 @@ contract('UserRegistry', (accounts) => {
 					let ids = [];
 					let i = 0;
 					
-					for(t of tributorData.scale.slice(0, rest.length)) {
+					for(t of tributorData.symmetric.slice(0, rest.length)) {
 						t.address = rest[i];
 						t.id = genRandomUserId(ids);
 						ids.push(t.id);

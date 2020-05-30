@@ -166,6 +166,17 @@ let tributors = [
 	},
 ];
 
+let user = {
+		amount: 1000,
+		followers: 100,
+		balance: 50,
+}
+
+let symmetric = []
+for(let i = 0; i < 180; i++) {
+	symmetric.push({...user});
+}
+
 let scale = [];
 for(let i = 0; i < 10; i++) {
 	tributors.forEach(t => {
@@ -179,6 +190,7 @@ for(let i = 0; i < 10; i++) {
 
 module.exports = {
 	even: tributors,
+	symmetric,
 	average,
 	whale,
 	whaleBots,

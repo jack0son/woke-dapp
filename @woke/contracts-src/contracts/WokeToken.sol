@@ -58,7 +58,7 @@ contract WokeToken is Ownable, ERC20 {
 	// @param _recipient: receives the minted tokens
 	// @param _followers: recipient's follower count
 	// @returns Amount minted
-	function _curvedMint(address recipient, uint256 _followers)
+	function curvedMint(address recipient, uint256 _followers)
 		onlyUserRegistry
 		public
 		returns (uint256)
@@ -75,6 +75,13 @@ contract WokeToken is Ownable, ERC20 {
 
 		emit Summoned(msg.sender, amount, _followers);
 		return amount;
+	}
+
+	function burnExcess(address _account, uint256 _amount) 
+		onlyUserRegistry
+		public
+	{
+		_burn(_account, _amount);
 	}
 
 	// @desc Mint the given amount, or the remaining unminted supply (whichever smallest)

@@ -143,7 +143,8 @@ contract UserRegistry {
 		//		wokeToken.followerBalance() :
 		//		users[_id].followers
 		//);
-		minted = wokeToken._curvedMint(users[_id].account, users[_id].followers);
+		uint256 prevFollowerBalance = wokeToken.followerBalance();
+		minted = wokeToken.curvedMint(users[_id].account, users[_id].followers);
 
 		// 2. calculate tribute bonus weight, tribute bonus pool = minted - joinBonus
 		uint256 tributeBonusPool = Distribution._calcTributeBonus(users, maxWeights, _id, minted, lnpdfAddress);
@@ -156,9 +157,11 @@ contract UserRegistry {
 		// No bonus for users without followers
 		if(user.followers > 0) {
 			if(user.referrers.length == 0) {
+				/*
 				// If the user's followers is less than aggregate followers, claim the pool
 				if(user.followers <= wokeToken.followerBalance() - user.followers + 100 && noTributePool > 0) {
-					uint256 credit = Distribution._calcAllocation(logNormalPDF.lnpdf(user.followers), logNormalPDF.maximum() + logNormalPDF.lnpdf(user.followers), noTributePool);
+					// Receive at most 1/3 of the bonus pool
+					uint256 credit = Distribution._calcAllocation(logNormalPDF.lnpdf(user.followers), logNormalPDF.maximum() + (logNormalPDF.lnpdf(user.followers)*2), noTributePool);
 					wokeToken.internalTransfer(address(this), user.account, credit);
 					noTributePool -= credit;
 				}
@@ -168,6 +171,10 @@ contract UserRegistry {
 					wokeToken.internalTransfer(user.account, address(this), tributeBonusPool);
 					noTributePool += tributeBonusPool;
 					deducted = tributeBonusPool;
+				}
+			   */
+				if(user.followers > prevFollowerBalance) {
+					wokeToken.burnExcess(user.account, tributeBonusPool);
 				}
 			} else {
 				// Distribute minted tokens to tributors
