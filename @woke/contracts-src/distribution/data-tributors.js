@@ -90,7 +90,7 @@ let whales = [
 	},
 ];
 
-let average = [
+let sample = [
 	{
 		amount: 50,
 		followers: 240,
@@ -168,21 +168,23 @@ let tributors = [
 
 let user = {
 		amount: 1000,
-		followers: 100,
+		followers: 1000,
 		balance: 50,
 }
 
-let symmetric = []
-for(let i = 0; i < 180; i++) {
+let symmetric = [];
+for(let i = 0; i < 270; i++) {
 	symmetric.push({...user});
 }
+
+let average = [];
 
 let scale = [];
 for(let i = 0; i < 10; i++) {
 	tributors.forEach(t => {
 		scale.push({...t});
 	});
-	average.forEach(t => {
+	sample.forEach(t => {
 		scale.push({...t});
 	});
 	//scale = [...scale, ...tributors];
@@ -191,7 +193,7 @@ for(let i = 0; i < 10; i++) {
 module.exports = {
 	even: tributors,
 	symmetric,
-	average,
+	sample,
 	whale,
 	whaleBots,
 	whales,

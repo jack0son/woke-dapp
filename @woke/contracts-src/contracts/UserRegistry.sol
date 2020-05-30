@@ -32,6 +32,10 @@ contract UserRegistry {
 	mapping(string => Structs.User) private users;	// userId => User
 	mapping(address => string) private userIds;		// account => Twitter userId
 	mapping(string => address) private requester;	// claim string needs a nonce
+
+	// Distribution calculation
+	// sizeOf weighting sum: bits >= log_2(lnpdf.maximum() * maxTributors) ~ 46 bits;
+	uint16 maxTributors = 280;
 	mapping(string => uint48) private weightSums;	// userId => sum of referrer weightingss
 	mapping(string => uint40) private maxWeights;	// userId => max referrer weighting
 	mapping(string => uint40) private maxFollowers;	// userId => max referrer weighting
@@ -184,8 +188,13 @@ contract UserRegistry {
 					wokeTokenAddress,
 					lnpdfAddress,
 					_id,
-					tributeBonusPool
+					tributeBonusPool,
+					weightSums[_id]
 				);
+
+				// TODO check if this frees any storage 
+				maxWeights[_id] = 0;
+				weightSums[_id] = 0;
 			}
 		}
 

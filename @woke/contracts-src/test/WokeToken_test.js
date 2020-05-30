@@ -318,15 +318,15 @@ contract('UserRegistry', (accounts) => {
 
 					await joinEvent(newUser, tributors);
 				});
-
 				*/
-				it(`should distribute to tributors at scale (${tributorData.scale.length})`, async () => {
+				let tributorsSample = tributorData.symmetric.slice(0, rest.length);
+				it(`should distribute to tributors at scale (${tributorsSample.length})`, async () => {
 					// Fund tributors
 					const tributors = [];
 					let ids = [];
 					let i = 0;
 					
-					for(t of tributorData.symmetric.slice(0, rest.length)) {
+					for(t of tributorsSample) {
 						t.address = rest[i];
 						t.id = genRandomUserId(ids);
 						ids.push(t.id);

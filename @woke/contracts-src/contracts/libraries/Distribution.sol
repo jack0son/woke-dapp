@@ -10,7 +10,7 @@ import "../WokeToken.sol";
 import "openzeppelin-solidity/contracts/math/SafeMath.sol";
 
 library Distribution {
-	using SafeMath for uint256;
+	//using SafeMath for uint256;
 
 	// @notice Calculate the proportion of minted tokens received by tributors vs new user
 	function _calcTributeBonus(
@@ -54,42 +54,50 @@ library Distribution {
 		mapping(string => Structs.User) storage _users,
 		mapping(address => string) storage _userIds,
 		address _wokeTokenAddress,
-		address lnpdfAddress,
+		address _lnpdfAddress,
 		string memory _id,
-		uint256 _bonusPool
+		uint256 _pool,
+		uint48 _weightSum
 	)
 		public
 		returns (uint256)
 	{
 		WokeToken wokeToken = WokeToken(_wokeTokenAddress);
+		LogNormalPDF logNormalPDF = LogNormalPDF(_lnpdfAddress);
 		Structs.User storage user = _users[_id];
 		Structs.User storage tributor = _users[_id];
 
-		// 1. Create weight groups
-		Structs.WeightGroup[] memory groups = new Structs.WeightGroup[](user.referrers.length);
+		uint256 total;
+		uint256 minAmount = _pool;
+		uint32 minI = uint32(_users[_id].referrers.length);
+
 		for(uint32 i = 0; i < _users[_id].referrers.length; i++) {
-			address referrer = _users[_id].referrers[i];
-			tributor = _users[_userIds[referrer]];
-			uint256 amount = _users[_id].referralAmount[referrer]; // not available outside of storage
+			tributor = _users[_userIds[user.referrers[i]]];
+			uint256 amount = _calcAllocation(logNormalPDF.lnpdf(tributor.followers),  _weightSum, _pool);
+			wokeToken.internalTransfer(user.account, tributor.account, amount);
+			total = total += amount;
 
-			groups[i] = Structs.WeightGroup(tributor.followers, amount, wokeToken.balanceOf(referrer), 0);
+			if(amount < minAmount) {
+				minAmount = amount;
+				minI = i;
+			}
 		}
 
-		// 2. Calculae and transfer bonuses
-		uint256[] memory bonuses = _calcAllocations(groups, _bonusPool, lnpdfAddress);
-		//uint256[] memory bonuses = new uint256[](groups.length);
-		uint256 total = 0;
-		for(uint i = 0; i < user.referrers.length; i++) {
-			address referrer = user.referrers[i];
-			tributor = _users[_userIds[referrer]];
-			wokeToken.internalTransfer(user.account, tributor.account, bonuses[i]);
-			total = total.add(bonuses[i]);
+		//uint256 remainder = _pool - total;
+		// Transfer remainder to smallest beneficiary
+		// - 1st tributor gets remainder if weights symmetrical
+		// Stack too deep to store remainder
+		if(_pool - total > 0 && minI < _users[_id].referrers.length) {
+			wokeToken.internalTransfer(user.account, user.referrers[minI], _pool - total);
+			total += _pool - total;
 		}
 
-		require(total == _bonusPool, 'bonuses != tributeBonusPool');
+		require(total == _pool, 'bonuses != tributeBonusPool');
 		return total;
 	}
 
+	// @dev Overflows if log_2(_pool * (2^48 - 1)) > 256, i.e. pool > 2^208 - 1
+	// - assume for alpha the pool is never this absurdly large
 	function _calcAllocation(uint40 _weight, uint48 _sum, uint256 _pool)
 		internal pure
 		returns (uint256)
@@ -97,49 +105,9 @@ library Distribution {
 		//uint256 ratio = (uint256(_weight) << 4).div(_sum);
 		//return (ratio * _pool) >> 4;
 		//return ((uint256(_weight) << 4).div(_sum) * _pool) >> 4;
-		return ((uint256(_weight) << 4).mul(_pool)).div(_sum) >> 4;
+		return ((uint256(_weight) << 8)*(_pool))/(_sum) >> 8;
 	}
 
-	function _calcAllocations(Structs.WeightGroup[] memory _groups, uint256 _pool, address _lnpdfAddress)
-		internal
-		returns (uint256[] memory allocations)
-	{
-		allocations = new uint256[](_groups.length);
-		LogNormalPDF logNormalPDF = LogNormalPDF(_lnpdfAddress);
-		// 1. find highest influence weight in tributors
-		// TODO use weightSums
-		uint64 sum = 0;
-		for(uint i = 0; i < _groups.length; i++) {
-			_groups[i].weight = logNormalPDF.lnpdf(_groups[i].followers);
-			sum += _groups[i].weight;
-		}
-
-		uint256 minAmount = _pool;
-		uint32 min = 0;
-		uint256 total = 0;
-		for(uint32 i = 0; i < _groups.length; i++) {
-
-			// Calculate ratio of group weight to total weights
-			//uint256 ratio = (uint256(_groups[i].weight) << 4).div(sum);
-			//allocations[i] = (ratio * _pool) >> 4;
-			allocations[i] = ((uint256(_groups[i].weight) << 4).mul(_pool)).div(sum) >> 4;
-			total += allocations[i];
-
-			emit Allocation(i, allocations[i], _groups[i].weight);
-
-			if(allocations[i] < minAmount) {
-				minAmount = allocations[i];
-				min = i;
-			}
-		}
-
-
-		allocations[min] += _pool.sub(total); // give remainder to smallest beneficiary
-		total += _pool.sub(total);
-		emit Allocation(min, allocations[min], _groups[min].weight);
-		emit TraceUint256('totalAllocations', total);
-		return allocations;
-	}
 	event Allocation(uint32 i, uint256 amount, uint40 weight);
 	event TraceUint256(string m, uint256 v);
 }
