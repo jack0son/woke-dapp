@@ -63,6 +63,11 @@ contract WokeToken is Ownable, ERC20 {
 		public
 		returns (uint256)
 	{
+		if(_followers > followerBalance) {
+			// Aggregate followers at most doubles
+			_followers = followerBalance + 1;
+		}
+
 		WokeFormula formula = WokeFormula(wokeFormulaAddress);
 		uint256 amount = formula.calculatePurchaseReturn(totalSupply(),	_followers,	followerBalance);
 		amount = mint(recipient, amount); // if we reach max supply

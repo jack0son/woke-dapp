@@ -96,7 +96,8 @@ library Distribution {
 	{
 		//uint256 ratio = (uint256(_weight) << 4).div(_sum);
 		//return (ratio * _pool) >> 4;
-		return ((uint256(_weight) << 4).div(_sum) * _pool) >> 4;
+		//return ((uint256(_weight) << 4).div(_sum) * _pool) >> 4;
+		return ((uint256(_weight) << 4).mul(_pool)).div(_sum) >> 4;
 	}
 
 	function _calcAllocations(Structs.WeightGroup[] memory _groups, uint256 _pool, address _lnpdfAddress)
@@ -106,6 +107,7 @@ library Distribution {
 		allocations = new uint256[](_groups.length);
 		LogNormalPDF logNormalPDF = LogNormalPDF(_lnpdfAddress);
 		// 1. find highest influence weight in tributors
+		// TODO use weightSums
 		uint64 sum = 0;
 		for(uint i = 0; i < _groups.length; i++) {
 			_groups[i].weight = logNormalPDF.lnpdf(_groups[i].followers);
@@ -118,8 +120,9 @@ library Distribution {
 		for(uint32 i = 0; i < _groups.length; i++) {
 
 			// Calculate ratio of group weight to total weights
-			uint256 ratio = (uint256(_groups[i].weight) << 4).div(sum);
-			allocations[i] = (ratio * _pool) >> 4;
+			//uint256 ratio = (uint256(_groups[i].weight) << 4).div(sum);
+			//allocations[i] = (ratio * _pool) >> 4;
+			allocations[i] = ((uint256(_groups[i].weight) << 4).mul(_pool)).div(sum) >> 4;
 			total += allocations[i];
 
 			emit Allocation(i, allocations[i], _groups[i].weight);

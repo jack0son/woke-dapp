@@ -166,6 +166,7 @@ const logEvent = (name, event) => {
 }
 
 function calcAllocation(weight, sum, pool) {
+	// TODO check zero bits user bn.zeroBits
 	const ratio = (weight << 4)/sum;
 	console.log('Ratio: ', ratio);
 	return (pool * ratio) >> 4;

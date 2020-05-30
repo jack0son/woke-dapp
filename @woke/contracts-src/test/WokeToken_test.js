@@ -49,37 +49,46 @@ contract('UserRegistry', (accounts) => {
 		const claimUser = bindClaimUser(UR, TO, oraclize_cb);
 		// 1. Claim all tributors
 		for(t of tributors) {
-			await claimUser(t);
+			let r = await claimUser(t);
+			t.summoned = (await WT.getPastEvents('Summoned', {from: r.receipt.blockNumber, to: 'latest'}))[0].args.amount;
+			t.supply = await WT.totalSupply.call();
+			t.pool = await UR.noTributePool.call()
+			t.circulation = t.supply - t.pool;
 		}
 
 		// 2. Transfer tributes
 		let tributeTotal = 0;
 		for(t of tributors) {
+			const balance = await WT.balanceOf.call(t.address);
+			t.rof = (balance/t.followers).toFixed(8);
+			if(t.amount > balance) t.amount = balance;  // avoid reverts
+			if(t.amount > 0)
+				await UR.transferUnclaimed(newUser.id, t.amount, {from: t.address});
 			t.balance = await WT.balanceOf.call(t.address);
-			if(t.amount > t.balance) t.amount = t.balance;  // avoid reverts
-			let r = await UR.transferUnclaimed(newUser.id, t.amount, {from: t.address});
-			console.log(`${tributors.indexOf(t)}:${t.id}, bal: ${t.balance.toString()}, tx: ${t.amount}`);
+			let supplyStr = `${t.summoned.toString().padStart(16)}, ${t.supply.toString().padStart(16)} ${t.circulation.toString().padStart(16)}${t.pool.toString().padStart(16)}`;
+			console.log(`${tributors.indexOf(t).toString().padStart(4)}:${t.id.padEnd(15)} fol: ${t.followers.toString().padStart(10)} bal: ${balance.toString().padStart(9)} ${t.rof.padStart(12)} tx: ${t.amount.toString().padStart(10)}` + supplyStr);
+			//console.log(`${tributors.indexOf(t).toString().padStart(4)}:${t.id.padEnd(15)} fol: ${t.followers.toString().padStart(15)} bal: ${balance.toString().padStart(12)}, ${t.balance.toString().padStart(12)} tx: ${t.amount.toString().padStart(10)}` + supplyStr);
 			tributeTotal += t.amount;
 		}
 
 		// 3. User joins
 		let r = await claimUser(newUser)
+		// 4. check user bonuses
 		let summoned = (await WT.getPastEvents('Summoned', {from: r.receipt.blockNumber, to: 'latest'}))[0].args
 		const tributePool = summoned.amount.toNumber() - r.claimed.bonus.toNumber()
 		console.log(`Minted: ${summoned.amount.toNumber()} Tribute pool: ${tributePool}`);
-		assert.equal((await WT.balanceOf.call(newUser.address)).toNumber(), r.claimed.bonus.toNumber() + tributeTotal);
+		//assert.equal((await WT.balanceOf.call(newUser.address)).toNumber(), r.claimed.bonus.toNumber() + tributeTotal);
 
+		// 5. check tributor bonuses
 		let bonusTotal = 0;
 		for(t of tributors) {
 			let newBalance = await WT.balanceOf.call(t.address);
 			t.bonus = newBalance.toNumber() - t.balance.toNumber();
 			bonusTotal += t.bonus;
-			console.log(`${tributors.indexOf(t)}:${t.id}, bonus: ${t.bonus}`);//bal: ${t.balance.toString()}, newBal: ${newBalance.toString()}`);
+			console.log(`${tributors.indexOf(t).toString().padStart(4)}:${t.id.padEnd(15)} fol: ${t.followers.toString().padEnd(15)} bonus: ${t.bonus}`);
 		}
 		console.log(`Tribute pool: ${tributePool}, Bonuses distributed: ${bonusTotal}, diff = ${tributePool - bonusTotal}`);
 		assert.equal(tributePool, bonusTotal, 'Tribute bonuses equal to tribute bonus pool');
-		// 4. check user bonuses
-		// 5. check tributor bonuses
 	}
 
 	context('Using mock TwitterOracle', () => {
@@ -90,7 +99,7 @@ contract('UserRegistry', (accounts) => {
 		});
 
 		beforeEach(async () => {
-			debug.t('ctx1:beforeEach');
+			//debug.t('ctx1:beforeEach');
 			TO = await MockTwitterOracle.new(oraclize_cb,
 				{from: defaultAccount, value: web3.utils.toWei('0.01', 'ether')}
 			);
@@ -103,6 +112,7 @@ contract('UserRegistry', (accounts) => {
 
 		describe('UserRegistry.sol', () => {
 			///*
+			/*
 			describe('Helper Functions', () => {
 				it('should parse valid claim strings', async () => {
 					// TODO test several claim strings
@@ -117,7 +127,7 @@ contract('UserRegistry', (accounts) => {
 					}
 				})
 			})
-			//*/
+			//
 
 			describe('#claimUser', () => {
 				context('with a single valid claim', () => {
@@ -140,7 +150,7 @@ contract('UserRegistry', (accounts) => {
 
 						// Check Oracle lodges request
 					})
-					//*/
+					//
 
 					it('should fulfill a user claim', async () => {
 						let user = newUser;
@@ -203,7 +213,6 @@ contract('UserRegistry', (accounts) => {
 
 					it('should fail if no oracle response has been received', async () => {
 					})
-					//*/
 				})
 
 				it('should claim several users', async () => {
@@ -292,7 +301,7 @@ contract('UserRegistry', (accounts) => {
 					}
 				})
 
-				it('should allow a large number of tributors', async () => {
+				it('should distribute bonuses to tributors', async () => {
 					// Fund tributors
 					const tributors = [];
 					let i = 0;
@@ -300,14 +309,6 @@ contract('UserRegistry', (accounts) => {
 						if(i > rest.length - 1) 
 							break;
 						t.address = rest[i];
-						//const txOpts = {
-						//	from: owner,
-						//	value: toWei('0.5'),
-						//	to: t.address,
-						//	//gas: self.network.gasLimit,
-						//	//gasPrice: self.network.gasPrice,
-						//};
-						//let r = await web3.eth.sendTransaction(txOpts)
 						t.id = genRandomUserId();
 						tributors.push(t);
 						i++;
@@ -316,8 +317,37 @@ contract('UserRegistry', (accounts) => {
 					await joinEvent(newUser, tributors);
 				});
 
+				*/
+				it(`should distribute to tributors at scale (${tributorData.scale.length})`, async () => {
+					// Fund tributors
+					const tributors = [];
+					let ids = [];
+					let i = 0;
+					
+					for(t of tributorData.scale.slice(0, rest.length)) {
+						t.address = rest[i];
+						t.id = genRandomUserId(ids);
+						ids.push(t.id);
+						tributors.push(t);
+						i++;
+					}
+
+					let exists = {};
+					for(t of tributors) {
+						if(exists[t.address] == true) {
+							console.log(`${tributors.indexOf(t)}: ${t.address}, ${t.id} EXISTS`)
+							throw new Error('Using non-unique address for tributor');
+						}
+						exists[t.address] = true;
+					}
+
+					console.log(`joinEvent with ${tributors.length} tributors...`);
+					await joinEvent(newUser, tributors);
+				});
+
 			})
 
+		/*
 			context('#tip', function() {
 				const newUser = {
 					address: claimer,
@@ -383,7 +413,8 @@ contract('UserRegistry', (accounts) => {
 				})
 
 			})
-		})
+			*/
+		//})
 	})
 })
 

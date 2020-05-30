@@ -90,6 +90,44 @@ let whales = [
 	},
 ];
 
+let average = [
+	{
+		amount: 50,
+		followers: 240,
+		balance: 150,
+	},
+	{
+		amount: 502,
+		followers: 140,
+		balance: 1000,
+	},
+	{
+		amount: 5,
+		followers: 112,
+		balance: 15,
+	},
+	{
+		amount: 1000,
+		followers: 95,
+		balance: 1500,
+	},
+	{
+		amount: 100,
+		followers: 5,
+		balance: 105,
+	},
+	{
+		amount: 500,
+		followers: 170,
+		balance: 1500,
+	},
+	{
+		amount: 50,
+		followers: 160,
+		balance: 50,
+	},
+];
+
 let tributors = [
 	{
 		amount: 50,
@@ -118,7 +156,7 @@ let tributors = [
 	},
 	{
 		amount: 500,
-		followers: 10,
+		followers: 90,
 		balance: 1500,
 	},
 	{
@@ -130,11 +168,18 @@ let tributors = [
 
 let scale = [];
 for(let i = 0; i < 10; i++) {
-	scale = [...scale, ...tributors];
+	tributors.forEach(t => {
+		scale.push({...t});
+	});
+	average.forEach(t => {
+		scale.push({...t});
+	});
+	//scale = [...scale, ...tributors];
 }
 
 module.exports = {
 	even: tributors,
+	average,
 	whale,
 	whaleBots,
 	whales,

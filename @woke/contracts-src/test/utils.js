@@ -4,8 +4,12 @@ const waitForEvent = (_event, _from = 0, _to = 'latest') =>
 		//_event((err, event) => 
       err ? reject(err) : resolve(event)))
 
-function genRandomUserId() {
-	return getRandomInt(14, 4e12).toString();
+function genRandomUserId(ids = []) {
+	let id = getRandomInt(14, 4e12).toString();
+	while(ids.includes(id)) {
+		id = getRandomInt(14, 4e12).toString();
+	}
+	return id;
 }
 
 function getRandomInt(min, max) {

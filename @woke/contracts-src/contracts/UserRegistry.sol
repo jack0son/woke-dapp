@@ -37,7 +37,7 @@ contract UserRegistry {
 	mapping(string => uint40) private maxFollowers;	// userId => max referrer weighting
 
 	// Bonus pool received by smaller influence users
-	uint256 noTributePool; // Excess tokens minted by influence whales
+	uint256 public noTributePool; // Excess tokens minted by influence whales
 
 	// Safety
 	mapping(address => bool) private requestMutexes; // Oracle requests are blocking
@@ -137,6 +137,12 @@ contract UserRegistry {
 	returns (uint256 minted)
 	{
 		// 1. Mint new tokens
+		// uint256 deposit = users[_id].followers > followerBalance ? followerBalance : users[_id].followers;
+		//minted = wokeToken._curvedMint(users[_id].account,
+		//	users[_id].followers > wokeToken.followerBalance() ?
+		//		wokeToken.followerBalance() :
+		//		users[_id].followers
+		//);
 		minted = wokeToken._curvedMint(users[_id].account, users[_id].followers);
 
 		// 2. calculate tribute bonus weight, tribute bonus pool = minted - joinBonus
@@ -152,7 +158,7 @@ contract UserRegistry {
 			if(user.referrers.length == 0) {
 				// If the user's followers is less than aggregate followers, claim the pool
 				if(user.followers <= wokeToken.followerBalance() - user.followers + 100 && noTributePool > 0) {
-					uint256 credit = Distribution._calcAllocation(logNormalPDF.lnpdf(user.followers), logNormalPDF.maximum(), noTributePool);
+					uint256 credit = Distribution._calcAllocation(logNormalPDF.lnpdf(user.followers), logNormalPDF.maximum() + logNormalPDF.lnpdf(user.followers), noTributePool);
 					wokeToken.internalTransfer(address(this), user.account, credit);
 					noTributePool -= credit;
 				}
@@ -238,8 +244,6 @@ contract UserRegistry {
 		external
 		hasUser
 	{
-		require(_amount > 0, 'cannot send 0 tokens');
-
 		_transferUnclaimed(myUser(), _toId, _amount);
 	}
 
