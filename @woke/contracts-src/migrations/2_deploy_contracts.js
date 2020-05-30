@@ -92,8 +92,9 @@ const doDeploy = async (deployer, network, accounts) => {
 	let tokenInstance = await Token.deployed();
 	console.log(`WokeToken deployed at ${tokenInstance.address}`);
 
+	const maxTributors = 256;
 	console.log('Deploying UserRegistry...')
-	return await deployer.deploy(UserRegistry, tokenInstance.address, lnpdfInstance.address, oracleInstance.address, owner, opts)
+	return await deployer.deploy(UserRegistry, tokenInstance.address, lnpdfInstance.address, oracleInstance.address, owner, maxTributors, opts)
 		.then(async registryInstance => {
 			opts.value = 0;
 			await tokenInstance.setUserRegistry(registryInstance.address, opts);

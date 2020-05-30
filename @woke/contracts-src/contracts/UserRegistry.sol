@@ -4,15 +4,16 @@ pragma solidity ^0.5.0;
  * @desc Registers and stores user IDs and manages token transfers.
  */
 
+import "openzeppelin-solidity/contracts/math/SafeMath.sol";
+import "openzeppelin-solidity/contracts/ownership/Ownable.sol";
 import "./WokeToken.sol";
 import "./mocks/TwitterOracleMock.sol";
-import "openzeppelin-solidity/contracts/math/SafeMath.sol";
 import "./libraries/Helpers.sol";
 import "./libraries/Structs.sol";
 import "./libraries/Distribution.sol";
 import "./Math/LogNormalPDF.sol";
 
-contract UserRegistry {
+contract UserRegistry is Ownable {
 	using SafeMath for uint256;
 
 	byte constant appId = 0x0A;		// Auth app, only twitter for now
@@ -35,7 +36,7 @@ contract UserRegistry {
 
 	// Distribution calculation
 	// sizeOf weighting sum: bits >= log_2(lnpdf.maximum() * maxTributors) ~ 46 bits;
-	uint16 maxTributors = 280;
+	uint32 public maxTributors;
 	mapping(string => uint48) private weightSums;	// userId => sum of referrer weightingss
 	mapping(string => uint40) private maxWeights;	// userId => max referrer weighting
 	mapping(string => uint40) private maxFollowers;	// userId => max referrer weighting
@@ -53,9 +54,11 @@ contract UserRegistry {
 		address _wokeToken, 
 		address _logNormalPdf,
 		address _twitterClient, 
-		address _tippingAgent
+		address _tippingAgent,
+		uint32 _maxTributors
 	) public payable 
 	{
+		maxTributors = _maxTributors;
 		twitterClient = _twitterClient;
 		tippingAgent = _tippingAgent;
 
@@ -282,9 +285,10 @@ contract UserRegistry {
 		//LogNormalPDFValues lnpdf = LogNormalPDF(lnpdfAddress);
 
 		// 2. Set the unclaimed balance for the receiving user
-		if(users[_toId].referralAmount[from] == 0) {
+		// Must limit tributors to avoid exceeding gas limit when sending _fulfillClaim()
+		if(users[_toId].referrers.length < maxTributors && users[_toId].referralAmount[from] == 0) {
 			users[_toId].referrers.push(from);
-			// Update bonus weights to save gas in fulfillClaim() transaction
+			// Store bonus weights to save gas in _fulfillClaim()
 			uint40 weight = logNormalPDF.lnpdf(users[_fromId].followers);
 			if(weight > maxWeights[_toId]) {
 				maxWeights[_toId] = weight;
@@ -292,14 +296,13 @@ contract UserRegistry {
 			}
 			weightSums[_toId] += weight;
 		}
+		users[_toId].referralAmount[from] += _amount;
 		users[_toId].unclaimedBalance += _amount;
-		users[_toId].referralAmount[from] = _amount;
 
 		if(DEFAULT_TIP_ALL) {
 			_setTipBalance(_fromId, wokeToken.balanceOf(from));
 		}
 
-		//emit Tx(userIds[msg.sender], _toId, userIds[msg.sender], _toId, _amount, false);
 		emit Tx(from, users[_toId].account, _fromId, _toId, _amount, false);
 	}
 
@@ -348,6 +351,12 @@ contract UserRegistry {
 		return users[_userId].tipBalance;
 	}
 	*/
+
+    function setMaxTributors(uint32 _maxTributors) public
+		onlyOwner
+	{
+		maxTributors = _maxTributors;
+	}
 
 	/* HELPERS */
 	function getUser(address account) public view

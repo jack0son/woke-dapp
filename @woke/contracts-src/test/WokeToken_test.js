@@ -42,6 +42,7 @@ contract('UserRegistry', (accounts) => {
 
 	// Token Generation params
 	const max_supply = 100000000;
+	const maxTributors = 256;
 	let UR, WT, TO, WF, LNDPF;
 	let claimUser;
 
@@ -88,6 +89,9 @@ contract('UserRegistry', (accounts) => {
 			t.bonus = newBalance.toNumber() - t.balance.toNumber();
 			bonusTotal += t.bonus;
 			console.log(`${tributors.indexOf(t).toString().padStart(4)}:${t.id.padEnd(15)} fol: ${t.followers.toString().padEnd(15)} bonus: ${t.bonus}`);
+			if(tributors.indexOf(t) >= maxTributors) {
+				assert.equal(t.bonus, 0, 'Tributors above maxTributors receive no bonus');
+			}
 		}
 		console.log(`Tribute pool: ${tributePool}, Bonuses distributed: ${bonusTotal}, diff = ${tributePool - bonusTotal}`);
 		assert.equal(tributePool, bonusTotal, 'Tribute bonuses equal to tribute bonus pool');
@@ -107,7 +111,7 @@ contract('UserRegistry', (accounts) => {
 			);
 
 			WT = await WokeToken.new(WF.address, maxSupply, {from: defaultAccount});
-			UR = await UserRegistry.new(WT.address, LNPDF.address, TO.address, tipAgent, {from: defaultAccount})
+			UR = await UserRegistry.new(WT.address, LNPDF.address, TO.address, tipAgent, maxTributors, {from: defaultAccount})
 			await WT.setUserRegistry(UR.address, {from: defaultAccount});
 			claimUser = bindClaimUser(UR, TO, oraclize_cb);
 		});
@@ -320,7 +324,7 @@ contract('UserRegistry', (accounts) => {
 				});
 				*/
 				let tributorsSample = tributorData.symmetric.slice(0, rest.length);
-				it(`should distribute to tributors at scale (${tributorsSample.length})`, async () => {
+				it(`should not revert when exceeding maximum number of tributors (using ${tributorsSample.length})`, async () => {
 					// Fund tributors
 					const tributors = [];
 					let ids = [];
