@@ -7,7 +7,7 @@ const {
 	//web3Tools,
 	Logger,
 } = require('@woke/lib');
-logger = Logger('UR');
+logger = Logger('test:harness');
 
 const UserRegistry = artifacts.require('UserRegistry.sol')
 const WokeToken = artifacts.require('WokeToken.sol')
@@ -18,6 +18,7 @@ const Helpers = artifacts.require('Helpers.sol')
 const MockTwitterOracle = artifacts.require('mocks/TwitterOracleMock.sol')
 //const TwitterOracle = artifacts.require('TwitterOracle.sol')
 
+const bindHarness = require('./harness'); // bind test context to common contract operations
 const wokeFormulaConfig = require('../config/WokeFormula').alpha;
 const tributorData = require('../distribution/data-tributors');
 const appId = web3.utils.asciiToHex('0x0A'); // twitter
@@ -32,9 +33,6 @@ const stranger_id = '12345';
 // @TODO:
 //	- test token minting on second half of bonding curve
 //	- stress test very large number of users
-
-
-const bindHarness = require('./harness');
 
 contract('UserRegistry', (accounts) => {
 	let UR, WT, TO, WF, LNDPF;

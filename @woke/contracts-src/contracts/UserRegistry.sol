@@ -465,8 +465,10 @@ contract UserRegistry is Ownable {
 	function _isUser(string memory _userId) internal view
 	{
 		string memory temp = string(userIds[msg.sender]);
-		require(keccak256(abi.encodePacked((temp))) == keccak256(abi.encodePacked((_userId))),
-				"Sender not the owner of user ID");
+		require(keccak256(abi.encodePacked((temp))) == keccak256(
+			abi.encodePacked((_userId))),
+			"Sender not the owner of user ID"
+		);
 	}
 
 	// @desc Ensure function does not affect supply

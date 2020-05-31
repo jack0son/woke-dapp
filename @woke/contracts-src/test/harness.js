@@ -12,8 +12,8 @@ module.exports = (accounts, {UR, WT, TO, WF, LNDPF}, wokeFormulaConfig) => {
 
 	async function genClaimString(signatory, userId, followersCount, app = 'twitter') {
 		logger.v('Gen claim for: ', signatory, userId, followersCount);
-		let str = protocol.genClaimString(signatory, userId, followersCount, app)
-		logger.h(`Oracle claim string: ${str}`);
+		let str = await protocol.genClaimString(signatory, userId, followersCount, app)
+		logger.v(`Oracle claim string: ${str}`);
 		return str;
 	}
 
@@ -82,6 +82,7 @@ module.exports = (accounts, {UR, WT, TO, WF, LNDPF}, wokeFormulaConfig) => {
 					assert.equal(t.bonus, 0, 'Tributors above maxTributors receive no bonus');
 				}
 			}
+			logger.t(`_fulfillClaim() used ${r.receipt.gasUsed} gas`);
 			logger.t(`Tribute pool: ${tributePool}, Bonuses distributed: ${bonusTotal}, diff = ${tributePool - bonusTotal}`);
 			assert.equal(tributePool, bonusTotal, 'Tribute bonuses equal to tribute bonus pool');
 		}

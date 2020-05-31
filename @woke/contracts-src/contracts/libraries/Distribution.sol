@@ -75,7 +75,9 @@ library Distribution {
 			uint256 amount = _calcAllocation(logNormalPDF.lnpdf(tributor.followers),  _weightSum, _pool);
 			wokeToken.internalTransfer(user.account, tributor.account, amount);
 			total = total += amount;
-			user.referralAmount[tributor.account] = 0;
+
+			// @TODO is storage saving worth the gas expense?
+			//user.referralAmount[tributor.account] = 0;
 
 			// @note Too expensive 
 			//emit Bonus(user.account, tributor.account, amount);
@@ -94,7 +96,7 @@ library Distribution {
 			wokeToken.internalTransfer(user.account, user.referrers[minI], _pool - total);
 			total += _pool - total;
 
-			emit Bonus(user.account, user.referrers[minI], _pool - total);
+			//emit Bonus(user.account, user.referrers[minI], _pool - total);
 		}
 
 		require(total == _pool, 'bonuses != tributeBonusPool');

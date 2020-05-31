@@ -1,6 +1,7 @@
 const truffleAssert = require('truffle-assertions');
 let {
 	web3Tools,
+	Logger,
 } = require('@woke/lib');
 const printEvents = truffleAssert.prettyPrintEmittedEvents;
 const {fromAscii, toWei} = web3.utils;
@@ -15,6 +16,8 @@ const MockTwitterOracle = artifacts.require('mocks/TwitterOracleMock.sol')
 const lndpfChunkedValues = require('../distribution/lnpdf-values.js');
 const fillLnpdfArrays = require('../migrations/fill_lnpdf');
 const lnpdfIntegers = require('../distribution/lnpdf-int_values.json');
+
+const logger = new Logger('test:LNPDF');
 
 contract('LogNormalPDF', (accounts) => {
 	const [defaultAccount, owner, oraclize_cb, claimer, tipAgent, stranger, cB, cC, ...rest] = accounts;
@@ -34,21 +37,22 @@ contract('LogNormalPDF', (accounts) => {
 		beforeEach(async function () {
 		});
 
+		// Generate using log-normal-pdf.py
 		let edges = [0, 5e3, 10e3, 20e3, 30016, 39936, 49920];
 
 		it('edge cases', async function () {
 			for(let i = 0; i < edges.length ; i++) {
 				let x = edges[i] - 1;
 				x = x < 0 ? 0 : x;
-				console.log(x);
+				logger.info(x);
 				let y = await LNPDF.lnpdf(x);
 				//let y = await LNPDF.lnpdf.call(x);
-				console.log(`x: ${x.toString().padEnd(15)}, y: ${y}, expected ${lnpdfIntegers[x]}`);
+				logger.info(`x: ${x.toString().padEnd(15)}, y: ${y}, expected ${lnpdfIntegers[x]}`);
 				x += 1;
-				console.log(x);
+				logger.info(x);
 				y = await LNPDF.lnpdf(x);
 				//y = await LNPDF.lnpdf.call(x);
-				console.log(`x: ${x.toString().padEnd(15)}, y: ${y}, expected ${lnpdfIntegers[x]}`);
+				logger.info(`x: ${x.toString().padEnd(15)}, y: ${y}, expected ${lnpdfIntegers[x]}`);
 			}
 		})
 
@@ -56,7 +60,7 @@ contract('LogNormalPDF', (accounts) => {
 			return;
 			for(let i = 0; i < x_maxDefined; i++) {
 				let y = await LNPDF.lnpdf.call(i);
-				console.log(`x: ${i.toString().padEnd(15)}, y: ${y}`);
+				logger.info(`x: ${i.toString().padEnd(15)}, y: ${y}`);
 			}
 		})
 
