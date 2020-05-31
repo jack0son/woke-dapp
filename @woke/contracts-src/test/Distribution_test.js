@@ -35,14 +35,16 @@ const stranger_id = '12345';
 
 
 const bindHarness = require('./harness');
-
+const config = { WokeFormula: wokeFormulaConfig };
 contract('UserRegistry, WokeToken, Distribution', (accounts) => {
 	let UR, WT, TO, WF, LNDPF;
 	const [defaultAccount, owner, oraclize_cb, claimer, tipAgent, stranger, cA, cB, cC, cD, ...rest] = accounts;
-	let { claimArgs, genClaimString, bindClaimUser, bindJoinWithTributes } = bindHarness(accounts, {
-		UR, WT, TO, WF, LNDPF,
-	}, wokeFormulaConfig);
-	let claimUser;
+	let { claimArgs, genClaimString, claimUser, joinWithTributes} = bindHarness(
+		accounts,
+		{ UR, WT, TO, WF, LNDPF },
+		config
+	);
+	let ctx;
 
 	let newUser = {address: cA, id: '212312122', handle: 'jack', followers: 30000};
 
@@ -61,12 +63,7 @@ contract('UserRegistry, WokeToken, Distribution', (accounts) => {
 		WT = await WokeToken.new(WF.address, wokeFormulaConfig.maxSupply, {from: defaultAccount});
 		UR = await UserRegistry.new(WT.address, LNPDF.address, TO.address, tipAgent, wokeFormulaConfig.maxTributors, {from: defaultAccount})
 		await WT.setUserRegistry(UR.address, {from: defaultAccount});
-		const ctx = bindHarness(accounts, {
-			UR, WT, TO, WF, LNDPF,
-		}, wokeFormulaConfig);
-		bindClaimUser = ctx.bindClaimUser;
-		bindJoinWithTributes = ctx.bindJoinWithTributes;
-		claimUser = bindClaimUser(UR, TO, oraclize_cb);
+		ctx = bindHarness(accounts, { UR, WT, TO, WF, LNDPF }, wokeFormulaConfig);
 	})
 
 	describe('Users at scale', () => {
@@ -99,7 +96,7 @@ contract('UserRegistry, WokeToken, Distribution', (accounts) => {
 			}
 
 			logger.t(`joinWithTributes with ${tributors.length} tributors...`);
-			await bindJoinWithTributes(claimUser)(newUser, tributors);
+			await ctx.joinWithTributes(newUser, tributors);
 		});
 	})
 })

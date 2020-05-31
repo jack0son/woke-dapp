@@ -4,14 +4,9 @@ let {
 	Logger,
 } = require('@woke/lib');
 const printEvents = truffleAssert.prettyPrintEmittedEvents;
-const {fromAscii, toWei} = web3.utils;
 const BN = require('bignumber.js');
 
-const UserRegistry = artifacts.require('UserRegistry.sol')
-const WokeToken = artifacts.require('WokeToken.sol')
-const WokeFormula = artifacts.require('WokeFormula.sol')
 const LogNormalPDF = artifacts.require('LogNormalPDF.sol')
-const MockTwitterOracle = artifacts.require('mocks/TwitterOracleMock.sol')
 
 const lndpfChunkedValues = require('../distribution/lnpdf-values.js');
 const fillLnpdfArrays = require('../migrations/fill_lnpdf');
@@ -20,10 +15,10 @@ const lnpdfIntegers = require('../distribution/lnpdf-int_values.json');
 const logger = new Logger('test:LNPDF');
 
 contract('LogNormalPDF', (accounts) => {
-	const [defaultAccount, owner, oraclize_cb, claimer, tipAgent, stranger, cB, cC, ...rest] = accounts;
+	//const [defaultAccount, owner, oraclize_cb, claimer, tipAgent, stranger, cB, cC, ...rest] = accounts;
 
 	// Token Generation params
-	let UR, WT, TO, WF, LNPDF;
+	let LNPDF;
 
 	const x_maxDefined = 50e3;
 	// TODO generate function values for logorthmically increasing x (100s of

@@ -34,13 +34,16 @@ const stranger_id = '12345';
 //	- test token minting on second half of bonding curve
 //	- stress test very large number of users
 
+const config = { WokeFormula: wokeFormulaConfig };
 contract('UserRegistry', (accounts) => {
 	let UR, WT, TO, WF, LNDPF;
 	const [defaultAccount, owner, oraclize_cb, claimer, tipAgent, stranger, cA, cB, cC, cD, ...rest] = accounts;
-	let { claimArgs, genClaimString, bindClaimUser, bindJoinWithTributes } = bindHarness(accounts, {
-		UR, WT, TO, WF, LNDPF,
-	}, wokeFormulaConfig);
-	let claimUser;
+	let { claimArgs, genClaimString, claimUser, joinWithTributes} = bindHarness(
+		accounts,
+		{ UR, WT, TO, WF, LNDPF },
+		config
+	);
+	let ctx;
 
 	let newUser = {address: cA, id: '212312122', handle: 'jack', followers: 30000};
 	const users = [
@@ -67,12 +70,7 @@ contract('UserRegistry', (accounts) => {
 			WT = await WokeToken.new(WF.address, wokeFormulaConfig.maxSupply, {from: defaultAccount});
 			UR = await UserRegistry.new(WT.address, LNPDF.address, TO.address, tipAgent, wokeFormulaConfig.maxTributors, {from: defaultAccount})
 			await WT.setUserRegistry(UR.address, {from: defaultAccount});
-			const ctx = bindHarness(accounts, {
-				UR, WT, TO, WF, LNDPF,
-			}, wokeFormulaConfig);
-			bindClaimUser = ctx.bindClaimUser;
-			bindJoinWithTributes = ctx.bindJoinWithTributes;
-			claimUser = bindClaimUser(UR, TO, oraclize_cb);
+			ctx = bindHarness(accounts, { UR, WT, TO, WF, LNDPF }, config);
 		});
 
 		describe('UserRegistry.sol', () => {
@@ -115,12 +113,12 @@ contract('UserRegistry', (accounts) => {
 
 
 				it('should claim a user with zero followers', async () => {
-					await claimUser({ ...newUser, followers: 0 });
+					await ctx.claimUser({ ...newUser, followers: 0 });
 				});
 
 				//	/*
 				it('should fail if a second claim is attempted', async () => {
-					await claimUser(newUser);
+					await ctx.claimUser(newUser);
 
 					// Attempt to claim the user again
 					await truffleAssert.reverts(
@@ -185,8 +183,6 @@ contract('UserRegistry', (accounts) => {
 
 				it('should reward tributors with a bonus', async () => {
 
-					claimUser = bindClaimUser(UR, TO, oraclize_cb);
-
 					const cases = [
 						{address: cC, id: '3313322', handle: 'yanggang', followers: 50},
 						{address: claimer, id: getwoketoke_id, handle: 'getwoketoke', followers: 100},
@@ -197,7 +193,7 @@ contract('UserRegistry', (accounts) => {
 					let receipt;
 					let tributeTotal = 0;
 					for(c of cases) {
-						const result = await claimUser(c);
+						const result = await ctx.claimUser(c);
 						receipt = result.receipt;
 						const claimed = result.claimed;
 
@@ -242,7 +238,7 @@ contract('UserRegistry', (accounts) => {
 						i++;
 					}
 
-					await bindJoinWithTributes(claimUser)(newUser, tributors);
+					await ctx.joinWithTributes(newUser, tributors);
 				});
 
 				it('should accumulate multiple tributes', async () => {
@@ -260,7 +256,7 @@ contract('UserRegistry', (accounts) => {
 					let contractBalance;
 					let totalSent = 0;
 					for(c of cases.slice(0, cases.length - 1)) {
-						const result = await claimUser(c);
+						const result = await ctx.claimUser(c);
 						receipt = result.receipt;
 						const claimed = result.claimed;
 
@@ -277,7 +273,7 @@ contract('UserRegistry', (accounts) => {
 						assert.equal(contractBalance.toNumber(), unclaimedBalance.toNumber(), `Unclaimed balance not equal to contract's balance`);
 					}
 
-					let r = await claimUser(recipient);
+					let r = await ctx.claimUser(recipient);
 					let tributeReceived = r.claimed.amount - r.claimed.bonus;
 					logger.t(`Tribute received ${tributeReceived}`);
 					assert.equal(tributeReceived, totalSent, 'Tributes received not equal to tributes sent');
@@ -381,8 +377,7 @@ contract('UserRegistry', (accounts) => {
 				}
 
 				beforeEach(async function() {
-					claimUser = bindClaimUser(UR, TO, oraclize_cb);
-					await claimUser(newUser)
+					await ctx.claimUser(newUser)
 				})
 
 				it('should be able to tip an unclaimed user', async function () {
@@ -390,7 +385,7 @@ contract('UserRegistry', (accounts) => {
 				})
 
 				it('should be able to tip a claimed user', async function () {
-					await claimUser(strangerUser)
+					await ctx.claimUser(strangerUser)
 					let r = await UR.tip(getwoketoke_id, stranger_id, 1, {from: tipAgent});
 				})
 
