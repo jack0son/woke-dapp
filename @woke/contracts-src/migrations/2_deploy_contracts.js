@@ -10,9 +10,8 @@ var Helpers = artifacts.require("Helpers.sol");
 var Strings = artifacts.require("Strings.sol");
 var ECDSA = artifacts.require("ECDSA.sol");
 
+const wokeFormulaConfig = require('../config/WokeFormula').alpha;
 const fillLnpdfArrays = require('./fill_lnpdf');
-
-const {blog, verbose, inspect} = require('../test/debug/common');
 
 const doDeploy = async (deployer, network, accounts) => {
 	const [defaultAccount, owner, oracleCallback, ...rest] = accounts;
@@ -59,11 +58,7 @@ const doDeploy = async (deployer, network, accounts) => {
 	await deployer.deploy(Distribution);
 	await deployer.link(Distribution, UserRegistry);
 
-	const curveParams = {
-		maxPrice: 210,						// a/2
-		inflectionSupply: 2.72e6, // b
-		steepness: 1.4e9,					// c
-	};
+	const curveParams = wokeFormulaConfig.curveParams;
 
 	const val = opts.value;
 	opts.value = 0;
