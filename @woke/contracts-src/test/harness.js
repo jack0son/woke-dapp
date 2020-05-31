@@ -2,6 +2,10 @@ const { Logger, protocol } = require('@woke/lib');
 logger = Logger('UR');
 
 // TODO param test context
+// Pass in truffle test context
+// @param accounts
+// @param contractInstances
+// @param config
 module.exports = (accounts, {UR, WT, TO, WF, LNDPF}, wokeFormulaConfig) => {
 	const [defaultAccount, owner, oraclize_cb, claimer, tipAgent, stranger, cA, cB, cC, cD, ...rest] = accounts;
 	const	claimArgs = u => [u.address, u.id, u.followers];

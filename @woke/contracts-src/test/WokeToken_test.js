@@ -146,8 +146,6 @@ contract('UserRegistry', (accounts) => {
 					);
 				})
 
-
-
 				it('should claim several users', async () => {
 					const cases = users;
 
@@ -201,12 +199,9 @@ contract('UserRegistry', (accounts) => {
 					let receipt;
 					let tributeTotal = 0;
 					for(c of cases) {
-						//const {claimed, _receipt} = await claimUser(c);
 						const result = await claimUser(c);
 						receipt = result.receipt;
 						const claimed = result.claimed;
-						//console.log(result)
-						//receipt = _receipt;
 
 						let cb = await WT.balanceOf.call(UR.address);
 						logger.info('Contract balanace: ', cb.toString());
@@ -215,7 +210,7 @@ contract('UserRegistry', (accounts) => {
 						logger.info('New user balance: ', balance.toString());
 						if(c.id != cases[cases.length-1].id) {
 							await UR.transferUnclaimed(cases[cases.length-1].id, balance, {from: c.address});
-							tributeTotal += balance;
+							tributeTotal += balance.toNumber();
 							c.balance = await WT.balanceOf.call(c.address)
 							logger.info('User balance: ', c.balance.toString());
 						} else {
