@@ -19,11 +19,13 @@ contract UserRegistry is Ownable {
 	byte constant appId = 0x0A;		// Auth app, only twitter for now
 	bool DEFAULT_TIP_ALL = true;	// Tipping switch (alpha)
 
+	// Woke Token Contracts
+	address public wokeTokenAddress;
+	address public lnpdfAddress;
+
 	// Dapp Agents
 	address public tippingAgent;
 	address public twitterClient;
-	address public wokeTokenAddress;
-	address public lnpdfAddress;
 
 	WokeToken wokeToken;
 	LogNormalPDF logNormalPDF;
@@ -39,7 +41,7 @@ contract UserRegistry is Ownable {
 	uint32 public maxTributors;
 	mapping(string => uint48) private weightSums;	// userId => sum of referrer weightingss
 	mapping(string => uint40) private maxWeights;	// userId => max referrer weighting
-	mapping(string => uint40) private maxFollowers;	// userId => max referrer weighting
+	mapping(string => uint40) private maxFollowers;	// userId => max referrer followers
 
 	// Bonus pool received by smaller influence users
 	uint256 public noTributePool; // Excess tokens minted by influence whales
@@ -80,13 +82,12 @@ contract UserRegistry is Ownable {
 
 		TwitterOracleMock client = TwitterOracleMock(twitterClient);
 		bytes32 queryId = client.query_findClaimTweet(_userId);
-		//bytes32 queryId = bytes32(0);
 
-		if(queryId == bytes32(0)) {
-			// Query failure, revert
-			//emit TraceBytes32('failed query', queryId);
-		}
-
+		require(queryId != bytes32(0), 'queryId is zero');
+		//if(queryId == bytes32(0)) {
+		//	// Query failure, revert
+		//	//emit TraceBytes32('failed query', queryId);
+		//}
 		emit Lodged(msg.sender, _userId, queryId);
 
 		return queryId;
@@ -137,49 +138,29 @@ contract UserRegistry is Ownable {
 		requester[_id] = address(0); 
 	}
 
-	// @desc Mint new tokens then allocate to user and tributors
+	// @desc Mint new tokens then distribute to user and tributors
 	// @param _id: User's twitter ID
 	// @returns joinBonus: amount of minted tokens received by new user
 	function _distributeClaimBonus(string memory _id) private
 	returns (uint256 minted)
 	{
 		// 1. Mint new tokens
-		// uint256 deposit = users[_id].followers > followerBalance ? followerBalance : users[_id].followers;
-		//minted = wokeToken._curvedMint(users[_id].account,
-		//	users[_id].followers > wokeToken.followerBalance() ?
-		//		wokeToken.followerBalance() :
-		//		users[_id].followers
-		//);
 		uint256 prevFollowerBalance = wokeToken.followerBalance();
 		minted = wokeToken.curvedMint(users[_id].account, users[_id].followers);
 
-		// 2. calculate tribute bonus weight, tribute bonus pool = minted - joinBonus
+		// 2. Calculate tribute bonus weight, tribute bonus pool = minted - joinBonus
+		// TODO pass maxWeights storage reference vs copy maxWeight value
 		uint256 tributeBonusPool = Distribution._calcTributeBonus(users, maxWeights, _id, minted, lnpdfAddress);
 		require(tributeBonusPool <= minted, 'TRIBUTE MISCALC');
 
-		// 3. calculate tribute distribution
+		// 3. Calculate tribute distribution
 		Structs.User storage user = users[_id];
 		uint256 deducted;
 
 		// No bonus for users without followers
 		if(user.followers > 0) {
 			if(user.referrers.length == 0) {
-				/*
-				// If the user's followers is less than aggregate followers, claim the pool
-				if(user.followers <= wokeToken.followerBalance() - user.followers + 100 && noTributePool > 0) {
-					// Receive at most 1/3 of the bonus pool
-					uint256 credit = Distribution._calcAllocation(logNormalPDF.lnpdf(user.followers), logNormalPDF.maximum() + (logNormalPDF.lnpdf(user.followers)*2), noTributePool);
-					wokeToken.internalTransfer(address(this), user.account, credit);
-					noTributePool -= credit;
-				}
-
-				// If the user's followers is greater than aggregate followers, bonus goes to pool
-				if(user.followers > wokeToken.followerBalance() - user.followers + 100) {
-					wokeToken.internalTransfer(user.account, address(this), tributeBonusPool);
-					noTributePool += tributeBonusPool;
-					deducted = tributeBonusPool;
-				}
-			   */
+				// Limit influence whale impact on minting
 				if(user.followers > prevFollowerBalance) {
 					wokeToken.burnExcess(user.account, tributeBonusPool);
 				}
@@ -210,8 +191,6 @@ contract UserRegistry is Ownable {
 		users[_id].unclaimedBalance = 0;
 
 		//uint256 claimedAmount = (minted - tributeBonusPool) + unclaimedBalance;
-		//return(minted, deducted);
-		//return (minted, deducted);
 		return minted - deducted;
 	}
 
@@ -280,23 +259,28 @@ contract UserRegistry is Ownable {
 		// 1. Transfer the amount from the the sender to the token contract
 		// @TODO should use built in approval functionality
 		//approve(tippingAgent, _amount);
-		//transferFrom(from, address(this), _amount); // @dev Use safe math
-		wokeToken.internalTransfer(from, address(this), _amount); // @dev Use safe math
-		//LogNormalPDFValues lnpdf = LogNormalPDF(lnpdfAddress);
+		wokeToken.internalTransfer(from, address(this), _amount);
 
 		// 2. Set the unclaimed balance for the receiving user
 		// Must limit tributors to avoid exceeding gas limit when sending _fulfillClaim()
-		if(users[_toId].referrers.length < maxTributors && users[_toId].referralAmount[from] == 0) {
-			users[_toId].referrers.push(from);
-			// Store bonus weights to save gas in _fulfillClaim()
-			uint40 weight = logNormalPDF.lnpdf(users[_fromId].followers);
-			if(weight > maxWeights[_toId]) {
-				maxWeights[_toId] = weight;
-				maxFollowers[_toId] = users[_fromId].followers;
+		if(users[_toId].referralAmount[from] == 0) {
+			// New tributor
+			if(users[_toId].referrers.length < maxTributors) {
+				users[_toId].referrers.push(from);
+				// Store bonus weights to save gas in _fulfillClaim()
+				uint40 weight = logNormalPDF.lnpdf(users[_fromId].followers);
+				if(weight > maxWeights[_toId]) {
+					maxWeights[_toId] = weight;
+					maxFollowers[_toId] = users[_fromId].followers;
+				}
+				weightSums[_toId] += weight;
+				users[_toId].referralAmount[from] = _amount;
 			}
-			weightSums[_toId] += weight;
+		} else {
+			// Existing tributor
+			users[_toId].referralAmount[from] += _amount;
 		}
-		users[_toId].referralAmount[from] += _amount;
+
 		users[_toId].unclaimedBalance += _amount;
 
 		if(DEFAULT_TIP_ALL) {
@@ -344,13 +328,11 @@ contract UserRegistry is Ownable {
 		users[_userId].tipBalance = _amount > wokeToken.balanceOf(users[_userId].account) ? wokeToken.balanceOf(users[_userId].account) : _amount;
 	}
 
-	/*
 	function getTipBalance(string memory _userId) public view
 	returns (uint256)
 	{
 		return users[_userId].tipBalance;
 	}
-	*/
 
     function setMaxTributors(uint32 _maxTributors) public
 		onlyOwner
@@ -377,7 +359,7 @@ contract UserRegistry is Ownable {
 		return userCount;
 	}
 
-	function unclaimedBalance(string memory _userId) public view
+	function unclaimedBalanceOf(string memory _userId) public view
 	returns (uint256)
 	{
 		return users[_userId].unclaimedBalance;
@@ -441,16 +423,6 @@ contract UserRegistry is Ownable {
 		require(temp.length == 0, "sender already has user ID");
 	}
 
-	// @TODO rename to hasLodgedRequest
-	function lodgedRequest(string memory _userId) public view
-	returns (bool)
-	{
-		if(requester[_userId] == msg.sender) {
-			return true;
-		}
-		return false;
-	}
-
 	// @desc Acquire twitterClient request lock for sender iniating request
 	// @dev Require the request lock is available
 	modifier requestUnlocked() {
@@ -507,9 +479,9 @@ contract UserRegistry is Ownable {
 		require(wokeToken.totalSupply() == original, "supply invariant");
 	}
 
+	// Events
 	event Lodged (address indexed claimer, string userId, bytes32 queryId);
 	event Claimed (address indexed account, string userId, uint256 amount, uint256 bonus);
 	event Tx(address indexed from, address indexed to, string fromId, string toId, uint256 amount, bool claimed);
 	event Tip(string fromId, string toId, uint256 amount);
-	event Reward (address indexed claimer, address indexed referrer, string claimerId, string referrerId, uint256 amount);
 }

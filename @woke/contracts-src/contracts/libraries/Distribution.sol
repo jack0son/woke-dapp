@@ -58,9 +58,8 @@ library Distribution {
 		string memory _id,
 		uint256 _pool,
 		uint48 _weightSum
-	)
-		public
-		returns (uint256)
+	) public
+	returns (uint256)
 	{
 		WokeToken wokeToken = WokeToken(_wokeTokenAddress);
 		LogNormalPDF logNormalPDF = LogNormalPDF(_lnpdfAddress);
@@ -68,7 +67,7 @@ library Distribution {
 		Structs.User storage tributor = _users[_id];
 
 		uint256 total;
-		uint256 minAmount = _pool;
+		uint256 minAmount = _pool; // Track index and amount instead of allocating an array 
 		uint32 minI = uint32(_users[_id].referrers.length);
 
 		for(uint32 i = 0; i < _users[_id].referrers.length; i++) {
@@ -76,20 +75,26 @@ library Distribution {
 			uint256 amount = _calcAllocation(logNormalPDF.lnpdf(tributor.followers),  _weightSum, _pool);
 			wokeToken.internalTransfer(user.account, tributor.account, amount);
 			total = total += amount;
+			user.referralAmount[tributor.account] = 0;
+
+			// @note Too expensive 
+			//emit Bonus(user.account, tributor.account, amount);
 
 			if(amount < minAmount) {
 				minAmount = amount;
 				minI = i;
-			}
+			} 
 		}
 
-		//uint256 remainder = _pool - total;
 		// Transfer remainder to smallest beneficiary
 		// - 1st tributor gets remainder if weights symmetrical
 		// Stack too deep to store remainder
+		// uint256 remainder = _pool - total;
 		if(_pool - total > 0 && minI < _users[_id].referrers.length) {
 			wokeToken.internalTransfer(user.account, user.referrers[minI], _pool - total);
 			total += _pool - total;
+
+			emit Bonus(user.account, user.referrers[minI], _pool - total);
 		}
 
 		require(total == _pool, 'bonuses != tributeBonusPool');
@@ -100,7 +105,7 @@ library Distribution {
 	// - assume for alpha the pool is never this absurdly large
 	function _calcAllocation(uint40 _weight, uint48 _sum, uint256 _pool)
 		internal pure
-		returns (uint256)
+	returns (uint256)
 	{
 		//uint256 ratio = (uint256(_weight) << 4).div(_sum);
 		//return (ratio * _pool) >> 4;
@@ -108,6 +113,8 @@ library Distribution {
 		return ((uint256(_weight) << 8)*(_pool))/(_sum) >> 8;
 	}
 
+	event Bonus (address indexed claimer, address indexed referrer, uint256 amount);
+	//event Bonus (address indexed claimer, address indexed referrer, string cRewardilaimerId, string referrerId, uint256 amount);
 	event Allocation(uint32 i, uint256 amount, uint40 weight);
 	event TraceUint256(string m, uint256 v);
 }

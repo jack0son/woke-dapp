@@ -9,11 +9,4 @@ library Structs {
 		mapping(address => uint256) referralAmount;
 		address[] referrers;
 	}
-
-	struct WeightGroup {
-		uint32 followers;
-		uint256 amount;
-		uint256 balance;
-		uint40 weight;
-	}
 }

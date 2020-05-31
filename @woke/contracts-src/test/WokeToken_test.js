@@ -28,6 +28,12 @@ const claimArgs = u => [u.address, u.id, u.followers];
 // @getwoketoke id 932596541822419000
 // JSONpath for multiple fields $.['full_text', 'user']
 
+// @dev Using BN.toNumber() for asserts is not technically correct as there
+// could be overflow.
+// @TODO:
+//	- test token minting on second half of bonding curve
+//	- stress test very large number of users
+
 contract('UserRegistry', (accounts) => {
 	const [defaultAccount, owner, oraclize_cb, claimer, tipAgent, stranger, cA, cB, cC, cD, ...rest] = accounts;
 
@@ -46,7 +52,7 @@ contract('UserRegistry', (accounts) => {
 	let UR, WT, TO, WF, LNDPF;
 	let claimUser;
 
-	async function joinEvent(newUser, tributors) {
+	async function joinWithTributes(newUser, tributors) {
 		const claimUser = bindClaimUser(UR, TO, oraclize_cb);
 		// 1. Claim all tributors
 		for(t of tributors) {
@@ -69,8 +75,6 @@ contract('UserRegistry', (accounts) => {
 			t.balance = await WT.balanceOf.call(t.address);
 			let supplyStr = `${t.summoned.toString().padStart(16)}, ${t.supply.toString().padStart(16)} ${t.circulation.toString().padStart(16)}${t.pool.toString().padStart(16)}`;
 			console.log(`${tributors.indexOf(t).toString().padStart(4)}:${t.id.padEnd(15)} fol: ${t.followers.toString().padStart(10)} bal: ${balance.toString().padStart(9)} ${t.rof.padStart(12)} fb: ${t.fb.toString().padStart(10)}` + supplyStr);
-			//console.log(`${tributors.indexOf(t).toString().padStart(4)}:${t.id.padEnd(15)} fol: ${t.followers.toString().padStart(10)} bal: ${balance.toString().padStart(9)} ${t.rof.padStart(12)} tx: ${t.amount.toString().padStart(10)}` + supplyStr);
-			//console.log(`${tributors.indexOf(t).toString().padStart(4)}:${t.id.padEnd(15)} fol: ${t.followers.toString().padStart(15)} bal: ${balance.toString().padStart(12)}, ${t.balance.toString().padStart(12)} tx: ${t.amount.toString().padStart(10)}` + supplyStr);
 			tributeTotal += t.amount;
 		}
 
@@ -265,7 +269,7 @@ contract('UserRegistry', (accounts) => {
 					claimUser = bindClaimUser(UR, TO, oraclize_cb);
 
 					const cases = [
-						{address: cC, id: '3313322', handle: 'realdonaldtrump', followers: 50},
+						{address: cC, id: '3313322', handle: 'yanggang', followers: 50},
 						{address: claimer, id: getwoketoke_id, handle: 'getwoketoke', followers: 100},
 						{address: cB, id: '212312122', handle: 'jack', followers: 300},
 					];
@@ -320,9 +324,49 @@ contract('UserRegistry', (accounts) => {
 						i++;
 					}
 
-					await joinEvent(newUser, tributors);
+					await joinWithTributes(newUser, tributors);
 				});
 				*/
+
+				it('should accumulate multiple tributes', async () => {
+
+					const cases = [
+						{address: cC, id: '3313322', handle: 'yanggang', followers: 50},
+						{address: claimer, id: getwoketoke_id, handle: 'getwoketoke', followers: 100},
+						{address: cB, id: '212312122', handle: 'jack', followers: 300},
+					];
+
+					const recipient = cases[cases.length - 1];
+
+					let bonusUserClaimed; 
+					let receipt;
+					let contractBalance;
+					let totalSent = 0;
+					for(c of cases.slice(0, cases.length - 1)) {
+						const result = await claimUser(c);
+						receipt = result.receipt;
+						const claimed = result.claimed;
+
+
+						let balance = await WT.balanceOf.call(c.address);
+						let amount = Math.trunc(balance.toNumber()/2);
+						await UR.transferUnclaimed(recipient.id, amount, {from: c.address});
+						await UR.transferUnclaimed(recipient.id, amount, {from: c.address});
+						totalSent += amount*2;
+
+						let unclaimedBalance = await UR.unclaimedBalanceOf.call(recipient.id); 
+						contractBalance = await WT.balanceOf.call(UR.address);
+						assert.equal(totalSent, unclaimedBalance, `Unclaimed balance not equal to amount sent`);
+						assert.equal(contractBalance.toNumber(), unclaimedBalance.toNumber(), `Unclaimed balance not equal to contract's balance`);
+					}
+
+					let r = await claimUser(recipient);
+					let tributeReceived = r.claimed.amount - r.claimed.bonus;
+					console.log(`Tribute received ${tributeReceived}`);
+					assert.equal(tributeReceived, totalSent, 'Tributes received not equal to tributes sent');
+				})
+
+			/*
 				let tributorsSample = tributorData.symmetric.slice(0, rest.length);
 				it(`should not revert when exceeding maximum number of tributors (using ${tributorsSample.length})`, async () => {
 					// Fund tributors
@@ -347,8 +391,8 @@ contract('UserRegistry', (accounts) => {
 						exists[t.address] = true;
 					}
 
-					console.log(`joinEvent with ${tributors.length} tributors...`);
-					await joinEvent(newUser, tributors);
+					console.log(`joinWithTributes with ${tributors.length} tributors...`);
+					await joinWithTributes(newUser, tributors);
 				});
 
 			})
@@ -420,7 +464,7 @@ contract('UserRegistry', (accounts) => {
 
 			})
 			*/
-		//})
+		})
 	})
 })
 
