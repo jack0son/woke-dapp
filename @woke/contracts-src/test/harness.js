@@ -1,5 +1,5 @@
 const { Logger, protocol } = require('@woke/lib');
-logger = Logger('UR');
+logger = Logger('test:harness');
 
 // TODO param test context
 // Pass in truffle test context

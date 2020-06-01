@@ -7,7 +7,7 @@ const {
 	//web3Tools,
 	Logger,
 } = require('@woke/lib');
-logger = Logger('test:harness');
+logger = Logger('test:UR');
 
 const UserRegistry = artifacts.require('UserRegistry.sol')
 const WokeToken = artifacts.require('WokeToken.sol')
@@ -94,7 +94,7 @@ contract('UserRegistry', (accounts) => {
 				it('should submit a tweet request', async () => {
 
 					let qe = waitForEvent(TO.LogNewQuery).then(e => {
-						logger.e('LogNewQuery event:', e.returnValues);
+						logger.v('LogNewQuery event:', e.returnValues);
 					});
 
 					let r = await UR.claimUser(getwoketoke_id, {from: claimer, value: web3.utils.toWei('1', 'ether')});
@@ -142,6 +142,22 @@ contract('UserRegistry', (accounts) => {
 					);
 				})
 
+				it('should mint tokens for early users with low followings', async () => {
+					const cases = [
+						{address: cA, id: '21232112', followers: 24},
+						{address: cB, id: '21232113', followers: 1},
+						{address: cC, id: '21232114', followers: 2},
+						{address: cD, id: '21232115', followers: 68},
+					];
+
+					for(c of cases) {
+						let r = await ctx.claimUser(c);
+						assert(r.claimed.amount.toNumber() > 0, 'user received no minting bonus');
+					}
+
+					assert(await UR.getUserCount.call(), cases.length);
+				})
+
 				it('should claim several users', async () => {
 					const cases = users;
 
@@ -170,7 +186,7 @@ contract('UserRegistry', (accounts) => {
 						let claimed = (await UR.getPastEvents('Claimed', {from: bn, to: 'latest'}))[0].args
 						logger.t(`Claimed: ${claimed.amount.toString()} WOKE, Bonus: ${claimed.bonus.toString()} WOKE`);
 
-						logger.e('UserRegistry.Claimed:', claimed);
+						logger.v('UserRegistry.Claimed:', claimed);
 
 						assert.strictEqual(claimed.account, c.address);
 						assert.strictEqual(claimed.userId, c.id);
@@ -353,7 +369,7 @@ contract('UserRegistry', (accounts) => {
 					//logger(UR._fulfillClaim(getwoketoke_id, {from: claimer}));
 					//let claimed = (await waitForEvent(UR.Claimed)).returnValues;
 					let claimed = (await UR.getPastEvents('Claimed', {from: blockNumber, to: 'latest'}))[0].args
-					logger.e('event UserRegistry.Claimed:', claimed);
+					//logger.e('event UserRegistry.Claimed:', claimed);
 
 					assert.strictEqual(claimed.account, user.address);
 					assert.strictEqual(claimed.userId, user.id);

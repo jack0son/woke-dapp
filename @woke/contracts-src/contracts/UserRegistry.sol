@@ -423,6 +423,17 @@ contract UserRegistry is Ownable {
 		require(temp.length == 0, "sender already has user ID");
 	}
 
+	// @desc Check if user has pending request
+	// @dev User by app to confirm user's claim has been lodged 
+	function requestLodged(string calldata _userId) external view
+	returns (bool)
+	{
+		if(requester[_userId] == msg.sender) {
+			return true;
+		}
+		return false;
+	}
+
 	// @desc Acquire twitterClient request lock for sender iniating request
 	// @dev Require the request lock is available
 	modifier requestUnlocked() {
@@ -484,6 +495,7 @@ contract UserRegistry is Ownable {
 	// Events
 	event Lodged (address indexed claimer, string userId, bytes32 queryId);
 	event Claimed (address indexed account, string userId, uint256 amount, uint256 bonus);
+	event Bonus (address indexed claimer, address indexed referrer, uint256 amount);
 	event Tx(address indexed from, address indexed to, string fromId, string toId, uint256 amount, bool claimed);
 	event Tip(string fromId, string toId, uint256 amount);
 }

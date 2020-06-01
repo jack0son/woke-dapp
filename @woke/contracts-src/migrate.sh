@@ -36,6 +36,8 @@ BUILD_DIR="./build/contracts/artifacts"
 echo "Copying contracts $APP_DEST ..."
 cp "$BUILD_DIR/TwitterOracleMock.json" "$APP_DEST"
 cp "$BUILD_DIR/WokeToken.json" "$APP_DEST"
+cp "$BUILD_DIR/UserRegistry.json" "$APP_DEST"
 
 cp "$BUILD_DIR/TwitterOracleMock.json" "$PKG_DEST"
 cp "$BUILD_DIR/WokeToken.json" "$PKG_DEST"
+cp "$BUILD_DIR/UserRegistry.json" "$PKG_DEST"

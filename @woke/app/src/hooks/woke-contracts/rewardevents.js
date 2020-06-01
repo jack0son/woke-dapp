@@ -14,7 +14,7 @@ export default function(blockCache) {
 	const [eventList, setEventList] = useState([]);
 
 	// TODO: use indexed strings on smart-contract to look up by user id
-	let rewardEvents = useEvents('WokeToken', 'Reward',
+	let bonusEvents = useEvents('UserRegistry', 'Bonus',
 		useMemo(() => (
 			{
 				filter: { referrer: account },
@@ -49,8 +49,8 @@ export default function(blockCache) {
 		}));
 	}
 
-	if(rewardEvents) {
-		parseEvents(rewardEvents);
+	if(bonusEvents) {
+		parseEvents(bonusEvents);
 	}
 
 	if(newEvents.length > eventList.length) {

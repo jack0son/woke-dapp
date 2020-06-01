@@ -75,7 +75,11 @@ export default function How () {
 				Why do I need to tweet a weird message to join?
 			</BL>
 			<BS>
+				<SHL color='secondary'>tl;dr</SHL> So that <SHL>only you</SHL> can access your Wokens.
+			<br/><br/>
+
 				The proof tweet contains a cryptographically signed message which uniquely links your twitter account to your Woke Wallet. Using a public tweet allows your account ownership to be verified by a <SHL>decentralised server network</SHL> without the central control of the Woke Network developers.
+
 			<br/><br/>
 			</BS>
 			<BL>

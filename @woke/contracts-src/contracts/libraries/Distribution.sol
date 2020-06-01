@@ -115,8 +115,7 @@ library Distribution {
 		return ((uint256(_weight) << 8)*(_pool))/(_sum) >> 8;
 	}
 
-	event Bonus (address indexed claimer, address indexed referrer, uint256 amount);
 	//event Bonus (address indexed claimer, address indexed referrer, string cRewardilaimerId, string referrerId, uint256 amount);
-	event Allocation(uint32 i, uint256 amount, uint40 weight);
-	event TraceUint256(string m, uint256 v);
+	//event Allocation(uint32 i, uint256 amount, uint40 weight);
+	//event TraceUint256(string m, uint256 v);
 }

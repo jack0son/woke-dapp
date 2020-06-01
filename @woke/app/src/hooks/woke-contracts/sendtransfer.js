@@ -85,7 +85,7 @@ export default function useSendTransferInput({
 	};
 }
 
-// Handle submitting transfer data to WokeToken smart contract
+// Handle submitting transfer data to UserRegistry smart contract
 export function useSendTransfers (recipient, handleClearRecipient) {
 	const { account, useSend, useSubscribeCall, useContract, web3 } = useWeb3Context();
 
@@ -101,12 +101,12 @@ export function useSendTransfers (recipient, handleClearRecipient) {
 	// TODO use network config and web3 utils to set gas
 	const gWei = 1000000000; // 1 GWei
 	let txOpts = {gas: 500000, gasPrice: gWei * 30, from: account};
-	const sendTransferClaimed = useSend('WokeToken', 'transferClaimed', txOpts);
-	const sendTransferUnclaimed = useSend('WokeToken', 'transferUnclaimed', txOpts);
+	const sendTransferClaimed = useSend('UserRegistry', 'transferClaimed', txOpts);
+	const sendTransferUnclaimed = useSend('UserRegistry', 'transferUnclaimed', txOpts);
 
-	const wokeTokenContract = useContract('WokeToken');
+	const userRegistryContract = useContract('UserRegistry');
 	const recipientIsClaimed = useSubscribeCall(
-		'WokeToken',
+		'UserRegistry',
 		'userClaimed',
 		recipient ? recipient.id : ''
 	);
@@ -119,7 +119,7 @@ export function useSendTransfers (recipient, handleClearRecipient) {
 	useEffect(() => {
 		const getSafeTxOpts = (claimed, toId = 'dummy', amount = '10') => {
 			const method = `transfer${claimed ? 'Claimed' : 'Unclaimed'}`;
-			safePriceEstimate(web3)(wokeTokenContract, method, [toId, amount], txOpts, { speedMultiplier: 1.5 })
+			safePriceEstimate(web3)(userRegistryContract, method, [toId, amount], txOpts, { speedMultiplier: 1.5 })
 				.then(({ limit, price }) => setSafeTxOpts({gas: limit, gasPrice: price}))
 				.catch(error => {
 					setTxOptsError({

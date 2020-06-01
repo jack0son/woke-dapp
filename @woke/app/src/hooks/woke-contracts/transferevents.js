@@ -21,7 +21,7 @@ export default function(userId, blockCache) {
 	// @notice web3js 2.0 will not require hashing of indexed filter param
 	//const userIdHash = useMemo(() => web3.utils.keccak256(userId), [userId]);
 
-	let sends = useEvents('WokeToken', 'Tx',
+	let sends = useEvents('UserRegistry', 'Tx',
 		useMemo(() => (
 			{
 				filter: { from: account },
@@ -33,7 +33,7 @@ export default function(userId, blockCache) {
 	// Manual filter to account for issue 3053
 	//sends = sends.filter(event => event.returnValues.fromId === userId);
 
-	let receives = useEvents('WokeToken', 'Tx',
+	let receives = useEvents('UserRegistry', 'Tx',
 		useMemo(() => {
 			return {
 				filter: { to: account },
@@ -45,7 +45,7 @@ export default function(userId, blockCache) {
 	//receives = receives.filter(event => event.returnValues.toId === userId);
 
 	// Have to search for all user's pre-claim events due to Issue #21
-	let preClaims = useEvents('WokeToken', 'Tx',
+	let preClaims = useEvents('UserRegistry', 'Tx',
 		useMemo(() => {
 			return {
 				filter: { to: ZERO_ADDRESS },
