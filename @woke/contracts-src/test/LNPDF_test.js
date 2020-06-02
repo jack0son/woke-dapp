@@ -12,7 +12,7 @@ const lndpfChunkedValues = require('../distribution/lnpdf-values.js');
 const fillLnpdfArrays = require('../migrations/fill_lnpdf');
 const lnpdfIntegers = require('../distribution/lnpdf-int_values.json');
 
-const logger = new Logger('test:LNPDF');
+const logger = Logger('test:LNPDF');
 
 contract('LogNormalPDF', (accounts) => {
 	//const [defaultAccount, owner, oraclize_cb, claimer, tipAgent, stranger, cB, cC, ...rest] = accounts;

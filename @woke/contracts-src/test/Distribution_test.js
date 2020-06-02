@@ -18,7 +18,7 @@ const Helpers = artifacts.require('Helpers.sol')
 const MockTwitterOracle = artifacts.require('mocks/TwitterOracleMock.sol')
 //const TwitterOracle = artifacts.require('TwitterOracle.sol')
 
-const wokeFormulaConfig = require('../config/WokeFormula').alpha;
+const config = require('../config').test;
 const tributorData = require('../distribution/data-tributors');
 const appId = web3.utils.asciiToHex('0x0A'); // twitter
 const getwoketoke_id = '932596541822419000';
@@ -35,7 +35,6 @@ const stranger_id = '12345';
 
 
 const bindHarness = require('./harness');
-const config = { WokeFormula: wokeFormulaConfig };
 contract('UserRegistry, WokeToken, Distribution', (accounts) => {
 	let UR, WT, TO, WF, LNDPF;
 	const [defaultAccount, owner, oraclize_cb, claimer, tipAgent, stranger, cA, cB, cC, cD, ...rest] = accounts;
@@ -60,10 +59,10 @@ contract('UserRegistry, WokeToken, Distribution', (accounts) => {
 			{from: defaultAccount, value: web3.utils.toWei('0.01', 'ether')}
 		);
 
-		WT = await WokeToken.new(WF.address, wokeFormulaConfig.maxSupply, {from: defaultAccount});
-		UR = await UserRegistry.new(WT.address, LNPDF.address, TO.address, tipAgent, wokeFormulaConfig.maxTributors, {from: defaultAccount})
+		WT = await WokeToken.new(WF.address, config.maxSupply, {from: defaultAccount});
+		UR = await UserRegistry.new(WT.address, LNPDF.address, TO.address, tipAgent, config.maxTributors, {from: defaultAccount})
 		await WT.setUserRegistry(UR.address, {from: defaultAccount});
-		ctx = bindHarness(accounts, { UR, WT, TO, WF, LNDPF }, wokeFormulaConfig);
+		ctx = bindHarness(accounts, { UR, WT, TO, WF, LNDPF }, config);
 	})
 
 	describe('Users at scale', () => {

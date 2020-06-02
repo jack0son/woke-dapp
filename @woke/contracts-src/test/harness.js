@@ -75,7 +75,7 @@ module.exports = (accounts, {UR, WT, TO, ...instances}, config) => {
 			t.bonus = newBalance.toNumber() - t.balance.toNumber();
 			bonusTotal += t.bonus;
 			logger.info(`${tributors.indexOf(t).toString().padStart(4)}:${t.id.padEnd(15)} fol: ${t.followers.toString().padEnd(15)} bonus: ${t.bonus}`);
-			if(tributors.indexOf(t) >= config.WokeFormula.maxTributors) {
+			if(tributors.indexOf(t) >= config.maxTributors) {
 				assert.equal(t.bonus, 0, 'Tributors above maxTributors receive no bonus');
 			}
 		}

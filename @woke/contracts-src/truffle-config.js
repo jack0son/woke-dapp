@@ -16,7 +16,7 @@ module.exports = {
 			network_id: "*",
 			websockets: true,
 
-			gas: 7000000,
+			gas: 8000000,
 			gasPrice: 20000000000,
 		},
 

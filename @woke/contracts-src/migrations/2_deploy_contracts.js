@@ -10,7 +10,7 @@ var Helpers = artifacts.require("Helpers.sol");
 var Strings = artifacts.require("Strings.sol");
 var ECDSA = artifacts.require("ECDSA.sol");
 
-const wokeFormulaConfig = require('../config/WokeFormula').alpha;
+const wokeFormulaConfig = require('../config').alpha;
 const fillLnpdfArrays = require('./fill_lnpdf');
 
 const doDeploy = async (deployer, network, accounts) => {
