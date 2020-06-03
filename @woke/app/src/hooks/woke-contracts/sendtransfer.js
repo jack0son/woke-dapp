@@ -36,6 +36,7 @@ export default function useSendTransferInput({
 			.then(userObj => {
 				if(userObj) {
 					setRecipient(userObj);
+					sendTransfers.setAmount(input.amount);
 				} else {
 					setError('User does not exist');
 				}
@@ -119,7 +120,7 @@ export function useSendTransfers (recipient, handleClearRecipient) {
 	// Update gas estimate when recipient prop changes
 	const prevRecipient = useRef({id: '', ...recipient});
 	useEffect(() => {
-		const getSafeTxOpts = (claimed, toId = 'dummy', amount = '10') => {
+		const getSafeTxOpts = (claimed, toId = 'dummy', amount = '1') => {
 			const method = `transfer${claimed ? 'Claimed' : 'Unclaimed'}`;
 			safePriceEstimate(web3)(userRegistryContract, method, [toId, amount], txOpts, { speedMultiplier: 1.5 })
 				.then(({ limit, price }) => setSafeTxOpts({gas: limit, gasPrice: price}))
@@ -138,7 +139,7 @@ export function useSendTransfers (recipient, handleClearRecipient) {
 			if(balance == 0) {
 				setTxOptsError(`You are broke.`);
 			}
-			getSafeTxOpts(recipientIsClaimed);
+			getSafeTxOpts(recipientIsClaimed, transferArgs.userId, transferArgs.amount);
 		}
 	}, [account, balance, recipientIsClaimed, transferArgs.userId])
 
@@ -208,6 +209,7 @@ export function useSendTransfers (recipient, handleClearRecipient) {
 	console.dir(error);
 
 	return {
+		setAmount: (amount) => setTransferArgs(t => ({...t, amount})),
 		submit: submitTransfer,
 		error: error,
 		txHash,

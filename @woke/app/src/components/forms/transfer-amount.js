@@ -43,7 +43,7 @@ export default function TokenAmountForm({ amount, handleSetAmount, balance, ...p
 				//controlledValue={amount} // causes slider to not render on drag
 				defaultAmount={defaults.value < balance ? defaults.value : Math.floor(balance/2)}
 				step={Math.ceil(balance/100)}
-				min={0}
+				min={1}
 				order={1}
 				max={balance}
 				styles={{
