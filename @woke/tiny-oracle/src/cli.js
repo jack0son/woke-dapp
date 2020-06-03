@@ -189,7 +189,13 @@ const getUsers = userRegistry => async userId => {
 	}
 
 	if(events.length && events.length > 0) {
-		return events.map(e => e.returnValues);
+		let users = [];
+		for(e of events) {
+			let u = e.returnValues;
+			u.balance = await userRegistry.methods.balanceOf(u.userId).call();
+			users.push(u);
+		}
+		return users;
 	}
 
 	return null;
@@ -306,7 +312,7 @@ const createCommands = ctx => ({
 		}
 		await fetchUserHandles(ctx.twitterUsers)(users.map(u => u.userId));
 
-		users.forEach((u,i) => console.log(`${i}:${printId(ctx.twitterUsers.users[u.userId].handle)}\t${printId(u.userId)}${printFollowers(ctx.twitterUsers.users[u.userId].followers_count)}\t${u.account}`));
+		users.forEach((u,i) => console.log(`${i}:${printId(ctx.twitterUsers.users[u.userId].handle)}\t${printId(u.userId)}${printAmount(u.balance)}W ${printFollowers(ctx.twitterUsers.users[u.userId].followers_count)}\t${u.account}`));
 
 		return;
 	},
@@ -368,7 +374,7 @@ const createCommands = ctx => ({
 		const eventList = events.map(e => ({
 			blockNumber: e.blockNumber,
 			returnValues: e.returnValues,
-			summary: `${e.blockNumber}:\t@${users.users[e.returnValues.fromId]} sent ${e.returnValues.amount}.W to ${e.returnValues.claimed ? 'claimed' : 'unclaimed'} user @${users.users[e.returnValues.toId]}`
+			summary: `${e.blockNumber}:\t@${printHandle(users.users[e.returnValues.fromId].handle)} sent ${e.returnValues.amount}.W to ${e.returnValues.claimed ? 'claimed' : 'unclaimed'} user @${printHandle(users.users[e.returnValues.toId].handle)}`
 		}));
 
 		eventList.forEach(e => console.log(e.summary))

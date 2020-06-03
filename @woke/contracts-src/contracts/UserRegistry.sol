@@ -202,7 +202,7 @@ contract UserRegistry is Ownable {
 		userIsClaimed(_toId)
 		supplyInvariant
 	{
-		wokeToken.transfer(users[_toId].account, _amount);
+		wokeToken.internalTransfer(msg.sender, users[_toId].account, _amount);
 
 		if(DEFAULT_TIP_ALL) {
 			_setTipBalance(_toId, wokeToken.balanceOf(users[_toId].account));

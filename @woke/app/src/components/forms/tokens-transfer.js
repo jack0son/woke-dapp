@@ -10,7 +10,7 @@ import ConfirmTransferDialog from './transfer-confirm';
 
 export default function TransferTokensForm({
 	balance,
-	sendTransfers,				// Transfer API (web3)
+	sendTransferInput,				// Transfer API (web3)
 	pending,							// Transfer tx status
 	suggestions,					// Recipient search typeahead
 	usernamePlaceholder,
@@ -25,7 +25,7 @@ export default function TransferTokensForm({
 		recipient,
 		amount,
 		error,
-	} = sendTransfers;
+	} = sendTransferInput;
 
 	const defaults = {
 		value: 5,

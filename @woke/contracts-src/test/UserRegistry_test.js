@@ -89,6 +89,53 @@ contract('UserRegistry', (accounts) => {
 				})
 			})
 
+			describe('#transfer', () => {
+				it('should transfer: claimed -> claimed', async () => {
+					const send = users[0];
+					const recv = users[1];
+
+					const balSend = {};
+					const balRecv = {}
+
+					let r = await ctx.claimUser(send);
+					await ctx.claimUser(recv);
+					balSend.a = await UR.balanceOf.call(send.id);
+					balRecv.a = await UR.balanceOf.call(recv.id);
+
+					const amount = r.claimed.amount.toNumber();
+					r = await UR.transferClaimed(recv.id, amount, { from: send.address });
+
+					balSend.b = await UR.balanceOf.call(send.id);
+					balRecv.b = await UR.balanceOf.call(recv.id);
+
+					assert.equal(balSend.a.toNumber() - balSend.b.toNumber(), amount, 'sender debited');
+					assert.equal(balRecv.b.toNumber() - balRecv.a.toNumber(), amount, 'recipient credited');
+				});
+
+				it('should transfer: claimed -> unclaimed', async () => {
+					const send = users[0];
+					const recv = users[1];
+
+					const balSend = {};
+					const balRecv = {}
+
+					let r = await ctx.claimUser(send);
+					balSend.a = await UR.balanceOf.call(send.id);
+					balRecv.a = await UR.unclaimedBalanceOf.call(recv.id);
+
+					const amount = r.claimed.amount.toNumber();
+					r = await UR.transferUnclaimed(recv.id, amount, { from: send.address });
+
+					balSend.b = await UR.balanceOf.call(send.id);
+					balRecv.b = await UR.unclaimedBalanceOf.call(recv.id);
+
+					assert.equal(balSend.a.toNumber() - balSend.b.toNumber(), amount, 'sender debited');
+					assert.equal(balRecv.b.toNumber() - balRecv.a.toNumber(), amount, 'recipient credited');
+				});
+
+				// TODO should revert (unclaimed user, no balance etc.)
+			});
+
 			describe('#claimUser', () => {
 				it('should submit a tweet request', async () => {
 

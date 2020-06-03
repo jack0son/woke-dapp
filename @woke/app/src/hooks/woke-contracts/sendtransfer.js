@@ -205,6 +205,7 @@ export function useSendTransfers (recipient, handleClearRecipient) {
 
 		setCurrentTransfer(t => ({...t, txHash, pending }));
 	}, [txHash, pending])
+	console.dir(error);
 
 	return {
 		submit: submitTransfer,

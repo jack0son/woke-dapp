@@ -58,7 +58,7 @@ export default function WalletView (props) {
 		balance,
 		transferEvents,
 		rewardEvents,
-		sendTransfers,
+		sendTransferInput,
 	} = props;
 	const classes = useStyles(styles);
 	const theme = useTheme();
@@ -112,8 +112,8 @@ export default function WalletView (props) {
 			return <Spinner/>;
 		} else if (balance > 0) {
 			return <TransferTokensForm order={2}
-				sendTransfers={sendTransfers}
-				pending={sendTransfers.pending}
+				sendTransferInput={sendTransferInput}
+				pending={sendTransferInput.pending}
 				usernamePlaceholder='username...'
 				amountPlaceholder='amount'
 				suggestions={friends}
@@ -141,15 +141,15 @@ export default function WalletView (props) {
 	const makePendingTransfers = () => {
 		return [{
 			type: 'send',
-			counterParty: sendTransfers.currentTransfer.recipient,
+			counterParty: sendTransferInput.currentTransfer.recipient,
 			pending: true,
-			...sendTransfers.currentTransfer,
+			...sendTransferInput.currentTransfer,
 		}];
 	}
 
 	const renderPendingTransfer = () => {
 		// @brokenwindow wait until current transfer has been set
-		if(sendTransfers.pending && sendTransfers.currentTransfer.amount) {
+		if(sendTransferInput.pending && sendTransferInput.currentTransfer.amount) {
 			return (
 				<FlexColumn styles={{
 					width: '50%',
@@ -161,7 +161,7 @@ export default function WalletView (props) {
 					}
 				}}>
 					<TransactionList
-						sendTransfers={sendTransfers}
+						sendTransferInput={sendTransferInput}
 						fontSize="1.2rem"
 						label="Pending"
 						itemHeightVH={5}
@@ -189,7 +189,7 @@ export default function WalletView (props) {
 					itemHeightVH={5}
 					itemHeightVHSmall={4}
 					//styles={{ }}
-					sendTransfers={sendTransfers}
+					sendTransferInput={sendTransferInput}
 					listItems={transferEvents}
 				/>
 			</FlexColumn>

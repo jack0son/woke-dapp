@@ -59,6 +59,7 @@ export default function TextFieldOutlined({ controlledValue, handleChange, ...pr
 	const defaults = {adornment: '', error: false, errorText: 'error', labelText: 'Text'};
 	const { styles, labelText, error, errorText, adornment, ...other } = { ...defaults, ...props }
 	const classes = useStyles(styles);
+	console.log(errorText);
 
 	return (
 		<TextField fullWidth
@@ -73,7 +74,7 @@ export default function TextFieldOutlined({ controlledValue, handleChange, ...pr
 				startAdornment: <InputAdornment position="start">{adornment}</InputAdornment>
 			}}
 			error={error}
-			helperText={ error ? errorText : null }
+			helperText={ error ? errorText : undefined }
 			//labelWidth={60}
 			{ ...other }
 		/>
