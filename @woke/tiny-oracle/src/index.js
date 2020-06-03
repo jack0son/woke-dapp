@@ -296,7 +296,7 @@ const handleFindTweet = (director, network) => async (account, contract, query, 
 
 	let claimString = tweet.split(' ')[0] + ' ' + tweet.split(' ')[1]
 	let followersCountHex = web3Tools.utils.uInt32ToHexString(userData.followers_count);
-	console.log(`Followers count: ${userData.follwers_count}, ${followersCountHex}`);
+	console.log(`Followers count: ${userData.followers_count}, ${followersCountHex}`);
 	claimString += `:${followersCountHex}`;
 	debug.name(abr, `Claim string: ${claimString}`);
 	debug.name(abr, `Len: ${claimString.length}`);

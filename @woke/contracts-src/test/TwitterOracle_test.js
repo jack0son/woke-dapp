@@ -1,8 +1,9 @@
 const {waitForEvent} = require('./utils')
 const TwitterOracle = artifacts.require('../contracts/TwitterOracle.sol')
-const debug = require('./debug/TwitterOracle_test.js');
 const truffleAssert = require('truffle-assertions');
+const { Logger } = require('@woke/lib');
 
+logger = Logger('test:TOJ');
 
 // Successful query example http://app.provable.xyz/home/check_query?id=5094881757d8a90a06ba7d39ab4cd7c083897ef5ea1a63536542299af7c8bf2e
 
@@ -17,9 +18,9 @@ contract('TwitterOracle', function ([ defaultAccount, ...accounts ]) {
 
 	const gas_amount = 3e6;
 
-	let to;
-	before(async () => {
-		to = await TwitterOracle.new({from: defaultAccount, value: web3.utils.toWei('1','ether')});
+	let TO;
+	before(async function () {
+		TO = await TwitterOracle.new({from: defaultAccount, value: web3.utils.toWei('1','ether')});
 	});
 
 	describe("#findTweet", () => {
@@ -31,10 +32,10 @@ contract('TwitterOracle', function ([ defaultAccount, ...accounts ]) {
 		let opts = { from: defaultAccount, gas: gas_amount };
 
 		it('Should log a new query upon a request for tweet', async () => {
-			const res = await to.findTweet(user_id, handle, opts);
+			const res = await TO.findTweet(user_id, handle, opts);
 
 			const description = res.logs[1].args.description;
-			debug.t('LogNewQuery.description: ', description);
+			logger.t('LogNewQuery.description: ', description);
 
 			assert.strictEqual(
 				description,
@@ -47,7 +48,7 @@ contract('TwitterOracle', function ([ defaultAccount, ...accounts ]) {
 			//const res = await to.findTweet(user_id, handle, opts);
 
 			const description = res.logs[0].args.description;
-			debug.t('LogNewQuery.description: ', description);
+			logger.t('LogNewQuery.description: ', description);
 
 			assert.strictEqual(
 				description,
@@ -58,16 +59,16 @@ contract('TwitterOracle', function ([ defaultAccount, ...accounts ]) {
 		// Check that storage of the Twitter text happens successfully
 		it('should fail to return saved text if request incomplete', async () => {
 			await truffleAssert.reverts(
-				to.getTweetText(user_id),
+				TO.getTweetText(user_id),
 				"No tweet text stored for this user."
 			);
 		})
 
 		it('should emit result from tweet request', async () => {
-			debug.t('Waiting for query result...');
-			const { returnValues: { result } } = await waitForEvent(to.LogResult)
-			debug.t("Result from custom header query:");
-			debug.i(result);
+			logger.t('Waiting for query result...');
+			const { returnValues: { result } } = await waitForEvent(TO.LogResult)
+			logger.t("Result from custom header query:");
+			logger.i(result);
 
 			assert.isTrue(
 				result.includes(tweet_text)
@@ -76,8 +77,8 @@ contract('TwitterOracle', function ([ defaultAccount, ...accounts ]) {
 
 		// Check that storage of the Twitter text happens successfully
 		it('should store twitter text', async () => {
-			let savedText = await to.getTweetText(user_id);
-			debug.t('savedText: ', savedText);
+			let savedText = await TO.getTweetText(user_id);
+			logger.t('savedText: ', savedText);
 			assert.equal(example_status_text, savedText, 'Post not saved!')
 		})
 		
@@ -92,10 +93,10 @@ contract('TwitterOracle', function ([ defaultAccount, ...accounts ]) {
 
 		it('Should log a new query upon a request for tweet', async () => {
 			//await to.send(web3.utils.toWei('0.1', "ether"));
-			const res = await to.requestTweet(example_status_id, opts);
+			const res = await TO.requestTweet(example_status_id, opts);
 
 			const description = res.logs[0].args.description;
-			debug.t('LogNewQuery.description: ', description);
+			logger.t('LogNewQuery.description: ', description);
 
 			assert.strictEqual(
 				description,
@@ -104,10 +105,10 @@ contract('TwitterOracle', function ([ defaultAccount, ...accounts ]) {
 		})
 
 		it('Should log a failed second request for custom headers due to lack of funds', async () => {
-			const res = await to.requestTweet(example_status_id, opts);
+			const res = await TO.requestTweet(example_status_id, opts);
 
 			const description = res.logs[0].args.description;
-			debug.t('LogNewQuery.description: ', description);
+			logger.t('LogNewQuery.description: ', description);
 
 			assert.strictEqual(
 				description,
@@ -119,9 +120,9 @@ contract('TwitterOracle', function ([ defaultAccount, ...accounts ]) {
 			const tweetContains = '@thehandleoftheuser';
 			const {inspect} = require('util')
 
-			debug.t('Waiting for query result...');
-			const { returnValues: { result } } = await waitForEvent(to.LogResult)
-			debug.ti("Result from custom header query:", result);
+			logger.t('Waiting for query result...');
+			const { returnValues: { result } } = await waitForEvent(TO.LogResult)
+			logger.ti("Result from custom header query:", result);
 
 			assert.isTrue(
 				result.includes(tweetContains)
@@ -130,8 +131,8 @@ contract('TwitterOracle', function ([ defaultAccount, ...accounts ]) {
 
 		// Check that storage of the Twitter text happens successfully
 		it('should store twitter text', async () => {
-			let savedText = await to.getTweetText(example_status_id);
-			debug.t('savedText: ', savedText);
+			let savedText = await TO.getTweetText(example_status_id);
+			logger.t('savedText: ', savedText);
 			assert.equal(example_status_text, savedText, 'Post not saved!')
 		})
 

@@ -73,6 +73,8 @@ export default function RecipientForm({recipient, handleSelectRecipient, ...prop
 
 	const handleInputValueChange = value => handleChange(value);
 
+	console.log(error);
+
 	const handleFieldChange = event => {
 		console.log('handleFieldChange: ', event.target.value);
 		handleChange(event.target.value);
@@ -104,8 +106,8 @@ export default function RecipientForm({recipient, handleSelectRecipient, ...prop
 					FieldComponent={ props => (
 						<TextFieldOutlined
 							adornment={'Search @'}
-							error={ error ? true : false }
-							helperText={error}
+							error={error ? true : false }
+							errorText={error}
 							labelText={'Twitter User'}
 							fullWidth={props.inputProps.value == '' || !props.inputProps.value ? false : true}
 							placeholder={placeholder ? placeholder : "Search…"}

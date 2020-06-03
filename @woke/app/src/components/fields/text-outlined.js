@@ -64,7 +64,7 @@ export default function TextFieldOutlined({ controlledValue, handleChange, ...pr
 		<TextField fullWidth
 			label={labelText || 'Text'}
 			variant="outlined"
-			defaultValue='users twitter handle'
+			//defaultValue='users twitter handle'
 			className={classes.input}
 			value={controlledValue}
 			onChange={handleChange}
@@ -73,7 +73,7 @@ export default function TextFieldOutlined({ controlledValue, handleChange, ...pr
 				startAdornment: <InputAdornment position="start">{adornment}</InputAdornment>
 			}}
 			error={error}
-			//helperText={ error ? errorText : null }
+			helperText={ error ? errorText : null }
 			//labelWidth={60}
 			{ ...other }
 		/>

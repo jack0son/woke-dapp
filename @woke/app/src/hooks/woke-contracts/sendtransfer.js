@@ -111,6 +111,8 @@ export function useSendTransfers (recipient, handleClearRecipient) {
 		recipient ? recipient.id : ''
 	);
 
+	const balance = useSubscribeCall('WokeToken', 'balanceOf', account);
+
 	// @TODO get time estimate from config
 	const txTimer = useTxTimer(18000);
 
@@ -122,18 +124,23 @@ export function useSendTransfers (recipient, handleClearRecipient) {
 			safePriceEstimate(web3)(userRegistryContract, method, [toId, amount], txOpts, { speedMultiplier: 1.5 })
 				.then(({ limit, price }) => setSafeTxOpts({gas: limit, gasPrice: price}))
 				.catch(error => {
-					setTxOptsError({
-						message: `Ran out of ETH. Tweet 'gas me fam @getwoketoke' to get more`,
-						action: 'disable',
-					})
+					console.log(error);
+					setTxOptsError( `Ran out of ETH. Tweet 'gas me fam @getwoketoke' to get more`);
+					//{
+					//	message: `Ran out of ETH. Tweet 'gas me fam @getwoketoke' to get more`,
+					//	action: 'disable',
+					//})
 				})
 		}
 
-		if(nonEmptyString(recipient && recipient.id) && recipient.id != prevRecipient.current.id) {
+		if(nonEmptyString(recipient && recipient.id) && recipient.id != prevRecipient.current.id && balance !== null) {
 			prevRecipient.current = recipient;
+			if(balance == 0) {
+				setTxOptsError(`You are broke.`);
+			}
 			getSafeTxOpts(recipientIsClaimed);
 		}
-	}, [account, recipientIsClaimed, transferArgs.userId])
+	}, [account, balance, recipientIsClaimed, transferArgs.userId])
 
 
 	// Need to use effect to wait for cacheCall result
