@@ -62,6 +62,7 @@ export default function WalletContainer(props) {
 	const sendTransferInput = useSendTransferInput({
 		defaultRecipient: '',
 		defaultAmount: 1,
+		balance,
 		checkUserExists: checkUserExists,
 		twitterUsers
 	});

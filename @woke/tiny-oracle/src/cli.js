@@ -271,7 +271,6 @@ const createCommands = ctx => ({
 		supply: async (showMintEvents) => {
 			const supply = await getTokenSupply(ctx.wokeToken)();
 			const bonusPool = await getUnclaimedPool(ctx.userRegistry)();
-			console.log(`Total supply: ${supply}.W, Unclaimed: ${bonusPool}.W, ${(100*bonusPool/supply).toFixed(3)}%`);
 
 			if(showMintEvents) {
 				const claimedEvents = await getClaimedEvents(ctx.userRegistry)();
@@ -288,9 +287,11 @@ const createCommands = ctx => ({
 					console.log(`${e.returnValues.account}:\t${printAmount(e.returnValues.amount)} W`);
 					summonedTotal += parseInt(e.returnValues.amount);
 				});
-				console.log(`\nTotal summoned: ${summonedTotal}`);
+
+				console.log(`\nTotal summoned: ${summonedTotal}, burned ${summonedTotal - supply}`);
 				console.log(`Total claimed: ${claimedTotal}`);
 			}
+			console.log(`Total supply: ${supply} W, Unclaimed: ${bonusPool}.W, ${(100*bonusPool/supply).toFixed(3)}%`);
 		},
 	},
 

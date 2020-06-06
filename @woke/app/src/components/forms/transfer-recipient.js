@@ -73,8 +73,6 @@ export default function RecipientForm({recipient, handleSelectRecipient, ...prop
 
 	const handleInputValueChange = value => handleChange(value);
 
-	console.log(error);
-
 	const handleFieldChange = event => {
 		console.log('handleFieldChange: ', event.target.value);
 		handleChange(event.target.value);

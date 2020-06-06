@@ -59,7 +59,6 @@ export default function TextFieldOutlined({ controlledValue, handleChange, ...pr
 	const defaults = {adornment: '', error: false, errorText: 'error', labelText: 'Text'};
 	const { styles, labelText, error, errorText, adornment, ...other } = { ...defaults, ...props }
 	const classes = useStyles(styles);
-	console.log(errorText);
 
 	return (
 		<TextField fullWidth

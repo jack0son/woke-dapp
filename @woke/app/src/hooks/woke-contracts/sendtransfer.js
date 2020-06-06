@@ -9,6 +9,7 @@ import useTxTimer from './tx-timer';
 export default function useSendTransferInput({
 	defaultRecipient,
 	defaultAmount,
+	balance,
 	checkUserExists,
 	twitterUsers,
 }) {
@@ -27,6 +28,12 @@ export default function useSendTransferInput({
 	const handleChangeInput = name => value => {
 		value && setInput({ ...input, [name]: value });
 	};
+
+	useEffect(() => {
+		if(input.amount > balance) {
+			setInput(input => ({...input, amount: defaultAmount}));
+		}
+	}, [balance]);
 
 	const handleSelectRecipient = () => {
 		setError(null);
@@ -65,6 +72,7 @@ export default function useSendTransferInput({
 	// Bubble up errors from sendTransfers
 	useEffect(() => {
 		if(sendTransfers.error) {
+			console.dir(error);
 			setError(sendTransfers.error);
 		}
 	}, [sendTransfers.error]);
@@ -206,7 +214,6 @@ export function useSendTransfers (recipient, handleClearRecipient) {
 
 		setCurrentTransfer(t => ({...t, txHash, pending }));
 	}, [txHash, pending])
-	console.dir(error);
 
 	return {
 		setAmount: (amount) => setTransferArgs(t => ({...t, amount})),
