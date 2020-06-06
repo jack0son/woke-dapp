@@ -39,6 +39,9 @@ export default function How () {
 	return (
 		<FlexCol styles={{
 			width: '60%',
+			small: {
+				width: '80%',
+			}
 		}}>
 			<BL>
 				Who can receive wokens?
@@ -74,7 +77,7 @@ export default function How () {
 			<BL>
 				Why do I need to tweet a weird message to join?
 			</BL>
-			<BS>
+			<BS styles={{...styles.standard, small: { textAlign: 'left' }}}>
 				<SHL color='secondary'>tl;dr</SHL> So that <SHL>only you</SHL> can access your Wokens.
 			<br/><br/>
 

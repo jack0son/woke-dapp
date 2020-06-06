@@ -1,6 +1,5 @@
 const {
 	start,
-	dispatch,
 	query,
 	stop,
 	spawn,
