@@ -35,7 +35,12 @@ export default function useSendTransferInput({
 		}
 	}, [balance]);
 
+	useEffect(() => {
+		console.log(input.amount);
+	}, [input.amount])
+
 	const handleSelectRecipient = () => {
+		sendTransfers.setAmount(input.amount); // always update amount
 		setError(null);
 		console.log('handleSelectRecipient() ', input.screen_name);
 		// Check user exists 
@@ -43,7 +48,6 @@ export default function useSendTransferInput({
 			.then(userObj => {
 				if(userObj) {
 					setRecipient(userObj);
-					sendTransfers.setAmount(input.amount);
 				} else {
 					setError('User does not exist');
 				}
@@ -98,7 +102,7 @@ export default function useSendTransferInput({
 export function useSendTransfers (recipient, handleClearRecipient) {
 	const { account, useSend, useSubscribeCall, useContract, web3 } = useWeb3Context();
 
-	const nullArgs = {userId: '', amount: 0}
+	const nullArgs = {userId: '', amount: 1}
 	const [sendQueued, setSendQueued] = useState(false);
 	const [transferArgs, setTransferArgs] = useState(nullArgs);
 	const [safeTxOpts, setSafeTxOpts] = useState();
@@ -134,7 +138,9 @@ export function useSendTransfers (recipient, handleClearRecipient) {
 				.then(({ limit, price }) => setSafeTxOpts({gas: limit, gasPrice: price}))
 				.catch(error => {
 					console.log(error);
-					setTxOptsError( `Ran out of ETH. Tweet 'gas me fam @getwoketoke' to get more`);
+					if(error.message.includes('gas')) {
+						setTxOptsError( `Ran out of ETH. Tweet 'gas me fam @getwoketoke' to get more`);
+					}
 					//{
 					//	message: `Ran out of ETH. Tweet 'gas me fam @getwoketoke' to get more`,
 					//	action: 'disable',
