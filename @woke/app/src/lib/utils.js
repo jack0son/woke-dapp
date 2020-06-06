@@ -75,13 +75,20 @@ export function makeObjectCache(cacheKey) {
 	}
 }
 
-export function registerEnterKey(callback) {
-    document.onkeydown = e => {
-      e = e || window.event;
-      switch (e.which || e.keyCode) {
-        case 13:
-					callback();
-          break;
-      }
-    };
+// @dev this only works for a single key => callback handlers
+// Will overwrite all other onkeydown event handlers
+export function registerEnterKey(_callback) {
+	let callback = _callback;
+	document.onkeydown = e => {
+		e = e || window.event;
+		switch (e.which || e.keyCode) {
+			case 13:
+				callback();
+				break;
+		}
+	};
+
+	// Clear callback
+	return () => { callback = () => {} };
 };
+
