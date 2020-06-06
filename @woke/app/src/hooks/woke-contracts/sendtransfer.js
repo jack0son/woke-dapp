@@ -35,10 +35,6 @@ export default function useSendTransferInput({
 		}
 	}, [balance]);
 
-	useEffect(() => {
-		console.log(input.amount);
-	}, [input.amount])
-
 	const handleSelectRecipient = () => {
 		sendTransfers.setAmount(input.amount); // always update amount
 		setError(null);

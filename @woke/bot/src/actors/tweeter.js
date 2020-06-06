@@ -21,7 +21,7 @@ function tip_success_message(tip) {
 }
 
 function tip_invalid_message(tip) {
-	return `${emojis.sleep_face} You need to be woke to send $WOKE. Join with a tweet at https://getwoke.me @${tip.fromHandle}`;
+	return `${emojis.sleep_face} You need to be woke to send $WOKE. Join https://getwoke.me with a tweet \n@${tip.fromHandle}`;
 }
 
 function tip_failure_message(tip) {
