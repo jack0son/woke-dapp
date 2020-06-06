@@ -17,7 +17,7 @@ export default function Tutorial(props) {
 		whiteSpace: 'nowrap',
 		fontSize: `${2*0.7}rem`,
 		linHeight: `${2*0.7}rem`,
-	}
+	};
 
 	const hlStyles = {
 		fontWeight: `400`,
@@ -26,16 +26,35 @@ export default function Tutorial(props) {
 			fontSize: `${1.2}rem`,
 			fontWeight: `400`,
 		}
-	}
-	
+	};
+
+	const lbStyles = {
+		textAlign: 'justify',
+		fontSize: `${2*0.7}rem`,
+		linHeight: `${2*0.7}rem`,
+		fontWeight: '400',
+		marginTop: '8%',
+		marginBottom: '5%',
+		paddingLeft: '15%',
+		paddingRight: '15%',
+		small: {
+			paddingLeft: '10%',
+			paddingRight: '8%',
+			fontSize: `${1.2}rem`,
+			linHeight: `${1.2}rem`,
+		}
+	};
+
 	const tipStr = `${'%2B'}${amount || 3} $WOKE`;
 
 	const choose = () => {
 		switch(choice) {
 			case 'transfers':
 				return (<>
-					Send <WokeSpan styles={wokeSpanStyles}>WOKENs</WokeSpan> from twitter by replying <LargeBody styles={hlStyles} component='span' color='secondary'>
-						+10&nbsp;$WOKE</LargeBody> to a tweet.<br/><br/>
+					<LargeBody styles={lbStyles}>
+						Send <WokeSpan styles={wokeSpanStyles}>WOKENs</WokeSpan> from twitter by replying <LargeBody styles={hlStyles} component='span' color='secondary'>
+							+10&nbsp;$WOKE</LargeBody> to a tweet.<br/><br/>
+					</LargeBody>
 
 					<FlexRow styles={{justifyContent: 'space-evenly', alignItems: 'center'}}>
 						<TweetButton lowerCase
@@ -52,35 +71,19 @@ export default function Tutorial(props) {
 							try it out!
 						</StandardBody>
 					</FlexRow>
+					<LargeBody styles={lbStyles}>
 					<br/>You can send as many wokens as you like, just change the amount in the tweet.
+					</LargeBody>
 				</>);
 			case 'rewards': 
 				return (<>
-					Tribute <WokeSpan>WOKENs</WokeSpan> to new users to earn an elightenment bonus when they join.
+					<LargeBody styles={lbStyles}>
+						Send <WokeSpan styles={wokeSpanStyles}>WOKENs</WokeSpan> from twitter by replying <LargeBody styles={hlStyles} component='span' color='secondary'>
+							Tribute <WokeSpan>WOKENs</WokeSpan> to new users to earn an elightenment bonus when they join.</LargeBody>
+					</LargeBody>
 				</>);
 		}
 	}
 
-	return (
-		<LargeBody
-			styles={{
-				textAlign: 'justify',
-				fontSize: `${2*0.7}rem`,
-				linHeight: `${2*0.7}rem`,
-				fontWeight: '400',
-				marginTop: '8%',
-				marginBottom: '5%',
-				paddingLeft: '15%',
-				paddingRight: '15%',
-				small: {
-					paddingLeft: '10%',
-					paddingRight: '8%',
-					fontSize: `${1.2}rem`,
-					linHeight: `${1.2}rem`,
-				}
-			}}
-		> 
-			{ choose() }
-		</LargeBody>
-	);
+	return choose();
 }

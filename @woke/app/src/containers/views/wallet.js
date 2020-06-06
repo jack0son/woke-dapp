@@ -80,15 +80,16 @@ export default function WalletView (props) {
 		avatar = avatar.slice(0, avatar.length - imageModifier.length) + '.jpg';
 	}
 
-	const renderHeader = heightVH => (<>
+	const renderHeader = heightVH => (<React.Fragment key="avater_header">
 		<AvatarHeader order={0}
 			styles={{height: `${heightVH}vh`}}
 			alignSelf='flex-start'
 			src={avatar}
 			handle={props.user.handle}
+			key="header-avatar"
 		/>
-		<div className={classes.headerSpacer}/>
-	</>);
+		<div className={classes.headerSpacer} key="header-spacer"/>
+	</React.Fragment>);
 
 	const avatarHeader = React.useMemo(() => renderHeader(headerHeight));
 	React.useEffect(() => {
@@ -183,7 +184,6 @@ export default function WalletView (props) {
 			}}
 				label="Tributes"
 			>
-				{ transferEvents.length < 3 ? <Tutorial choice='transfers'/> : null }
 				<TransactionList
 					fontSize="1.2rem"
 					itemHeightVH={5}
@@ -192,6 +192,7 @@ export default function WalletView (props) {
 					sendTransferInput={sendTransferInput}
 					listItems={transferEvents}
 				/>
+				{ transferEvents.length < 3 ? <Tutorial choice='transfers'/> : null }
 			</FlexColumn>
 			<FlexColumn	styles={{
 				width: '100%',

@@ -40,7 +40,7 @@ const useStyles = makeStyles(theme => ({
 }));
 
 export default function ContainedButton(props) {
-	const {text, styles, color, children, ...innerProps} = props;
+	const {text, styles, color, children, iconLeft, iconRight, ...innerProps} = props;
 	const classes = useStyles(styles);
 
 	return (
@@ -48,9 +48,9 @@ export default function ContainedButton(props) {
 			variant="contained"
 			color={color || "primary"}
 			className={classes.button}
+			startIcon={iconLeft}
+			endIcon={iconRight}
 			{...innerProps}
-			startIcon={props.iconLeft}
-			endIcon={props.iconRight}
 		>
 			{text}
 			{children}
