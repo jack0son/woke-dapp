@@ -36,14 +36,13 @@ const useStyles = makeStyles((theme) => ({
 
 export default function NumberFieldOutlined({ controlledValue, handleChange, ...props }) {
 	const defaults = { unitSymbol: '$' };
-	const { styles, unitSymbol, labelText, ...other } = { ...defaults, ...props }
+	const { styles, unitSymbol, labelText, unitPosition, ...other } = { ...defaults, ...props }
 	const classes = useStyles(styles);
 
 	return (
 		<TextField fullWidth type="number"
 			label={labelText || "Number"}
 			variant="outlined"
-			defaultValue='users twitter handle'
 			className={classes.input}
 			value={controlledValue}
 			onChange={handleChange}

@@ -22,7 +22,7 @@ export default function DiscreteSlider({defaultValue, max, ...props}) {
 		labelText: 'Slider',
 		//disabled: false,
 	};
-	const { styles, controlledValue, ...other } = { ...defaults, ...props };
+	const { styles, controlledValue, labelText, ...other } = { ...defaults, ...props };
   const classes = useStyles(styles);
 
   return (
@@ -31,7 +31,7 @@ export default function DiscreteSlider({defaultValue, max, ...props}) {
 				{ other.labelText }
       </Typography>
       <Slider
-				max={max}
+				max={parseInt(max)}
 				value={controlledValue}
         valueLabelDisplay="auto"
         defaultValue={defaultValue}
