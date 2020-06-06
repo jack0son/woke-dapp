@@ -56,20 +56,20 @@ contract TwitterOracle is Ownable, Pausable, usingOraclize {
         bytes memory _proof
     )
         public
-	whenNotPaused
-	onlyOracle
+		whenNotPaused
+		onlyOracle
     {
         require(
             stringNotEmpty(statusId[_queryId]),
             "The Oraclize query ID does not match an Oraclize request made from this contract."
-            );
+		);
 
         emit LogResult(_result, _proof);
 	
-	string memory tweetId = statusId[_queryId];
-	statusText[tweetId] = _result; // @fix this should not be stored due to gas cost
+		string memory tweetId = statusId[_queryId];
+		statusText[tweetId] = _result; // @fix this should not be stored due to gas cost
 
-	emit TweetStored(tweetId, _result);
+		emit TweetStored(tweetId, _result);
     }
 
     // example post id 1146384868630130689
@@ -80,7 +80,7 @@ contract TwitterOracle is Ownable, Pausable, usingOraclize {
 	returns (bytes32)
     {
         // Use computation-resource to add headers to GET request - access app-only Twitter API
-	// TODO: move query string to separate contract for updating (twitter constantly changing their API)
+		// TODO: move query string to separate contract for updating (twitter constantly changing their API)
 	
 	string memory query = string(abi.encodePacked("https://api.twitter.com/1.1/statuses/user_timeline.json?id=", _userId, "932596541822418944&trim_user=false&tweet_mode=extended&include_entities=false&count=1&exclude_replies=false&include_rts=false"));
 	bytes32 queryId = request(

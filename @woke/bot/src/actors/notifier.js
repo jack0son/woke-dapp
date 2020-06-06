@@ -37,7 +37,7 @@ const notifier = {
 		persistenceKey: 'notifier', // only ever 1, static key OK
 
 		initialState: {
-			a_wokenContract: null,
+			a_contract_UserRegistry: null,
 			a_tweeter: null,
 			logRepo: {},
 		},
@@ -45,13 +45,13 @@ const notifier = {
 
 	actions: {
 		'init': (msg, ctx, state) => {
-			const { a_wokenContract } = state;
+			const { a_contract_UserRegistry } = state;
 
 			// Subscribe to unclaimed transfers
 
 			// Rely on subscription to submit logs from block 0
 			// @TODO persist last seen block number
-			dispatch(a_wokenContract, {	type: 'subscribe_log',
+			dispatch(a_contract_UserRegistry, {	type: 'subscribe_log',
 				eventName: 'Tx',
 				opts: { fromBlock: 0 },
 				filter: e => e.claimed == false,
@@ -60,7 +60,7 @@ const notifier = {
 
 		// -- Source actions
 		'unclaimed_tx': async (msg, ctx, state) => {
-			const { logRepo, a_tweeter, a_wokenContract } = state;
+			const { logRepo, a_tweeter, a_contract_UserRegistry } = state;
 			const { log } = msg;
 
 			//console.log(msg);
@@ -81,8 +81,8 @@ const notifier = {
 					let balance;
 					try {
 						// Contract version incompatible (missing unclaimedBalance method)
-						const balanceCall = await query(a_wokenContract, {type: 'call', 
-							method: 'unclaimedBalance',
+						const balanceCall = await query(a_contract_UserRegistry, {type: 'call', 
+							method: 'unclaimedBalanceOf',
 							args: [entry.toId],
 							sinks: [],
 						}, 5*1000)
@@ -158,6 +158,7 @@ const notifier = {
 
 		'a_contract': (msg, ctx, state) => {
 			const { a_sub } = msg;
+			// Once subscription received from contract, start the subscription
 			if(a_sub) {
 				const a_unclaimed_tx_sub = a_sub;
 				dispatch(a_unclaimed_tx_sub,  {type: 'start'}, ctx.self);

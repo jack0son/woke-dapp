@@ -1,15 +1,21 @@
 //const oracle = artifacts.require("TwitterOracle.sol");
 var OracleMock = artifacts.require("TwitterOracleMock.sol");
+var WokeFormula = artifacts.require("WokeFormula.sol");
+var LogNormalPDF = artifacts.require("LogNormalPDF.sol");
+var UserRegistry = artifacts.require("UserRegistry.sol");
 var Token = artifacts.require("WokeToken.sol");
+var Distribution = artifacts.require("Distribution.sol");
+var Structs = artifacts.require("Helpers.sol");
 var Helpers = artifacts.require("Helpers.sol");
 var Strings = artifacts.require("Strings.sol");
 var ECDSA = artifacts.require("ECDSA.sol");
 
-const {blog, verbose, inspect} = require('../test/debug/common');
+const wokeFormulaConfig = require('../config').alpha;
+const fillLnpdfArrays = require('./fill_lnpdf');
 
 const doDeploy = async (deployer, network, accounts) => {
 	const [defaultAccount, owner, oracleCallback, ...rest] = accounts;
-	const maxSupply = 10000000;
+	const maxSupply = 4.2e6;
 
 	console.log('Using network: ', network);
 	console.log('Deploy account: ', defaultAccount);
@@ -31,25 +37,64 @@ const doDeploy = async (deployer, network, accounts) => {
 	let oracleInstance = await OracleMock.deployed();
 	console.log(`OracleMock deployed at ${oracleInstance.address}`);
 
-
 	console.log('Deploying Strings...');
 	await deployer.deploy(Strings);
 	await deployer.link(Strings, Helpers);
-	await deployer.link(Strings, Token);
-
-	console.log('Deploying Helpers...');
-	await deployer.deploy(Helpers);
-	await deployer.link(Helpers, Token);
 
 	console.log('Deploying ECDSA...');
 	await deployer.deploy(ECDSA);
-	await deployer.link(ECDSA, Token);
+	await deployer.link(ECDSA, Helpers);
 
+	console.log('Deploying Structs...');
+	await deployer.deploy(Structs);
+	await deployer.link(Structs, WokeFormula);
+	await deployer.link(Structs, UserRegistry);
+
+	console.log('Deploying Helpers...');
+	await deployer.deploy(Helpers);
+	await deployer.link(Helpers, UserRegistry);
+
+	console.log('Deploying Distribution...');
+	await deployer.deploy(Distribution);
+	await deployer.link(Distribution, UserRegistry);
+
+	const curveParams = wokeFormulaConfig.curveParams;
+
+	const val = opts.value;
+	opts.value = 0;
+	console.log('Deploying WokeFormula...');
+	await deployer.deploy(WokeFormula,
+		curveParams.maxPrice,
+		curveParams.inflectionSupply,
+		curveParams.steepness,
+		opts,
+	);
+	let formulaInstance = await WokeFormula.deployed();
+	console.log(`WokeFormula deployed at ${formulaInstance.address}`);
+
+	const refreshLnpdf = true;
+	console.log('Deploying LogNormalPDF...')
+	await deployer.deploy(LogNormalPDF, { ...opts, overwrite: refreshLnpdf })
+	let lnpdfInstance = await LogNormalPDF.deployed();
+	console.log(`LogNormalPDF deployed at ${lnpdfInstance.address}`);
+
+	if(refreshLnpdf)
+		await fillLnpdfArrays(defaultAccount, lnpdfInstance)();
+
+	opts.value = val;
 	console.log('Deploying WokeToken...')
-	return await deployer.deploy(Token, oracleInstance.address, owner, maxSupply, opts)
-		.then(tokenInsance => {
-			console.log(`WokeToken deployed at ${tokenInsance.address}`);
-			return tokenInsance;
+	await deployer.deploy(Token, formulaInstance.address, maxSupply, opts)
+	let tokenInstance = await Token.deployed();
+	console.log(`WokeToken deployed at ${tokenInstance.address}`);
+
+	const maxTributors = 256;
+	console.log('Deploying UserRegistry...')
+	return await deployer.deploy(UserRegistry, tokenInstance.address, lnpdfInstance.address, oracleInstance.address, owner, maxTributors, opts)
+		.then(async registryInstance => {
+			opts.value = 0;
+			await tokenInstance.setUserRegistry(registryInstance.address, opts);
+			console.log(`UserRegistry deployed at ${registryInstance.address}`);
+			return registryInstance;
 		});
 }
 

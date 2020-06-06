@@ -9,6 +9,8 @@ import Paper from '@material-ui/core/Paper';
 import MenuItem from '@material-ui/core/MenuItem';
 import Chip from '@material-ui/core/Chip';
 
+import { useEnterKey } from '../hooks/util-hooks';
+
 function renderInput(inputProps) {
   const { FieldComponent, InputProps, onChange, classes, ref, ...other } = inputProps;
 	const Component = FieldComponent ? FieldComponent : TextField;
@@ -122,6 +124,8 @@ export default function IntegrationDownshift(props) {
 	const {FieldComponent, Suggestion, suggestions, handleInputValueChange, handleFieldChange, ...innerProps} = props;
 	const theme = useTheme();
   const classes = useStyles();
+
+	useEnterKey(handleInputValueChange);
 
 	function getSuggestions(value, { showEmpty = false } = {}) {
 		const inputValue = deburr(value.trim()).toLowerCase();

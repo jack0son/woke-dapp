@@ -14,7 +14,9 @@ import FlexColumn from '../../layouts/flex-column'
 import AvatarHeader from '../../components/wallet/header-avatar';
 import Balance from  '../../components/wallet/balance';
 import Tutorial from  '../../components/wallet/tutorial';
-import TransferTokensForm from  '../../components/forms/tokens-transfer'
+import TransferTokensForm from  '../../components/forms/tokens-transfer';
+import Spinner from '../../components/progress/spinner-indeterminate';
+import XLBody from '../../components/text/body-xl';
 
 import { useRootContext } from '../../hooks/root-context';
 
@@ -56,7 +58,7 @@ export default function WalletView (props) {
 		balance,
 		transferEvents,
 		rewardEvents,
-		sendTransfers,
+		sendTransferInput,
 	} = props;
 	const classes = useStyles(styles);
 	const theme = useTheme();
@@ -105,29 +107,49 @@ export default function WalletView (props) {
 		},
 	}
 
-	const renderTransfer = () => (
-		<TransferTokensForm order={2}
-			sendTransfers={sendTransfers}
-			pending={sendTransfers.pending}
-			usernamePlaceholder='username...'
-			amountPlaceholder='amount'
-			suggestions={friends}
-			balance={balance}
-		/>
-	);
+	const renderTransfer = () => {
+		if(balance == null) {
+			return <Spinner/>;
+		} else if (balance > 0) {
+			return <TransferTokensForm order={2}
+				sendTransferInput={sendTransferInput}
+				pending={sendTransferInput.pending}
+				usernamePlaceholder='username...'
+				amountPlaceholder='amount'
+				suggestions={friends}
+				balance={balance}
+			/>;
+		} else {
+			return (
+				<FlexColumn styles={{
+					width: '100%',
+					maxWidth: '100%', // limit to width of split columns
+					justifyContent: 'center',
+					alignItems: 'center',
+					//alignSelf: 'stretch',
+					height: '25vh',
+					small: {
+						height: '100%',
+					}
+				}}>
+					<XLBody color='primary'>You are broke 👎</XLBody>
+				</FlexColumn>
+			);
+		}
+	}
 
 	const makePendingTransfers = () => {
 		return [{
 			type: 'send',
-			counterParty: sendTransfers.currentTransfer.recipient,
+			counterParty: sendTransferInput.currentTransfer.recipient,
 			pending: true,
-			...sendTransfers.currentTransfer,
+			...sendTransferInput.currentTransfer,
 		}];
 	}
 
 	const renderPendingTransfer = () => {
 		// @brokenwindow wait until current transfer has been set
-		if(sendTransfers.pending && sendTransfers.currentTransfer.amount) {
+		if(sendTransferInput.pending && sendTransferInput.currentTransfer.amount) {
 			return (
 				<FlexColumn styles={{
 					width: '50%',
@@ -139,7 +161,7 @@ export default function WalletView (props) {
 					}
 				}}>
 					<TransactionList
-						sendTransfers={sendTransfers}
+						sendTransferInput={sendTransferInput}
 						fontSize="1.2rem"
 						label="Pending"
 						itemHeightVH={5}
@@ -159,7 +181,7 @@ export default function WalletView (props) {
 			<FlexColumn	styles={{
 				width: '100%',
 			}}
-				label="History"
+				label="Tributes"
 			>
 				{ transferEvents.length < 3 ? <Tutorial choice='transfers'/> : null }
 				<TransactionList
@@ -167,14 +189,14 @@ export default function WalletView (props) {
 					itemHeightVH={5}
 					itemHeightVHSmall={4}
 					//styles={{ }}
-					sendTransfers={sendTransfers}
+					sendTransferInput={sendTransferInput}
 					listItems={transferEvents}
 				/>
 			</FlexColumn>
 			<FlexColumn	styles={{
 				width: '100%',
 			}}
-				label="Earnings"
+				label="Summoned"
 			>
 				<TransactionList
 					fontSize="1.2rem"

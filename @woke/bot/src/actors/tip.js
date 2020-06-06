@@ -73,7 +73,7 @@ const actions = {
 				break;
 			}
 
-			case 'userBalance': {
+			case 'balanceOf': {
 				ctx.receivers.reduce({ event: 'check_bal-recv'});
 				break;
 			}
@@ -126,7 +126,7 @@ const eventsTable = {
 
 				} else if(userIsClaimed === true) {
 					dispatch(a_wokenContract, {type: 'call', 
-						method: 'userBalance',
+						method: 'balanceOf',
 						args: [tip.fromId],
 						sinks: [ctx.self],
 					}, ctx.self)

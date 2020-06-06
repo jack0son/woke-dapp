@@ -104,8 +104,8 @@ export default function RecipientForm({recipient, handleSelectRecipient, ...prop
 					FieldComponent={ props => (
 						<TextFieldOutlined
 							adornment={'Search @'}
-							error={ error ? true : false }
-							helperText={error}
+							error={error ? true : false }
+							errorText={error}
 							labelText={'Twitter User'}
 							fullWidth={props.inputProps.value == '' || !props.inputProps.value ? false : true}
 							placeholder={placeholder ? placeholder : "Search…"}

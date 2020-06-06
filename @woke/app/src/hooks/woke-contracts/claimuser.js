@@ -212,7 +212,7 @@ export default function useClaimUser({userId, userHandle, claimStatus}) {
 	}, [claimState, ...dispatchers])
 	*/
 
-	const WokeToken = useContract('WokeToken');
+	const UserRegistry = useContract('UserRegistry');
 	const TwitterOracleMock = useContract('TwitterOracleMock');
 	const gather = useRef(0);
 
@@ -225,7 +225,7 @@ export default function useClaimUser({userId, userHandle, claimStatus}) {
 
 			// Has Lodging occured?
 			logVerbose('\t... initial getting lodge events');
-			const lodgeEvents = await WokeToken.getPastEvents('Lodged', { ...opts,
+			const lodgeEvents = await UserRegistry.getPastEvents('Lodged', { ...opts,
 				filter: { claimer: account}
 			});
 
@@ -328,7 +328,7 @@ export default function useClaimUser({userId, userHandle, claimStatus}) {
 	}, [tweetText, lodgedPredicate, claimString]);
 
 	const hasLodgedRequestPredicate = claimState.stage < states.LODGED;
-	const hasLodgedRequest = useSubscribeCall('WokeToken', 'lodgedRequest', userId);
+	const hasLodgedRequest = useSubscribeCall('UserRegistry', 'requestLodged', userId);
 	useEffect(() => {
 		console.log('\thasLodgedRequest: ', hasLodgedRequest);
 		if(hasLodgedRequestPredicate && hasLodgedRequest === true) {
@@ -340,7 +340,7 @@ export default function useClaimUser({userId, userHandle, claimStatus}) {
 
 	// 3. Monitor state from events
 	const events = {TweetStored: [], Claimed: [], Lodged: []};
-	events.Claimed = useEvents('WokeToken', 'Claimed',
+	events.Claimed = useEvents('UserRegistry', 'Claimed',
 		useMemo(() => (
 			{
 				filter: { account: account},
@@ -370,7 +370,7 @@ export default function useClaimUser({userId, userHandle, claimStatus}) {
 		}
 	}, [claimState.queryId, events.TweetStored]); // && events.TweetStored.length]);
 
-	events.Lodged = useEvents('WokeToken', 'Lodged',
+	events.Lodged = useEvents('UserRegistry', 'Lodged',
 		useMemo(() => (
 			{
 				filter: {claimer: account},
@@ -396,13 +396,13 @@ export default function useClaimUser({userId, userHandle, claimStatus}) {
 	const gWei = 1000000000; // 1 GWei
 	let txOpts = {gas: 2000000, gasPrice: gWei * 30, from: account}; // cost = 0.06 ETH
 
-	const sendClaimUser = useSend('WokeToken', 'claimUser', txOpts);
-	const sendFulfillClaim = useSend('WokeToken', '_fulfillClaim', txOpts);
+	const sendClaimUser = useSend('UserRegistry', 'claimUser', txOpts);
+	const sendFulfillClaim = useSend('UserRegistry', '_fulfillClaim', txOpts);
 
 	const blockSendClaim = useRef(false);
 	const handleSendClaimUser = useCallback(async (id) => {
 		try {
-			const { limit, price } = await safePriceEstimate(web3)(WokeToken, 'claimUser', [id], txOpts);
+			const { limit, price } = await safePriceEstimate(web3)(UserRegistry, 'claimUser', [id], txOpts);
 			txOpts = { ...txOpts, gas: limit.toString(), gasPrice: price.toString() };
 			if(sendClaimUser.send('useOpts', id, txOpts)) {
 				console.log(`sendClaimUser(${id})`)
@@ -420,7 +420,7 @@ export default function useClaimUser({userId, userHandle, claimStatus}) {
 	const handleSendFulfillClaim = useCallback(async () => {
 
 		try {
-			const { limit, price } = await safePriceEstimate(web3)(WokeToken, '_fulfillClaim', [userId], txOpts);
+			const { limit, price } = await safePriceEstimate(web3)(UserRegistry, '_fulfillClaim', [userId], txOpts);
 			txOpts = { ...txOpts, gas: limit.toString(), gasPrice: price.toString() };
 			if(sendFulfillClaim.send('useOpts', userId, txOpts)) {
 				console.log(`sendFulfillClaim(${userId})`)

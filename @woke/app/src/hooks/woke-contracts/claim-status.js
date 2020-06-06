@@ -18,8 +18,8 @@ export default function useClaimStatus(userId) {
 	const {
 		useSubscribeCall,
 	} = useWeb3Context();
-	const callMyUser = useSubscribeCall('WokeToken', 'myUser');
-	const callUserClaimed = useSubscribeCall('WokeToken', 'userClaimed', userId);
+	const callMyUser = useSubscribeCall('UserRegistry', 'myUser');
+	const callUserClaimed = useSubscribeCall('UserRegistry', 'userClaimed', userId);
 	const [state, setState] = useState(retrieveStatus(userId));
 
 	function setStatus(status) {

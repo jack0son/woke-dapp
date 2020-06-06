@@ -1,5 +1,6 @@
 # Misc
 .idea
+*.bkp
 
 # Config
 .DS_Store

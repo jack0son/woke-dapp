@@ -6,7 +6,7 @@ import FieldWrapper from '../../layouts/wrapper-field';
 import Password from '../fields/password'
 import Button from '../buttons/button-contained'
 import StandardBody from '../text/body-standard'
-import { registerEnterKey } from '../../lib/utils';
+import { useEnterKey } from '../../hooks/util-hooks';
 
 const useStyles = makeStyles(theme => ({
 	centeredForm: {
@@ -58,7 +58,7 @@ export default function NewPassword (props) {
 		props.triggerSetPassword(input.password, input.confirmation);
 	}
 
-	registerEnterKey(setPassword);
+	useEnterKey(setPassword);
 
 	return (
 //		<FieldWrapper>

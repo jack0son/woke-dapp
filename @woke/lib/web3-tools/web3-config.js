@@ -67,7 +67,7 @@ module.exports = {
 				host: 'localhost',
 				port: 8545,
 				gasPrice: '20000000000',
-				gasLimit: '6721975',
+				gasLimit: '8000000',
 				defaultCommon: {
 					customChain: {
 						name: 'ganache',

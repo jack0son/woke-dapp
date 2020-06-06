@@ -4,7 +4,8 @@ const PersistenceEngine = require('./persistence-engine');
 const { tipper, TwitterMonitor, polling, nonce, Tweeter } = require('./actors');
 
 // Lib
-const { create_woken_contract_actor } = require('./lib/actors/woken-contract');
+//const { create_woken_contract_actor } = require('./lib/actors/woken-contract');
+const create_contracts_system = require('./lib/actors/contracts-system');
 const TwitterStub = require('./lib/twitter-stub');
 const twitterMock = require('../test/mocks/twitter-client');
 const loadContract = require('./lib/contracts').load;
@@ -15,7 +16,7 @@ function TwitterClient() {
 }
 
 class TipSystem {
-	constructor(a_wokenContract, opts) {
+	constructor(contracts, opts) {
 		const { twitterStub, persist, pollingInterval, notify} = opts;
 		this.persist = persist ? true : false;
 		this.config = {
@@ -35,8 +36,8 @@ class TipSystem {
 		const director = this.director;
 
 		// Actors
-		this.a_wokenContract = a_wokenContract ||
-			create_woken_contract_actor(director, {persist: this.persist});
+		this.contracts = contracts ||
+			create_contracts_system(director, ['UserRegistry'],  {persist: this.persist});
 
 		if(notify) {
 			this.a_tweeter = director.start_actor('tweeter', Tweeter(this.twitterStub));
@@ -44,11 +45,11 @@ class TipSystem {
 
 		this.a_tipper = this.persist ? 
 			director.start_persistent('tipper', tipper, {
-				a_wokenContract: this.a_wokenContract,
+				a_wokenContract: this.contracts.UserRegistry,
 				a_tweeter: this.a_tweeter,
 			}) :
 			director.start_actor('tipper', tipper, {
-				a_wokenContract: this.a_wokenContract,
+				a_wokenContract: this.contracts.UserRegistry,
 				a_tweeter: this.a_tweeter,
 			});
 

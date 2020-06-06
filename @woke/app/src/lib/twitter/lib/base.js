@@ -7,6 +7,7 @@ import {
 import { TokenError } from './errors';
 const {resources, keys} = require('../config');
 
+
 // ** Support proxying of requests
 export default function makeBaseClient({
 	bearerToken,

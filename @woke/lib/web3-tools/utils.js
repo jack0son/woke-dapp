@@ -98,8 +98,21 @@ const safePriceEstimate = web3 => async (contract, method, args, txOpts) => {
 	}
 }
 
+// Compatible with web3.utils.hexToBytes
+const uInt32ToHexString = (uInt32) => {
+	const buff = new ArrayBuffer(4);
+	const data = new DataView(buff);
+	data.setUint32(0, uInt32, false);
+	const uInt8Buffer = Buffer.from(buff);
+	let solStr = uInt8Buffer.toString('hex');
+	return solStr;
+	return `0x${solStr}`;
+}
+
+
 module.exports = {
 	safePriceEstimate,
 	waitForEvent, 
 	waitForEventWeb3,
+	uInt32ToHexString,
 };

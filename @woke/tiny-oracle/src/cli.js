@@ -5,11 +5,13 @@ const {
 } = require('@woke/lib');
 const artifacts = require('@woke/contracts')[process.env.NODE_ENV !== 'development' ? 'production' : 'development'];
 const debug = Logger('oracle');
-debug.d('Interfaces available on networks: ', Object.keys(artifacts.WokeToken.networks));
+debug.d('Interfaces available on networks: ', Object.keys(artifacts.UserRegistry.networks));
 
 const oracleInterface = artifacts.TwitterOracleMock;
+const userRegistryInterface = artifacts.UserRegistry;
 const wokeTokenInterface = artifacts.WokeToken;
 
+// Get deployed contract instance
 function initContract(web3Instance, artifact) {
 	const address = artifact.networks[web3Instance.network.id].address;
 	debug.d(`Initialising ${artifact.contractName} at ${address}`);
@@ -76,11 +78,47 @@ const getTweetText = oracle => async (_userId, _opts) => {
 	return r;
 }
 
-const getRewardEvents = wokeToken => async (_claimerId, _referrerId) => {
+const getEvents = userRegistry => async (eventName, filter) => {
 	let opts = {
 		fromBlock: 0,
 	}
-	let events = await wokeToken.getPastEvents('Reward', opts);
+	let events = await userRegistry.getPastEvents(eventName, opts);
+	if(filter)
+		events.filter(e => {
+			let match = true;
+			Object.keys(filter).forEach(prop => {
+				if(e.returnValues[prop] != filter[prop])
+					match = false;
+			})
+			return match;
+		})
+
+	return events;
+}
+
+const getClaimedEvents = userRegistry => async (_claimerAddress, _claimerId) => {
+	/*
+	let opts = {
+		fromBlock: 0,
+	}
+	let events = await userRegistry.getPastEvents('Claimed', opts);
+
+	if(_claimerAddress) 
+		events = events.filter(e => e.returnValues.account == _claimerAddress)
+
+	if(_claimerId) 
+		events = events.filter(e => e.returnValues.userId == _claimerId)
+		*/
+	return getEvents(userRegistry)('Claimed', { account: _claimerAddress, userId: _claimerId });
+
+	//return events;
+}
+
+const getRewardEvents = userRegistry => async (_claimerId, _referrerId) => {
+	let opts = {
+		fromBlock: 0,
+	}
+	let events = await userRegistry.getPastEvents('Reward', opts);
 
 	if(_claimerId) 
 		events = events.filter(e => e.returnValues.claimerId == _claimerId)
@@ -91,15 +129,15 @@ const getRewardEvents = wokeToken => async (_claimerId, _referrerId) => {
 	return events;
 }
 
-const getTransferEvents = wokeToken => async (_fromId, _toId) => {
+const getTransferEvents = userRegistry => async (_fromId, _toId) => {
 	let opts = {
 		fromBlock: 0,
-		// @fix these params are not indexed in WokeToken.sol
+		// @fix these params are not indexed in UserRegistry.sol
 		//fromId: _fromId,
 		//toId: _toId,
 	}
 
-	let events = await wokeToken.getPastEvents('Tx', opts);
+	let events = await userRegistry.getPastEvents('Tx', opts);
 
 	if(_fromId) 
 		events = events.filter(e => e.returnValues.fromId == _fromId)
@@ -134,24 +172,30 @@ const getTokenSupply = wokeToken => (_opts) => {
 	return wokeToken.methods.totalSupply().call(opts);
 }
 
-const getUnclaimedPool = wokeToken => (_opts) => {
+const getUnclaimedPool = userRegistry => (_opts) => {
 	let opts = {
 		..._opts,
 		//from: account
 	};
-	return wokeToken.methods.balanceOf(wokeToken._address).call(opts);
+	return userRegistry.methods.balanceOf(userRegistry._address).call(opts);
 }
 
 
-const getUsers = wokeToken => async userId => {
+const getUsers = userRegistry => async userId => {
 	let opts = { fromBlock: 0 };
-	let events = await wokeToken.getPastEvents('Claimed', opts);
+	let events = await userRegistry.getPastEvents('Claimed', opts);
 	if(nonEmptyString(userId)) {
 		events = events.filter(e => e.returnValues.userId == userId)
 	}
 
 	if(events.length && events.length > 0) {
-		return events.map(e => e.returnValues);
+		let users = [];
+		for(e of events) {
+			let u = e.returnValues;
+			u.balance = await userRegistry.methods.balanceOf(u.userId).call();
+			users.push(u);
+		}
+		return users;
 	}
 
 	return null;
@@ -190,7 +234,13 @@ const twitterUsers = twitter => {
 		const getHandle = (() =>  {
 			return async (userId) => {
 				if(!users[userId]) {
-					users[userId] = (await twitter.getUserData(userId)).handle
+					try {
+					const user = await twitter.getUserData(userId);
+						users[userId] = { ...user };
+					} catch(error) {
+						console.log('Error: twitter: ', error);
+						users[userId] = 'DELETED';
+					}
 				}
 				return users[userId];
 			};
@@ -210,13 +260,38 @@ const fetchUserHandles = twitterUsers => async userIds => {
 		await Promise.all(twitterUsers.userIds.map(id => twitterUsers.getHandle(id)));
 }
 
+const printId = id => id.padEnd(20, ' ');
+const printHandle = id => id.padEnd(20, ' ');
+const printFollowers = f => f.toString().padStart(12, ' ');
+const printAmount = f => f.toString().padStart(24, ' ');
+
 // Inefficient but convenient
 const createCommands = ctx => ({
 	wokeToken: {
-		supply: async () => {
+		supply: async (showMintEvents) => {
 			const supply = await getTokenSupply(ctx.wokeToken)();
-			const bonusPool = await getUnclaimedPool(ctx.wokeToken)();
-			console.log(`Total supply: ${supply}.W, Unclaimed: ${bonusPool}.W, ${(100*bonusPool/supply).toFixed(3)}%`);
+			const bonusPool = await getUnclaimedPool(ctx.userRegistry)();
+
+			if(showMintEvents) {
+				const claimedEvents = await getClaimedEvents(ctx.userRegistry)();
+				const summonedEvents= await getEvents(ctx.wokeToken)('Summoned', {});
+
+				let claimedTotal = 0;
+				claimedEvents.forEach(e => {
+					console.log(`${printId(e.returnValues.userId)}:\t${printAmount(e.returnValues.amount)} W`);
+					claimedTotal += parseInt(e.returnValues.amount);
+				});
+
+				let summonedTotal = 0;
+				summonedEvents.forEach(e => {
+					console.log(`${e.returnValues.account}:\t${printAmount(e.returnValues.amount)} W`);
+					summonedTotal += parseInt(e.returnValues.amount);
+				});
+
+				console.log(`\nTotal summoned: ${summonedTotal}, burned ${summonedTotal - supply}`);
+				console.log(`Total claimed: ${claimedTotal}`);
+			}
+			console.log(`Total supply: ${supply} W, Unclaimed: ${bonusPool}.W, ${(100*bonusPool/supply).toFixed(3)}%`);
 		},
 	},
 
@@ -231,20 +306,41 @@ const createCommands = ctx => ({
 	},
 
 	getUser: async (userId) => {
-		const users = await getUsers(ctx.wokeToken)(userId);
+		const users = await getUsers(ctx.userRegistry)(userId);
 		if(!users) {
 			console.log('None found.');
 			return;
 		}
 		await fetchUserHandles(ctx.twitterUsers)(users.map(u => u.userId));
 
-		users.forEach((u,i) => console.log(`${i}:${ctx.twitterUsers.users[u.userId].padEnd(20, ' ')}\t${u.userId.padEnd(20, ' ')}\t${u.account}`));
+		users.forEach((u,i) => console.log(`${i}:${printId(ctx.twitterUsers.users[u.userId].handle)}\t${printId(u.userId)}${printAmount(u.balance)}W ${printFollowers(ctx.twitterUsers.users[u.userId].followers_count)}\t${u.account}`));
+
+		return;
+	},
+
+	getClaimedEvents: async (userId) => {
+		const events = await getClaimedEvents(ctx.userRegistry)();
+		if(!(events && events.length)) {
+			console.log('None found.');
+			return;
+		}
+
+		await fetchUserHandles(ctx.twitterUsers)(events.map(e => e.returnValues.userId));
+		const users = ctx.twitterUsers;
+
+		const eventList = events.map(e => ({
+			blockNumber: e.blockNumber,
+			returnValues: e.returnValues,
+			summary: `${e.blockNumber}:\t@${printHandle(users.users[e.returnValues.userId].handle)}, f:${printFollowers(users.users[e.returnValues.userId].followers_count)} claimed ${e.returnValues.amount}.W with minting bonus @${e.returnValues.bonus}`
+		}));
+		eventList.forEach(e => console.log(e.summary))
+		console.log('\nTotal claims: ', eventList.length);
 
 		return;
 	},
 
 	getRewardEvents: async (claimer, referrer) => {
-		const events = await getRewardEvents(ctx.wokeToken)(claimer, referrer);
+		const events = await getRewardEvents(ctx.userRegistry)(claimer, referrer);
 		if(!(events && events.length)) {
 			console.log('None found.');
 			return;
@@ -265,7 +361,7 @@ const createCommands = ctx => ({
 	},
 
 	getTransferEvents: async (from, to) => {
-		const events = await getTransferEvents(ctx.wokeToken)(from, to);
+		const events = await getTransferEvents(ctx.userRegistry)(from, to);
 		if(!(events && events.length)) {
 			console.log('None found.');
 			return;
@@ -279,7 +375,7 @@ const createCommands = ctx => ({
 		const eventList = events.map(e => ({
 			blockNumber: e.blockNumber,
 			returnValues: e.returnValues,
-			summary: `${e.blockNumber}:\t@${users.users[e.returnValues.fromId]} sent ${e.returnValues.amount}.W to ${e.returnValues.claimed ? 'claimed' : 'unclaimed'} user @${users.users[e.returnValues.toId]}`
+			summary: `${e.blockNumber}:\t@${printHandle(users.users[e.returnValues.fromId].handle)} sent ${e.returnValues.amount}.W to ${e.returnValues.claimed ? 'claimed' : 'unclaimed'} user @${printHandle(users.users[e.returnValues.toId].handle)}`
 		}));
 
 		eventList.forEach(e => console.log(e.summary))
@@ -291,12 +387,14 @@ const createCommands = ctx => ({
 async function initContext() {
 	const web3Instance = await initWeb3();
 	const oracle = initContract(web3Instance, oracleInterface);
+	const userRegistry = initContract(web3Instance, userRegistryInterface);
 	const wokeToken = initContract(web3Instance, wokeTokenInterface);
 	await twitter.initClient()
 
 	return{
 		web3Instance,
 		oracle,
+		userRegistry,
 		wokeToken,
 		twitterUsers: twitterUsers(twitter),
 	}
@@ -313,9 +411,10 @@ if(require.main === module) {
 	const usage = {
 		getTweetText: 'getTweetText <userId>',
 		getUser: 'getUser <userId>',
+		getClaimedEvents: 'getClaimEvents [userId, address]',
 		getRewardEvents: 'getRewardEvents [[claimer,referrer] <userId>]',
 		getTransferEvents: 'getTransferEvents [[from,to] <userId>]',
-		supply: 'supply [unclaimed]',
+		supply: 'supply [minted]',
 	};
 
 	(async () => {
@@ -323,7 +422,8 @@ if(require.main === module) {
 
 		switch(command) {
 			case 'supply': {
-				return commands.wokeToken.supply();
+				const showMintEvents = args[0];
+				return commands.wokeToken.supply(showMintEvents);
 			}
 
 			case 'getTweetText': {
@@ -345,6 +445,10 @@ if(require.main === module) {
 				}
 
 				return commands.getUser(userId)
+			}
+
+			case 'getClaimedEvents': {
+				return commands.getClaimedEvents();
 			}
 
 			case 'getRewardEvents': {
@@ -373,8 +477,11 @@ if(require.main === module) {
 				}
 			}
 
+			case 'help':
+			case '--help':
+			case '-h':
 			default: {
-				console.log('Commands: ');
+				console.log('Woke Contracts CLI v0.1.0\nUsage: ');
 				Object.keys(usage).forEach(c => console.log('  ' + usage[c]))
 			}
 

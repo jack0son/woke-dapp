@@ -59,9 +59,10 @@ export default function WalletContainer(props) {
 		}
 	}
 
-	const sendTransfers = useSendTransferInput({
+	const sendTransferInput = useSendTransferInput({
 		defaultRecipient: '',
 		defaultAmount: 1,
+		balance,
 		checkUserExists: checkUserExists,
 		twitterUsers
 	});
@@ -75,7 +76,7 @@ export default function WalletContainer(props) {
 				userData={twitterUsers.state.data}
 				transferEvents={transferEvents}
 				rewardEvents={rewardEvents}
-				sendTransfers={sendTransfers}
+				sendTransferInput={sendTransferInput}
 				friends={friends}
 			/>
 			 : <Loading message={'A Woken shared is a Woken doubled.'}/>}

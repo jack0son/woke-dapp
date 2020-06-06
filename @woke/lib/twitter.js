@@ -86,9 +86,11 @@ const getUserData = async (userId) => {
 	let userObject = await client.get('users/show', params);
 
 	return {
+		...userObject,
 		name: userObject.name,
 		handle: userObject.screen_name,
 		avatar: userObject.profile_image_url_https,
+		followers_count: userObject.followers_count,
 	}
 }
 
@@ -177,12 +179,14 @@ const searchClaimTweets = async (handle) => { // claimString = `@getwoketoke 0xW
 		//q: `@getwoketoke 0xWOKE from:${handle}`,
 		q: handle ? `@getwoketoke from:${handle}` : `@getwoketoke OR 0xWOKE`,
 		result_type: 'recent',
+		include_entities: true,
 		tweet_mode: 'extended',
 		count: 100,
 	};
 	console.dir(searchParams);
 
 	let r = await client.get('search/tweets', searchParams);
+	console.log(r.statuses[0])
 	//debug.d(r);
 	let tweets = r.statuses.map(s => ({
 		full_text: s.full_text,
@@ -311,6 +315,7 @@ if(debug.control.enabled && require.main === module) {
 					const [handle] = args;
 					let r = await searchClaimTweets(handle);
 					r.forEach(t => {
+						console.log(t);
 						console.log(t.full_text);
 						console.log(t.entities.user_mentions);
 						console.log();

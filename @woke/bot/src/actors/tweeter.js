@@ -9,19 +9,19 @@ const tx_etherscan_url = tip => `https://goerli.etherscan.io/tx/${tip.tx_hash}`;
 const tip_tweet_url = tip =>  `https://twitter.com/${tip.fromId}/status/${tip.id}`;
 
 function tip_success_tweet_text(tip) {
-	return `${emojis.folded_hands} Tribute confirmed : ${tx_etherscan_url(tip)}.\n\n@${tip.fromHandle} sent @${tip.toHandle} ${tip.amount} $WOKE`;
+	return `${emojis.folded_hands} Tribute confirmed, @${tip.fromHandle} sent @${tip.toHandle} ${tip.amount} $WOKE. \n\n${tx_etherscan_url(tip)} #WokeTribute`;
 }
 
 function tip_seen_text(tip) {
-	return `@${tip.fromHandle} I accept your offering. ${tip.id}`;
+	return `@${tip.fromHandle} I accept your offering. #tribute #${tip.id}`;
 }
 
 function tip_success_message(tip) {
-	return `${emojis.folded_hands} #WokeTribute of ${tip.amount} was confirmed on chain: ${tx_etherscan_url(tip)}.\n\nTransaction auth tweet ${tip_tweet_url(tip)}`;
+	return `${emojis.folded_hands} #WokeTribute of ${tip.amount} wokens was confirmed on chain: ${tx_etherscan_url(tip)}.\n\nTransaction auth tweet ${tip_tweet_url(tip)}`;
 }
 
 function tip_invalid_message(tip) {
-	return `${emojis.sleep_face} You need to be woke to send $WOKE. Join with a tweet at https://getwoke.me @${tip.fromHandle}`;
+	return `${emojis.sleep_face} You need to be woke to send $WOKE. Join https://getwoke.me with a tweet \n@${tip.fromHandle}`;
 }
 
 function tip_failure_message(tip) {

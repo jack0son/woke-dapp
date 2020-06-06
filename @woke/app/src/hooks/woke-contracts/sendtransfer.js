@@ -9,6 +9,7 @@ import useTxTimer from './tx-timer';
 export default function useSendTransferInput({
 	defaultRecipient,
 	defaultAmount,
+	balance,
 	checkUserExists,
 	twitterUsers,
 }) {
@@ -28,7 +29,14 @@ export default function useSendTransferInput({
 		value && setInput({ ...input, [name]: value });
 	};
 
+	useEffect(() => {
+		if(input.amount > balance) {
+			setInput(input => ({...input, amount: defaultAmount}));
+		}
+	}, [balance]);
+
 	const handleSelectRecipient = () => {
+		sendTransfers.setAmount(input.amount); // always update amount
 		setError(null);
 		console.log('handleSelectRecipient() ', input.screen_name);
 		// Check user exists 
@@ -64,6 +72,7 @@ export default function useSendTransferInput({
 	// Bubble up errors from sendTransfers
 	useEffect(() => {
 		if(sendTransfers.error) {
+			console.dir(error);
 			setError(sendTransfers.error);
 		}
 	}, [sendTransfers.error]);
@@ -85,11 +94,11 @@ export default function useSendTransferInput({
 	};
 }
 
-// Handle submitting transfer data to WokeToken smart contract
+// Handle submitting transfer data to UserRegistry smart contract
 export function useSendTransfers (recipient, handleClearRecipient) {
 	const { account, useSend, useSubscribeCall, useContract, web3 } = useWeb3Context();
 
-	const nullArgs = {userId: '', amount: 0}
+	const nullArgs = {userId: '', amount: 1}
 	const [sendQueued, setSendQueued] = useState(false);
 	const [transferArgs, setTransferArgs] = useState(nullArgs);
 	const [safeTxOpts, setSafeTxOpts] = useState();
@@ -101,15 +110,17 @@ export function useSendTransfers (recipient, handleClearRecipient) {
 	// TODO use network config and web3 utils to set gas
 	const gWei = 1000000000; // 1 GWei
 	let txOpts = {gas: 500000, gasPrice: gWei * 30, from: account};
-	const sendTransferClaimed = useSend('WokeToken', 'transferClaimed', txOpts);
-	const sendTransferUnclaimed = useSend('WokeToken', 'transferUnclaimed', txOpts);
+	const sendTransferClaimed = useSend('UserRegistry', 'transferClaimed', txOpts);
+	const sendTransferUnclaimed = useSend('UserRegistry', 'transferUnclaimed', txOpts);
 
-	const wokeTokenContract = useContract('WokeToken');
+	const userRegistryContract = useContract('UserRegistry');
 	const recipientIsClaimed = useSubscribeCall(
-		'WokeToken',
+		'UserRegistry',
 		'userClaimed',
 		recipient ? recipient.id : ''
 	);
+
+	const balance = useSubscribeCall('WokeToken', 'balanceOf', account);
 
 	// @TODO get time estimate from config
 	const txTimer = useTxTimer(18000);
@@ -117,23 +128,30 @@ export function useSendTransfers (recipient, handleClearRecipient) {
 	// Update gas estimate when recipient prop changes
 	const prevRecipient = useRef({id: '', ...recipient});
 	useEffect(() => {
-		const getSafeTxOpts = (claimed, toId = 'dummy', amount = '10') => {
+		const getSafeTxOpts = (claimed, toId = 'dummy', amount = '1') => {
 			const method = `transfer${claimed ? 'Claimed' : 'Unclaimed'}`;
-			safePriceEstimate(web3)(wokeTokenContract, method, [toId, amount], txOpts, { speedMultiplier: 1.5 })
+			safePriceEstimate(web3)(userRegistryContract, method, [toId, amount], txOpts, { speedMultiplier: 1.5 })
 				.then(({ limit, price }) => setSafeTxOpts({gas: limit, gasPrice: price}))
 				.catch(error => {
-					setTxOptsError({
-						message: `Ran out of ETH. Tweet 'gas me fam @getwoketoke' to get more`,
-						action: 'disable',
-					})
+					console.log(error);
+					if(error.message.includes('gas')) {
+						setTxOptsError( `Ran out of ETH. Tweet 'gas me fam @getwoketoke' to get more`);
+					}
+					//{
+					//	message: `Ran out of ETH. Tweet 'gas me fam @getwoketoke' to get more`,
+					//	action: 'disable',
+					//})
 				})
 		}
 
-		if(nonEmptyString(recipient && recipient.id) && recipient.id != prevRecipient.current.id) {
+		if(nonEmptyString(recipient && recipient.id) && recipient.id != prevRecipient.current.id && balance !== null) {
 			prevRecipient.current = recipient;
-			getSafeTxOpts(recipientIsClaimed);
+			if(balance == 0) {
+				setTxOptsError(`You are broke.`);
+			}
+			getSafeTxOpts(recipientIsClaimed, transferArgs.userId, transferArgs.amount);
 		}
-	}, [account, recipientIsClaimed, transferArgs.userId])
+	}, [account, balance, recipientIsClaimed, transferArgs.userId])
 
 
 	// Need to use effect to wait for cacheCall result
@@ -200,6 +218,7 @@ export function useSendTransfers (recipient, handleClearRecipient) {
 	}, [txHash, pending])
 
 	return {
+		setAmount: (amount) => setTransferArgs(t => ({...t, amount})),
 		submit: submitTransfer,
 		error: error,
 		txHash,

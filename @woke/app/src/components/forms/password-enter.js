@@ -7,7 +7,7 @@ import Password from '../fields/password'
 import Button from '../buttons/button-contained'
 import StandardBody from '../text/body-standard'
 
-import { registerEnterKey } from '../../lib/utils';
+import { useEnterKey } from '../../hooks/util-hooks';
 
 const useStyles = makeStyles(theme => ({
 	centeredForm: styles => ({
@@ -40,7 +40,7 @@ export default function EnterPassword (props) {
 	const triggerLogin = () => {
 		props.triggerLogin(input.password);
 	}
-	registerEnterKey(triggerLogin);
+	useEnterKey(triggerLogin);
 
 	return (
 		<FlexColumn styles={{
