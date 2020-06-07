@@ -50,7 +50,8 @@ export default function PasswordField(props) {
 			label={passwordProps.label}
 			className={classes.passwordField}
 			InputProps={{
-				className: classes.inputWrapper
+				className: classes.inputWrapper,
+				inputProps: { minLength: 6 }
 			}}
 			type="password"
 			autoComplete="current-password"
