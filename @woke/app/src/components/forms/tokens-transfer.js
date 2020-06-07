@@ -1,8 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect } from 'react';
 import Button from '../buttons/button-contained';
-
 import FlexColumn from '../../layouts/flex-column';
-import FlexRow from '../../layouts/flex-row';
 
 import AmountForm from './transfer-amount';
 import RecipientForm from './transfer-recipient';
@@ -73,6 +71,7 @@ export default function TransferTokensForm({
 			/>
 			<AmountForm
 				amount={amount}
+				defaultAmount={defaultAmount}
 				handleSetAmount={handleChangeInput('amount')}
 				balance={balance}
 			/>

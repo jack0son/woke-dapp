@@ -27,9 +27,23 @@ const doDeploy = async (deployer, network, accounts) => {
 		value: 100000, // 1 ETH
 	};
 
-	if(network == 'develop' || network == 'test' || network == 'client') {
-		console.log('Callback account: ', oracleCallback);
-		opts.value =  100000000000;
+	const overwrite = {
+		logNormalPDF: true,
+	}
+
+
+	switch(network) {
+		case 'goerli': {
+		}
+
+		case 'test': {
+			opts.value =  100000000000;
+		}
+
+		default:
+		case 'develop': {
+			overwrite.logNormalPDF = false;
+		}
 	}
 
 	console.log('Deploying OracleMock...');
@@ -72,13 +86,12 @@ const doDeploy = async (deployer, network, accounts) => {
 	let formulaInstance = await WokeFormula.deployed();
 	console.log(`WokeFormula deployed at ${formulaInstance.address}`);
 
-	const refreshLnpdf = true;
 	console.log('Deploying LogNormalPDF...')
-	await deployer.deploy(LogNormalPDF, { ...opts, overwrite: refreshLnpdf })
+	await deployer.deploy(LogNormalPDF, { ...opts, overwrite: overwrite.logNormalPDF })
 	let lnpdfInstance = await LogNormalPDF.deployed();
 	console.log(`LogNormalPDF deployed at ${lnpdfInstance.address}`);
 
-	if(refreshLnpdf)
+	if(refresh.logNormalPDF)
 		await fillLnpdfArrays(defaultAccount, lnpdfInstance)();
 
 	opts.value = val;

@@ -32,6 +32,7 @@ export default function Web3Initializer(props) {
 					web3={web3Instance}
 					networkId={network.id}
 					account={account}
+					{ ...innerProps }
 				>
 					<Web3Container wallet={wallet}/>
 				</Web3ContextProvider> 

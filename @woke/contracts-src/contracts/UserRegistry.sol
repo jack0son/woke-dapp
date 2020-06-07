@@ -353,12 +353,6 @@ contract UserRegistry is Ownable {
 		return userIds[msg.sender];
 	}
 
-	function getUserCount() public view
-	returns (uint256)
-	{
-		return userCount;
-	}
-
 	function unclaimedBalanceOf(string memory _userId) public view
 	returns (uint256)
 	{
@@ -371,6 +365,19 @@ contract UserRegistry is Ownable {
 	{
 		return wokeToken.balanceOf(users[_userId].account);
 	}
+
+	//function setTwitterClient(address _twitterClient) external
+	//	onlyOwner
+	//{
+	//	twitterClient = _twitterClient;
+	//}
+
+	//function setWokeToken(address _wokeToken) external
+	//	onlyOwner
+	//{
+	//	wokeTokenAddress = _wokeToken;
+	//	wokeToken = WokeToken(wokeTokenAddress);
+	//}
 
 
 	/* MODIFIERS */

@@ -1,6 +1,5 @@
 import React from 'react';
 import { makeStyles, useTheme } from '@material-ui/styles';
-import Box from '@material-ui/core/Box';
 
 import BodyStandard from '../components/text/body-standard'
 import Button from '../components/buttons/button-contained'
@@ -46,7 +45,7 @@ export default function ButtonGroup (props) {
 	</BodyStandard>;
 
 		return (
-			<Box
+			<div
 				className={classes.buttonGroup}
 			>
 				{ reverse || renderMessage() }
@@ -59,6 +58,6 @@ export default function ButtonGroup (props) {
 					</Button>
 				)}
 				{ reverse && renderMessage() }
-			</Box>
+			</div>
 		);
 }

@@ -29,7 +29,6 @@ export default function ClaimView (props) {
 
 	const theme = useTheme();
 
-	const stageMap = claimState.stageMap;
 	const sc = claimState.stageMap;
 	const stage = claimState.stage;
 	const stageString = claimState.stageList[claimState.stage]; // stage string
@@ -113,9 +112,9 @@ export default function ClaimView (props) {
 
 	// Subsumption tree
 	let chooseRender = () => (<Loading message={'Analysing wokeness ...'}/>);
-	if(stage == sc.ERROR) {
+	if(stage === sc.ERROR) {
 		chooseRender = renderError;
-	} else if(stage == sc.CLAIMED) {
+	} else if(stage === sc.CLAIMED) {
 		// Shouldn't get here
 		console.warn('Claim in incorrect state: ', `${stage}: ${stageString}`);
 	} else if (stage >= sc.CONFIRMED) {
@@ -127,8 +126,10 @@ export default function ClaimView (props) {
 	} else {
 		console.warn('Claim in undefined state: ', `${stage}: ${stageString}`);
 	}
-	const claimStatus = claimState.transactions.sendClaimUser.pending;
-	const fulfillStatus = claimState.transactions.sendFulfillClaim.pending;
+	
+	// @TODO use transaction status
+	//const claimStatus = claimState.transactions.sendClaimUser.pending;
+	//const fulfillStatus = claimState.transactions.sendFulfillClaim.pending;
 
 	return (<>
 		{ chooseRender() }

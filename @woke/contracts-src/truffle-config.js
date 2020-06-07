@@ -90,7 +90,7 @@ module.exports = {
 			network_id: "5",
 			gas: 8000000,
 			gasPrice: 20000000000,
-			skipDryRun: true,
+			skipDryRun: false,
 		}
 	},
 	compilers: {

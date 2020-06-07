@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo } from 'react'
+import React, { useEffect } from 'react'
 
 // View Containers
 import SignIn from './views/signin'
@@ -16,7 +16,7 @@ import messages from '../constants/messages-login'
 
 
 function createUserName(id) {
-	if(process.env.NODE_ENV == 'development') {
+	if(process.env.NODE_ENV === 'development') {
 	 return id;// + Math.floor(Math.random() * Math.floor(1000));
 	}
 	return id;// + token; 
@@ -114,7 +114,7 @@ export default function AuthContainer(props) {
 		]);
 
 	useEffect(() => {
-		if(hedgehog.state.errorMessage == messages.exists) {
+		if(hedgehog.state.errorMessage === messages.exists) {
 			console.log('auth:error: user exists')
 				router.dispatch({type: 'hedgehog-account_exists'});
 		}

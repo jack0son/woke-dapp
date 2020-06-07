@@ -22,7 +22,7 @@ export default function TokenAmountForm({ amount, handleSetAmount, balance, ...p
 	const classes = useStyles(styles);
 
 	const defaults = {
-		value: 5,
+		value: 5 || props.defaultAmount,
 	};
 
 	const handleSliderChange = (event, value) => handleSetAmount(value);

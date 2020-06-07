@@ -15,7 +15,7 @@ export default function LoginContainer({ twitterSignin }) {
 	const authAttached = twitterSignin !== undefined && twitterSignin !== null;
 	hedgehog.api.restoreUsername();
 
-	return hedgehog.state.loggedIn || !twitterSignin.haveUser() ? <Redirect to="/"/>
+	return hedgehog.state.loggedIn || !authAttached || !twitterSignin.haveUser() ? <Redirect to="/"/>
 		: hedgehog.state.loading ? <Loading/>
 		: <Login
 				handleLogin={hedgehog.api.handleLogin}

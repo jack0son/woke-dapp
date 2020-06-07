@@ -72,10 +72,11 @@ export default function Tutorial(props) {
 						</StandardBody>
 					</FlexRow>
 					<LargeBody styles={lbStyles}>
-					<br/>You can send as many wokens as you like, just change the amount in the tweet.
+						<br/>You can send as many wokens as you like, just change the amount in the tweet.
 					</LargeBody>
 				</>);
 			case 'rewards': 
+			default:
 				return (<>
 					<LargeBody styles={lbStyles}>
 						Send <WokeSpan styles={wokeSpanStyles}>WOKENs</WokeSpan> from twitter by replying <LargeBody styles={hlStyles} component='span' color='secondary'>

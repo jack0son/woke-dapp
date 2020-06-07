@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import React from 'react'
 
 const averageBlockTime = 15000;
 export default function useTxTimer(time = averageBlockTime, opts) {

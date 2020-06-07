@@ -33,7 +33,7 @@ export default function TransactionAmount(props) {
 
 	return (
 		<>
-		<StandardBody noWrap styles={styles}>
+		<StandardBody noWrap styles={styles} {...innerProps}>
 			{symbol}{amount} <WokeSpan styles={{fontSize: `${fontSizeRem*0.8}rem`}}>W</WokeSpan>
 		</StandardBody>
 			
