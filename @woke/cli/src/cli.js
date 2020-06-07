@@ -295,6 +295,9 @@ const createCommands = ctx => ({
 		},
 	},
 
+	getTributeBonuses: async (userId) => {
+	},
+
 	getTweetText: async (userId) => {
 		const tweet = await getTweetText(ctx.oracle)(userId);
 		if(!nonEmptyString(tweet)) {
