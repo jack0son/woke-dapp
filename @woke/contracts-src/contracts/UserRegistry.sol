@@ -341,10 +341,16 @@ contract UserRegistry is Ownable {
 	}
 
 	/* HELPERS */
-	function getUser(address account) public view
+	function getUser(address _account) public view
 	returns (string memory)
 	{
-		return userIds[account];
+		return userIds[_account];
+	}
+
+	function getAccount(string calldata _userId) external view
+	returns (address)
+	{
+		return users[_userId].account;
 	}
 
 	function myUser() public view

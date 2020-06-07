@@ -34,15 +34,19 @@ const doDeploy = async (deployer, network, accounts) => {
 
 	switch(network) {
 		case 'goerli': {
+			break;
 		}
 
 		case 'test': {
 			opts.value =  100000000000;
+			overwrite.logNormalPDF = true;
+			break;
 		}
 
 		default:
-		case 'develop': {
-			overwrite.logNormalPDF = false;
+		case 'development': {
+			overwrite.logNormalPDF = true;
+			break;
 		}
 	}
 
@@ -91,7 +95,7 @@ const doDeploy = async (deployer, network, accounts) => {
 	let lnpdfInstance = await LogNormalPDF.deployed();
 	console.log(`LogNormalPDF deployed at ${lnpdfInstance.address}`);
 
-	if(refresh.logNormalPDF)
+	if(overwrite.logNormalPDF)
 		await fillLnpdfArrays(defaultAccount, lnpdfInstance)();
 
 	opts.value = val;

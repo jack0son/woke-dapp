@@ -8,7 +8,7 @@ const twitterUsers = twitter => {
 						users[userId] = { ...user };
 					} catch(error) {
 						console.log('Error: twitter: ', error);
-						users[userId] = 'DELETED';
+						users[userId] = 'MISSING';
 					}
 				}
 				return users[userId];
@@ -25,7 +25,7 @@ const twitterUsers = twitter => {
 
 const fetchUserHandles = twitterUsers => async userIds => {
 		userIds.forEach(id => twitterUsers.addId(id));
-		debug.d('Fetching user handles...');
+		//debug.d('Fetching user handles...');
 		await Promise.all(twitterUsers.userIds.map(id => twitterUsers.getHandle(id)));
 }
 

@@ -66,19 +66,17 @@ module.exports = userRegistry => {
 		return events;
 	}
 
-	const getRewardEvents = async (_claimerId, _referrerId) => {
+	const getTributeBonuses = async (_claimerAddress, _tributorAddress) => {
 		let opts = {
 			fromBlock: 0,
+			filter: {},
 		}
-		let events = await userRegistry.getPastEvents('Reward', opts);
+		if(_claimerAddress)
+			opts.filter.claimer = _claimerAddress;
+		if(_tributorAddress)
+			opts.filter.tributor = _tributorAddress;
 
-		if(_claimerId) 
-			events = events.filter(e => e.returnValues.claimerId == _claimerId)
-
-		if(_referrerId) 
-			events = events.filter(e => e.returnValues.referrerId == _referrerId)
-
-		return events;
+		return utils.getEvents(userRegistry)('Bonus', opts);
 	}
 
 	return {
@@ -86,6 +84,6 @@ module.exports = userRegistry => {
 		getClaimedEvents,
 		getUnclaimedPool,
 		getTransferEvents,
-		getRewardEvents,
+		getTributeBonuses,
 	}
 }

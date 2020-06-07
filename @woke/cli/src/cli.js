@@ -18,33 +18,30 @@ const printAmount = f => f.toString().padStart(24, ' ');
 
 // Inefficient but convenient
 const createCommands = ctx => ({
-		supply: async (showMintEvents) => {
-			const supply = await ctx.api.WokeToken.getTokenSupply()
-			const bonusPool = await ctx.api.UserRegistry.getUnclaimedPool();
+	supply: async (showMintEvents) => {
+		const supply = await ctx.api.WokeToken.getTokenSupply()
+		const bonusPool = await ctx.api.UserRegistry.getUnclaimedPool();
 
-			if(showMintEvents) {
-				const claimedEvents = await ctx.api.UserRegistry.getClaimedEvents();
-				const summonedEvents = await ctx.api.WokeToken.getSummonedEvents();
+		if(showMintEvents) {
+			const claimedEvents = await ctx.api.UserRegistry.getClaimedEvents();
+			const summonedEvents = await ctx.api.WokeToken.getSummonedEvents();
 
-				let claimedTotal = 0;
-				claimedEvents.forEach(e => {
-					console.log(`${printId(e.returnValues.userId)}:\t${printAmount(e.returnValues.amount)} W`);
-					claimedTotal += parseInt(e.returnValues.amount);
-				});
+			let claimedTotal = 0;
+			claimedEvents.forEach(e => {
+				console.log(`${printId(e.returnValues.userId)}:\t${printAmount(e.returnValues.amount)} W`);
+				claimedTotal += parseInt(e.returnValues.amount);
+			});
 
-				let summonedTotal = 0;
-				summonedEvents.forEach(e => {
-					console.log(`${e.returnValues.account}:\t${printAmount(e.returnValues.amount)} W`);
-					summonedTotal += parseInt(e.returnValues.amount);
-				});
+			let summonedTotal = 0;
+			summonedEvents.forEach(e => {
+				console.log(`${e.returnValues.account}:\t${printAmount(e.returnValues.amount)} W`);
+				summonedTotal += parseInt(e.returnValues.amount);
+			});
 
-				console.log(`\nTotal summoned: ${summonedTotal}, burned ${summonedTotal - supply}`);
-				console.log(`Total claimed: ${claimedTotal}`);
-			}
-			console.log(`Total supply: ${supply} W, Unclaimed: ${bonusPool}.W, ${(100*bonusPool/supply).toFixed(3)}%`);
-		},
-
-	getTributeBonuses: async (userId) => {
+			console.log(`\nTotal summoned: ${summonedTotal}, burned ${summonedTotal - supply}`);
+			console.log(`Total claimed: ${claimedTotal}`);
+		}
+		console.log(`Total supply: ${supply} W, Unclaimed: ${bonusPool}.W, ${(100*bonusPool/supply).toFixed(3)}%`);
 	},
 
 	getTweetText: async (userId) => {
@@ -91,8 +88,8 @@ const createCommands = ctx => ({
 		return;
 	},
 
-	getRewardEvents: async (claimer, referrer) => {
-		const events = await ctx.api.UserRegistry.getRewardEvents(claimer, referrer);
+	getBonusEvents: async (claimer, referrer) => {
+		const events = await ctx.api.UserRegistry.getTributeBonuses(claimer, referrer);
 		if(!(events && events.length)) {
 			console.log('None found.');
 			return;
