@@ -186,7 +186,6 @@ const searchClaimTweets = async (handle) => { // claimString = `@getwoketoke 0xW
 	console.dir(searchParams);
 
 	let r = await client.get('search/tweets', searchParams);
-	console.log(r.statuses[0])
 	//debug.d(r);
 	let tweets = r.statuses.map(s => ({
 		full_text: s.full_text,

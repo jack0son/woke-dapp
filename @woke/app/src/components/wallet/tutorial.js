@@ -78,9 +78,8 @@ export default function Tutorial(props) {
 			case 'rewards': 
 			default:
 				return (<>
-					<LargeBody styles={lbStyles}>
-						Send <WokeSpan styles={wokeSpanStyles}>WOKENs</WokeSpan> from twitter by replying <LargeBody styles={hlStyles} component='span' color='secondary'>
-							Tribute <WokeSpan>WOKENs</WokeSpan> to new users to earn an elightenment bonus when they join.</LargeBody>
+					<LargeBody styles={{...lbStyles, textAlign: 'left'}}>
+							Tribute <WokeSpan>WOKENs</WokeSpan> to new users to earn an elightenment bonus when they join.
 					</LargeBody>
 				</>);
 		}
