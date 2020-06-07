@@ -291,7 +291,6 @@ const handleFindTweet = (director, network) => async (account, contract, query, 
 	}
 
 	let tweet = tweets[0].full_text;
-	console.log(tweet);
 	debug.name(abr, `Found tweet: ${tweet}`);
 
 	let claimString = tweet.split(' ')[0] + ' ' + tweet.split(' ')[1]

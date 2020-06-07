@@ -96,6 +96,7 @@ contract('UserRegistry, WokeToken, Distribution', (accounts) => {
 
 			logger.t(`joinWithTributes with ${tributors.length} tributors...`);
 			await ctx.joinWithTributes(newUser, tributors);
+
 		});
 	})
 })

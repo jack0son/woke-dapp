@@ -80,7 +80,7 @@ library Distribution {
 			//user.referralAmount[tributor.account] = 0;
 
 			// @note Too expensive 
-			//emit Bonus(user.account, tributor.account, amount);
+			emit Bonus(user.account, tributor.account, amount);
 
 			if(amount < minAmount) {
 				minAmount = amount;
@@ -96,7 +96,7 @@ library Distribution {
 			wokeToken.internalTransfer(user.account, user.referrers[minI], _pool - total);
 			total += _pool - total;
 
-			//emit Bonus(user.account, user.referrers[minI], _pool - total);
+			emit Bonus(user.account, user.referrers[minI], _pool - total);
 		}
 
 		require(total == _pool, 'bonuses != tributeBonusPool');
@@ -115,7 +115,8 @@ library Distribution {
 		return ((uint256(_weight) << 8)*(_pool))/(_sum) >> 8;
 	}
 
-	//event Bonus (address indexed claimer, address indexed referrer, string cRewardilaimerId, string referrerId, uint256 amount);
+	event Bonus (address indexed claimer, address indexed tributor, uint256 amount);
+	//event Bonus (address indexed claimer, address indexed referrer, string referrerId, uint256 amount);
 	//event Allocation(uint32 i, uint256 amount, uint40 weight);
 	//event TraceUint256(string m, uint256 v);
 }

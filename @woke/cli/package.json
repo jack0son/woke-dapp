@@ -1,0 +1,23 @@
+{
+  "name": "@woke/cli",
+  "version": "0.1.0",
+  "description": "CLI for interaction with Woke Contracts",
+  "private": true,
+  "main": "index.js",
+  "scripts": {
+    "start": "DEBUG=* node index.js",
+    "tweet": "DEBUG=twitter* node ../lib/twitter.js",
+    "cli": "node index.js",
+    "cli:verbose": "DEBUG=* node index.js"
+  },
+  "author": "Jackson Virgo",
+  "license": "ISC",
+  "dependencies": {
+    "@woke/contracts": "0.1.0",
+    "@woke/lib": "0.1.0"
+  },
+  "devDependencies": {
+    "minimist": "^1.2.0",
+    "mocha": "^6.2.0"
+  }
+}

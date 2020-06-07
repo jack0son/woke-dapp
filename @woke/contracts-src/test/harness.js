@@ -79,6 +79,10 @@ module.exports = (accounts, {UR, WT, TO, ...instances}, config) => {
 				assert.equal(t.bonus, 0, 'Tributors above maxTributors receive no bonus');
 			}
 		}
+		const bonusEvents = await UR.getPastEvents('Bonus', { from: r.receipt.blockNumber, to: 'latest', filter: { tributor: newUser.address }});
+		console.log(bonusEvents);
+		logger.t(`Bonus events: ${bonusEvents.length}`);
+		// TODO assert bonusEvents.length = maxTributors + 1
 		logger.t(`_fulfillClaim() used ${r.receipt.gasUsed} gas`);
 		logger.t(`Tribute pool: ${tributePool}, Bonuses distributed: ${bonusTotal}, diff = ${tributePool - bonusTotal}`);
 		assert.equal(tributePool, bonusTotal, 'Tribute bonuses equal to tribute bonus pool');
