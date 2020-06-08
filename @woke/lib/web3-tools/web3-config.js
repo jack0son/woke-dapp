@@ -125,7 +125,7 @@ module.exports = {
 
 			rinkeby,
 
-			goerliInfura,
+			goerli_infura,
 
 			goerli, goerli_1, goerli_2,
 
