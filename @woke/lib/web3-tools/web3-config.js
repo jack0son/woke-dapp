@@ -23,7 +23,7 @@ const rinkeby = {
 }
 
 // GCloud conf
-const goerliInfura = {
+const goerli_infura = {
 	id: 5,
 	protocol: 'wss',
 	host: `goerli.infura.io/ws/v3/${infuraApiKey}`,
@@ -41,6 +41,42 @@ const goerliInfura = {
 }
 
 const goerli = {
+	id: 5,
+	protocol: 'ws',
+	host: `geth-goerli-1.us-west2-a.c.woke-network-services.internal`,
+	port: 8546,
+	gasPrice: 20*GWei,
+	gasLimit:  '8000000',
+	defaultCommon: {
+		customChain: {
+			name: 'goerli',
+			networkId: 5,
+			chainId: 5,
+		},
+		baseChain: 'goerli', 
+		//hardfork: 'petersburg',
+	},
+}
+
+const goerli_1 = {
+	id: 5,
+	protocol: 'ws',
+	host: `geth-goerli-1.us-west2-a.c.woke-network-services.internal`,
+	port: 8546,
+	gasPrice: 20*GWei,
+	gasLimit:  '8000000',
+	defaultCommon: {
+		customChain: {
+			name: 'goerli',
+			networkId: 5,
+			chainId: 5,
+		},
+		baseChain: 'goerli', 
+		//hardfork: 'petersburg',
+	},
+}
+
+const goerli_2 = {
 	id: 5,
 	protocol: 'ws',
 	host: `geth-goerli-1.us-west2-a.c.woke-network-services.internal`,
@@ -91,7 +127,7 @@ module.exports = {
 
 			goerliInfura,
 
-			goerli,
+			goerli, goerli_1, goerli_2,
 
 			production: goerli,
 		},
