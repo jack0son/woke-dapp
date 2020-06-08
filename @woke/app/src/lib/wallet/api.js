@@ -23,7 +23,7 @@ const requestToServer = async (axiosRequestObj) => {
   axiosRequestObj.baseURL = serverConfig.url;
 
 	let req = {
-		timeout: 4000,
+		timeout: 12000,
 		...axiosRequestObj,
 	};
 
