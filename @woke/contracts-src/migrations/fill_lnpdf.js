@@ -5,10 +5,11 @@ const lndPdfInitializer = (owner, instance) => {
 		console.log(`Filling yArray${chunkSize} with ${values.length} values...`);
 		let filled = 0;
 		for(let i = 0; i < values.length; i+=batchSize) {
-			const arg = values.slice(i, i+batchSize);
-			filled += arg.length;
-			//console.log(`\t${i} to ${i+batchSize}, ${arg.length} values `);
-			let r = await instance.fillArrayValues(chunkSize, arg, { from: owner });
+			const batch = values.slice(i, i+batchSize);
+			filled += batch.length;
+			//console.log(`\t${i} to ${i+batchSize}, ${batch.length} values `);
+			let r = await instance.fillArrayValues(chunkSize, batch, { from: owner });
+			console.log(`... ${r.tx}: ${r.receipt.gasUsed} gas, ${batch.length} values`);
 		}
 		console.log(`... filled ${filled} values`)
 		if(filled != values.length) {
@@ -16,7 +17,7 @@ const lndPdfInitializer = (owner, instance) => {
 		}
 	}
 
-	async function fillLnpdfArrays( batchSize = 64) {
+	async function fillLnpdfArrays(batchSize = 256) {
 		for(let i = 2; i <= 7; i++) {
 			let chunkSize = Math.pow(2, i);
 			await fillLnpdfChunk(batchSize, chunkSize, lndpfValues[chunkSize], { from: owner });

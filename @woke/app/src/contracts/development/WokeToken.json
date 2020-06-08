@@ -902,7 +902,7 @@
                             "name": "this",
                             "nodeType": "Identifier",
                             "overloadedDeclarations": [],
-                            "referencedDeclaration": 13371,
+                            "referencedDeclaration": 13369,
                             "src": "1025:4:7",
                             "typeDescriptions": {
                               "typeIdentifier": "t_contract$_WokeToken_$4522",
@@ -3561,7 +3561,7 @@
                             "name": "this",
                             "nodeType": "Identifier",
                             "overloadedDeclarations": [],
-                            "referencedDeclaration": 13371,
+                            "referencedDeclaration": 13369,
                             "src": "1025:4:7",
                             "typeDescriptions": {
                               "typeIdentifier": "t_contract$_WokeToken_$4522",
@@ -5942,12 +5942,12 @@
         }
       },
       "links": {},
-      "address": "0x23aeA9719F6900105E15D703e649945C59d9Ca1c",
-      "transactionHash": "0xd961c0d16d5bb02cc6009c8c45ffa5689a1a522fc60a02bdad3020e98fb269f4"
+      "address": "0x2A3E3FFE4Ca68beD0A76e2d7E58a101dad83bc00",
+      "transactionHash": "0x37ff3ccc669a6e7d1100dfcc429976ce401a8611ab328a8dce2981750e24ad46"
     }
   },
   "schemaVersion": "3.0.20",
-  "updatedAt": "2020-06-07T08:37:14.641Z",
+  "updatedAt": "2020-06-07T09:52:17.770Z",
   "networkType": "ethereum",
   "devdoc": {
     "methods": {

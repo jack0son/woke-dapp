@@ -90,7 +90,18 @@ module.exports = {
 			network_id: "5",
 			gas: 8000000,
 			gasPrice: 20000000000,
-			skipDryRun: false,
+			skipDryRun: true,
+		},
+
+		"geth-goerli": {
+			provider:() => {
+				return new HDWalletProvider(ropstenMnemonic, `http://127.0.0.1:8545`, 0, 10);
+				//return new HDWalletProvider(ropstenMnemonic, `ipc:///root/.ethereum/goerli/geth.ipc`, 0, 10);
+			},
+			network_id: "5",
+			gas: 8000000,
+			gasPrice: 20000000000,
+			skipDryRun: true,
 		}
 	},
 	compilers: {

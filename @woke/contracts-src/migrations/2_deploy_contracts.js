@@ -32,6 +32,7 @@ const doDeploy = async (deployer, network, accounts) => {
 	}
 
 
+	let batchSize = 512;
 	switch(network) {
 		case 'goerli': {
 			break;
@@ -96,7 +97,7 @@ const doDeploy = async (deployer, network, accounts) => {
 	console.log(`LogNormalPDF deployed at ${lnpdfInstance.address}`);
 
 	if(overwrite.logNormalPDF)
-		await fillLnpdfArrays(defaultAccount, lnpdfInstance)();
+		await fillLnpdfArrays(defaultAccount, lnpdfInstance)(batchSize);
 
 	opts.value = val;
 	console.log('Deploying WokeToken...')
