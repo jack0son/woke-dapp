@@ -15,6 +15,7 @@ import useBlockCache from '../hooks/blockcache'
 import useTransferEvents from '../hooks/woke-contracts/transferevents'
 import useRewardEvents from '../hooks/woke-contracts/rewardevents'
 import useSendTransferInput from '../hooks/woke-contracts/sendtransfer'
+//import useLiveBalance from '../hooks/live-balance';
 
 export default function WalletContainer(props) {
 	const {myUserId, myHandle} = props;

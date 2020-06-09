@@ -204,26 +204,29 @@ export default function useClaimUser({userId, userHandle, claimStatus}) {
 	}, [dispatch, claimStatus])
 
 	// Ensure user is funded
+	// @fix DRY
 	const ethBalance = useLiveBalance(account);
-	const [fundedSwitch, setFundedSwitch] = useState(false);
+	const [fundedLatch, setFundedLatch] = useState(false);
+	const toEth = wei => web3.utils.fromWei(wei, 'ether');
+	const valStr = (wei, delim = ', ') => `${toEth(wei)} ETH${delim}${wei.toString()} wei`;
 	useEffect(() => {
 		function sufficientBalance() {
 			// TODO estimate eth cost to claim
-			console.log(ethBalance);
-			return ethBalance && ethBalance.gt(0);
+			console.log(`User balance: ${valStr(ethBalance)}`);
+			return ethBalance && !ethBalance.isZero(0);
 		}
 
-		if(!fundedSwitch && sufficientBalance()) {
-			setFundedSwitch(true);
+		if(!fundedLatch && sufficientBalance()) {
+			setFundedLatch(true);
 		}
 	}, [ethBalance])
 
 	const foundTweetPredicate = claimState.stage === states.FOUND_TWEET;
 	useEffect(() => {
-		if(foundTweetPredicate && fundedSwitch) {
+		if(foundTweetPredicate && fundedLatch === true) {
 			dispatch({type: 'balance', name: 'funded'});
 		}
-	}, [foundTweetPredicate, fundedSwitch]);
+	}, [foundTweetPredicate, fundedLatch]);
 
 	/*
 		// Async Dispatcher 

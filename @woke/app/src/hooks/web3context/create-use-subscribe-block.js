@@ -13,10 +13,11 @@ export default web3 => callback => {
 		setSub(sub => {
 			if(sub == null) {
 				//console.log('Creating new subscription for ', contractName);
-				let newSub = subscribeBlockHeaders((blockHeader) => {
+				let newSub = subscribeBlockHeaders(web3)((blockHeader) => {
 					setLatest(blockHeader);
 					callback(blockHeader);
 				});
+				newSub.start();
 				return newSub;	
 			}
 

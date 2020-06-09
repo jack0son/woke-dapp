@@ -94,10 +94,11 @@ class Funder extends Emitter {
 	async getNonce() {
 		const self = this;
 		const pendingTxns = await self.web3.eth.getTransactionCount(self.account, 'pending');
+		console.log(`Pending transactions: ${pendingTxns}`);
 		if(pendingTxns == 0) {
 			return 0;
 		} else {
-			self.nonce = pendingTxns + 1;
+			self.nonce = pendingTxns;
 			return self.nonce;
 		}
 	}
