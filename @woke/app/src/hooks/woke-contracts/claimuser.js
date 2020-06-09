@@ -8,6 +8,7 @@ import React, {
 } from 'react'
 
 import { useWeb3Context } from '../web3context';
+import useLiveBalance from '../live-balance';
 import * as claimStates from './claimuser-states';
 import * as statuses from './claim-status';
 
@@ -99,6 +100,13 @@ export default function useClaimUser({userId, userHandle, claimStatus}) {
 					}
 
 					return state;
+					break;
+				}
+
+				case 'balance': {
+					if(action.name == 'funded') {
+						return {...state, stage: states.FUNDED}
+					}
 					break;
 				}
 
@@ -194,6 +202,28 @@ export default function useClaimUser({userId, userHandle, claimStatus}) {
 			dispatch({type: 'already-claimed'});
 		} 
 	}, [dispatch, claimStatus])
+
+	// Ensure user is funded
+	const ethBalance = useLiveBalance(account);
+	const [fundedSwitch, setFundedSwitch] = useState(false);
+	useEffect(() => {
+		function sufficientBalance() {
+			// TODO estimate eth cost to claim
+			console.log(ethBalance);
+			return ethBalance && ethBalance.gt(0);
+		}
+
+		if(!fundedSwitch && sufficientBalance()) {
+			setFundedSwitch(true);
+		}
+	}, [ethBalance])
+
+	const foundTweetPredicate = claimState.stage === states.FOUND_TWEET;
+	useEffect(() => {
+		if(foundTweetPredicate && fundedSwitch) {
+			dispatch({type: 'balance', name: 'funded'});
+		}
+	}, [foundTweetPredicate, fundedSwitch]);
 
 	/*
 		// Async Dispatcher 
@@ -433,15 +463,15 @@ export default function useClaimUser({userId, userHandle, claimStatus}) {
 		}
 	}, [sendFulfillClaim]);
 
-	const foundTweetPredicate = claimState.stage === states.FOUND_TWEET;
+	const fundedPredicate = claimState.stage === states.FUNDED;
 	useEffect(() => {
 		// Must check hasLodgedRequest to avoid sending tx before hook has gathered
 		// initial state from twitter and on-chain
-		if(blockSendClaim.current == false && foundTweetPredicate && hasLodgedRequest === false && sendClaimUser.status == undefined) {
+		if(blockSendClaim.current == false && fundedPredicate && hasLodgedRequest === false && sendClaimUser.status == undefined) {
 			blockSendClaim.current = true;
 			handleSendClaimUser(userId, userHandle);
 		}
-	}, [userId, userHandle, hasLodgedRequest, foundTweetPredicate, handleSendClaimUser, sendClaimUser.status])
+	}, [userId, userHandle, hasLodgedRequest, fundedPredicate, handleSendClaimUser, sendClaimUser.status])
 
 	const storedTweetPredicate = claimState.stage === states.STORED_TWEET;
 

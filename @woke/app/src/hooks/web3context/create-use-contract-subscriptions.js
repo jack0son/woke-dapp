@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo } from 'react'
 import { useWeb3Context } from '.';
-import {subscribeLogContract} from '../../lib/web3/web3-utils'
+import { subscribeLogContract } from '../../lib/web3/web3-utils'
 
 // @dev createUseContractSubscriptions
 // @dev Maintain a single subscription with a list of callbacks for each

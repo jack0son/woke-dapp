@@ -163,6 +163,47 @@ export const subscribeLogContract = web3 => (contract, handleFunc) => {
 	}
 }
 
+// @dev Call callback when new block header received
+// @dev https://web3js.readthedocs.io/en/v1.2.8/web3-eth-subscribe.html#subscribe-newblockheaders
+// @param handleFunc: called with raw log data when contract updates
+export const subscribeBlockHeaders = web3 => handleFunc => {
+	let subscription = null;
+	let id;
+	const start = () => {
+		const newSub = web3.eth.subscribe('newBlockHeaders', (error, result) => {
+			if (!error) {
+				handleFunc(result); // result: block header
+			} else {
+				console.error(error);
+			}
+		})
+			.on("connected", function(subscriptionId){
+				id = subscriptionId;
+				console.log(`web3-sub:block: connected ${id}`);
+			})
+			.on("data", function(blockHeader){
+				//console.log(blockHeader);
+			})
+			.on("error", console.error);
+		subscription = newSub;
+	}
+
+	const stop = () => new Promise((resolve, reject) => 
+		subscription.unsubscribe((error, succ) => {
+			if(error) {
+				reject(error);;
+			}
+			console.log(`web3-sub:block: ... unsub'd ${id}`);
+			resolve(succ);
+		})
+	);
+
+	return {
+		start,
+		stop,
+	}
+}
+
 export const makeLogEventSubscription = web3 => (contract, eventName, opts, handleFunc) => {
 	let subscription = null;
 	const start = () => {

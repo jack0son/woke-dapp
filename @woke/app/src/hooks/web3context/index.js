@@ -11,6 +11,7 @@ import createUseContract from './create-use-contract';
 import createUseContractSubscriptions from './create-use-contract-subscriptions';
 import createUseSubscribeContract from './create-use-subscribe-contract';
 import createUseSubscribeCall from './create-use-subscribe-call';
+import createUseSubscribeBlock from './create-use-subscribe-block';
 import createUseSend from './create-use-send';
 import createUseEvents from './create-use-events';
 //import createGetPastEvents from './create-get-events';
@@ -31,6 +32,7 @@ export const Web3ContextProvider = ({children, web3, networkId, account}) => {
 	const useContractSubscriptions = createUseContractSubscriptions(web3);
 	const useSubscribeContract = useMemo(() => createUseSubscribeContract(web3), [web3]);
 	const useSubscribeCall = useMemo(() => createUseSubscribeCall(web3), [web3]);
+	const useSubscribeBlock = useMemo(() => createUseSubscribeBlock(web3), [web3]);
 	const useSend = useMemo(() => createUseSend(web3), [web3]);
 	const useEvents = useMemo(() => createUseEvents(web3), [web3]);
 
@@ -45,6 +47,7 @@ export const Web3ContextProvider = ({children, web3, networkId, account}) => {
 					useContractSubscriptions,
 					useSubscribeContract,
 					useSubscribeCall,
+					useSubscribeBlock,
 					useSend,
 					useEvents,
 					//getPastEvents
@@ -57,6 +60,7 @@ export const Web3ContextProvider = ({children, web3, networkId, account}) => {
 					useContractSubscriptions,
 					useSubscribeContract,
 					useSubscribeCall,
+					useSubscribeBlock,
 					useSend,
 					useEvents,
 					//getPastEvents
