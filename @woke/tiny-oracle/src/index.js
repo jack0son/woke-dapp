@@ -278,7 +278,7 @@ const handleFindTweet = (director, network) => async (account, contract, query, 
 	let userData = {};
 	try {
 		userData = await twitter.getUserData(query.userId);
-		console.log(userData);
+		//console.log(userData);
 	} catch (error) {
 		debug.error(error);
 	}

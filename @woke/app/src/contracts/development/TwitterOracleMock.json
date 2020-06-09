@@ -9622,12 +9622,12 @@
         }
       },
       "links": {},
-      "address": "0x42eD7BE0F6Bdb3667e1b0fD1Bf7A09988895F982",
-      "transactionHash": "0x576230cd4bef4d8a2989eb318515581b3da249b52b3e11a00401ec7295a67a1d"
+      "address": "0xA3eC0C6390D496F528FaB445b93DFB3855F1FeAd",
+      "transactionHash": "0x4eb53ad7abeea3c8113ddb75d959aa646143dce72c864017c5036e433eec8ab4"
     }
   },
   "schemaVersion": "3.0.20",
-  "updatedAt": "2020-06-08T05:22:36.786Z",
+  "updatedAt": "2020-06-09T06:01:05.799Z",
   "networkType": "ethereum",
   "devdoc": {
     "methods": {
