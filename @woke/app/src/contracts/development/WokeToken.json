@@ -6047,12 +6047,12 @@
         }
       },
       "links": {},
-      "address": "0xDd60365FC23f70Cc02F0F27db72A8613aB389257",
-      "transactionHash": "0xf4d0cd41046f41cec3f94ce0de2a9c66e398c0317f84714f2c841a40280ea887"
+      "address": "0x2661B97B0362073c800165f217D5b61DD09dACAb",
+      "transactionHash": "0x561e79ad818cd51c305855a38d173246664536a425766c7edaf375fcf58cea4f"
     }
   },
   "schemaVersion": "3.0.20",
-  "updatedAt": "2020-06-09T09:32:39.600Z",
+  "updatedAt": "2020-06-09T09:52:53.481Z",
   "networkType": "ethereum",
   "devdoc": {
     "methods": {
