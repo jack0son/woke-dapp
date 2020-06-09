@@ -43,7 +43,7 @@ const goerli_infura = {
 const goerli = {
 	id: 5,
 	protocol: 'ws',
-	host: `geth-goerli-1.us-west2-a.c.woke-network-services.internal`,
+	host: `geth-goerli-2.us-west2-a.c.woke-network-services.internal`,
 	port: 8546,
 	gasPrice: 20*GWei,
 	gasLimit:  '8000000',
@@ -79,7 +79,7 @@ const goerli_1 = {
 const goerli_2 = {
 	id: 5,
 	protocol: 'ws',
-	host: `geth-goerli-1.us-west2-a.c.woke-network-services.internal`,
+	host: `geth-goerli-2.us-west2-a.c.woke-network-services.internal`,
 	port: 8546,
 	gasPrice: 20*GWei,
 	gasLimit:  '8000000',

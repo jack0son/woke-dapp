@@ -116,6 +116,7 @@ class Funder extends Emitter {
 
 			try {
 				await self.web3.eth.net.getId();
+				debug.d(`... web3 connection live`);
 				let r = await self.web3.eth.sendTransaction(txOpts)
 					.once('transactionHash', hash => debug)
 				receipt = r;
