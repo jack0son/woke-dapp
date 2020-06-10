@@ -8,6 +8,7 @@ import ClaimPage from '../../layouts/page-claim'
 
 import TweetButton from '../../components/buttons/button-tweet'
 import StandardBody from '../../components/text/body-standard'
+import LargeBody from '../../components/text/body-large'
 import Button from '../../components/buttons/button-contained'
 import WokeSpan from '../../components/text/span-woke'
 import LinearProgress from '../../components/progress/linear-stages'
@@ -37,8 +38,20 @@ export default function ClaimView (props) {
 	const stage = claimState.stage;
 	const stageString = claimState.stageList[claimState.stage]; // stage string
 
-	const tweetInstruction = () => (<>
+	const TweetInstruction = () => (<>
+				<LargeBody
+					styles={{
+						textAlign: 'justify',
+						paddingLeft: '10%',
+						paddingRight: '10%',
+						small: {
+							paddingLeft: '0%',
+							paddingRight: '0%',
+						},
+					}}
+				>
 		To securely claim any <WokeSpan key="WokeSpan">WOKENs</WokeSpan> you've already been sent, we need to tweet a proof message. <br/><br/>
+				</LargeBody>
 			<StandardBody color='primary' styles={{
 				fontSize: '1.5rem',
 				//color: theme.palette.error.main,
@@ -61,14 +74,14 @@ export default function ClaimView (props) {
 		return (
 			<ClaimPage
 				//instructionText={[`To securely claim any `, <WokeSpan key="WokeSpan">WOKENs</WokeSpan>, ` you've already been sent, we need to tweet a proof message.`]}
-				InstructionText={tweetInstruction}
+				childrenAbove={[<TweetInstruction key={0}/>]}
 				Button={TweetButton}
 				textAlign='center'
 				buttonProps={{
 					memeMode: true,
-					target: '_blank',
-					rel: 'noopener',
-					href: intentUrl,
+					target: isMobile ? '_blank' : '_self',
+					rel: 'noreferrer noopener',
+					href: isMobile ? intentUrl : undefined,
 					onClick: tweetClicked,
 				}}
 				buttonMessage="🚨 Don't change the tweet text"

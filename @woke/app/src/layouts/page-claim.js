@@ -2,7 +2,7 @@ import React from 'react';
 import { makeStyles } from '@material-ui/styles';
 import OnboardingContainer from './container-onboarding';
 import BelowButtonGroup from './button-group-below';
-import BodyLarge from '../components/text/body-large';
+import LargeBody from '../components/text/body-large';
 
 const useStyles = makeStyles(theme => ({
 	buttons: styles => ({
@@ -15,6 +15,7 @@ const useStyles = makeStyles(theme => ({
 
 
 export default function ClaimPage(props) {
+	const { childrenAbove } = props;
 	const classes = useStyles(props.styles);
 
 	return (
@@ -28,7 +29,8 @@ export default function ClaimPage(props) {
 					marginRight: 'auto',
 				}
 			}}>
-				<BodyLarge
+				{ childrenAbove }
+				<LargeBody
 					styles={{
 						textAlign: 'justify',
 						paddingLeft: '10%',
@@ -39,8 +41,8 @@ export default function ClaimPage(props) {
 						},
 					}}
 				>
-					<props.InstructionText/>
-				</BodyLarge>
+					{props.instructionText}
+				</LargeBody>
 				<div className={classes.buttons}>
 					<BelowButtonGroup
 						message={props.buttonMessage}
