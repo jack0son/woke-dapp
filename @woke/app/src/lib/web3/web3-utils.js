@@ -39,6 +39,20 @@ export async function genClaimString(web3, signatory, userId, app = 'twitter') {
   return str;
 }
 
+export async function checkConnection(web3, timeout = 8000) {
+	return new Promise((resolve, reject) => {
+		setTimeout(() => {
+			reject(`web3:error Check connection timed out after ${timeout}ms`);
+		}, timeout);
+
+		web3.eth.net.getId()
+			.then(networkId => {
+				resolve(networkId);
+			})
+			.catch(error => reject);
+	});
+}
+
 // Set the gas limit and price taking eth balance into account.
 // If sufficient funds, use comfortable buffer for gas limit, and set a high
 // price.

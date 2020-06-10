@@ -43,7 +43,7 @@
     "bridge": "npx ethereum-bridge -a 9 -H 127.0.0.1 -p 9545 --dev",
     "ganache:dev": "ganache-cli -i 12 -a 100 -p 8545 --gasLimit 8000000 --gasPrice 20000000000 -m 'nerve marine frozen use brave brief nasty then acid remain stereo riot'",
     "ganache:test": "ganache-cli -i 10 -a 300 -p 9545 --gasLimit 8000000 --gasPrice 20000000000 -m 'nerve marine frozen use brave brief nasty then acid remain stereo riot'",
-    "ganache:client": "ganache-cli -i 12 -p 8545 --gasLimit 8000000 --gasPrice 20000000000 --blockTime 1 -m 'nerve marine frozen use brave brief nasty then acid remain stereo riot'",
+    "ganache:client": "ganache-cli -i 12 -h 0.0.0.0 -p 8545 --gasLimit 8000000 --gasPrice 20000000000 --blockTime 1 -m 'nerve marine frozen use brave brief nasty then acid remain stereo riot'",
     "ganache:goerli": "ganache-cli -i 12 -p 8545 --gasLimit 8000000 --gasPrice  20000000000 --blockTime 15 -m 'nerve marine frozen use brave brief nasty then acid remain stereo riot'",
     "ganache:slow": "ganache-cli -i 12 -p 8545 --gasLimit 8000000 --gasPrice  20000000000 --blockTime 5 -m 'nerve marine frozen use brave brief nasty then acid remain stereo riot'",
     "ganache:lan": "ganache-cli -h 0.0.0.0 -i 12 -p 8545 -m 'nerve marine frozen use brave brief nasty then acid remain stereo riot'",

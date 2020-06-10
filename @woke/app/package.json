@@ -30,6 +30,7 @@
   "devDependencies": {},
   "scripts": {
     "start": "react-scripts start",
+    "start:lan": "REACT_APP_ETH_NETWORK=lan react-scripts start",
     "remote": "REACT_APP_SERVER_ENV=production react-scripts start",
     "remote:rinkeby": "REACT_APP_SERVER_ENV=production REACT_APP_ETH_NETWORK=rinkeby react-scripts start",
     "remote:goerli": "REACT_APP_SERVER_ENV=production REACT_APP_ETH_NETWORK=goerli react-scripts start",
