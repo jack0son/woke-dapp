@@ -91,11 +91,16 @@ export default function useHedgehog(wallet) {
 
   const logout = () => {
     wallet.logout();
-    //setUsername("");
+    setUsername("");
     setPassword("");
     setPasswordConfirmation("");
     updateWalletStatus();
   };
+
+	const forgetUser = () => {
+		storeUsername("");
+    setUsername("");
+	}
 
 	const saveUsername = (userId) => {
 		setUsername(userId);
@@ -114,7 +119,8 @@ export default function useHedgehog(wallet) {
 				confirmation: setPasswordConfirmation
 			},
 			setUsername,
-			restoreUsername 
+			restoreUsername,
+			forgetUser,
 		},
 
 		state: {
