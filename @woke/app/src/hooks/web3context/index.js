@@ -25,7 +25,7 @@ const artifacts = loadContractArtifacts();
 const Context = createContext();
 export const useWeb3Context = () => useContext(Context);
 
-export const Web3ContextProvider = ({children, web3, networkId, account}) => {
+export const Web3ContextProvider = ({children, web3, networkId, account, network}) => {
 	// @TODO set default web3 send options
 	const useContract = useMemo(() => createUseContract(web3, artifacts, networkId), [web3, artifacts, networkId]);
 	//const getPastEvents = useMemo(() => createGetPastEvents(web3), [web3]);
@@ -42,6 +42,7 @@ export const Web3ContextProvider = ({children, web3, networkId, account}) => {
 				() => ({
 					web3,
 					networkId,
+					network,
 					account,
 					useContract,
 					useContractSubscriptions,
@@ -55,6 +56,7 @@ export const Web3ContextProvider = ({children, web3, networkId, account}) => {
 				[
 					web3,
 					networkId,
+					network,
 					account,
 					useContract,
 					useContractSubscriptions,

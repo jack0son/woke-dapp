@@ -57,6 +57,7 @@ export default function ContinuousProgress({value, endValue, ...props}) {
 
 	return (
 		<>
+			<span> TIMER TIMER</span>
 			<div className={classes.wrapper}>
 				<LinearProgress className={classes.bar} variant="determinate" value={completed} />
 			</div>

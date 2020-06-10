@@ -14,6 +14,7 @@ export default {
 	web3: {
 		networks: {
 			development: {
+				blockTime: 1000,
 				protocol: 'ws',
 				host: 'localhost',
 				//host: `${host}`,
@@ -22,6 +23,7 @@ export default {
 			},
 
 			lan: {
+				blockTime: 1000,
 				protocol: 'ws',
 				host: host, // @TODO LOAD FROM env.local
 				port: 8545,
@@ -41,12 +43,14 @@ export default {
 			},
 
 			goerli: {
+				blockTime: 18000,
 				protocol: 'wss',
 				host: `goerli.infura.io/ws/v3/${infuraApiKey}`,
 				id: 5,
 			},
 
 			production: {
+				blockTime: 18000,
 				protocol: 'wss',
 				host: `goerli.infura.io/ws/v3/${infuraApiKey}`,
 				id: 5,

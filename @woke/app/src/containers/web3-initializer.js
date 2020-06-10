@@ -31,6 +31,7 @@ export default function Web3Initializer(props) {
 				<Web3ContextProvider
 					web3={web3Instance}
 					networkId={network.id}
+					network={network}
 					account={account}
 					{ ...innerProps }
 				>

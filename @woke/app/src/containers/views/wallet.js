@@ -189,7 +189,7 @@ export default function WalletView (props) {
 					itemHeightVH={5}
 					itemHeightVHSmall={4}
 					//styles={{ }}
-					sendTransferInput={sendTransferInput}
+					//sendTransferInput={sendTransferInput}
 					listItems={transferEvents}
 				/>
 				{ transferEvents.length < 3 ? <Tutorial choice='transfers'/> : null }

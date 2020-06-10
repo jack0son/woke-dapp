@@ -42,6 +42,7 @@ export default function LinearstageList(props) {
           return 0;
         }
 				const diff = (stage + 1 == stageList.length) ? 100 : ((stage + 1) / stageList.length) * 100;
+				console.log(diff);
 				//console.log(diff);
         return Math.min(diff, 100);
       });
