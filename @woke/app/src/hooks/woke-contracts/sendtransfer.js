@@ -73,7 +73,11 @@ export default function useSendTransferInput({
 	useEffect(() => {
 		if(sendTransfers.error) {
 			console.dir(error);
-			setError(sendTransfers.error);
+			if(sendTransfers.error.message) {
+				setError(sendTransfers.error.message);
+			} else {
+				setError(sendTransfers.error);
+			}
 		}
 	}, [sendTransfers.error]);
 

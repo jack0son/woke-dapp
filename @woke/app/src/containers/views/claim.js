@@ -1,5 +1,6 @@
 import React from 'react';
 import { useTheme } from '@material-ui/styles';
+import { useMediaQuery } from "@material-ui/core";
 
 import Loading from './loading'
 import Error from './error'
@@ -13,9 +14,10 @@ import LinearProgress from '../../components/progress/linear-stages'
 
 // @fix shouldn't need this whole library
 // Need widget so that tweet intent works as popup
-import { Share } from 'react-twitter-widgets';  // NB: necessary import
+//import { Share, Tweet } from 'react-twitter-widgets';  // NB: necessary import
 
-import { createShareIntentUrl } from '../../lib/utils';
+import useIsMobile from '../../hooks/is-mobile';
+import { createShareIntentUrl, popupCenter } from '../../lib/utils';
 
 
 export default function ClaimView (props) {
@@ -26,8 +28,8 @@ export default function ClaimView (props) {
 		handleNotTweeted,
 		triggerPostTweet, // if not use share intent
 	} = props;
-
 	const theme = useTheme();
+	const isMobile = useIsMobile();
 
 	const sc = claimState.stageMap;
 	const stage = claimState.stage;
@@ -43,19 +45,29 @@ export default function ClaimView (props) {
 			</StandardBody>
 		</>);
 
+
+
 	// Share intent url
 	const renderTweetClaim = () => {
-		const intentUrl = createShareIntentUrl(claimState.claimString);
+		const intentUrl = createShareIntentUrl(claimState.claimString, true);
+
+		const tweetClicked = () => {
+			if(!isMobile) popupCenter(intentUrl, 'Proof Tweet', 500, 350);
+			handleTweeted();
+		}
+
 		return (
 			<ClaimPage
 				//instructionText={[`To securely claim any `, <WokeSpan key="WokeSpan">WOKENs</WokeSpan>, ` you've already been sent, we need to tweet a proof message.`]}
-				instructionText={tweetInstruction()}
+				InstructionText={tweetInstruction}
 				Button={TweetButton}
 				textAlign='center'
 				buttonProps={{
 					memeMode: true,
+					target: '_blank',
+					rel: 'noopener',
 					href: intentUrl,
-					onClick: handleTweeted,
+					onClick: tweetClicked,
 				}}
 				buttonMessage="🚨 Don't change the tweet text"
 				messageColor="primary"
@@ -63,6 +75,8 @@ export default function ClaimView (props) {
 			</ClaimPage>
 		)
 	};
+	//<a href={intentUrl} target="_self">TWEET</a>
+	//<Share target="_blank" url={''} options={{text: claimState.claimString, hashtags: 'WokeNetwork'}}/>
 
 	const renderConfirmTweeted = () => (
 		<>

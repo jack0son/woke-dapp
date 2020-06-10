@@ -39,7 +39,7 @@ export default function ClaimPage(props) {
 						},
 					}}
 				>
-					{props.instructionText}
+					<props.InstructionText/>
 				</BodyLarge>
 				<div className={classes.buttons}>
 					<BelowButtonGroup
