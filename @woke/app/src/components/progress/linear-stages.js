@@ -37,17 +37,16 @@ export default function LinearstageList(props) {
 
   const [completed, setCompleted] = useState(0);
   const [buffer, setBuffer] = useState(0 || bufferValue);
-
 	useEffect(() => {
 		function progress() {
-			let diff = (bufferValue == bufferEnd) ? 100 : (bufferValue / bufferEnd) * 100
+			let diff = (bufferValue == bufferEnd) ? 100 : ((bufferValue / bufferEnd) * (100 - completed)) + completed;
 			setBuffer(Math.min(diff, 100));
 		}
 
 		if(bufferEnd) 
 			progress();
 
-	}, [bufferValue]);
+	}, [bufferValue, completed]);
 
   useEffect(() => {
     function progress() {
