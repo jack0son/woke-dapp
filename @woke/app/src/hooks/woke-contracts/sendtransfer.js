@@ -127,7 +127,7 @@ export function useSendTransfers (recipient, handleClearRecipient) {
 	const balance = useSubscribeCall('WokeToken', 'balanceOf', account);
 
 	// @TODO get time estimate from config
-	const txTimer = useTxTimer(network.blockTime || 18000);
+	const txTimer = useTxTimer(network.blockTime || 18000, { steps: network.blockTime/100 });
 
 	// Update gas estimate when recipient prop changes
 	const prevRecipient = useRef({id: '', ...recipient});
