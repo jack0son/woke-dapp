@@ -8,6 +8,7 @@ import React, {
 } from 'react'
 
 import { useWeb3Context } from '../web3context';
+import useLiveBalance from '../live-balance';
 import * as claimStates from './claimuser-states';
 import * as statuses from './claim-status';
 
@@ -99,6 +100,13 @@ export default function useClaimUser({userId, userHandle, claimStatus}) {
 					}
 
 					return state;
+					break;
+				}
+
+				case 'balance': {
+					if(action.name == 'funded') {
+						return {...state, stage: states.FUNDED}
+					}
 					break;
 				}
 
@@ -194,6 +202,31 @@ export default function useClaimUser({userId, userHandle, claimStatus}) {
 			dispatch({type: 'already-claimed'});
 		} 
 	}, [dispatch, claimStatus])
+
+	// Ensure user is funded
+	// @fix DRY
+	const ethBalance = useLiveBalance(account);
+	const [fundedLatch, setFundedLatch] = useState(false);
+	const toEth = wei => web3.utils.fromWei(wei, 'ether');
+	const valStr = (wei, delim = ', ') => `${toEth(wei)} ETH${delim}${wei.toString()} wei`;
+	useEffect(() => {
+		function sufficientBalance() {
+			// TODO estimate eth cost to claim
+			console.log(`User balance: ${valStr(ethBalance)}`);
+			return ethBalance && !ethBalance.isZero(0);
+		}
+
+		if(!fundedLatch && sufficientBalance()) {
+			setFundedLatch(true);
+		}
+	}, [ethBalance])
+
+	const foundTweetPredicate = claimState.stage === states.FOUND_TWEET;
+	useEffect(() => {
+		if(foundTweetPredicate && fundedLatch === true) {
+			dispatch({type: 'balance', name: 'funded'});
+		}
+	}, [foundTweetPredicate, fundedLatch]);
 
 	/*
 		// Async Dispatcher 
@@ -433,15 +466,15 @@ export default function useClaimUser({userId, userHandle, claimStatus}) {
 		}
 	}, [sendFulfillClaim]);
 
-	const foundTweetPredicate = claimState.stage === states.FOUND_TWEET;
+	const fundedPredicate = claimState.stage === states.FUNDED;
 	useEffect(() => {
 		// Must check hasLodgedRequest to avoid sending tx before hook has gathered
 		// initial state from twitter and on-chain
-		if(blockSendClaim.current == false && foundTweetPredicate && hasLodgedRequest === false && sendClaimUser.status == undefined) {
+		if(blockSendClaim.current == false && fundedPredicate && hasLodgedRequest === false && sendClaimUser.status == undefined) {
 			blockSendClaim.current = true;
 			handleSendClaimUser(userId, userHandle);
 		}
-	}, [userId, userHandle, hasLodgedRequest, foundTweetPredicate, handleSendClaimUser, sendClaimUser.status])
+	}, [userId, userHandle, hasLodgedRequest, fundedPredicate, handleSendClaimUser, sendClaimUser.status])
 
 	const storedTweetPredicate = claimState.stage === states.STORED_TWEET;
 

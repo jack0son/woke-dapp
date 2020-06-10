@@ -19,8 +19,7 @@ import { clearOldVersionStorage } from '../lib/utils'
 import HedgehogWallet from '../lib/wallet/wallet'
 const wallet = new HedgehogWallet(); 
 
-// @TODO move to env
-const appVersion = '0.2.1';
+const appVersion = '0.2.3';
 
 export default function RootContainer(props) {
 	const hedgehog = useHedgehog(wallet);
@@ -51,7 +50,7 @@ export default function RootContainer(props) {
 	return (
 		<RootContextProvider hedgehog={hedgehog}>
 			<TwitterContextProvider>
-				<RootView TwitterAuth={TwitterAuth} useTwitterContext={useTwitterContext}>
+				<RootView TwitterAuth={TwitterAuth}>
 					{	!hedgehog.state.loggedIn ? 
 							renderAuthentication() : 
 							renderWeb3Initializer()

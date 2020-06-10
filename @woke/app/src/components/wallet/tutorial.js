@@ -7,8 +7,9 @@ import StandardBody from '../text/body-standard';
 
 // Tweet buttton
 import TweetButton from '../buttons/button-tweet';
-import { Share } from 'react-twitter-widgets';  // NB: necessary import
-import { createShareIntentUrl } from '../../lib/utils';
+//import { Share } from 'react-twitter-widgets';  // NB: necessary import
+import { createShareIntentUrl, popupCenter } from '../../lib/utils';
+import useIsMobile from '../../hooks/is-mobile';
 
 export default function Tutorial(props) {
 	const { choice, amount } = props;
@@ -47,6 +48,12 @@ export default function Tutorial(props) {
 
 	const tipStr = `${'%2B'}${amount || 3} $WOKE`;
 
+	const isMobile = useIsMobile();
+	const intentUrl = createShareIntentUrl(`@KimKardashian Have some wokens Kimmy!\n ${tipStr} 💖💖💖\n%23WakeUpKimmy`, true);
+	const tweetClicked = () => {
+		if(!isMobile) popupCenter(intentUrl, 'Tribute', 500, 350);
+	}
+
 	const choose = () => {
 		switch(choice) {
 			case 'transfers':
@@ -58,7 +65,9 @@ export default function Tutorial(props) {
 
 					<FlexRow styles={{justifyContent: 'space-evenly', alignItems: 'center'}}>
 						<TweetButton lowerCase
-							href={createShareIntentUrl(`@KimKardashian Have some wokens Kimmy!\n ${tipStr} 💖💖💖\n%23WakeUpKimmy`, true)}
+							href={isMobile ? intentUrl : ''}
+							target="_blank"
+							onClick={tweetClicked}
 							styles={{
 								flexGrow: '0',
 								fontSize: '1rem',

@@ -31,6 +31,7 @@ export default function Web3Initializer(props) {
 				<Web3ContextProvider
 					web3={web3Instance}
 					networkId={network.id}
+					network={network}
 					account={account}
 					{ ...innerProps }
 				>
@@ -39,7 +40,9 @@ export default function Web3Initializer(props) {
 
 			) : <Loading message={<>A <Woken/> shared is a <Woken/> doubled.</>}/>
 					//) : <Loading message={'A Woken shared is a Woken doubled.'}/>
-					// 'Readin akashic record
+					// 'Reading akashic record
+					// Things that are things that were things that have not yet come
+					// to pass
 			}
 		</>
 	);

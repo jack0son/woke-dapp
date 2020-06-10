@@ -17,6 +17,7 @@ class Funder extends Emitter {
 		const self = this;
 		self.value = donationAmount
 		self.txFailures = [];
+		self.nonce = 0;
 
 		self.initWeb3().then(success => success ?
 			self.setupListener() :
@@ -90,6 +91,18 @@ class Funder extends Emitter {
 		});
 	}
 
+	async getNonce() {
+		const self = this;
+		const pendingTxns = await self.web3.eth.getTransactionCount(self.account, 'pending');
+		console.log(`Pending transactions: ${pendingTxns}`);
+		if(pendingTxns == 0) {
+			return 0;
+		} else {
+			self.nonce = pendingTxns;
+			return self.nonce;
+		}
+	}
+
 	async fundWallet(address, amount) {
 		const self = this;
 
@@ -116,7 +129,7 @@ class Funder extends Emitter {
 
 			try {
 				await self.web3.eth.net.getId();
-				txOpts.nonce = (await self.web3.eth.getTransactionCount(self.account, 'pending')) + 1;
+				txOpts.nonce = await self.getNonce();
 				debug.d(`... web3 connection live`);
 				let r = await self.web3.eth.sendTransaction(txOpts)
 					.once('transactionHash', hash => debug)

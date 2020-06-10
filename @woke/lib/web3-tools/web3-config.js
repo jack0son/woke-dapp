@@ -40,24 +40,6 @@ const goerli_infura = {
 	},
 }
 
-const goerli = {
-	id: 5,
-	protocol: 'ws',
-	host: `geth-goerli-2.us-west2-a.c.woke-network-services.internal`,
-	port: 8546,
-	gasPrice: 20*GWei,
-	gasLimit:  '8000000',
-	defaultCommon: {
-		customChain: {
-			name: 'goerli',
-			networkId: 5,
-			chainId: 5,
-		},
-		baseChain: 'goerli', 
-		//hardfork: 'petersburg',
-	},
-}
-
 const goerli_1 = {
 	id: 5,
 	protocol: 'ws',
@@ -93,6 +75,8 @@ const goerli_2 = {
 		//hardfork: 'petersburg',
 	},
 }
+
+const goerli = goerli_2;
 
 module.exports = {
 	web3: {

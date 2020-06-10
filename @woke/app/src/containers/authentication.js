@@ -115,7 +115,7 @@ export default function AuthContainer(props) {
 
 	useEffect(() => {
 		if(hedgehog.state.errorMessage === messages.exists) {
-			console.log('auth:error: user exists')
+			console.log('auth:error user exists')
 				router.dispatch({type: 'hedgehog-account_exists'});
 		}
 	}, [hedgehog.state.errorMessage])
@@ -133,7 +133,7 @@ export default function AuthContainer(props) {
 					twitter.userSignin.user.id,
 					//twitter.userSignin.credentials.oauth_token
 				));
-				console.log('dispatching twitter-authenticated')
+				//console.log('auth:dispatch twitter-authenticated')
 				router.dispatch({type: 'twitter-authenticated'});
 			}
 		}
@@ -154,7 +154,7 @@ export default function AuthContainer(props) {
 	}, [hedgehog.state.loggedIn]);
 
 	useEffect(() => {
-		console.log('Auth state: ', router.state);
+		console.log('Auth:state ', router.state);
 	}, [router.state])
 
 	return (

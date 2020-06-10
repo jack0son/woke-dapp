@@ -1,5 +1,6 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useTheme } from '@material-ui/styles';
+import { useMediaQuery } from "@material-ui/core";
 
 import Loading from './loading'
 import Error from './error'
@@ -7,15 +8,19 @@ import ClaimPage from '../../layouts/page-claim'
 
 import TweetButton from '../../components/buttons/button-tweet'
 import StandardBody from '../../components/text/body-standard'
+import LargeBody from '../../components/text/body-large'
 import Button from '../../components/buttons/button-contained'
 import WokeSpan from '../../components/text/span-woke'
 import LinearProgress from '../../components/progress/linear-stages'
 
+import useTxTimer from '../../hooks/woke-contracts/tx-timer';
+
 // @fix shouldn't need this whole library
 // Need widget so that tweet intent works as popup
-import { Share } from 'react-twitter-widgets';  // NB: necessary import
+//import { Share, Tweet } from 'react-twitter-widgets';  // NB: necessary import
 
-import { createShareIntentUrl } from '../../lib/utils';
+import useIsMobile from '../../hooks/is-mobile';
+import { createShareIntentUrl, popupCenter } from '../../lib/utils';
 
 
 export default function ClaimView (props) {
@@ -26,15 +31,27 @@ export default function ClaimView (props) {
 		handleNotTweeted,
 		triggerPostTweet, // if not use share intent
 	} = props;
-
 	const theme = useTheme();
+	const isMobile = useIsMobile();
 
 	const sc = claimState.stageMap;
 	const stage = claimState.stage;
 	const stageString = claimState.stageList[claimState.stage]; // stage string
 
-	const tweetInstruction = () => (<>
+	const TweetInstruction = () => (<>
+				<LargeBody
+					styles={{
+						textAlign: 'justify',
+						paddingLeft: '10%',
+						paddingRight: '10%',
+						small: {
+							paddingLeft: '0%',
+							paddingRight: '0%',
+						},
+					}}
+				>
 		To securely claim any <WokeSpan key="WokeSpan">WOKENs</WokeSpan> you've already been sent, we need to tweet a proof message. <br/><br/>
+				</LargeBody>
 			<StandardBody color='primary' styles={{
 				fontSize: '1.5rem',
 				//color: theme.palette.error.main,
@@ -43,19 +60,29 @@ export default function ClaimView (props) {
 			</StandardBody>
 		</>);
 
+
+
 	// Share intent url
 	const renderTweetClaim = () => {
-		const intentUrl = createShareIntentUrl(claimState.claimString);
+		const intentUrl = createShareIntentUrl(claimState.claimString, true);
+
+		const tweetClicked = () => {
+			if(!isMobile) popupCenter(intentUrl, 'Proof Tweet', 500, 350);
+			handleTweeted();
+		}
+
 		return (
 			<ClaimPage
 				//instructionText={[`To securely claim any `, <WokeSpan key="WokeSpan">WOKENs</WokeSpan>, ` you've already been sent, we need to tweet a proof message.`]}
-				instructionText={tweetInstruction()}
+				childrenAbove={[<TweetInstruction key={0}/>]}
 				Button={TweetButton}
 				textAlign='center'
 				buttonProps={{
 					memeMode: true,
-					href: intentUrl,
-					onClick: handleTweeted,
+					target: isMobile ? '_blank' : '_self',
+					rel: 'noreferrer noopener',
+					href: isMobile ? intentUrl : undefined,
+					onClick: tweetClicked,
 				}}
 				buttonMessage="🚨 Don't change the tweet text"
 				messageColor="primary"
@@ -63,6 +90,8 @@ export default function ClaimView (props) {
 			</ClaimPage>
 		)
 	};
+	//<a href={intentUrl} target="_self">TWEET</a>
+	//<Share target="_blank" url={''} options={{text: claimState.claimString, hashtags: 'WokeNetwork'}}/>
 
 	const renderConfirmTweeted = () => (
 		<>
@@ -94,6 +123,15 @@ export default function ClaimView (props) {
 		</>
 	);
 
+	const expectedClaimTime = 60000;
+	const timer = useTxTimer(expectedClaimTime, {steps: Math.floor(expectedClaimTime/100)});
+
+	useEffect(() => {
+		if(stage >= sc.FOUND_TWEET) {
+			timer.start();
+		}
+	}, [stage]);
+
 	const renderClaiming = () => (
 		<Loading
 			handleDone={() => {}}
@@ -102,6 +140,8 @@ export default function ClaimView (props) {
 				stageList={claimState.stageList.slice(sc.CONFIRMED,sc.CLAIMED + 1)}
 				labelList={claimState.stageLabels}
 				stage={stage - sc.CONFIRMED}
+				bufferEnd={timer.transferTime}
+				bufferValue={timer.value}
 			/>
 		</Loading>
 	);

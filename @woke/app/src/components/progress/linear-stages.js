@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { makeStyles } from '@material-ui/core/styles';
 import LinearProgress from '@material-ui/core/LinearProgress';
 
@@ -9,13 +9,15 @@ const useStyles = makeStyles({
 	wrapper: styles => ({
 		marginTop: '10%',
 		width: '100%',
-		maxHeight: '20%',
+		minWidth: '100%',
+		height: '20%',
 	}),
 
   bar: {
-		height: '20%',
-		width: '100%',
-    flexGrow: 1,
+		//height: '100%',
+		//width: '100%',
+		minHeight: '100%',
+    //flexGrow: 1,
   },
 });
 
@@ -25,7 +27,7 @@ export default function LinearstageList(props) {
 		//console.dir(props.stageList);
 		//throw new Error('Linear stageList only accepts an array');
 	}
-	const {stageList, stage, labelList, styles} = props;
+	const {stageList, stage, labelList, styles, bufferValue, bufferEnd} = props;
 	const classes = useStyles(styles);
 
 	const stageMap = {}
@@ -33,9 +35,21 @@ export default function LinearstageList(props) {
 		stageMap[stage] = i;
 	});
 
-  const [completed, setCompleted] = React.useState(0);
+  const [completed, setCompleted] = useState(0);
+  const [buffer, setBuffer] = useState(0 || bufferValue);
 
-  React.useEffect(() => {
+	useEffect(() => {
+		function progress() {
+			let diff = (bufferValue == bufferEnd) ? 100 : (bufferValue / bufferEnd) * 100
+			setBuffer(Math.min(diff, 100));
+		}
+
+		if(bufferEnd) 
+			progress();
+
+	}, [bufferValue]);
+
+  useEffect(() => {
     function progress() {
       setCompleted(oldCompleted => {
         if (oldCompleted === 100) {
@@ -58,8 +72,8 @@ export default function LinearstageList(props) {
 			<div className={classes.wrapper}>
 				<BodyStandard styles={{small: {fontSize: '1rem', textAlign: 'left'}}}>{label}</BodyStandard>
 			<br/>
-      <LinearProgress className={classes.bar} variant="determinate" value={completed} />
-				</div>
+				<LinearProgress className={classes.bar} variant={bufferEnd ? 'buffer' : 'determinate'} value={completed} valueBuffer={buffer}/>
+			</div>
 		</>
   );
 }

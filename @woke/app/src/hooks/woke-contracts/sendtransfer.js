@@ -73,7 +73,11 @@ export default function useSendTransferInput({
 	useEffect(() => {
 		if(sendTransfers.error) {
 			console.dir(error);
-			setError(sendTransfers.error);
+			if(sendTransfers.error.message) {
+				setError(sendTransfers.error.message);
+			} else {
+				setError(sendTransfers.error);
+			}
 		}
 	}, [sendTransfers.error]);
 
@@ -96,7 +100,7 @@ export default function useSendTransferInput({
 
 // Handle submitting transfer data to UserRegistry smart contract
 export function useSendTransfers (recipient, handleClearRecipient) {
-	const { account, useSend, useSubscribeCall, useContract, web3 } = useWeb3Context();
+	const { network, account, useSend, useSubscribeCall, useContract, web3 } = useWeb3Context();
 
 	const nullArgs = {userId: '', amount: 1}
 	const [sendQueued, setSendQueued] = useState(false);
@@ -123,7 +127,7 @@ export function useSendTransfers (recipient, handleClearRecipient) {
 	const balance = useSubscribeCall('WokeToken', 'balanceOf', account);
 
 	// @TODO get time estimate from config
-	const txTimer = useTxTimer(18000);
+	const txTimer = useTxTimer(network.blockTime || 18000);
 
 	// Update gas estimate when recipient prop changes
 	const prevRecipient = useRef({id: '', ...recipient});

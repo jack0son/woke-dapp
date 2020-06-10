@@ -17,12 +17,13 @@ import NavBar from '../../components/navbar';
 // @TODO views should not contain app state
 import { useRootContext } from '../../hooks/root-context';
 import { useRouterContext } from '../../hooks/router-context';
+import { useTwitterContext } from '../../hooks/twitter/index.js'
 
 
 // @brokenwindow
 //  View container should not be responsible for app state like twitter Auth
 //  Workaround: pass TwitterAuth component from root.
-export default function RootView({TwitterAuth, useTwitterContext, children}) {
+export default function RootView({TwitterAuth, children}) {
 	const { loading, headerChildren } = useRootContext();
 	const { history } = useRouterContext();
 	const { userSignin } = useTwitterContext();

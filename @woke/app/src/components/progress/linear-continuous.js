@@ -29,6 +29,7 @@ export default function ContinuousProgress({value, endValue, ...props}) {
 	const defaults = { step: 1 };
 	const { step, styles, organic } = { ...defaults, ...props};
 	const [completed, setCompleted] = useState(0);
+	const [buffer, setBuffer] = useState(0);
 	const classes = useStyles(styles);
 
 	//const increment = Math.ceil(endValue * (step / 100));
@@ -38,15 +39,18 @@ export default function ContinuousProgress({value, endValue, ...props}) {
 			let diff = (value == endValue) ? 100 : (value / endValue) * 100;
 			// @brokenwindow this does not take into acount the timing of the input
 			// value
+
+			setCompleted(buffer => {
+				return Math.min(diff, 100);
+			});
+
 			if(organic) {
 				const rand = 5 * Math.random();
-				diff += randSign() * rand;
+				diff -= rand;
+				//diff += randSign() * rand;
 				await setSyncTimeout(rand * 500);
 			}
 			setCompleted(prev => {
-				if (prev === 100) {
-					return 0;
-				}
 				return Math.min(diff, 100);
 			});
 		}
@@ -57,8 +61,9 @@ export default function ContinuousProgress({value, endValue, ...props}) {
 
 	return (
 		<>
+			<span> TIMER TIMER</span>
 			<div className={classes.wrapper}>
-				<LinearProgress className={classes.bar} variant="determinate" value={completed} />
+				<LinearProgress className={classes.bar} variant="buffer" value={completed} valueBuffer={buffer} />
 			</div>
 		</>
 	);

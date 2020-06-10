@@ -70,7 +70,7 @@ const useStyles = makeStyles(theme => ({
 }));
 
 export default function TransactionList ({ listItems, ...props }) {
-	const {sendTransfers, recipient, styles, itemHeightVH, itemHeightVHSmall, fontSize, ...innerProps} = props;
+	const {sendTransferInput, recipient, styles, itemHeightVH, itemHeightVHSmall, fontSize, ...innerProps} = props;
 	const theme = useTheme();
 	const dense = false;
 
@@ -109,18 +109,15 @@ export default function TransactionList ({ listItems, ...props }) {
 
 	const defaultAvatarHeight = 7;
 
-	const isCurrentTransaction = (i, tx) => {
-		return sendTransfers ?
-			i == 0 && sendTransfers.pending && tx.transactionHash == sendTransfers.txHash :
-			false;
-	}
+	const isCurrentTransaction = (i, tx) => sendTransferInput ?
+			i == 0 && sendTransferInput.pending && tx.transactionHash == sendTransferInput.txHash : false;
 
 	const renderProgress = () => {
-		if(sendTransfers) {
+		if(sendTransferInput) {
 			return (
 				<ProgressBar organic
-					value={sendTransfers.timer.value}
-					endValue={sendTransfers.timer.transferTime}
+					value={sendTransferInput.timer.value}
+					endValue={sendTransferInput.timer.transferTime}
 					styles={{
 						position: 'absolute',
 						bottom: '0',
@@ -132,6 +129,7 @@ export default function TransactionList ({ listItems, ...props }) {
 		}
 	}
 
+			//{ (tx.pending || isCurrentTransaction(i, tx)) && renderProgress() }
 	const renderTransactions = () => listItems.map((tx, i) => (
 		<ListItem key={i} alignItems='flex-start' className={classes.listItem}>
 			{ (tx.pending || isCurrentTransaction(i, tx)) && renderProgress() }

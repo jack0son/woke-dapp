@@ -12,8 +12,8 @@ if(require.main === module) {
 		getTweetText: 'getTweetText <userId>',
 		getUser: 'getUser <userId>',
 		getClaimedEvents: 'getClaimEvents [userId, address]',
-		getRewardEvents: 'getRewardEvents [[claimer,referrer] <userId>]',
-		getBonusEvents: 'getBonusEvents [[from,to] <userId>]',
+		getTransferEvents: 'getTransferEvents [[from,to] <userId>]',
+		getBonusEvents: 'getBonusEvents [[claimer,referrer] <userId>]',
 		supply: 'supply [minted]',
 	};
 

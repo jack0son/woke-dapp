@@ -8,20 +8,24 @@ const twitterApi = {
 	callback_path: 'oauth_twitter',
 }
 
+const host = process.env.REACT_APP_HOST || '192.168.1.183';
+
 export default {
 	web3: {
 		networks: {
 			development: {
+				blockTime: 1000,
 				protocol: 'ws',
 				host: 'localhost',
-				//host: '192.168.1.185',
+				//host: `${host}`,
 				port: 8545,
 				id: 12,
 			},
 
-			mobile: {
+			lan: {
+				blockTime: 1000,
 				protocol: 'ws',
-				host: '192.168.1.185', // @TODO LOAD FROM env.local
+				host: host, // @TODO LOAD FROM env.local
 				port: 8545,
 				id: 12,
 			},
@@ -39,12 +43,14 @@ export default {
 			},
 
 			goerli: {
+				blockTime: 18000,
 				protocol: 'wss',
 				host: `goerli.infura.io/ws/v3/${infuraApiKey}`,
 				id: 5,
 			},
 
 			production: {
+				blockTime: 18000,
 				protocol: 'wss',
 				host: `goerli.infura.io/ws/v3/${infuraApiKey}`,
 				id: 5,
@@ -58,8 +64,8 @@ export default {
 			url: 'http://localhost:3001/',
 		},
 
-		mobile: {
-			url: 'http://192.168.1.185:3001/',
+		lan: {
+			url: `http://${host}:3001/`,
 		},
 
 		production: {
@@ -73,9 +79,9 @@ export default {
 			hostUrl: 'http://localhost:3000/',
 		},
 
-		mobile: {
+		lan: {
 			api: twitterApi,
-			hostUrl: 'http://192.168.1.185:3000/',
+			hostUrl: `http://${host}:3000/`,
 		},
 
 		production: {
