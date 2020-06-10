@@ -10,17 +10,15 @@ export default web3 => (contractName, callback) => {
 
 	// TODO this useCallback should be in useContractSubscriptions
 
+	// TODO missing dependencies
 	useEffect(() => {
-		setSub(sub => {
-			if(sub == null) {
-				//console.log('Creating new subscription for ', contractName);
-				let newSub = useContractSubscriptions(contract, contractName, callback);
-				return newSub;	
-			}
-
+		if(sub == null) {
+			//console.log('Creating new subscription for ', contractName);
+			let newSub = useContractSubscriptions(contract, contractName, callback);
+			setSub(newSub);	
+		} else {
 			sub.update(callback);
-			return sub;
-		});
+		}
 	}, [contractName, callback]);
 
 	// Stop subscription on unmount
