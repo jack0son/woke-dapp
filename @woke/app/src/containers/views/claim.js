@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useTheme } from '@material-ui/styles';
 import { useMediaQuery } from "@material-ui/core";
 
@@ -11,6 +11,8 @@ import StandardBody from '../../components/text/body-standard'
 import Button from '../../components/buttons/button-contained'
 import WokeSpan from '../../components/text/span-woke'
 import LinearProgress from '../../components/progress/linear-stages'
+
+import useTxTimer from '../../hooks/woke-contracts/tx-timer';
 
 // @fix shouldn't need this whole library
 // Need widget so that tweet intent works as popup
@@ -108,6 +110,15 @@ export default function ClaimView (props) {
 		</>
 	);
 
+	const expectedClaimTime = 60000;
+	const timer = useTxTimer(expectedClaimTime, {steps: Math.floor(expectedClaimTime/100)});
+
+	useEffect(() => {
+		if(stage >= sc.FOUND_TWEET) {
+			timer.start();
+		}
+	}, [stage]);
+
 	const renderClaiming = () => (
 		<Loading
 			handleDone={() => {}}
@@ -116,6 +127,8 @@ export default function ClaimView (props) {
 				stageList={claimState.stageList.slice(sc.CONFIRMED,sc.CLAIMED + 1)}
 				labelList={claimState.stageLabels}
 				stage={stage - sc.CONFIRMED}
+				bufferEnd={timer.transferTime}
+				bufferValue={timer.value}
 			/>
 		</Loading>
 	);
