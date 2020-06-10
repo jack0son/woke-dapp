@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef, useCallback} from 'react'
 
 import { useWeb3Context } from '.';
 
+// @desc useSubscribeCall
 // @dev Update the call value whenever there is an update to contract logs
 export default web3 => (contractName, methodName, ...args) => {
 	const { account, useContract, useSubscribeContract } = useWeb3Context();

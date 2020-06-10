@@ -5,15 +5,20 @@ import Claim from './views/claim'
 
 // Custom hooks
 import useClaimUser from '../hooks/woke-contracts/claimuser'
+import { useWeb3Context } from '../hooks/web3context';
+import useTxTimer from '../hooks/woke-contracts/tx-timer';
 
 
 export default function ClaimContainer(props) {
 	const [tweetedClaimString, setTweetedClaimString] = useState(retrieveTweeted());
+	const { network } = useWeb3Context();
 	const claim = useClaimUser({
 		userId: props.userId,
 		userHandle: props.userHandle,
 		claimStatus: props.claimStatus,
 	});
+
+	const timer = useTxTimer(network.blockTime, {steps: network.blockTime/100 });
 
 	useEffect(() => {
 		if(tweetedClaimString) {
@@ -45,6 +50,7 @@ export default function ClaimContainer(props) {
 			handleTweeted={handleTweeted}
 			handleConfirmedTweeted={handleConfirmedTweeted}
 			handleNotTweeted={handleNotTweeted}
+			timer={timer}
 		/>
 		{ props.renderProp(claim.stageList[claim.stage]) }
 		</>

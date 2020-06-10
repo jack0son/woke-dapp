@@ -27,8 +27,6 @@ export default function useUserSignin() {
 				}
 				const { verifierResp } = action.payload;
 
-				console.log(state);
-
 				if(verifierResp && state.verifierResp == null) {
 					return {
 						...state,

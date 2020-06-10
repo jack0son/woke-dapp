@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react'
 import { useWeb3Context } from '.';
 
-// @dev createUseSubscribeContract
+// @desc useSubscribeContract
 // @dev Call the callback everytime there is an update to the contract's logs
 export default web3 => (contractName, callback) => {
 	const { useContractSubscriptions, useContract } = useWeb3Context();
