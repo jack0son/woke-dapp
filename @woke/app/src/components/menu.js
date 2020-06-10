@@ -102,6 +102,7 @@ export default function Menu({ twitterSignin, ...props }) {
 
 	const handleSignOut = () => {
 		twitterSignin.signOut();
+		hedgehog.api.forgetUser();
 	};
 
 	// ------------- Auth option states -------------
