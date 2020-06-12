@@ -58,9 +58,11 @@ export default function useUserSignin() {
 					accessKey: '',
 					accessSecret: '',
 				};
+				const requestToken = null;
 				storeUserTokens(credentials);
 				storeUser(user);
-				return { ...state, user, credentials, requestToken: null, verifierResp: null }
+				storeRequestToken(requestToken);
+				return { ...state, user, credentials, requestToken, verifierResp: null }
 			}
 
 			default: {

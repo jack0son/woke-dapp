@@ -151,7 +151,7 @@ export default function Menu({ twitterSignin, ...props }) {
 			// By default, root container will route to the sign in page, no need to
 			// link to sign in page, but display an option anyway so it's more obvious
 			// how to get back from the How page or any future routes.
-			return <Link className={classes.menuItem} variant="h3" href="/">signin</Link>;
+			return <Link className={classes.menuItem} variant="h3" href="/">sign in</Link>;
 		}
 	};
 
