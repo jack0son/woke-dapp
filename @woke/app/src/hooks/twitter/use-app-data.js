@@ -20,9 +20,11 @@ export const useUsers = ({appClient}) => {
 
 		const performFetches = async (fetches) => {
 			//setFetching(true);
-			console.log(`twitter: fetching ${fetches.length} user profiles...`);
-			await Promise.all(fetches);
-			setUserData(userData => ({...userData, ...newUserData}));
+			if(fetches.length > 0) {
+				console.log(`twitter: fetching ${fetches.length} user profiles...`);
+				await Promise.all(fetches);
+				setUserData(userData => ({...userData, ...newUserData}));
+			}
 			//setFetching(false);
 		}
 

@@ -31,12 +31,12 @@ export default function useUserIsClaimed(userId) {
 		}
 	}, [userId, userRegistry]);
 
-	useEffect(() => {
-		if(claimed) {
-			userRegistry.methods.getAccount(userId).call()
-				.then(result => { console.log('GOT ACCOUNT', result) })
-		}
-	}, [claimed]);
+	//useEffect(() => {
+	//	if(claimed) {
+	//		userRegistry.methods.getAccount(userId).call()
+	//			.then(result => { console.log('GOT ACCOUNT', result) })
+	//	}
+	//}, [claimed]);
 
 	return claimed;
 }
