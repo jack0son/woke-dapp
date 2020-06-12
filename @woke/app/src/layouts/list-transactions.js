@@ -156,7 +156,7 @@ export default function TransactionList ({ listItems, ...props }) {
 					/>
 				</ListItemAvatar>
 				<ListItemText style={{display: 'flex', flexDirection: 'column', justifyContent: 'space-evenly'}}
-					primary={`@${tx.counterParty ? tx.counterParty.handle : 'loading'}`}
+					primary={`${tx.counterParty && tx.counterParty.handle ? `@${tx.counterParty.handle}` : ''}`}
 					primaryTypographyProps={handleProps}
 
 					secondary={tx.timeSince ? `${tx.timeSince}` : `...`}

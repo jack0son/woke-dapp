@@ -19,6 +19,7 @@ export default function Avatar (props) {
 	return (
 		<MuiAvatar
 			{...innerProps}
+			crossOrigin="anonymous"
 			className={classes.avatar}
 		/>
 	);

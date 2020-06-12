@@ -35,6 +35,7 @@ const useStyles = makeStyles(theme => ({
 
 	styledTabs: styles => ({
 		height: styles.tabHeight || '5vh',
+		minHeight: '55px',
 		[theme.breakpoints.down('sm')]: {
 			width: '100%',
 		},

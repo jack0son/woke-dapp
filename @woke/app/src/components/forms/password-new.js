@@ -85,19 +85,19 @@ export default function NewPassword (props) {
 						type={'password'}
 						value={input.password}
 						onChange={handleChangeInput('password')}
-						error={error.password}
+						error={!!error.password}
 						helperText={error.password}
 					/>
 					<Password 
 						type={'confirmation'}
 						value={input.confirmation}
 						onChange={handleChangeInput('confirmation')}
-						error={error.confirmation}
+						error={!!error.confirmation}
 						helperText={error.confirmation}
 					/>
 				</div>
 				<Button 
-					disabled={error.password || error.confirmation || !input.confirmation.length}
+					disabled={!!error.password || !!error.confirmation || !input.confirmation.length}
 					onClick={setPassword}
 					styles={{marginTop: theme.spacing(2), marginBottom: theme.spacing(2)}}
 					{...buttonProps}

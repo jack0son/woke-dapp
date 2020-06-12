@@ -2,104 +2,10 @@ import React, { useState, useEffect, useReducer, useRef } from 'react'
 import { useWeb3Context } from '../web3context';
 import { safePriceEstimate } from '../../lib/web3/web3-utils'
 import useTxTimer from './tx-timer';
-
-
-// User friendly send transfer with user ID checking
-// Handles input data to token transfer
-export default function useSendTransferInput({
-	defaultRecipient,
-	defaultAmount,
-	balance,
-	checkUserExists,
-	twitterUsers,
-}) {
-	const [recipient, setRecipient] = useState(null);
-	const [input, setInput] = useState({
-		screen_name: defaultRecipient,
-		amount: defaultAmount,
-	});
-	const [error, setError] = useState(null);
-
-	// Transfer input
-	const handleInputEvent = name => event => {
-		event && event.target && setInput({ ...input, [name]: event.target.value });
-	};
-
-	const handleChangeInput = name => value => {
-		value && setInput({ ...input, [name]: value });
-	};
-
-	useEffect(() => {
-		if(input.amount > balance) {
-			setInput(input => ({...input, amount: defaultAmount}));
-		}
-	}, [balance]);
-
-	const handleSelectRecipient = () => {
-		sendTransfers.setAmount(input.amount); // always update amount
-		setError(null);
-		console.log('handleSelectRecipient() ', input.screen_name);
-		// Check user exists 
-		checkUserExists(null, input.screen_name)
-			.then(userObj => {
-				if(userObj) {
-					setRecipient(userObj);
-				} else {
-					setError('User does not exist');
-				}
-			})
-	}
-
-	const handleClearRecipient = () => {
-		setRecipient(null);
-	}
-
-	const sendTransfers = useSendTransfers(recipient, handleClearRecipient);
-
-	const handleSubmitTransfer = () => {
-		if(recipient && recipient != '') {
-			console.log(`submitTransfer() to: ${recipient.id}, amount:${input.amount}`);
-			sendTransfers.submit(recipient.id, input.amount);
-			twitterUsers.addId(recipient.id);
-			//handleClearRecipient();
-
-		} else {
-			console.log(`Error: submitTransfer() to: ${recipient.userId}, amount:${input.amount}`);
-			setError('Attempted transfer to no user');
-		}
-	}
-
-	// Bubble up errors from sendTransfers
-	useEffect(() => {
-		if(sendTransfers.error) {
-			console.dir(error);
-			if(sendTransfers.error.message) {
-				setError(sendTransfers.error.message);
-			} else {
-				setError(sendTransfers.error);
-			}
-		}
-	}, [sendTransfers.error]);
-
-	return {
-		handleChangeInput,
-		handleInputEvent,
-		handleSubmitTransfer,
-		handleSelectRecipient,
-		handleChangeInput,
-		handleClearRecipient,
-		recipient,
-		amount: input.amount,
-		txHash: sendTransfers.txHash,
-		currentTransfer: sendTransfers.currentTransfer,
-		pending: sendTransfers.pending,
-		timer: sendTransfers.timer,
-		error,
-	};
-}
+import { nonEmptyString } from '../../lib/utils';
 
 // Handle submitting transfer data to UserRegistry smart contract
-export function useSendTransfers (recipient, handleClearRecipient) {
+export default function useSendTransfers (recipient, handleClearRecipient) {
 	const { network, account, useSend, useSubscribeCall, useContract, web3 } = useWeb3Context();
 
 	const nullArgs = {userId: '', amount: 1}
@@ -190,6 +96,7 @@ export function useSendTransfers (recipient, handleClearRecipient) {
 			if(!transferMethod.send('useOpts', transferArgs.userId, transferArgs.amount, safeTxOpts)) {
 				console.error('... Failed to send transfer');
 			} else {
+				txTimer.stop();
 				txTimer.start();
 				setCurrentTransfer({
 					recipient,
@@ -209,8 +116,15 @@ export function useSendTransfers (recipient, handleClearRecipient) {
 
 	const error = txOptsError || sendTransferClaimed.error || sendTransferUnclaimed.error;
 
+	const receipt = sendTransferClaimed.receipt || sendTransferUnclaimed.receipt;
 	const txHash = sendTransferClaimed.txHash || sendTransferUnclaimed.txHash;
 	const pending = sendQueued || sendTransferClaimed.pending || sendTransferUnclaimed.pending;
+
+	useEffect(() => {
+		if(receipt && !pending) {
+			txTimer.stop();
+		}
+	}, [receipt, txTimer]);
 
 	// Update pending transfers
 	useEffect(() => {
@@ -230,9 +144,4 @@ export function useSendTransfers (recipient, handleClearRecipient) {
 		currentTransfer,
 		timer: txTimer,
 	};
-}
-
-// @brokenwindow
-function nonEmptyString(str) {
-	return str && str.length && str != '' && str.length > 0;
 }
