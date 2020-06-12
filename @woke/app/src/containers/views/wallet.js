@@ -246,7 +246,13 @@ export default function WalletView (props) {
 				</>}
 			/>
 
-			<FlexRow order={5} styles={{justifyContent: 'flex-end', alignItems: 'flex-end'}}>
+			<FlexRow order={5} styles={{
+				justifyContent: 'flex-end',
+				alignItems: 'flex-end',
+				small: {
+					justifyContent: 'center',
+				}
+			}}>
 				<br/>
 				<NetworkLink/>
 			</FlexRow>

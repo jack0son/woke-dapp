@@ -22,6 +22,7 @@ export default function useUserIsClaimed(userId) {
 		let abort = false;
 		if(userRegistry && userId && userId.length && userId.length > 0) {
 			userRegistry.methods.userClaimed(userId).call()
+				//.then(result => { if(!abort) setClaimed(result) })
 				.then(result => { if(!abort) setClaimed(result) })
 		}
 
@@ -30,5 +31,12 @@ export default function useUserIsClaimed(userId) {
 		}
 	}, [userId, userRegistry]);
 
-	return claimed
+	useEffect(() => {
+		if(claimed) {
+			userRegistry.methods.getAccount(userId).call()
+				.then(result => { console.log('GOT ACCOUNT', result) })
+		}
+	}, [claimed]);
+
+	return claimed;
 }

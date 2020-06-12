@@ -10,16 +10,17 @@ import useTxTimer from '../hooks/woke-contracts/tx-timer';
 
 
 export default function ClaimContainer(props) {
+	const { userId, userHandle, claimStatus, handleClaimComplete } = props;
 	const [tweetedClaimString, setTweetedClaimString] = useState(retrieveTweeted());
 	const { network, useSubscribeCall } = useWeb3Context();
 	const claim = useClaimUser({
-		userId: props.userId,
-		userHandle: props.userHandle,
-		claimStatus: props.claimStatus,
+		userId: userId,
+		userHandle: userHandle,
+		claimStatus:claimStatus,
 	});
 
 	const timer = useTxTimer(network.blockTime, {steps: network.blockTime/100 });
-	const unclaimedBalance = useSubscribeCall('UserRegistry', 'unclaimedBalanceOf', props.userId);
+	const unclaimedBalance = useSubscribeCall('UserRegistry', 'unclaimedBalanceOf', userId);
 
 	useEffect(() => {
 		if(tweetedClaimString) {
@@ -44,10 +45,16 @@ export default function ClaimContainer(props) {
 		setTweetedClaimString(false);
 	}
 
+	// Hoist claim stage up to caller
+	useEffect(() => {
+		if(claim.stage === claim.stageMap.CLAIMED)
+			handleClaimComplete();
+	}, [claim.stage]);
+
 	return (
 		<>
 		<Claim
-			userHandle={props.userHandle}
+			userHandle={userHandle}
 			unclaimedBalance={unclaimedBalance}
 			claimState={claim}
 			handleTweeted={handleTweeted}
@@ -55,7 +62,7 @@ export default function ClaimContainer(props) {
 			handleNotTweeted={handleNotTweeted}
 			timer={timer}
 		/>
-		{ props.renderProp(claim.stageList[claim.stage]) }
+		{}
 		</>
 	);
 }

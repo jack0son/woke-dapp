@@ -57,7 +57,7 @@ export default function ClaimView (props) {
 						},
 					}}
 				>
-					Hey <Span color='secondary'>@</Span><Span>{userHandle}</Span>, to securely claim {unclaimedString()} <WokeSpan key="WokeSpan">WOKEN{unclaimedBalance && unclaimedBalance > 1 ? 's' : ''}</WokeSpan> you've already been sent, we need to tweet a proof message. <br/><br/>
+					Hey <Span color='secondary'>@</Span><Span>{userHandle}</Span>, to securely claim {unclaimedString()} <WokeSpan key="WokeSpan">WOKEN{unclaimedBalance && unclaimedBalance == 1 ? '' : 's'}</WokeSpan> you've already been sent, we need to tweet a proof message. <br/><br/>
 				</LargeBody>
 			<StandardBody color='primary' styles={{
 				fontSize: '1.5rem',
@@ -111,7 +111,7 @@ export default function ClaimView (props) {
 				}}
 				buttonProps={{
 					onClick: handleConfirmedTweeted,
-					textAlign: 'center',
+					styles: {textAlign: 'center'},
 					text: `Yes, I tweeted!`,
 					color: 'primary',
 				}}

@@ -48,7 +48,6 @@ export const useUsers = ({appClient}) => {
 		storeUserData(userData);
 	}, [userData]);
 
-
 	const addId = (userId) => {
 		setUserIds(ids => {
 			if(ids.includes(userId)) {
