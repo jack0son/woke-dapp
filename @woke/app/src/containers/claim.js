@@ -11,7 +11,7 @@ import useTxTimer from '../hooks/woke-contracts/tx-timer';
 
 export default function ClaimContainer(props) {
 	const [tweetedClaimString, setTweetedClaimString] = useState(retrieveTweeted());
-	const { network } = useWeb3Context();
+	const { network, useSubscribeCall } = useWeb3Context();
 	const claim = useClaimUser({
 		userId: props.userId,
 		userHandle: props.userHandle,
@@ -19,6 +19,7 @@ export default function ClaimContainer(props) {
 	});
 
 	const timer = useTxTimer(network.blockTime, {steps: network.blockTime/100 });
+	const unclaimedBalance = useSubscribeCall('UserRegistry', 'unclaimedBalanceOf', props.userId);
 
 	useEffect(() => {
 		if(tweetedClaimString) {
@@ -46,6 +47,8 @@ export default function ClaimContainer(props) {
 	return (
 		<>
 		<Claim
+			userHandle={props.userHandle}
+			unclaimedBalance={unclaimedBalance}
 			claimState={claim}
 			handleTweeted={handleTweeted}
 			handleConfirmedTweeted={handleConfirmedTweeted}

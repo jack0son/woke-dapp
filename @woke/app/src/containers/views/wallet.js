@@ -23,6 +23,8 @@ import SmallBody from '../../components/text/body-standard';
 
 import { useRootContext } from '../../hooks/root-context';
 
+const prettyName = (name) => name.includes('goerli') || name.includes('production') ? 'Goerli' : name;
+
 const headerHeight = 15;
 const useStyles = makeStyles(theme => ({
 	balanceText: {
@@ -216,7 +218,7 @@ export default function WalletView (props) {
 	);
 
 	const NetworkLink  = () => (
-		<Link underline='hover' href={`https://goerli.etherscan.io/address/${tokenAddress}`} target='_blank' rel='noopener noreferrer'> <SmallBody styles={{fontSize: '.8rem'}}>{`${network.name}: ${tokenAddress}`}</SmallBody></Link>
+		<Link underline='hover' href={`https://goerli.etherscan.io/address/${tokenAddress}`} target='_blank' rel='noopener noreferrer'> <SmallBody styles={{fontSize: '.8rem', small: {fontSize: '.8rem'}}}>{`${prettyName(network.name)}: ${tokenAddress}`}</SmallBody></Link>
 	);
 
 	const renderBalance = () => balance == null ? <Spinner/> : <Balance balance={balance}/>;
@@ -245,6 +247,7 @@ export default function WalletView (props) {
 			/>
 
 			<FlexRow order={5} styles={{justifyContent: 'flex-end', alignItems: 'flex-end'}}>
+				<br/>
 				<NetworkLink/>
 			</FlexRow>
 		</>);

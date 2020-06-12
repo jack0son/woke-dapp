@@ -11,6 +11,7 @@ import StandardBody from '../../components/text/body-standard'
 import LargeBody from '../../components/text/body-large'
 import Button from '../../components/buttons/button-contained'
 import WokeSpan from '../../components/text/span-woke'
+import Typography from '@material-ui/core/Typography';
 import LinearProgress from '../../components/progress/linear-stages'
 
 
@@ -24,10 +25,12 @@ import { createShareIntentUrl, popupCenter } from '../../lib/utils';
 
 export default function ClaimView (props) {
 	const {
+		userHandle,
 		claimState, 
 		handleTweeted,
 		handleConfirmedTweeted,
 		handleNotTweeted,
+		unclaimedBalance,
 		triggerPostTweet, // if not use share intent
 		timer,
 	} = props;
@@ -37,6 +40,10 @@ export default function ClaimView (props) {
 	const sc = claimState.stageMap;
 	const stage = claimState.stage;
 	const stageString = claimState.stageList[claimState.stage]; // stage string
+
+	const Span = (props) => LargeBody({ component: 'span', color: 'primary', ...props });
+
+	const unclaimedString = () => unclaimedBalance && unclaimedBalance > 0 ? <Span>{unclaimedBalance}</Span>: 'any';
 
 	const TweetInstruction = () => (<>
 				<LargeBody
@@ -50,7 +57,7 @@ export default function ClaimView (props) {
 						},
 					}}
 				>
-		To securely claim any <WokeSpan key="WokeSpan">WOKENs</WokeSpan> you've already been sent, we need to tweet a proof message. <br/><br/>
+					Hey <Span color='secondary'>@</Span><Span>{userHandle}</Span>, to securely claim {unclaimedString()} <WokeSpan key="WokeSpan">WOKEN{unclaimedBalance && unclaimedBalance > 1 ? 's' : ''}</WokeSpan> you've already been sent, we need to tweet a proof message. <br/><br/>
 				</LargeBody>
 			<StandardBody color='primary' styles={{
 				fontSize: '1.5rem',
