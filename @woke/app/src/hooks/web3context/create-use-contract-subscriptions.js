@@ -24,7 +24,7 @@ export default web3 => {
 			// Create the web3 subscription
 			const subObj = subscribeLogContract(web3)(contract, (logData) => {
 				sub.subscribers.filter(subscriber => subscriber.active)
-					.forEach(subscriber => subscriber.callback())
+					.forEach(subscriber => subscriber.callback(logData))
 			});
 			sub.subObj = subObj;
 			sub.subObj.start();

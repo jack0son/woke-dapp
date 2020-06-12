@@ -77,5 +77,6 @@ export default function(blockCache, eventList, setEventList) {
 	return {
 		attach: attachEventMetaData,
 		refresh, 
+		updates: deep,
 	}
 }

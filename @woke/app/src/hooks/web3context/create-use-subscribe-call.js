@@ -13,12 +13,14 @@ export default web3 => (contractName, methodName, ...args) => {
 	const isMounted = useRef(true)
 
 	// Call on contract update
-	const callMethod = useCallback(() => {
+	const callMethod = useCallback((logData, blockNumber) => {
+		const bn = logData ? logData.blockNumber : blockNumber;
 		if(contract) {
 			//console.log(`call ${contractName}, ${methodName}: ${args}`);
 			//console.dir(contract);
-			return contract.methods[methodName](...args).call({from: account})
+			return contract.methods[methodName](...args).call({from: account}, bn)
 				.then(result => {
+					console.log(`call:${bn}:${contractName}.${methodName}() ... got `, result);
 					if(isMounted.current) {
 						setCallValue(result)
 						//console.log(`... <${result}> from call ${contractName}, ${methodName}: ${args}`);
@@ -35,7 +37,7 @@ export default web3 => (contractName, methodName, ...args) => {
 	// Run the contract call every time there is a contract log update
 	useEffect(() => {
 		setCallValue(null);
-		callMethod();
+		callMethod(undefined, 'latest');
 	}, [contract, contractName, methodName, ...args]);
 
 	useEffect(() => {
