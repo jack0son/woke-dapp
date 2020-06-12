@@ -15,15 +15,16 @@ export const useUsers = ({appClient}) => {
   useEffect(() => {
 		let newUserData = {};
 		const fetchUserData = async (id) => {
-			let data = await appClient.getUserData(id);
-			newUserData[id] = data;
-			return;
+			newUserData[id] = await appClient.getUserData(id);
 		}
 
 		const performFetches = async (fetches) => {
 			//setFetching(true);
-			await Promise.all(fetches);
-			setUserData(userData => ({...userData, ...newUserData}));
+			if(fetches.length > 0) {
+				console.log(`twitter: fetching ${fetches.length} user profiles...`);
+				await Promise.all(fetches);
+				setUserData(userData => ({...userData, ...newUserData}));
+			}
 			//setFetching(false);
 		}
 
@@ -39,7 +40,7 @@ export const useUsers = ({appClient}) => {
 			performFetches(fetches);
 		}
 
-  }, [appClient, userIds.length]);
+  }, [appClient, userIds, userIds.length]);
 
 	const userDataLength = useMemo(() => {
 		return Object.keys(userData).length;
@@ -48,7 +49,6 @@ export const useUsers = ({appClient}) => {
 	useEffect(() => {
 		storeUserData(userData);
 	}, [userData]);
-
 
 	const addId = (userId) => {
 		setUserIds(ids => {

@@ -3,12 +3,14 @@ import { makeStyles, useTheme } from '@material-ui/styles';
 import Typography from '@material-ui/core/Typography';
 import Box from '@material-ui/core/Box';
 import Hidden from '@material-ui/core/Hidden';
+import Link from '@material-ui/core/Link';
 
 // Layout
 import SplitColumns from '../../layouts/split-column';
 import PaneTabs from '../../layouts/tabs/tabs-panes';
 import TransactionList from '../../layouts/list-transactions';
 import FlexColumn from '../../layouts/flex-column'
+import FlexRow from '../../layouts/flex-row'
 
 // Components
 import AvatarHeader from '../../components/wallet/header-avatar';
@@ -17,8 +19,11 @@ import Tutorial from  '../../components/wallet/tutorial';
 import TransferTokensForm from  '../../components/forms/tokens-transfer';
 import Spinner from '../../components/progress/spinner-indeterminate';
 import XLBody from '../../components/text/body-xl';
+import SmallBody from '../../components/text/body-standard';
 
 import { useRootContext } from '../../hooks/root-context';
+
+const prettyName = (name) => name.includes('goerli') || name.includes('production') ? 'Goerli' : name;
 
 const headerHeight = 15;
 const useStyles = makeStyles(theme => ({
@@ -59,6 +64,8 @@ export default function WalletView (props) {
 		transferEvents,
 		rewardEvents,
 		sendTransferInput,
+		tokenAddress,
+		network,
 	} = props;
 	const classes = useStyles(styles);
 	const theme = useTheme();
@@ -210,6 +217,10 @@ export default function WalletView (props) {
 		</PaneTabs>
 	);
 
+	const NetworkLink  = () => (
+		<Link underline='hover' href={`https://goerli.etherscan.io/address/${tokenAddress}`} target='_blank' rel='noopener noreferrer'> <SmallBody styles={{fontSize: '.8rem', small: {fontSize: '.8rem'}}}>{`${prettyName(network.name)}: ${tokenAddress}`}</SmallBody></Link>
+	);
+
 	const renderBalance = () => balance == null ? <Spinner/> : <Balance balance={balance}/>;
 
 		return (<>
@@ -234,5 +245,16 @@ export default function WalletView (props) {
 					{ renderPaneTabs() }
 				</>}
 			/>
+
+			<FlexRow order={5} styles={{
+				justifyContent: 'flex-end',
+				alignItems: 'flex-end',
+				small: {
+					justifyContent: 'center',
+				}
+			}}>
+				<br/>
+				<NetworkLink/>
+			</FlexRow>
 		</>);
 }

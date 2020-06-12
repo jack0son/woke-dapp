@@ -34,6 +34,7 @@ export default function BrandLink (props) {
 			>
 				<img 
 					className={classes.avatarImage}
+					crossOrigin="anonymous"
 					src={props.src} 
 					alt={props.alt} 
 				/>
