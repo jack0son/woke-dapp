@@ -39,7 +39,7 @@ export const useUsers = ({appClient}) => {
 			performFetches(fetches);
 		}
 
-  }, [appClient, userIds.length]);
+  }, [appClient, userIds, userIds.length]);
 
 	const userDataLength = useMemo(() => {
 		return Object.keys(userData).length;

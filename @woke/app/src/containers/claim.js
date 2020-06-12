@@ -4,7 +4,7 @@ import React, {useState, useEffect} from 'react'
 import Claim from './views/claim'
 
 // Custom hooks
-import useClaimUser from '../hooks/woke-contracts/claimuser'
+import useClaimUser from '../hooks/woke-contracts/claimuser-flow';
 import { useWeb3Context } from '../hooks/web3context';
 import useTxTimer from '../hooks/woke-contracts/tx-timer';
 

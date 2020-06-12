@@ -10,7 +10,7 @@ const useStyles = makeStyles({
 		marginTop: '10%',
 		width: '100%',
 		minWidth: '100%',
-		height: '20%',
+		height: '22%',
 	}),
 
   bar: {

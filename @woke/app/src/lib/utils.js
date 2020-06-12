@@ -105,3 +105,8 @@ export function registerEnterKey(_callback) {
 	return () => { callback = () => {} };
 };
 
+// @brokenwindow
+export function nonEmptyString(str) {
+	return str && str.length && str != '' && str.length > 0;
+}
+

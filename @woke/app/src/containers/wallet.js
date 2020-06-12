@@ -5,16 +5,16 @@ import { timeSince } from '../lib/utils';
 //import '../App.css';
 
 // View container
-import Wallet from './views/wallet'
-import Loading from './views/loading'
+import Wallet from './views/wallet';
+import Loading from './views/loading';
 
 // Hooks
-import { useTwitterContext } from'../hooks/twitter/index.js'
-import { useWeb3Context } from '../hooks/web3context'
-import useBlockCache from '../hooks/blockcache'
-import useTransferEvents from '../hooks/woke-contracts/transferevents'
-import useRewardEvents from '../hooks/woke-contracts/rewardevents'
-import useSendTransferInput from '../hooks/woke-contracts/sendtransfer'
+import { useTwitterContext } from'../hooks/twitter';
+import { useWeb3Context } from '../hooks/web3context';
+import useBlockCache from '../hooks/blockcache';
+import useTransferEvents from '../hooks/woke-contracts/events-transfer';
+import useBonusEvents from '../hooks/woke-contracts/events-bonus';
+import useTransferInput from '../hooks/woke-contracts/transfer-input';
 //import useLiveBalance from '../hooks/live-balance';
 
 export default function WalletContainer(props) {
@@ -38,7 +38,7 @@ export default function WalletContainer(props) {
 
 	const blockCache = useBlockCache();
 	const transferEvents = useTransferEvents(myUserId, blockCache);
-	const rewardEvents = useRewardEvents(blockCache);
+	const rewardEvents = useBonusEvents(blockCache);
 
 	useEffect(() => {
 		twitterUsers.addId(myUserId);
@@ -60,7 +60,7 @@ export default function WalletContainer(props) {
 		}
 	}
 
-	const sendTransferInput = useSendTransferInput({
+	const sendTransferInput = useTransferInput({
 		defaultRecipient: '',
 		defaultAmount: 1,
 		balance,

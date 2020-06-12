@@ -8,10 +8,13 @@ import { useTwitterContext } from '../twitter/index.js'
 export default function(blockCache) {
 	const {
 		account,
-		useEvents
+		useEvents,
+		useContract,
 	} = useWeb3Context();
 	const twitterUsers = useTwitterContext().userList;
 	const [eventList, setEventList] = useState([]);
+
+	const userRegistry = useContract('UserRegistry');
 
 	// TODO: use indexed strings on smart-contract to look up by user id
 	let bonusEvents = useEvents('UserRegistry', 'Bonus',
@@ -24,54 +27,62 @@ export default function(blockCache) {
 			[account])
 	);
 
-	let newUserIds = [];
+	useEffect(() => {
 	let newEvents = []
+	let newUserIds = [];
 	let blocks = [];
-
-	const parseEvents = (events) => {
-		newEvents = newEvents.concat(events.map(event => {
-			let id = event.returnValues.claimerId;
-			if(!twitterUsers.state.ids.includes(id)) {
-				newUserIds.push(id);
-			}
-
-			//if(!blockCache.blockNumbers.includes(event.blockNumber)) {
-			blocks.push(event.blockNumber);
-			//}
-
-			return {
-				...event, 
-				type: 'receive',
-				counterParty: {
-					id: id,
+	const parseEvents = (events) => Promise.all(
+		events.map(event => userRegistry.methods.getUser(event.returnValues.claimer).call()
+			.then(id => {
+				if(!twitterUsers.state.ids.includes(id)) {
+					newUserIds.push(id);
 				}
+				//if(!blockCache.blockNumbers.includes(event.blockNumber)) {
+				//}
+				blocks.push(event.blockNumber);
+				newEvents.push({
+					...event, 
+					type: 'receive',
+					counterParty: {
+						id: id,
+					}
+				})
+			})
+		)
+	);
+
+		async function updateEvents() {
+			if(bonusEvents) {
+				await parseEvents(bonusEvents);
 			}
-		}));
-	}
+			if(newEvents.length > eventList.length) {
+				blockCache.addBlocks(blocks);
 
-	if(bonusEvents) {
-		parseEvents(bonusEvents);
-	}
+				if(newUserIds.length > 0) {
+					twitterUsers.appendIds(newUserIds);
+				}
 
-	if(newEvents.length > eventList.length) {
-		blockCache.addBlocks(blocks);
+				if(newEvents.length > 0) {
+					newEvents.sort((a,b) => b.blockNumber - a.blockNumber);
+				}
 
-		if(newUserIds.length > 0) {
-			twitterUsers.appendIds(newUserIds);
+				setEventList(newEvents);
+			}
 		}
 
-		if(newEvents.length > 0) {
-			newEvents.sort((a,b) => b.blockNumber - a.blockNumber);
-		}
+		updateEvents();
 
-		setEventList(newEvents);
-	}
+	}, [bonusEvents]);
+
+
 
 	// Link events to block and user data as it becomes available
 	const numBlocks = useRef(blockCache.blockNumbers.length);
+	const numTwitterUsers = useRef(twitterUsers.state.data.length);
 	useEffect(() => {
-		if(blockCache.blockNumbers.length > numBlocks.current) {
+		if(twitterUsers.state.data.length > numTwitterUsers.current || blockCache.blockNumbers.length > numBlocks.current) {
 			numBlocks.current = blockCache.blockNumbers.length;
+			numTwitterUsers.current = twitterUsers.state.data.length;
 			setEventList(eventList => {
 				eventList.forEach(event => {
 					event.block = blockCache.blocks[event.blockNumber];
