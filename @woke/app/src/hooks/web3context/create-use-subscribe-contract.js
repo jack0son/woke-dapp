@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react'
 import { useWeb3Context } from '.';
 
-// @dev createUseSubscribeContract
+// @desc useSubscribeContract
 // @dev Call the callback everytime there is an update to the contract's logs
 export default web3 => (contractName, callback) => {
 	const { useContractSubscriptions, useContract } = useWeb3Context();
@@ -10,17 +10,15 @@ export default web3 => (contractName, callback) => {
 
 	// TODO this useCallback should be in useContractSubscriptions
 
+	// TODO missing dependencies
 	useEffect(() => {
-		setSub(sub => {
-			if(sub == null) {
-				//console.log('Creating new subscription for ', contractName);
-				let newSub = useContractSubscriptions(contract, contractName, callback);
-				return newSub;	
-			}
-
+		if(sub == null) {
+			//console.log('Creating new subscription for ', contractName);
+			let newSub = useContractSubscriptions(contract, contractName, callback);
+			setSub(newSub);	
+		} else {
 			sub.update(callback);
-			return sub;
-		});
+		}
 	}, [contractName, callback]);
 
 	// Stop subscription on unmount

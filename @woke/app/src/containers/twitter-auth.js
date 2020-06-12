@@ -10,7 +10,7 @@ function useQuery() {
 export default function TwitterAuth() {
 	const query = useQuery();
 	const { userSignin } = useTwitterContext();
-	console.log('auth', query.get('oauth_token'), query.get('oauth_verifier'));
+	//console.log('auth', query.get('oauth_token'), query.get('oauth_verifier'));
 
 	userSignin.handleOAuthCallback();
 

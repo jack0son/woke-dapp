@@ -110,7 +110,7 @@ export default function WalletView (props) {
 
 	const renderTransfer = () => {
 		if(balance == null) {
-			return <Spinner/>;
+			return null;
 		} else if (balance > 0) {
 			return <TransferTokensForm order={2}
 				sendTransferInput={sendTransferInput}
@@ -210,7 +210,7 @@ export default function WalletView (props) {
 		</PaneTabs>
 	);
 
-	const renderBalance = () => <Balance balance={balance}/>
+	const renderBalance = () => balance == null ? <Spinner/> : <Balance balance={balance}/>;
 
 		return (<>
 

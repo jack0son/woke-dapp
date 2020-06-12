@@ -23,7 +23,7 @@ export default {
 			},
 
 			lan: {
-				blockTime: 1000,
+				blockTime: 25000,
 				protocol: 'ws',
 				host: host, // @TODO LOAD FROM env.local
 				port: 8545,
@@ -43,14 +43,14 @@ export default {
 			},
 
 			goerli: {
-				blockTime: 18000,
+				blockTime: 22000,
 				protocol: 'wss',
 				host: `goerli.infura.io/ws/v3/${infuraApiKey}`,
 				id: 5,
 			},
 
 			production: {
-				blockTime: 18000,
+				blockTime: 22000,
 				protocol: 'wss',
 				host: `goerli.infura.io/ws/v3/${infuraApiKey}`,
 				id: 5,

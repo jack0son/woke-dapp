@@ -1,5 +1,5 @@
 import React, { useReducer, useEffect, useCallback, useState } from 'react';
-import { oAuthApi } from '../../lib/twitter'
+import { oAuthApi } from '../../lib/twitter';
 
 export default function useUserSignin() {
 	const [authState, dispatch] = useReducer(reducer, {
@@ -13,11 +13,11 @@ export default function useUserSignin() {
 
 	const [error, setError] = useState(null);
 
-	const haveUser = useCallback(() => validUser(authState.user), [authState.user])
-	const haveCreds = useCallback(() => validCreds(authState.credentials), [authState.credentials])
+	const haveUser = useCallback(() => validUser(authState.user), [authState.user]);
+	const haveCreds = useCallback(() => validCreds(authState.credentials), [authState.credentials]);
 	const isSignedIn = useCallback(() => {
-		return haveUser() && haveCreds()
-	}, [haveUser, haveCreds])
+		return haveUser() && haveCreds();
+	}, [haveUser, haveCreds]);
 
 	function reducer(state, action) {
 		switch(action.type) {
@@ -27,17 +27,11 @@ export default function useUserSignin() {
 				}
 				const { verifierResp } = action.payload;
 
-				console.log(state);
-
 				if(verifierResp && state.verifierResp == null) {
-					return {
-						...state,
-						verifierResp,
-					}
+					return { ...state, verifierResp };
 				}
 
 				return state;
-				break;
 			}
 
 			case 'got-access-tokens': {
@@ -55,8 +49,20 @@ export default function useUserSignin() {
 				storeUserTokens(credentials);
 				storeUser(user);
 
-				return {...state, user, credentials}
-				break;
+				return {...state, user, credentials};
+			}
+
+			case 'sign-out': {
+				const user = { id: '', handle: '' };
+				const credentials = {
+					accessKey: '',
+					accessSecret: '',
+				};
+				const requestToken = null;
+				storeUserTokens(credentials);
+				storeUser(user);
+				storeRequestToken(requestToken);
+				return { ...state, user, credentials, requestToken, verifierResp: null }
 			}
 
 			default: {
@@ -79,6 +85,10 @@ export default function useUserSignin() {
 		if(verifierResp && nonEmptyArray(verifierResp.oauth_token)) {
 			dispatch({type: 'got-callback-response', payload: {verifierResp}});
 		}
+	}
+
+	function signOut() {
+		dispatch({type: 'sign-out'});
 	}
 
 
@@ -107,6 +117,7 @@ export default function useUserSignin() {
 	return {
 		handleStartAuth,
 		handleOAuthCallback: handleCallback,
+		signOut,
 		isSignedIn,
 		haveCreds,
 		haveUser,

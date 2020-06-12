@@ -100,6 +100,11 @@ export default function Menu({ twitterSignin, ...props }) {
 		hedgehog.api.logout();
 	};
 
+	const handleSignOut = () => {
+		twitterSignin.signOut();
+		hedgehog.api.forgetUser();
+	};
+
 	// ------------- Auth option states -------------
 	// Scenario 1
 	const previouslySignedIn = () => {
@@ -129,18 +134,24 @@ export default function Menu({ twitterSignin, ...props }) {
 				onClick={handleLogout}
 			>logout</Link>;
 
-		} else if(previouslySignedIn()) { //
+		/*} else if(previouslySignedIn()) { //
 			// Otherwise, we can log in if we have the user id.
 			return <Link className={classes.menuItem} variant="h3"
 				href="/login"
 				//onClick={goToLogin}
 			>login</Link>;
+			*/
+		} else if(previouslySignedIn()) { //
+			// Otherwise, we can log in if we have the user id.
+			return <Link className={classes.menuItem} variant="h3"
+				onClick={handleSignOut}
+			>sign out</Link>;
 
 		} else { // Not logged in, and not signed in
 			// By default, root container will route to the sign in page, no need to
 			// link to sign in page, but display an option anyway so it's more obvious
 			// how to get back from the How page or any future routes.
-			return <Link className={classes.menuItem} variant="h3" href="/">signin</Link>;
+			return <Link className={classes.menuItem} variant="h3" href="/">sign in</Link>;
 		}
 	};
 

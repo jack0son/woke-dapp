@@ -26,33 +26,37 @@ function randSign() {
 
 // TODO add weights to stageList
 export default function ContinuousProgress({value, endValue, ...props}) {
-	const defaults = { step: 1 };
+	const defaults = { step: 20 };
 	const { step, styles, organic } = { ...defaults, ...props};
 	const [completed, setCompleted] = useState(0);
 	const [buffer, setBuffer] = useState(0);
 	const classes = useStyles(styles);
 
 	//const increment = Math.ceil(endValue * (step / 100));
+	useEffect(() => {
+	}, [value]);
 
 	useEffect(() => {
 		async function progress() {
-			let diff = (value == endValue) ? 100 : (value / endValue) * 100;
+			let diff = (value == endValue) ? 100 : 100 * value / endValue;
 			// @brokenwindow this does not take into acount the timing of the input
 			// value
 
-			setCompleted(buffer => {
-				return Math.min(diff, 100);
+			setBuffer(buffer => {
+				return Math.min(diff*2, 100);
 			});
 
-			if(organic) {
-				const rand = 5 * Math.random();
-				diff -= rand;
-				//diff += randSign() * rand;
-				await setSyncTimeout(rand * 500);
+			if(Math.floor(diff)%step == 0) {
+				if(organic) {
+					const rand = 5 * Math.random();
+					//diff -= rand;
+					diff += rand;
+					await setSyncTimeout(rand * 500);
+				}
+				setCompleted(prev => {
+					return Math.min(diff, 100);
+				});
 			}
-			setCompleted(prev => {
-				return Math.min(diff, 100);
-			});
 		}
 
 		progress()
@@ -61,7 +65,6 @@ export default function ContinuousProgress({value, endValue, ...props}) {
 
 	return (
 		<>
-			<span> TIMER TIMER</span>
 			<div className={classes.wrapper}>
 				<LinearProgress className={classes.bar} variant="buffer" value={completed} valueBuffer={buffer} />
 			</div>

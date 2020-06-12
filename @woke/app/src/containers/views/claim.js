@@ -13,7 +13,6 @@ import Button from '../../components/buttons/button-contained'
 import WokeSpan from '../../components/text/span-woke'
 import LinearProgress from '../../components/progress/linear-stages'
 
-import useTxTimer from '../../hooks/woke-contracts/tx-timer';
 
 // @fix shouldn't need this whole library
 // Need widget so that tweet intent works as popup
@@ -30,6 +29,7 @@ export default function ClaimView (props) {
 		handleConfirmedTweeted,
 		handleNotTweeted,
 		triggerPostTweet, // if not use share intent
+		timer,
 	} = props;
 	const theme = useTheme();
 	const isMobile = useIsMobile();
@@ -123,13 +123,9 @@ export default function ClaimView (props) {
 		</>
 	);
 
-	const expectedClaimTime = 60000;
-	const timer = useTxTimer(expectedClaimTime, {steps: Math.floor(expectedClaimTime/100)});
-
 	useEffect(() => {
-		if(stage >= sc.FOUND_TWEET) {
-			timer.start();
-		}
+		timer.stop();
+		timer.start();
 	}, [stage]);
 
 	const renderClaiming = () => (
