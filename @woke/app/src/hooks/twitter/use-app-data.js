@@ -15,13 +15,12 @@ export const useUsers = ({appClient}) => {
   useEffect(() => {
 		let newUserData = {};
 		const fetchUserData = async (id) => {
-			let data = await appClient.getUserData(id);
-			newUserData[id] = data;
-			return;
+			newUserData[id] = await appClient.getUserData(id);
 		}
 
 		const performFetches = async (fetches) => {
 			//setFetching(true);
+			console.log(`twitter: fetching ${fetches.length} user profiles...`);
 			await Promise.all(fetches);
 			setUserData(userData => ({...userData, ...newUserData}));
 			//setFetching(false);

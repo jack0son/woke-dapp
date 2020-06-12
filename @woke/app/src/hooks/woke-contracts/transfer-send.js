@@ -96,6 +96,7 @@ export default function useSendTransfers (recipient, handleClearRecipient) {
 			if(!transferMethod.send('useOpts', transferArgs.userId, transferArgs.amount, safeTxOpts)) {
 				console.error('... Failed to send transfer');
 			} else {
+				txTimer.stop();
 				txTimer.start();
 				setCurrentTransfer({
 					recipient,
@@ -115,8 +116,15 @@ export default function useSendTransfers (recipient, handleClearRecipient) {
 
 	const error = txOptsError || sendTransferClaimed.error || sendTransferUnclaimed.error;
 
+	const receipt = sendTransferClaimed.receipt || sendTransferUnclaimed.receipt;
 	const txHash = sendTransferClaimed.txHash || sendTransferUnclaimed.txHash;
 	const pending = sendQueued || sendTransferClaimed.pending || sendTransferUnclaimed.pending;
+
+	useEffect(() => {
+		if(receipt && !pending) {
+			txTimer.stop();
+		}
+	}, [receipt, txTimer]);
 
 	// Update pending transfers
 	useEffect(() => {

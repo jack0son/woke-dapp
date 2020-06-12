@@ -81,6 +81,7 @@ export default function(blockCache) {
 	const numTwitterUsers = useRef(twitterUsers.state.data.length);
 	useEffect(() => {
 		if(twitterUsers.state.data.length > numTwitterUsers.current || blockCache.blockNumbers.length > numBlocks.current) {
+			console.log('Updating bonus event metadata...');
 			numBlocks.current = blockCache.blockNumbers.length;
 			numTwitterUsers.current = twitterUsers.state.data.length;
 			setEventList(eventList => {
@@ -100,7 +101,7 @@ export default function(blockCache) {
 				return eventList;
 			})
 		}
-	}, [eventList, blockCache, twitterUsers.state.data]);
+	}, [eventList, blockCache, twitterUsers.state.data, twitterUsers.state.dataLength]);
 
 	return eventList;
 }
