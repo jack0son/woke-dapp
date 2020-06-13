@@ -1,48 +1,59 @@
 import React from 'react';
-import { useTheme } from '@material-ui/styles';
-import Typography from '@material-ui/core/Typography';
-
-import ContentWrapper from './wrapper-content';
-import Footer from './footer';
-import BottomHolder from './holder-bottom';
+import { makeStyles } from '@material-ui/styles';
+import OnboardingContainer from './container-onboarding';
 import BelowButtonGroup from './button-group-below';
+import LargeBody from '../components/text/body-large';
 
-import BodyStandard from '../components/text/body-standard'
-import BodyLarge from '../components/text/body-large'
-import HL from '../components/text/span-highlight'
+const useStyles = makeStyles(theme => ({
+	buttons: styles => ({
+		display: 'flex',
+		justifyContent: 'space-between',
+		width: '40vh',
+		flexWrap: 'wrap',
+	}),
+}));
 
 
-export default function ClaimsProcess(props) {
-	const theme = useTheme();
+export default function ClaimPage(props) {
+	const { childrenAbove } = props;
+	const classes = useStyles(props.styles);
 
 	return (
 		<>
-		<ContentWrapper
-			styles={{marginTop: '20%'}}
-		>
-			<BodyLarge
-				styles={{
-					textAlign: props.textAlign ? props.textAlign : 'justify',
-					paddingLeft: theme.spacing(2),
-					paddingRight: theme.spacing(2),
-				}}
-			>
-				{props.instructionText}
-			</BodyLarge>
-
-		</ContentWrapper>
-
-		<Footer minHeight='50% !important'>
-			<BottomHolder justifyContent='flex-start !important'>
-				<BelowButtonGroup
-					message={props.buttonMessage}
-					Button={props.button}
-					buttonProps={props.buttonProps}
-					//styles={{marginTop: ''}}
-				/>
-				{props.children}
-			</BottomHolder>
-		</Footer>
+			<OnboardingContainer styles={{
+				width: '70%',
+				small: {
+					height: '80vh',
+					width: '85%',
+					marginLeft: 'auto',
+					marginRight: 'auto',
+				}
+			}}>
+				{ childrenAbove }
+				<LargeBody
+					styles={{
+						textAlign: 'justify',
+						paddingLeft: '10%',
+						paddingRight: '10%',
+						small: {
+							paddingLeft: '0%',
+							paddingRight: '0%',
+						},
+					}}
+				>
+					{props.instructionText}
+				</LargeBody>
+				<div className={classes.buttons}>
+					<BelowButtonGroup
+						message={props.buttonMessage}
+						messageColor={props.messageColor}
+						Button={props.Button}
+						buttonProps={props.buttonProps}
+						flexContainerProps={props.flexContainerProps}
+					/>
+					{props.children}
+				</div>
+			</OnboardingContainer>
 		</>
 	);
 }

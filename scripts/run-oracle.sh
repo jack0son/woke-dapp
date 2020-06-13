@@ -1,2 +1,2 @@
 #!/bin/bash
-docker run -e NODE_ENV=production jvindustries/woke:oracle
+docker run -d -e NODE_ENV=production jvindustries/woke:oracle

@@ -1,26 +1,25 @@
 import React, { useState } from 'react';
 import { makeStyles, useTheme } from '@material-ui/styles';
-import Box from '@material-ui/core/Box';
 
-import FieldWrapper from '../../layouts/wrapper-field';
+import FlexColumn from '../../layouts/flex-column';
 
 import Password from '../fields/password'
 import Button from '../buttons/button-contained'
 import StandardBody from '../text/body-standard'
 
+import { useEnterKey } from '../../hooks/util-hooks';
+
 const useStyles = makeStyles(theme => ({
-	centeredForm: {
+	centeredForm: styles => ({
 		position: 'relative',
 		display: 'flex',
 		flexDirection: 'column',
-		justifyContent: 'flex-end',
+		justifyContent: 'space-between',
 		alignItems: 'center',
-		bottom: 0,
 		width: 'auto',
 		marginTop: 'auto',
-		paddingLeft: theme.spacing(3),
-		paddingRight: theme.spacing(3),
-	}
+		...styles,
+	})
 }));
 
 export default function EnterPassword (props) {
@@ -41,31 +40,34 @@ export default function EnterPassword (props) {
 	const triggerLogin = () => {
 		props.triggerLogin(input.password);
 	}
+	useEnterKey(triggerLogin);
 
 	return (
-		<FieldWrapper styles={styles}>
-			<Box
-				className={classes.centeredForm}
+		<FlexColumn styles={{
+			justifyContent: 'space-around',
+			width: '100%',
+			height: '30%',
+			small: {
+				justifyContent: 'space-around',
+				height: '40%',
+			}
+		}}>
+			<Password
+				type={'password'}
+				value={input.password}
+				onChange={handleChangeInput('password')}
+			/>
+			<Button 
+				onClick={triggerLogin}
+				styles={{
+				}}
+				{...buttonProps}
 			>
-				<Password
-					type={'password'}
-					value={input.password}
-					onChange={handleChangeInput('password')}
-				/>
-				<Button 
-					onClick={triggerLogin}
-					styles={{
-						marginTop: theme.spacing(4),
-						marginBottom: theme.spacing(2)
-					}}
-					{...buttonProps}
-				>
-					{props.buttonText}
-				</Button>
-				<StandardBody align='center' color='error'>
-					{props.errorMessage}
-				</StandardBody>
-			</Box>
-		</FieldWrapper>
+				{props.buttonText}
+			</Button>
+			<StandardBody align='center' color='error'>
+				{props.errorMessage}
+			</StandardBody>
+		</FlexColumn>
 	);
 }

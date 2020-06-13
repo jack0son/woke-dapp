@@ -22,7 +22,8 @@ const rinkeby = {
 	},
 }
 
-const goerli = {
+// GCloud conf
+const goerli_infura = {
 	id: 5,
 	protocol: 'wss',
 	host: `goerli.infura.io/ws/v3/${infuraApiKey}`,
@@ -39,6 +40,44 @@ const goerli = {
 	},
 }
 
+const goerli_1 = {
+	id: 5,
+	protocol: 'ws',
+	host: `geth-goerli-1.us-west2-a.c.woke-network-services.internal`,
+	port: 8546,
+	gasPrice: 20*GWei,
+	gasLimit:  '8000000',
+	defaultCommon: {
+		customChain: {
+			name: 'goerli',
+			networkId: 5,
+			chainId: 5,
+		},
+		baseChain: 'goerli', 
+		//hardfork: 'petersburg',
+	},
+}
+
+const goerli_2 = {
+	id: 5,
+	protocol: 'ws',
+	host: `geth-goerli-2.us-west2-a.c.woke-network-services.internal`,
+	port: 8546,
+	gasPrice: 20*GWei,
+	gasLimit:  '8000000',
+	defaultCommon: {
+		customChain: {
+			name: 'goerli',
+			networkId: 5,
+			chainId: 5,
+		},
+		baseChain: 'goerli', 
+		//hardfork: 'petersburg',
+	},
+}
+
+const goerli = goerli_2;
+
 module.exports = {
 	web3: {
 		networks: {
@@ -48,7 +87,7 @@ module.exports = {
 				host: 'localhost',
 				port: 8545,
 				gasPrice: '20000000000',
-				gasLimit: '6721975',
+				gasLimit: '8000000',
 				defaultCommon: {
 					customChain: {
 						name: 'ganache',
@@ -70,7 +109,9 @@ module.exports = {
 
 			rinkeby,
 
-			goerli,
+			goerli_infura,
+
+			goerli, goerli_1, goerli_2,
 
 			production: goerli,
 		},

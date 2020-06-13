@@ -1,3 +1,7 @@
+# Misc
+.idea
+*.bkp
+
 # Config
 .DS_Store
 .env
@@ -5,6 +9,10 @@
 .env.development.local
 .env.test.local
 .env.production.local
+
+# Vim
+*.swp*
+.*.swp*
 
 # Logs
 logs

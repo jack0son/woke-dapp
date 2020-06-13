@@ -1,10 +1,11 @@
 {
   "name": "@woke/server",
-  "version": "0.1.0",
+  "version": "0.4.0",
   "description": "Wallet backend: account creation and funding.",
   "private": true,
   "scripts": {
-    "start": "NODE_ENV=production ETH_ENV=production DEBUG=server:* node ./bin/www",
+    "start": "DEBUG=server:* node ./bin/www",
+    "start:production": "NODE_ENV=production ETH_ENV=production WOKE_ROLE=funder DEBUG=server:* node ./bin/www",
     "db": "docker-compose -f ../../server.docker-compose.local.yml up -d --build db",
     "down": "docker-compose -f ../../server.docker-compose.local.yml down",
     "reset": "docker-compose -f ../../server.docker-compose.local.yml down -v",
@@ -14,7 +15,7 @@
     "goerli": "NODE_ENV=development ETH_ENV=goerli DEBUG=server:* node ./bin/www"
   },
   "dependencies": {
-    "@woke/lib": "0.1.0",
+    "@woke/lib": "0.4.0",
     "cookie-parser": "~1.4.4",
     "cors": "^2.8.5",
     "dotenv": "^8.1.0",

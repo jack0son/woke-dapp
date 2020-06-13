@@ -7,7 +7,7 @@
   "scripts": {
     "test": "./node_modules/.bin/mocha",
     "test-debug": "DEBUG=oracle:* ./node_modules/.bin/mocha",
-    "start": "NODE_ENV=production ETH_ENV=production DEBUG=oracle* node src/index.js",
+    "start": "NODE_ENV=production ETH_ENV=production WOKE_ROLE=oracle DEBUG=oracle* node src/index.js",
     "start-docker": "DEBUG=oracle* node src/index.js",
     "dev": "NODE_ENV=development ETH_ENV=development DEBUG=oracle*,twitter node src/index.js",
     "ropsten": "NODE_ENV=development ETH_ENV=ropsten DEBUG=oracle*,twitter node src/index.js",
@@ -15,13 +15,14 @@
     "goerli": "NODE_ENV=development ETH_ENV=goerli DEBUG=oracle*,twitter node src/index.js",
     "dev:with_client": "DEBUG=oracle:* node src/lib/client.js",
     "tweet": "DEBUG=twitter* node ../lib/twitter.js",
-    "cli": "DEBUG=* node src/cli.js"
+    "cli": "node src/cli.js",
+    "cli:verbose": "DEBUG=* node src/cli.js"
   },
   "author": "Jackson Virgo",
   "license": "ISC",
   "dependencies": {
-    "@woke/contracts": "0.1.0",
-    "@woke/lib": "0.1.0"
+    "@woke/contracts": "0.4.0",
+    "@woke/lib": "0.4.0"
   },
   "devDependencies": {
     "minimist": "^1.2.0",

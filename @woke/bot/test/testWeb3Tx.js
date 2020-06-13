@@ -48,6 +48,9 @@ context('TxActor', function() {
 	context('', function() {
 		it('should call', function() {
 		});
+
+		it('should get a new nonce when nonce too low', function() {
+		});
 	})
 
 })

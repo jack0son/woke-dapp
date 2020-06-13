@@ -1,7 +1,7 @@
 // Subscribe to blockchain logs and notify users on twitter
 // Manages notifications in a transactional fashion
 const { start_actor, block } = require('../actor-system');
-const { spawnStateless, dispatch } = require('nact');
+const { spawnStateless, dispatch, query } = require('nact');
 
 const states = [
 	'SETTLED',	// notification sent
@@ -37,7 +37,7 @@ const notifier = {
 		persistenceKey: 'notifier', // only ever 1, static key OK
 
 		initialState: {
-			a_wokenContract: null,
+			a_contract_UserRegistry: null,
 			a_tweeter: null,
 			logRepo: {},
 		},
@@ -45,13 +45,13 @@ const notifier = {
 
 	actions: {
 		'init': (msg, ctx, state) => {
-			const { a_wokenContract } = state;
+			const { a_contract_UserRegistry } = state;
 
 			// Subscribe to unclaimed transfers
 
 			// Rely on subscription to submit logs from block 0
 			// @TODO persist last seen block number
-			dispatch(a_wokenContract, {	type: 'subscribe_log',
+			dispatch(a_contract_UserRegistry, {	type: 'subscribe_log',
 				eventName: 'Tx',
 				opts: { fromBlock: 0 },
 				filter: e => e.claimed == false,
@@ -59,8 +59,8 @@ const notifier = {
 		},
 
 		// -- Source actions
-		'unclaimed_tx': (msg, ctx, state) => {
-			const { logRepo, a_tweeter } = state;
+		'unclaimed_tx': async (msg, ctx, state) => {
+			const { logRepo, a_tweeter, a_contract_UserRegistry } = state;
 			const { log } = msg;
 
 			//console.log(msg);
@@ -78,10 +78,24 @@ const notifier = {
 					entry.fromId = log.event.fromId;
 					entry.amount = log.event.amount;
 
+					let balance;
+					try {
+						// Contract version incompatible (missing unclaimedBalance method)
+						const balanceCall = await query(a_contract_UserRegistry, {type: 'call', 
+							method: 'unclaimedBalanceOf',
+							args: [entry.toId],
+							sinks: [],
+						}, 5*1000)
+						balance = balanceCall.result;
+					} catch(error) {
+						ctx.debug.error(msg, 'call to wokenContract:unclaimedBalance() failed', error)
+					}
+
 					dispatch(a_tweeter, { type: 'tweet_unclaimed_transfer',
 						toId: entry.toId,
 						fromId: entry.fromId,
 						amount: entry.amount,
+						balance,
 						i_want_the_error: a_promise, // ctx.sender not correct in onCrash on tweeter
 					}, a_promise);
 					console.log(`... got log @${entry.fromId} ==> @${entry.toId} : ${entry.amount}.W`)
@@ -144,6 +158,7 @@ const notifier = {
 
 		'a_contract': (msg, ctx, state) => {
 			const { a_sub } = msg;
+			// Once subscription received from contract, start the subscription
 			if(a_sub) {
 				const a_unclaimed_tx_sub = a_sub;
 				dispatch(a_unclaimed_tx_sub,  {type: 'start'}, ctx.self);

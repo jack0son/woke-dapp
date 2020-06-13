@@ -1,4 +1,4 @@
-import React, {useState, useEffect, useMemo} from 'react'
+import React, {useState, useMemo} from 'react'
 
 // Logical containers
 import Claim from './claim'
@@ -14,17 +14,14 @@ export default function Web3Container(props) {
 	const userHandle = retrieveUserHandle();
 
 	const claimStatus = useClaimStatus(userId);
+	const handleClaimComplete = () => setClaimed(true);
 
 	const renderClaimProcess = () => (
 		<Claim 
 			claimStatus={claimStatus}
 			userId={userId}
 			userHandle={userHandle}
-			renderProp={(claimStage) => {
-				if(claimStage == 'CLAIMED') {
-					setClaimed(true);
-				}
-			}}
+			handleClaimComplete={handleClaimComplete}
 		/>
 	)
 

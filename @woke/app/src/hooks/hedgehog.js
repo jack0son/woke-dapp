@@ -18,10 +18,10 @@ export default function useHedgehog(wallet) {
   const [passwordConfirmation, setPasswordConfirmation] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
   const [loading, setLoading] = useState(false);
-  const [signedIn, setSignedIn] = useState(wallet.checkStatus());
+  const [loggedIn, setLoggedIn] = useState(wallet.checkStatus());
 
 	const updateWalletStatus = () => {
-		setSignedIn(wallet.checkStatus())
+		setLoggedIn(wallet.checkStatus())
 	}
 
   const handleSignup = async (_password, _confirmation) => {
@@ -46,10 +46,17 @@ export default function useHedgehog(wallet) {
       } catch (e) {
         console.error(e);
 				console.dir(e);
-				if(e.response.data.error == 'User already exits') {
+				if(e.response && e.response.data.error == 'User already exits') {
 					setErrorMessage(messages.exists);
+				} else if(e.message) {
+					if(e.message.toLowerCase().includes('network')) {
+						setErrorMessage('Failed to contact woke network.');
+						// TODO display a button to tweet / DM support 
+					} else {
+						setErrorMessage(e.message);
+					}
 				} else {
-					setErrorMessage(e.response.data.error);
+					setErrorMessage(e);
 				}
 				// @TODO store error codes in common file
 				//if(e.
@@ -90,6 +97,11 @@ export default function useHedgehog(wallet) {
     updateWalletStatus();
   };
 
+	const forgetUser = () => {
+		storeUsername("");
+    setUsername("");
+	}
+
 	const saveUsername = (userId) => {
 		setUsername(userId);
 		storeUsername(userId);
@@ -107,14 +119,15 @@ export default function useHedgehog(wallet) {
 				confirmation: setPasswordConfirmation
 			},
 			setUsername,
-			restoreUsername 
+			restoreUsername,
+			forgetUser,
 		},
 
 		state: {
 			username,
 			//userId,
 			savedUser,
-			signedIn,
+			loggedIn, 
 			loading,
 			errorMessage
 		}

@@ -2,61 +2,57 @@ import React from 'react';
 import { makeStyles } from '@material-ui/core/styles';
 
 import AppBar from '@material-ui/core/AppBar';
-import Toolbar from '@material-ui/core/Toolbar';
-import Typography from '@material-ui/core/Typography';
-import IconButton from '@material-ui/core/IconButton';
-import MenuIcon from '@material-ui/icons/Menu';
-
+import Toolbar from '@material-ui/core/Toolbar'; 
+import Menu from './menu';
 import LogoLink from './images/logo-link';
+
+const gutterSize = '5%';
 
 const useStyles = makeStyles(theme => ({
 	appBar: {
-    flexGrow: 1,
-		width: '100%',
-		height: theme.spacing(6),
+		zIndex: 1000,
 		background: 'transparent',
 		boxShadow: 'none',
 	},
 
-  menuButton: {
-    marginRight: theme.spacing(2),
-  },
+	toolBar: {
+		background: 'transparent',
+	},
 
-  title: {
-    flexGrow: 1,
-  },
+	navbar: {
+		marginRight: gutterSize,
+		marginLeft: gutterSize,
+		flexWrap: 'wrap',
+		justifyContent: 'space-between',
+		[theme.breakpoints.up('sm')]: {
+			height: '12vh',
+		}
+	},
 }));
 
 export default function NavBar(props) {
 	const classes = useStyles();
 
-	const renderLogo = () => {
-		if(props.hideLogo != true) {
+	const renderNavItems = () => {
+		if(props.hideNavItems != true) {
 			return (
-					<LogoLink
-						src='images/eye-logo.png'
-						url='https://getwoke.me'
-						float="left"
-					/>
+				<>
+				<LogoLink
+					className={classes.logo}
+					src='images/eye-logo.png'
+					url='/'
+				/>
+				<Menu twitterSignin={props.twitterSignin}/>
+				</>
 			);
 		}
 	}
 
 	return (
-		<AppBar position="relative" overflow="auto" className={classes.appBar}>
-			<Toolbar position="relative" disableGutters={true} height="100%">
-					{ renderLogo() }
-					<Typography variant="h6" className={classes.title}>
-          </Typography>
-					<IconButton 
-						edge="end"
-						className={classes.menuButton} 
-						color="inherit" 
-						aria-label="menu" 
-					>
-						<MenuIcon/>
-					</IconButton>
+		<AppBar position="relative" className={classes.appBar}>
+			<Toolbar className={classes.navbar}>
+					{ renderNavItems() }
 			</Toolbar>
 		</AppBar>
-  );
+  	);
 }

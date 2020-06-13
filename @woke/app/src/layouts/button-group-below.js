@@ -10,17 +10,32 @@ const useStyles = makeStyles(theme => ({
 	buttonGroup: styles => ({
 		position: 'relative',
 		display: 'flex',
-		flexDirection: 'column',
-		justifyContent: 'flex-end',
+		flexWrap: 'wrap',
+		flexDirection: 'row',
+		justifyContent: 'center',
 		alignItems: 'center',
-		bottom: 0,
-		width: 'auto',
 		height: 'auto',
-		marginTop: '0',
-		paddingTop: theme.spacing(2),
-		paddingBottom: theme.spacing(2),
+		width: 'inherit',
 		...styles
-	})
+	}),
+
+	buttonWrapper: {
+		alignItems: 'center',
+		flexGrow: 1,
+		display: 'flex',
+		flexWrap: 'nowrap',
+		marginLeft: '10%',
+		marginRight: '10%',
+	},
+
+	centerTextOverflow: {
+		textAlign: 'center',
+		whiteSpace: 'nowrap',
+		[theme.breakpoints.up('md')]: {
+			marginLeft: '-100%',
+			marginRight: '-100%',
+		}
+	},
 }));
 
 export default function ButtonGroupBelow (props) {
@@ -29,18 +44,23 @@ export default function ButtonGroupBelow (props) {
 
 	// Catch prop duplication
 	// TODO this is redundant
-	const {onClick, ...buttonProps} = props.buttonProps;
+	const buttonStyles = { width: '80%' };
+	const {onClick, ...buttonProps} = { ...props.buttonProps, styles: buttonStyles };
 
 	const PassedButton = props.Button ? props.Button : null
 
+
 	return (
 		<Box
+			{...props.flexContainerProps}
 			className={classes.buttonGroup}
 		>
 			{ PassedButton ? (
-				<PassedButton 
-					{...props.buttonProps}
-				/>
+				<div className={classes.buttonWrapper}>
+					<PassedButton 
+						{...props.buttonProps}
+					/>
+				</div>
 			) : (
 				<Button 
 					{...props.buttonProps}
@@ -48,16 +68,15 @@ export default function ButtonGroupBelow (props) {
 			)}
 
 			<BodyStandard
-				color='secondary'
+				//color={theme.palette.accents.secondary.main || 'secondary'}
 				styles={{
-					marginTop: '15%',
-					marginBottom: '15%',
-					paddingLeft: theme.spacing(3),
-					paddingRight: theme.spacing(3),
+					marginTop: '10%',
+					color: theme.palette.accents.secondary.main || 'secondary',
 					textAlign: 'center',
+					paddingTop: '10px',
 				}}
 			>
-				{props.message}
+				<span className={classes.centerTextOverflow}>{props.message}</span>
 			</BodyStandard>
 		</Box>
 	);

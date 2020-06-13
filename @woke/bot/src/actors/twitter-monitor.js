@@ -11,6 +11,23 @@ const iface = {
 	seen_tips: 'seen_tips',
 }
 
+// @returns tip
+function parseTweetToTip(tweet) {
+	return {
+		id: tweet.id_str,
+		fromId: tweet.user.id_str,
+		fromHandle: tweet.user.screen_name,
+		//toId: tweet.entities.user_mentions[0].id_str,
+
+		// This is correct for both replies AND tweets mentioning a user.
+		//toId: tweet.in_reply_to_user_id_str,
+		toId: tweet.entities.user_mentions[0].id_str,
+		toHandle: tweet.entities.user_mentions[0].screen_name,
+		full_text: tweet.full_text,
+		amount: tweet.tip_amount,
+	}
+}
+
 const TwitterMonitor = (twitterStub) => {
 	const retry = exponentialRetry(3);
 
@@ -35,6 +52,8 @@ const TwitterMonitor = (twitterStub) => {
 
 				switch(type) {
 					case 'find_tips': {
+						// @fix this error isn't handled
+						// Error: HTTP Error: 503 Service Temporarily Unavailable
 						if(a_polling) dispatch(a_polling, { type: 'interupt' });
 						return retry(msg, error, ctx);
 					}
@@ -79,18 +98,7 @@ const TwitterMonitor = (twitterStub) => {
 						}
 						seenTips[tweet.id_str] = true;
 						return true;
-					}).map(tweet => ({
-						id: tweet.id_str,
-						fromId: tweet.user.id_str,
-						fromHandle: tweet.user.screen_name,
-						//toId: tweet.entities.user_mentions[0].id_str,
-
-						// This is correct for both replies AND tweets mentioning a user.
-						toId: tweet.in_reply_to_user_id_str,
-						toHandle: tweet.entities.user_mentions[0].screen_name,
-						full_text: tweet.full_text,
-						amount: tweet.tip_amount,
-					}));
+					}).map(parseTweetToTip);
 
 					//newTips.forEach(t=>console.log(t));
 

@@ -5,12 +5,9 @@ import { default as MuiAvatar } from '@material-ui/core/Avatar';
 
 const useStyles = makeStyles(theme => ({
 	avatar: styles => ({
-		//width: '100%',
-		//position: 'static',
-		//display: 'block',
-		//paddingRight: theme.spacing(2),
-		//paddingLeft: theme.spacing(2),
-		//marginTop: theme.spacing(2),
+		[theme.breakpoints.down('sm')]: {
+			...(styles.small || {})
+		},
 		...styles
 	})
 }));
@@ -22,6 +19,7 @@ export default function Avatar (props) {
 	return (
 		<MuiAvatar
 			{...innerProps}
+			crossOrigin="anonymous"
 			className={classes.avatar}
 		/>
 	);

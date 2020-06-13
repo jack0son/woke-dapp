@@ -8,20 +8,24 @@ const twitterApi = {
 	callback_path: 'oauth_twitter',
 }
 
+const host = process.env.REACT_APP_HOST || '192.168.1.183';
+
 export default {
 	web3: {
 		networks: {
 			development: {
+				blockTime: 1000,
 				protocol: 'ws',
 				host: 'localhost',
-				//host: '192.168.1.185',
+				//host: `${host}`,
 				port: 8545,
 				id: 12,
 			},
 
-			mobile: {
+			lan: {
+				blockTime: 25000,
 				protocol: 'ws',
-				host: '192.168.1.185', // @TODO LOAD FROM env.local
+				host: host, // @TODO LOAD FROM env.local
 				port: 8545,
 				id: 12,
 			},
@@ -39,12 +43,14 @@ export default {
 			},
 
 			goerli: {
+				blockTime: 22000,
 				protocol: 'wss',
 				host: `goerli.infura.io/ws/v3/${infuraApiKey}`,
 				id: 5,
 			},
 
 			production: {
+				blockTime: 22000,
 				protocol: 'wss',
 				host: `goerli.infura.io/ws/v3/${infuraApiKey}`,
 				id: 5,
@@ -55,12 +61,11 @@ export default {
 	server: {
 		development: {
 			// URL must have trailing forward slash
-			//url: 'http://localhost:3001/',
-			url: 'http://192.168.1.185:3001/',
+			url: 'http://localhost:3001/',
 		},
 
-		mobile: {
-			url: 'http://192.168.1.185:3001/',
+		lan: {
+			url: `http://${host}:3001/`,
 		},
 
 		production: {
@@ -72,7 +77,11 @@ export default {
 		development: {
 			api: twitterApi,
 			hostUrl: 'http://localhost:3000/',
-			//hostUrl: 'http://192.168.1.185:3000/',
+		},
+
+		lan: {
+			api: twitterApi,
+			hostUrl: `http://${host}:3000/`,
 		},
 
 		production: {

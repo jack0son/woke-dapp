@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo } from 'react'
 import { useWeb3Context } from '.';
-import {subscribeLogContract} from '../../lib/web3/web3-utils'
+import { subscribeLogContract } from '../../lib/web3/web3-utils'
 
 // @dev createUseContractSubscriptions
 // @dev Maintain a single subscription with a list of callbacks for each
@@ -24,7 +24,7 @@ export default web3 => {
 			// Create the web3 subscription
 			const subObj = subscribeLogContract(web3)(contract, (logData) => {
 				sub.subscribers.filter(subscriber => subscriber.active)
-					.forEach(subscriber => subscriber.callback())
+					.forEach(subscriber => subscriber.callback(logData))
 			});
 			sub.subObj = subObj;
 			sub.subObj.start();

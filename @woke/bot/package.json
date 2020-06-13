@@ -1,6 +1,6 @@
 {
   "name": "@woke/bot",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Tiny oracle for Twitter API to avoid waiting for Oraclize",
   "private": true,
   "main": "index.js",
@@ -19,15 +19,18 @@
     "mock:tipper": "DEBUG_RECOVERY=true NODE_ENV=development DEBUG=actor*,-*:twitter_monitor*,-*:_tip-*:info node src/mock-tipper.js",
     "mock:tipper:verbose": "DEBUG_RECOVERY=true NODE_ENV=development DEBUG=actor* node src/mock-tipper.js",
     "mock:notifier": "NODE_ENV=development DEBUG=actor* node src/mock-notifier.js",
+    "mock:notifier:verbose": "NODE_ENV=development DEBUG=actor*,polling* node src/mock-notifier.js",
     "docker:db": "docker-compose -f ../../bot.docker-compose.local.yml up -d --build bot-db",
     "docker:down": "docker-compose -f ../../bot.docker-compose.local.yml down",
-    "docker:reset": "docker-compose -f ../../bot.docker-compose.local.yml down -v"
+    "docker:reset": "docker-compose -f ../../bot.docker-compose.local.yml down -v",
+    "ganache:block": "sudo /sbin/iptables -A INPUT -p tcp --destination-port 8545 -j DROP && sudo iptables-save 1>/dev/null",
+    "ganache:allow": "sudo /sbin/iptables -D INPUT -p tcp --destination-port 8545 -j DROP && sudo iptables-save 1>/dev/null"
   },
   "author": "Jackson Virgo",
   "license": "ISC",
   "dependencies": {
-    "@woke/contracts": "0.1.0",
-    "@woke/lib": "0.1.0",
+    "@woke/contracts": "0.4.0",
+    "@woke/lib": "0.4.0",
     "dotenv": "^8.2.0",
     "nact": "^7.2.2",
     "nact-persistence-postgres": "^7.3.1"

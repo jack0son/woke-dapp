@@ -8,23 +8,37 @@ import React, {
 const Context = createContext();
 export const useRootContext = () => useContext(Context);
 
-export function RootContextProvider({children}) {
+export function RootContextProvider({ children, ...props }) {
+	const { hedgehog } = props;
+
 	const [loading, setLoading] = useState(false);
 	const [escapeHatch, setEscapeHatch] = useState(null);
+	const [styles, setStyles] = useState({});
+	const [headerChildren, setHeaderChildren] = useState([]);
 
 	return (
 		<Context.Provider
 			value={useMemo(() => ({
-					setLoading,
-					loading,
-					escapeHatch,
-					setEscapeHatch,
+				hedgehog,
+				setLoading,
+				loading,
+				escapeHatch,
+				setEscapeHatch,
+				styles,
+				setStyles,
+				headerChildren,
+				setHeaderChildren,
 			}),
 				[
+					hedgehog,
 					loading,
 					setLoading,
 					escapeHatch,
 					setEscapeHatch,
+					styles,
+					setStyles,
+					headerChildren,
+					setHeaderChildren,
 				]
 			)}
 		>
@@ -32,4 +46,4 @@ export function RootContextProvider({children}) {
 		</Context.Provider>
 	);
 }
-			//{props && props.children ? props.children : null}
+//{props && props.children ? props.children : null}

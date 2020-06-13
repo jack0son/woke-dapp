@@ -19,6 +19,7 @@ const initClient = async () => {
 	if(bearerToken == undefined) {
 		try {
 			bearerToken = await getBearerToken(consumerKey, consumerSecret);
+			//console.log('Bearer token:', bearerToken);
 		} catch(e) {
 			debug.d('Failed to retrieve bearer token')
 			return process.exit(1);
@@ -26,15 +27,14 @@ const initClient = async () => {
 		debug.d(bearerToken);
 	}
 
-	client = new Twitter({
+	const conf = {
 		consumer_key: consumerKey, 
 		consumer_secret: consumerSecret,
 		access_token_key: accessKey, 
 		access_token_secret: accessSecret,
-//		bearer_token: bearerToken, 
-	});
-
-	//console.log(client);
+		//bearer_token: bearerToken, 
+	};
+	client = new Twitter(conf);
 
 	return;
 }
@@ -86,9 +86,11 @@ const getUserData = async (userId) => {
 	let userObject = await client.get('users/show', params);
 
 	return {
+		...userObject,
 		name: userObject.name,
 		handle: userObject.screen_name,
 		avatar: userObject.profile_image_url_https,
+		followers_count: userObject.followers_count,
 	}
 }
 
@@ -177,6 +179,7 @@ const searchClaimTweets = async (handle) => { // claimString = `@getwoketoke 0xW
 		//q: `@getwoketoke 0xWOKE from:${handle}`,
 		q: handle ? `@getwoketoke from:${handle}` : `@getwoketoke OR 0xWOKE`,
 		result_type: 'recent',
+		include_entities: true,
 		tweet_mode: 'extended',
 		count: 100,
 	};
@@ -223,7 +226,7 @@ function getBearerToken(key, secret) {
 	});
 }
 
-module.exports = {initClient, findClaimTweet, getUserData, searchTweets, updateStatus}
+module.exports = {initClient, searchClaimTweets, findClaimTweet, getUserData, searchTweets, updateStatus}
 
 // Example call
 if(debug.control.enabled && require.main === module) {
@@ -311,6 +314,7 @@ if(debug.control.enabled && require.main === module) {
 					const [handle] = args;
 					let r = await searchClaimTweets(handle);
 					r.forEach(t => {
+						console.log(t);
 						console.log(t.full_text);
 						console.log(t.entities.user_mentions);
 						console.log();

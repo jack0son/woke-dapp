@@ -20,7 +20,7 @@ class TwitterStub {
 		return true;
 	}
 
-	async postUnclaimedTransfer(fromId, toId, amount) {
+	async postUnclaimedTransfer(fromId, toId, amount, balance) {
 		const { client } = this;
 
 		const [fromUser, toUser] = await Promise.all([
@@ -28,7 +28,11 @@ class TwitterStub {
 			client.getUserData(toId),
 		]);
 
-		const text = `${emojis.folded_hands}@${toUser.handle}${emojis.folded_hands} you've been voted ${amount} $WOKE by @${fromUser.handle}.\nGo to ${appUrl} to claim your $WOKE with a tweet. `
+		const balanceStr = () => balance ? 
+			`${balance} $WOKE with a tweet` :
+			`your $WOKE with a tweet`;
+
+		const text = `${emojis.folded_hands}@${toUser.handle}${emojis.folded_hands} you've been tributed ${amount} $WOKE from @${fromUser.handle}.\nGo to ${appUrl} to claim ${balanceStr()}.`
 		try {
 			const r = await client.updateStatus(text);
 			return r;
@@ -80,23 +84,9 @@ class TwitterStub {
 			tweetMode: 'extended',
 		}
 
-		const amountRegex = /\+(\d+)\s*\$/
 		try {
-			const tips = await client.searchTweets(params)
-			return tips.filter(t =>
-				notRetweet(t) &&
-				t.full_text.includes('+') && // @TODO replace with regex
-				t.in_reply_to_user_id_str != null  &&
-				nonEmptyArray(t.entities.user_mentions)
-			).filter(t => {
-				const matches = t.full_text.match(amountRegex);
-				const amount = matches && matches[1] ? parseInt(matches[1]) : false;
-				if(amount && amount !== NaN && amount > 0) {
-					t.tip_amount = amount;
-					return true
-				}
-				return false;
-			});
+			const tweets = await client.searchTweets(params)
+			return this.filterTipTweets(tweets);
 
 		} catch (error) {
 			// Squash the error
@@ -107,7 +97,28 @@ class TwitterStub {
 
 		return [];
 	}
+
+	// @NB if @mention starts the tweet text, in_reply_to_user_id_str will not be
+	// null
+	filterTipTweets(tweets) {
+		const amountRegex = /\+(\d+)\s*\$/
+		return tweets.filter(t =>
+			notRetweet(t) &&
+			t.full_text.includes('+') && // @TODO replace with regex
+			//t.in_reply_to_user_id_str != null  &&
+			nonEmptyArray(t.entities.user_mentions)
+		).filter(t => {
+			const matches = t.full_text.match(amountRegex);
+			const amount = matches && matches[1] ? parseInt(matches[1]) : false;
+			if(amount && amount !== NaN && amount > 0) {
+				t.tip_amount = amount;
+				return true
+			}
+			return false;
+		});
+	}
 }
+
 
 function notRetweet(tweet) {
 	const rt = tweet.retweeted_status;

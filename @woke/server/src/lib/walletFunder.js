@@ -7,7 +7,8 @@ const Emitter = require('events');
 const debug = Logger('server:funder');
 
 const web3Utils = require('web3-utils');
-const DEFAULT_WEI = web3Utils.toWei('0.04', 'ether');
+//const DEFAULT_WEI = web3Utils.toWei('0.08', 'ether');
+const DEFAULT_WEI = web3Utils.toWei('0.2', 'ether');
 
 // TODO confirm with woketoken that account is not already funded
 class Funder extends Emitter {
@@ -16,6 +17,7 @@ class Funder extends Emitter {
 		const self = this;
 		self.value = donationAmount
 		self.txFailures = [];
+		self.nonce = 0;
 
 		self.initWeb3().then(success => success ?
 			self.setupListener() :
@@ -89,6 +91,18 @@ class Funder extends Emitter {
 		});
 	}
 
+	async getNonce() {
+		const self = this;
+		const pendingTxns = await self.web3.eth.getTransactionCount(self.account, 'pending');
+		console.log(`Pending transactions: ${pendingTxns}`);
+		if(pendingTxns == 0) {
+			return 0;
+		} else {
+			self.nonce = pendingTxns;
+			return self.nonce;
+		}
+	}
+
 	async fundWallet(address, amount) {
 		const self = this;
 
@@ -115,6 +129,8 @@ class Funder extends Emitter {
 
 			try {
 				await self.web3.eth.net.getId();
+				txOpts.nonce = await self.getNonce();
+				debug.d(`... web3 connection live`);
 				let r = await self.web3.eth.sendTransaction(txOpts)
 					.once('transactionHash', hash => debug)
 				receipt = r;

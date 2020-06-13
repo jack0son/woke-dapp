@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useMemo, useRef } from 'react';
+import { registerEnterKey } from '../lib/utils';
 
 export function useInputListener(initialState) {
 	const [input, setInput] = useState({
@@ -24,7 +25,7 @@ export function useIsMounted() {
 		}
 	}, []);
 
-	return isMounted.current;
+	return isMounted;
 }
 
 export function usePrevious(value) {
@@ -33,4 +34,10 @@ export function usePrevious(value) {
 		ref.current = value;
 	});
 	return ref.current;
+}
+
+export function useEnterKey(callback) {
+	useEffect(() => {
+		return registerEnterKey(callback);
+	});
 }

@@ -25,8 +25,8 @@ class Wallet {
 		this.hedgehog = new Hedgehog.Hedgehog(this.api.getFn, this.api.setAuthFn, this.api.setUserFn);
 	}
 
-	async login(username, password) {
-		await this.hedgehog.login(username, password);
+	login(username, password) {
+		return this.hedgehog.login(username, password);
 	}
 
   checkStatus() {
@@ -48,12 +48,12 @@ class Wallet {
     }
   }
 
-	async signUp(username, password) {
-		await this.hedgehog.signUp(username, password);
+	signUp(username, password) {
+		return this.hedgehog.signUp(username, password);
 	}
 
 	logout() {
-		this.hedgehog.logout();
+		return this.hedgehog.logout();
 	}
 }
 

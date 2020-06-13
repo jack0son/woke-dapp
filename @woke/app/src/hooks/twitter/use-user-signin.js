@@ -1,5 +1,5 @@
-import React, { useReducer, useEffect, useCallback } from 'react';
-import { oAuthApi } from '../../lib/twitter'
+import React, { useReducer, useEffect, useCallback, useState } from 'react';
+import { oAuthApi } from '../../lib/twitter';
 
 export default function useUserSignin() {
 	const [authState, dispatch] = useReducer(reducer, {
@@ -11,11 +11,13 @@ export default function useUserSignin() {
 		user: retrieveUser(),
 	});
 
-	const haveUser = useCallback(() => validUser(authState.user), [authState.user])
-	const haveCreds = useCallback(() => validCreds(authState.credentials), [authState.credentials])
+	const [error, setError] = useState(null);
+
+	const haveUser = useCallback(() => validUser(authState.user), [authState.user]);
+	const haveCreds = useCallback(() => validCreds(authState.credentials), [authState.credentials]);
 	const isSignedIn = useCallback(() => {
-		return haveUser() && haveCreds()
-	}, [haveUser, haveCreds])
+		return haveUser() && haveCreds();
+	}, [haveUser, haveCreds]);
 
 	function reducer(state, action) {
 		switch(action.type) {
@@ -23,17 +25,13 @@ export default function useUserSignin() {
 				if(validUser(state.user)) {
 					return state;
 				}
-				const {verifierResp} = action.payload;
+				const { verifierResp } = action.payload;
 
 				if(verifierResp && state.verifierResp == null) {
-					return {
-						...state,
-						verifierResp,
-					}
+					return { ...state, verifierResp };
 				}
 
 				return state;
-				break;
 			}
 
 			case 'got-access-tokens': {
@@ -51,8 +49,20 @@ export default function useUserSignin() {
 				storeUserTokens(credentials);
 				storeUser(user);
 
-				return {...state, user, credentials}
-				break;
+				return {...state, user, credentials};
+			}
+
+			case 'sign-out': {
+				const user = { id: '', handle: '' };
+				const credentials = {
+					accessKey: '',
+					accessSecret: '',
+				};
+				const requestToken = null;
+				storeUserTokens(credentials);
+				storeUser(user);
+				storeRequestToken(requestToken);
+				return { ...state, user, credentials, requestToken, verifierResp: null }
 			}
 
 			default: {
@@ -77,10 +87,15 @@ export default function useUserSignin() {
 		}
 	}
 
+	function signOut() {
+		dispatch({type: 'sign-out'});
+	}
+
 
 	// @dev Extract callback response params from verifier callback
 	useEffect(() => {
-		handleCallback();
+		setError(null);
+		//handleCallback();
 	}, []);
 
 	useEffect(() => {
@@ -89,7 +104,8 @@ export default function useUserSignin() {
 				const accessTokens = await oAuthApi.getUserAccessToken(requestToken, verifierToken);
 				dispatch({type: 'got-access-tokens', payload: {accessTokens}});
 			} catch (error) {
-				console.error('Error fetching user access tokens');
+				console.log(error);
+				setError('Error fetching user access tokens');
 			}
 		}
 
@@ -98,15 +114,16 @@ export default function useUserSignin() {
 		}
 	}, [authState.verifierResp, haveUser])
 
-
-
 	return {
 		handleStartAuth,
+		handleOAuthCallback: handleCallback,
+		signOut,
 		isSignedIn,
 		haveCreds,
 		haveUser,
 		user: authState.user,
 		credentials: authState.credentials,
+		error,
 	}
 }
 
@@ -160,8 +177,3 @@ function validCreds(creds) {
 	return creds && nonEmptyArray(creds.accessKey) && nonEmptyArray(creds.accessSecret);
 }
 
-function popupCenter(url, title, w, h) {
-	var left = (document.body.clientWidth/2)-(w/2);
-	var top = (document.body.clientHeight.height/2)-(h/2);
-	return window.open(url, title, 'toolbar=no, location=no, directories=no, status=no, menubar=no, scrollbars=no, resizable=no, copyhistory=no, width='+w+', height='+h+', top='+top+', left='+left);
-}

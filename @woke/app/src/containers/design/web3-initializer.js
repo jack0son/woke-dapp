@@ -12,7 +12,8 @@ export default function Web3Initializer(props) {
 	const [web3Provider, setWeb3Provider] = useState(null);
 
 	useEffect(() => {
-		setWeb3Provider({wallet: props.wallet});
+		setWeb3Provider({wallet: props.wallet})
+		//setTimeout(() => setWeb3Provider({wallet: props.wallet}), 1500);
 	}, [])
 
 	const renderWeb3 = () => (
@@ -20,7 +21,7 @@ export default function Web3Initializer(props) {
 	);
 
 	const renderLoading = () => (
-		<Loading handleDone={() => {}}/>
+		<Loading message={'INITIALIZING WEB3'}/>
 	);
 
 	return (

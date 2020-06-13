@@ -4,8 +4,8 @@ import https from 'https'
 
 import config from '../../config/config';
 
-const confLabel = process.env.REACT_APP_SERVER_ENV || process.env.NODE_ENV;
-const serverConfig = config.server[confLabel];
+const serverEnv = process.env.REACT_APP_SERVER_ENV || process.env.NODE_ENV;
+const serverConfig = config.server[serverEnv];
 
 //const httpAgent = new http.Agent({ keepAlive: true });
 const httpsAgent = new https.Agent({ keepAlive: true });
@@ -13,6 +13,7 @@ const httpsAgent = new https.Agent({ keepAlive: true });
 const instance = axios.create({
 	//httpAgent,
 	httpsAgent,
+	timeout: 2000,
 });
 
 const AUTH_TABLE = 'Authentications'
@@ -21,15 +22,21 @@ const USER_TABLE = 'Users'
 const requestToServer = async (axiosRequestObj) => {
   axiosRequestObj.baseURL = serverConfig.url;
 
+	let req = {
+		timeout: 12000,
+		...axiosRequestObj,
+	};
+
   try {
-    const resp = await axios(axiosRequestObj, {httpsAgent})
+    const resp = await axios(req, {httpsAgent})
     if (resp.status === 200) {
       return resp.data
     } else {
       throw new Error('Server returned error: ' + resp.status.toString() + ' ' + resp.data['error'])
     }
   } catch (e) {
-    console.error('Server returned error: ' + e.response.status.toString() + ' ' + e.response.data['error'])
+		if(e && e.response)
+			console.error('Server returned error: ' + e.response.status.toString() + ' ' + e.response.data['error'])
 		throw e;
   }
 }

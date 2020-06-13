@@ -1,6 +1,5 @@
 const {
 	start,
-	dispatch,
 	query,
 	stop,
 	spawn,
@@ -15,7 +14,7 @@ const DEBUG_PREFIX = 'actor';
 const FATAL_HANG_TIME = 1000*1000; //ms
 const DEBUG_RECOVERY= process.env.DEBUG_RECOVERY =='true' ? true : false
 
-const block = (_consumer, _msg) => {
+function block(_consumer, _msg) {
 	return query(_consumer, _msg, FATAL_HANG_TIME).catch( error => {
 		throw new Error(`APPLICATION HANG: blocking query timed out (${FATAL_HANG_TIME}ms). Are you sure you want temporally couple actors?`); 
 	});
@@ -176,8 +175,8 @@ function bootstrap(_persistenceEngine) {
 }
 
 module.exports = {
-	bootstrap,
 	block,
+	bootstrap,
 	spawn_actor,
 	start_actor,
 	start_persistent,

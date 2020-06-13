@@ -1,4 +1,5 @@
 var HDWalletProvider = require("@truffle/hdwallet-provider");
+const web3 = require('web3')
 require('dotenv').config();
 //var mnemonic = "large fountain love mountains supernatural bird fresh air through the swinging trees";
 var mnemonic = "nerve marine frozen use brave brief nasty then acid remain stereo riot";
@@ -15,6 +16,26 @@ module.exports = {
 			network_id: "*",
 			websockets: true,
 
+			gas: 8000000,
+			gasPrice: 20000000000,
+		},
+
+		development: {
+			host: "127.0.0.1",
+			port: 8545,
+			network_id: "12",
+			websockets: true,
+
+			gas: 8000000,
+			gasPrice: 20000000000,
+		},
+
+		test2: {
+			provider: () => {
+				return new web3.providers.WebsocketProvider("ws://127.0.0.1:8545");
+			},
+			network_id: "10",
+
 			gas: 7000000,
 			gasPrice: 20000000000,
 		},
@@ -23,10 +44,11 @@ module.exports = {
 			provider: () => {
 				return new HDWalletProvider(mnemonic, "http://127.0.0.1:8545/", 0, 10);
 			},
-			network_id: "11",
+			//network_id: "11",
+			network_id: "*",
 			websockets: true,
 
-			gas: 7000000,
+			gas: 6000000,
 			gasPrice: 20000000000,
 		},
 
@@ -69,11 +91,23 @@ module.exports = {
 			gas: 8000000,
 			gasPrice: 20000000000,
 			skipDryRun: true,
+		},
+
+		"geth-goerli": {
+			provider:() => {
+				return new HDWalletProvider(ropstenMnemonic, `http://127.0.0.1:8545`, 0, 10);
+				//return new HDWalletProvider(ropstenMnemonic, `ipc:///root/.ethereum/goerli/geth.ipc`, 0, 10);
+			},
+			network_id: "5",
+			gas: 8000000,
+			gasPrice: 20000000000,
+			skipDryRun: true,
 		}
 	},
 	compilers: {
 		solc: {
 			version: '0.5.15',
+			//version: '0.6.8',
 			optimizer: {
 				enabled: true,
 				runs: 100,

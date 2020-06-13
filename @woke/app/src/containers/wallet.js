@@ -5,27 +5,30 @@ import { timeSince } from '../lib/utils';
 //import '../App.css';
 
 // View container
-import Wallet from './views/wallet'
-import Loading from './views/loading'
+import Wallet from './views/wallet';
+import Loading from './views/loading';
 
 // Hooks
-import { useTwitterContext } from'../hooks/twitter/index.js'
-import { useWeb3Context } from '../hooks/web3context'
-import useBlockCache from '../hooks/blockcache'
-import useTransferEvents from '../hooks/woke-contracts/transferevents'
-import useRewardEvents from '../hooks/woke-contracts/rewardevents'
-import useSendTransferInput from '../hooks/woke-contracts/sendtransfer'
-
-const getwoketoke_id = '932596541822419000'
+import { useTwitterContext } from'../hooks/twitter';
+import { useWeb3Context } from '../hooks/web3context';
+import useBlockCache from '../hooks/blockcache';
+import useTransferEvents from '../hooks/woke-contracts/events-transfer';
+import useBonusEvents from '../hooks/woke-contracts/events-bonus';
+import useTransferInput from '../hooks/woke-contracts/transfer-input';
+//import useLiveBalance from '../hooks/live-balance';
 
 export default function WalletContainer(props) {
 	const {myUserId, myHandle} = props;
 	const {
 		web3,
+		network,
 		account,
 		useSubscribeCall,
+		useContract,
 	} = useWeb3Context();
 	const [error, setError] = useState(null);
+
+	const wokeToken = useContract('WokeToken');
 
 	// Move into seperate hook
 	//const [fetchingTxData, setFetchingTxData] = useState(false);
@@ -39,7 +42,7 @@ export default function WalletContainer(props) {
 
 	const blockCache = useBlockCache();
 	const transferEvents = useTransferEvents(myUserId, blockCache);
-	const rewardEvents = useRewardEvents(blockCache);
+	const rewardEvents = useBonusEvents(blockCache);
 
 	useEffect(() => {
 		twitterUsers.addId(myUserId);
@@ -61,9 +64,10 @@ export default function WalletContainer(props) {
 		}
 	}
 
-	const sendTransfers = useSendTransferInput({
-		defaultRecipient: 'getwoketoke',
+	const sendTransferInput = useTransferInput({
+		defaultRecipient: '',
 		defaultAmount: 1,
+		balance,
 		checkUserExists: checkUserExists,
 		twitterUsers
 	});
@@ -77,8 +81,10 @@ export default function WalletContainer(props) {
 				userData={twitterUsers.state.data}
 				transferEvents={transferEvents}
 				rewardEvents={rewardEvents}
-				sendTransfers={sendTransfers}
+				sendTransferInput={sendTransferInput}
 				friends={friends}
+				network={network}
+				tokenAddress={wokeToken.options.address}
 			/>
 			 : <Loading message={'A Woken shared is a Woken doubled.'}/>}
 		</>

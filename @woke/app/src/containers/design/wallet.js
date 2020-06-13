@@ -1,15 +1,39 @@
 import React from 'react';
 
 // Container View
-import Wallet from '../views/wallet';
+import WalletView from '../views/wallet';
 
 // Dummy state
-import useSendTransfers from '../../hooks/mocks/sendtransfer';
+import useSendTransfers from '../../hooks/design/sendtransfer';
 import users from '../../constants/test-users';
 
 // Lib
 import { timeSince } from '../../lib/utils';
 
+
+export default function WalletContainer() {
+	const user = {
+		id: '',
+		handle: 'getwoketoke',
+		avatar: 'images/avatar-getwoke.jpg'
+	}
+
+	const friends = Object.values(users);
+	const sendTransfers = useSendTransfers(friends);
+	const transferEvents = transferList.slice(0,2);
+
+	return (
+		<WalletView
+			user={user}
+			friends={friends}
+			userData={users}
+			balance={1305}
+			transferEvents={transferEvents}
+			rewardEvents={rewardList}
+			sendTransfers={sendTransfers}
+		/>
+	);
+}
 
 const rewardList = [
 	{
@@ -43,27 +67,247 @@ const transferList = [
 		timestamp: '2019-09-12',
 		timeSince: timeSince('2019-09-12')
 	},
+	{
+		counterParty: users['11'],
+		returnValues: {
+			amount: '12',
+		},
+		type: 'receive',
+		timestamp: '2019-09-12',
+		timeSince: timeSince('2019-09-12')
+	},
+	{
+		counterParty: users['11'],
+		returnValues: {
+			amount: '12',
+		},
+		type: 'receive',
+		timestamp: '2019-09-12',
+		timeSince: timeSince('2019-09-12')
+	},
+	{
+		counterParty: users['11'],
+		returnValues: {
+			amount: '12',
+		},
+		type: 'receive',
+		timestamp: '2019-09-12',
+		timeSince: timeSince('2019-09-12')
+	},
+	{
+		counterParty: users['11'],
+		returnValues: {
+			amount: '12',
+		},
+		type: 'receive',
+		timestamp: '2019-09-12',
+		timeSince: timeSince('2019-09-12')
+	},
+	{
+		counterParty: users['11'],
+		returnValues: {
+			amount: '12',
+		},
+		type: 'receive',
+		timestamp: '2019-09-12',
+		timeSince: timeSince('2019-09-12')
+	},
+	{
+		counterParty: users['11'],
+		returnValues: {
+			amount: '12',
+		},
+		type: 'receive',
+		timestamp: '2019-09-12',
+		timeSince: timeSince('2019-09-12')
+	},
+	{
+		counterParty: users['11'],
+		returnValues: {
+			amount: '12',
+		},
+		type: 'receive',
+		timestamp: '2019-09-12',
+		timeSince: timeSince('2019-09-12')
+	},
+	{
+		counterParty: users['11'],
+		returnValues: {
+			amount: '12',
+		},
+		type: 'receive',
+		timestamp: '2019-09-12',
+		timeSince: timeSince('2019-09-12')
+	},
+	{
+		counterParty: users['11'],
+		returnValues: {
+			amount: '12',
+		},
+		type: 'receive',
+		timestamp: '2019-09-12',
+		timeSince: timeSince('2019-09-12')
+	},
+	{
+		counterParty: users['11'],
+		returnValues: {
+			amount: '12',
+		},
+		type: 'receive',
+		timestamp: '2019-09-12',
+		timeSince: timeSince('2019-09-12')
+	},
+	{
+		counterParty: users['11'],
+		returnValues: {
+			amount: '12',
+		},
+		type: 'receive',
+		timestamp: '2019-09-12',
+		timeSince: timeSince('2019-09-12')
+	},
+	{
+		counterParty: users['11'],
+		returnValues: {
+			amount: '12',
+		},
+		type: 'receive',
+		timestamp: '2019-09-12',
+		timeSince: timeSince('2019-09-12')
+	},
+	{
+		counterParty: users['11'],
+		returnValues: {
+			amount: '12',
+		},
+		type: 'receive',
+		timestamp: '2019-09-12',
+		timeSince: timeSince('2019-09-12')
+	},
+	{
+		counterParty: users['11'],
+		returnValues: {
+			amount: '12',
+		},
+		type: 'receive',
+		timestamp: '2019-09-12',
+		timeSince: timeSince('2019-09-12')
+	},
+	{
+		counterParty: users['11'],
+		returnValues: {
+			amount: '12',
+		},
+		type: 'receive',
+		timestamp: '2019-09-12',
+		timeSince: timeSince('2019-09-12')
+	},
+	{
+		counterParty: users['11'],
+		returnValues: {
+			amount: '12',
+		},
+		type: 'receive',
+		timestamp: '2019-09-12',
+		timeSince: timeSince('2019-09-12')
+	},
+	{
+		counterParty: users['11'],
+		returnValues: {
+			amount: '12',
+		},
+		type: 'receive',
+		timestamp: '2019-09-12',
+		timeSince: timeSince('2019-09-12')
+	},
+	{
+		counterParty: users['11'],
+		returnValues: {
+			amount: '12',
+		},
+		type: 'receive',
+		timestamp: '2019-09-12',
+		timeSince: timeSince('2019-09-12')
+	},
+	{
+		counterParty: users['11'],
+		returnValues: {
+			amount: '12',
+		},
+		type: 'receive',
+		timestamp: '2019-09-12',
+		timeSince: timeSince('2019-09-12')
+	},
+	{
+		counterParty: users['11'],
+		returnValues: {
+			amount: '12',
+		},
+		type: 'receive',
+		timestamp: '2019-09-12',
+		timeSince: timeSince('2019-09-12')
+	},
+	{
+		counterParty: users['11'],
+		returnValues: {
+			amount: '12',
+		},
+		type: 'receive',
+		timestamp: '2019-09-12',
+		timeSince: timeSince('2019-09-12')
+	},
+	{
+		counterParty: users['11'],
+		returnValues: {
+			amount: '12',
+		},
+		type: 'receive',
+		timestamp: '2019-09-12',
+		timeSince: timeSince('2019-09-12')
+	},
+	{
+		counterParty: users['11'],
+		returnValues: {
+			amount: '12',
+		},
+		type: 'receive',
+		timestamp: '2019-09-12',
+		timeSince: timeSince('2019-09-12')
+	},
+	{
+		counterParty: users['11'],
+		returnValues: {
+			amount: '12',
+		},
+		type: 'receive',
+		timestamp: '2019-09-12',
+		timeSince: timeSince('2019-09-12')
+	},
+	{
+		counterParty: users['11'],
+		returnValues: {
+			amount: '12',
+		},
+		type: 'receive',
+		timestamp: '2019-09-12',
+		timeSince: timeSince('2019-09-12')
+	},
+	{
+		counterParty: users['11'],
+		returnValues: {
+			amount: '12',
+		},
+		type: 'receive',
+		timestamp: '2019-09-12',
+		timeSince: timeSince('2019-09-12')
+	},
+	{
+		counterParty: users['11'],
+		returnValues: {
+			amount: '12',
+		},
+		type: 'receive',
+		timestamp: '2019-09-12',
+		timeSince: timeSince('2019-09-12')
+	},
 ]
-
-export default function WalletContainer() {
-	const user = {
-		id: '',
-		handle: 'getwoketoke',
-		avatar: 'images/avatar-getwoke.jpg'
-	}
-
-	const friends = Object.values(users);
-	const sendTransfers = useSendTransfers(friends);
-
-	return (
-		<Wallet
-			user={user}
-			friends={friends}
-			userData={users}
-			balance={1305}
-			transferEvents={transferList}
-			rewardEvents={rewardList}
-			sendTransfers={sendTransfers}
-		/>
-	);
-}

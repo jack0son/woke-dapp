@@ -9,6 +9,8 @@ import Paper from '@material-ui/core/Paper';
 import MenuItem from '@material-ui/core/MenuItem';
 import Chip from '@material-ui/core/Chip';
 
+import { useEnterKey } from '../hooks/util-hooks';
+
 function renderInput(inputProps) {
   const { FieldComponent, InputProps, onChange, classes, ref, ...other } = inputProps;
 	const Component = FieldComponent ? FieldComponent : TextField;
@@ -52,8 +54,10 @@ function renderSuggestion(suggestionProps) {
 				backgroundColor: theme.palette.background.default,
 				paddingBottom: 0,
 				minHeight: '32px',
+				height: '6vh',
         fontWeight: isSelected ? 500 : 400,
-				fontSize: '14px'
+				fontSize: '14px',
+				zIndex: '2000',
       }}
 			disableGutters
     >
@@ -81,15 +85,17 @@ renderSuggestion.propTypes = {
 const useStyles = makeStyles(theme => ({
   root: {
     flexGrow: 1,
-    height: 250,
+		width: '100%',
+    //height: 250,
   },
   container: {
     flexGrow: 1,
+		width: '100%',
     position: 'relative',
   },
   paper: {
     position: 'absolute',
-    zIndex: 1,
+    zIndex: 2,
 		//marginTop: theme.spacing(1),
 		height: theme.spacing(4),
 		minHeight: theme.spacing(4),
@@ -100,10 +106,11 @@ const useStyles = makeStyles(theme => ({
     margin: theme.spacing(0.5, 0.25),
   },
   inputRoot: {
+		width: '100%',
     flexWrap: 'wrap',
   },
   inputInput: {
-    width: 'auto',
+		width: '100%',
     flexGrow: 1,
   },
   divider: {
@@ -114,9 +121,11 @@ const useStyles = makeStyles(theme => ({
 let popperNode;
 
 export default function IntegrationDownshift(props) {
-	const {FieldComponent, Suggestion, suggestions, handleFieldChange, ...innerProps} = props;
+	const {FieldComponent, Suggestion, suggestions, handleInputValueChange, handleFieldChange, ...innerProps} = props;
 	const theme = useTheme();
   const classes = useStyles();
+
+	useEnterKey(handleInputValueChange);
 
 	function getSuggestions(value, { showEmpty = false } = {}) {
 		const inputValue = deburr(value.trim()).toLowerCase();
@@ -140,10 +149,19 @@ export default function IntegrationDownshift(props) {
 
 	const itemToString = (item) => {
 		return item;
-	}
+	};
+
+	const onInputValueChange = (value, stateAndHelpers) => {
+		handleInputValueChange(value);
+		console.log('onInputValueChange', value);
+		//console.log('onInputValueChange', stateAndHelpers);
+	};
 
 	const renderSimple = () => (
-      <Downshift id="downshift-simple" itemToString={itemToString}>
+      <Downshift id="downshift-simple"
+				onSelect={onInputValueChange}
+				itemToString={itemToString}
+			>
         {({
           getInputProps,
           getItemProps,
@@ -154,6 +172,7 @@ export default function IntegrationDownshift(props) {
           isOpen,
           selectedItem,
 					selectItem,
+					onInputValueChange,
 					clearSelection,
         }) => {
 					//const {onFocus, ...inputProps } = getInputProps({
@@ -162,21 +181,20 @@ export default function IntegrationDownshift(props) {
 							let label = event.target.value;
 							//event.preventDefault();
 							if (selectedItem) {
+								console.log(selectedItem);
 								if (selectedItem.label === label) {
 									return;
 								}
 							}
 
-							handleFieldChange(event);
 							selectItem(label);
 						},
 
             placeholder: props.placeholder,
           });
 
-          return (
-            <div className={classes.container}>
-              {renderInput({
+
+          return ( <div className={classes.container}> {renderInput({
 								FieldComponent: FieldComponent,
 								//fullWidth: true,
                 classes,
@@ -195,66 +213,6 @@ export default function IntegrationDownshift(props) {
                         suggestion,
                         index,
 												theme,
-                        itemProps: getItemProps({ item: suggestion.label }),
-                        highlightedIndex,
-                        selectedItem,
-                      }),
-                    )}
-                  </Paper>
-                ) : null}
-              </div>
-            </div>
-          );
-        }}
-      </Downshift>
-	);
-
-	const renderWithOptions = () => (
-      <Downshift id="downshift-options">
-        {({
-          clearSelection,
-          getInputProps,
-          getItemProps,
-          getLabelProps,
-          getMenuProps,
-          highlightedIndex,
-          inputValue,
-          isOpen,
-          openMenu,
-          selectedItem,
-        }) => {
-          const { onBlur, onChange, onFocus, ...inputProps } = getInputProps({
-            onChange: event => {
-              if (event.target.value === '') {
-                clearSelection();
-              }
-							console.log(selectedItem);
-							console.log(inputValue);
-            },
-            onFocus: openMenu,
-            placeholder: 'With the clear & show empty options',
-          });
-
-          return (
-            <div className={classes.container}>
-              {renderInput({
-								FieldComponent: FieldComponent,
-                fullWidth: true,
-                fullWidth: true,
-                classes,
-                label: 'Username',
-                InputLabelProps: getLabelProps({ shrink: true }),
-                inputProps: { onBlur, onChange, onFocus, ...inputProps },
-              })}
-
-              <div {...getMenuProps()}>
-                {isOpen ? (
-                  <Paper className={classes.paper} square>
-                    {getSuggestions(inputValue, { showEmpty: true }).map((suggestion, index) =>
-                      renderSuggestion({
-												Suggestion,
-                        suggestion,
-                        index,
                         itemProps: getItemProps({ item: suggestion.label }),
                         highlightedIndex,
                         selectedItem,

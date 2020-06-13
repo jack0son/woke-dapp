@@ -2,14 +2,16 @@ import React, {useState, useEffect} from 'react'
 
 // Logical containers
 import Authentication from './authentication'
+import Login from './login'
 import Web3Initializer from './web3-initializer'
+import TwitterAuth from './twitter-auth';
 
 // View container
-import Root from './views/root'
+import RootView from './views/root'
 
 // Hooks
 import { RootContextProvider } from '../hooks/root-context'
-import TwitterContextProvider from '../hooks/twitter/index.js'
+import TwitterContextProvider, { useTwitterContext } from '../hooks/twitter/index.js'
 import useHedgehog from '../hooks/hedgehog'
 import { clearOldVersionStorage } from '../lib/utils'
 
@@ -17,8 +19,7 @@ import { clearOldVersionStorage } from '../lib/utils'
 import HedgehogWallet from '../lib/wallet/wallet'
 const wallet = new HedgehogWallet(); 
 
-// @TODO move to env
-const appVersion = '0.2b';
+const appVersion = '0.4.0';
 
 export default function RootContainer(props) {
 	const hedgehog = useHedgehog(wallet);
@@ -47,15 +48,15 @@ export default function RootContainer(props) {
 	}, []);
 
 	return (
-		<RootContextProvider>
-			<Root>
-				<TwitterContextProvider>
-					{	!hedgehog.state.signedIn ? 
+		<RootContextProvider hedgehog={hedgehog}>
+			<TwitterContextProvider>
+				<RootView TwitterAuth={TwitterAuth}>
+					{	!hedgehog.state.loggedIn ? 
 							renderAuthentication() : 
 							renderWeb3Initializer()
 					}
-				</TwitterContextProvider>
-			</Root>
+				</RootView>
+			</TwitterContextProvider>
 		</RootContextProvider>
 	);
 }
