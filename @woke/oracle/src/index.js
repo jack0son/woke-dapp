@@ -1,4 +1,4 @@
-let {
+const {
 	Logger,
 	twitter,
 	web3Tools,

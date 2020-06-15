@@ -15,6 +15,28 @@ class TwitterStub {
 		return true //this.client.hasCredentials();
 	}
 
+	async findClaimTweet(userId) {
+		// Human readable log
+		let userData = {};
+		try {
+			userData = await twitter.getUserData(query.userId);
+			//console.log(userData);
+		} catch (error) {
+			debug.error(error);
+		}
+		debug.h(`Got query ${userData.handle}:${query.userId}, queryId: ${qid}, `);
+		//let tweet = await twitter.findClaimTweet(query.userId);
+		let tweets = await twitter.searchClaimTweets(userData.handle);
+		if(tweets.length < 1) {
+			throw new Error('No claim tweet found');
+		}
+
+		//let tweet = tweets[0].full_text;
+		let tweet = tweets[0];
+		debug.name(abr, `Found tweet: ${tweet.full_text}`);
+		return tweet;
+	}
+
 
 	async dm() {
 		return true;

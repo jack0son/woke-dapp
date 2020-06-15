@@ -1,5 +1,5 @@
 const assert = require('assert');
-const actors = require('../src/actors');
+const { Polling } = require('../src/actors');
 const { bootstrap } = require('../src/actor-system');
 const { dispatch } = require('nact');
 
@@ -18,7 +18,7 @@ context('Polling', function() {
 
 	beforeEach(function start_actors(done) {
 		director = bootstrap();
-		a_polling = director.start_actor('polling_service', actors.polling);
+		a_polling = director.start_actor('polling_service', Polling);
 		a_stub = director.start_actor('stub', actorStub);
 
 		stop_polling = (done) => {

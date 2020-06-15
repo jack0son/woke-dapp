@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "description": "Woke Actor System",
   "private": true,
-  "main": "index.js",
+  "main": "src/index.js",
   "scripts": {
     "test": "./node_modules/.bin/mocha",
     "test-debug": "DEBUG=oracle:* ./node_modules/.bin/mocha"

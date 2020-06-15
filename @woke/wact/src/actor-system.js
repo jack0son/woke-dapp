@@ -37,7 +37,7 @@ function remap_debug(_name) {
 // message bundle.
 // @returns Map string -> function
 const bind_receivers = (receivers, msg, state, ctx) => receivers ?
-	receivers(msg, state, ctx)
+	receivers({ msg, state, ctx })
 	: undefined;
 
 const spawn_actor = (_parent, _name, _actionsMap, _initialState, _properties) =>
