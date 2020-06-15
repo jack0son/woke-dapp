@@ -109,10 +109,18 @@ const uInt32ToHexString = (uInt32) => {
 	return `0x${solStr}`;
 }
 
+function initContract(web3Instance, interface) {
+	return new web3Instance.web3.eth.Contract(
+		interface.abi,
+		interface.networks[web3Instance.network.id].address
+	);
+}
+
 
 module.exports = {
 	safePriceEstimate,
 	waitForEvent, 
 	waitForEventWeb3,
 	uInt32ToHexString,
+	initContract,
 };

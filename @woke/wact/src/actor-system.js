@@ -5,8 +5,10 @@ const {
 	spawn,
 	spawnStateless,
 	configurePersistence,
-	spawnPersistent
+	spawnPersistent,
+	dispatch,
 } = require('nact');
+const { block } = require('./lib/nact-utils');
 actors = require('./actors');
 const { Logger } = require('@woke/lib');
 
@@ -14,7 +16,7 @@ const DEBUG_PREFIX = 'actor';
 const FATAL_HANG_TIME = 1000*1000; //ms
 const DEBUG_RECOVERY= process.env.DEBUG_RECOVERY =='true' ? true : false
 
-function block(_consumer, _msg) {
+function blockOld(_consumer, _msg) {
 	return query(_consumer, _msg, FATAL_HANG_TIME).catch( error => {
 		throw new Error(`APPLICATION HANG: blocking query timed out (${FATAL_HANG_TIME}ms). Are you sure you want temporally couple actors?`); 
 	});
@@ -179,4 +181,5 @@ module.exports = {
 	spawn_actor,
 	start_actor,
 	start_persistent,
+	dispatch,
 }

@@ -1,7 +1,6 @@
 const { dispatch, query } = require('nact');
-const { start_actor, block } = require('../actor-system');
-const { initContract } = require('../lib/web3');
-const { web3Tools } = require('@woke/lib');
+const { start_actor, block } = require('@woke/wact').ActorSystem;
+const { initContract } = require('@woke/lib').web3Tools.utils;
 
 const txActor = require('./web3-tx');
 const subActor = require('./subscriber');

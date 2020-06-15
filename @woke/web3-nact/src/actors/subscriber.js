@@ -1,7 +1,7 @@
-const { dispatch, query, spawnStateless } = require('nact');
-const { start_actor, block } = require('../actor-system');
-const polling = require('./polling');
-const { initContract } = require('../lib/web3');
+const { ActorSystem, actors: Polling } = require('@woke/wact');
+const { initContract } = require('@woke/lib').web3Tools.utils;
+
+const { dispatch, block } = ActorSystem;
 
 /*
  *
@@ -86,7 +86,7 @@ const subscriptionActor = {
 			const {contractInterface, eventName, watchdog} = state;
 			if(watchdog && !state.a_watchdog) {
 				ctx.debug.info(msg, `Starting subscription watchdog...`);
-				state.a_watchdog = start_actor(ctx.self)('_watchdog', polling);
+				state.a_watchdog = start_actor(ctx.self)('_watchdog', Polling);
 				dispatch(state.a_watchdog, { type: 'poll',
 					target: ctx.self,
 					action: 'subscribe',

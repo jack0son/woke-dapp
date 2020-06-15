@@ -1,6 +1,7 @@
 const { dispatch } = require('nact');
 const { web3Tools } = require('@woke/lib');
-const { delay } = require('../lib/utils');
+
+const delay = async (ms) => new Promise(res => setTimeout(res, ms));
 
 // @TODO define these timing constants in common lib
 const timeouts = {}

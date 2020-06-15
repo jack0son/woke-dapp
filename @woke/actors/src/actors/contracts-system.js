@@ -1,5 +1,5 @@
-const { contract, Web3, nonce } = require('@woke/web3-act');
-const loadContract = require('../contracts').load;
+const { Contract, Web3, Nonce, utils } = require('@woke/web3-nact');
+const loadContract = utils.load;
 
 function create_contracts_system(director, contractNames, opts) {
 	const MAX_ATTEMPTS = opts && opts.maxAttempts || 5;
@@ -13,15 +13,15 @@ function create_contracts_system(director, contractNames, opts) {
 	console.log(`No nonce actor provided, initialising my own...`)
 	let a_nonce;
 	if(opts && opts.persist) {
-		a_nonce = director.start_persistent('nonce', nonce, { a_web3 });
+		a_nonce = director.start_persistent('nonce', Nonce, { a_web3 });
 	} else {
-		a_nonce = director.start_actor('nonce', nonce, { a_web3 });
+		a_nonce = director.start_actor('nonce', Nonce, { a_web3 });
 	}
 
 	// Initialise Woken Contract agent
 	let a_contracts = {};
 	contractNames.forEach(name => {
-		a_contracts[name] = director.start_actor(`a_${name}`, contract, {
+		a_contracts[name] = director.start_actor(`a_${name}`, Contract, {
 			a_web3, 
 			a_nonce,
 			contractInterface: loadContract(name),

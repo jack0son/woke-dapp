@@ -1,8 +1,12 @@
 const { dispatch } = require('nact');
 
-function matchSink({ sinkHanlders }) { 
+function SinkHandler(handler, match) {
+}
+
+function matchSink({ sinkHandlers }, kind) { 
 	return actor => {
-		const handler = sinkHandlers[actor.name];
+		let handler = sinkHandlers[actor.name];
+		if(!handler) handler = sinkHanlders[kind];
 		if(!handler) {
 			ctx.debug.warn(msg, `No applicable stages for actor ${actor.name}:${actor.id}>`);
 			return noEffect;
@@ -20,8 +24,8 @@ function SinkAdapter(_reducer) {
 	return {
 		'sink': (msg, ctx, state) => {
 			const actorId = ctx.sender.id;
-			return reducer ? _reducer(msg, ctx, matchSink(state)(ctx.sender)(msg, ctx, state))
-				: matchSink(state)(ctx.sender)(msg, ctx, state);
+			return reducer ? _reducer(msg, ctx, matchSink(state, msg.kind)(ctx.sender)(msg, ctx, state))
+				: matchSink(state, msg.kind)(ctx.sender)(msg, ctx, state);
 		}
 	};
 }

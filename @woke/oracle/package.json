@@ -21,11 +21,13 @@
   "author": "Jackson Virgo",
   "license": "ISC",
   "dependencies": {
-    "@woke/wact": "0.1.0",
+    "@woke/actors": "0.1.0",
     "@woke/contracts": "0.4.0",
-    "@woke/lib": "0.4.0"
+    "@woke/lib": "0.4.0",
+    "@woke/wact": "0.1.0"
   },
   "devDependencies": {
+    "web3": "^1.2.9",
     "minimist": "^1.2.0",
     "mocha": "^6.2.0"
   }

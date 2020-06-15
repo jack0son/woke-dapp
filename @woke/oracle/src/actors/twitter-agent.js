@@ -38,8 +38,8 @@ function TwitterAgent(twitterStub) {
 				const { twitter } = state;
 				const { userId } = msg;
 
-				twitter.findClaimTweet(userId).then(tweet => {
-					ctx.receivers.sink({ userId, tweet});
+				twitter.findClaimTweet(userId).then(({tweet, userData}) => {
+					ctx.receivers.sink({ userId, tweet, userData});
 				}).catch(error => {
 					ctx.receivers.sink({ userId, error });
 				});

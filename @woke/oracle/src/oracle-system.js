@@ -1,18 +1,15 @@
-const { spawnStateless, dispatch, query } = require('nact');
-const { Logger, twitter } = require('@woke/lib');
+const { Logger, twitter, TwitterStub } = require('@woke/lib');
 const { ActorSystem, PersistenceEngine } = require('@woke/wact');
 const { create_contracts_system } = require('@woke/actors');
 
-const { Oracle } = require('./actors/oracle');
-const TwitterStub = require('./lib/twitter-stub');
-const twitterMock = require('../test/mocks/twitter-client');
+const Oracle = require('./actors/oracle');
+
+const twitterMock = require('../../lib/mocks/twitter-client');
 
 const debug = Logger('sys_oracle');
 
 // Lib
 //const { create_woken_contract_actor } = require('./lib/actors/woken-contract');
-const TwitterStub = require('./lib/twitter-stub');
-const twitterMock = require('../test/mocks/twitter-client');
 
 function TwitterClient() {
 	return twitterMock.createMockClient(3);
@@ -21,7 +18,7 @@ function TwitterClient() {
 class OracleSystem {
 	constructor(contracts, opts) {
 		const { twitterStub, persist, retryInterval } = opts;
-		this.persist = persist ? true : false;
+		this.persist = !!persist;
 		this.config = {
 			QUERY_RETRY_INTERVAL: retryInterval || 15000*3,
 		};
@@ -35,21 +32,17 @@ class OracleSystem {
 			debug.warn(`Persistence not enabled.`);
 		}
 
-		this.director = this.persist ? ActorSystem.bootstrap(this.persistenceEngine) : ActorSystem.bootstrap();
+		this.director = ActorSystem.bootstrap(this.persist ? this.persistenceEngine : undefined);
 		const director = this.director;
 
 		// Actors
 		this.contracts = contracts ||
-			create_contracts_system(director, ['UserRegistry'],  {persist: this.persist});
+			create_contracts_system(director, ['TwitterOracleMock'],  {persist: this.persist});
 
-		const oracleArgs = ['oracle', Oracle, {
-			a_oracleContract: this.contracts.MockTwitterOracle,
+		this.a_oracle = director[this.persist ? 'start_persistent' : 'start_actor']('oracle', Oracle, {
+			a_oracleContract: this.contracts.TwitterOracleMock,
 			a_tweeter: this.a_tweeter,
-		}];
-
-		this.a_oracle = this.persist ? 
-			director.start_persistent(...oracleArgs)
-			: director.start_actor(...oracleArgs);
+		});
 	}
 
 	async start() {
@@ -63,6 +56,7 @@ class OracleSystem {
 			}
 		}
 
+		const dispatch = ActorSystem.dispatch;
 		//dispatch(self.a_tipper, { type: 'resume' });
 
 		//dispatch(self.a_polling, { type: 'poll',
@@ -72,7 +66,7 @@ class OracleSystem {
 		//	msg: { a_polling: self.a_polling },
 		//}, self.a_tweetForwarder);
 
-		console.log(`Started tip system.`);
+		console.log(`Started oracle system.`);
 	}
 }
 
@@ -90,5 +84,3 @@ if(debug.control.enabled && require.main === module) {
 		oracleSystem.start();
 	})()
 }
-
-

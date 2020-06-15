@@ -34,7 +34,7 @@ class TwitterStub {
 		//let tweet = tweets[0].full_text;
 		let tweet = tweets[0];
 		debug.name(abr, `Found tweet: ${tweet.full_text}`);
-		return tweet;
+		return { tweet, userData };
 	}
 
 

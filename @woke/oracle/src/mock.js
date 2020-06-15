@@ -1,17 +1,18 @@
 // Client assumes that the Token is migrated and (paired with the mock oracle?)
 
 const Web3 = require('web3');
-const debug = require('../lib/debug/index');
+const { Logger, protocol: { genClaimString }, web3Tools, twitter} = require('@woke/lib');
 const assert = require('assert');
-const {blog} = require('../lib/debug/common');
-const {waitForEventWeb3, genClaimString} = require('../lib/utils');
-const waitForEvent = waitForEventWeb3;
-const TinyOracle = require('../index');
-const twitter = require('../lib/twitter');
+const waitForEvent = web3Tools.waitForEventWeb3;
 
 const web3 = new Web3('ws://localhost:8545');
-const oracleInterface = require('../../build/contracts/TwitterOracleMock.json')
-const tokenInterface = require('../../build/contracts/WokeToken.json')
+const oracleInterface = require('../../contracts/development/TwitterOracleMock.json')
+const tokenInterface = require('../../contracts/development/WokeToken.json')
+const userRegistryInterface = require('../../contracts/development/UserRegistry.json')
+
+const oracleSystem = require('./oracle-system');
+
+const debug = Logger('mock-claim');
 
 let networkId = 12; // client
 
@@ -35,12 +36,12 @@ const initClient = async (simulate) => {
 	if(oracleInterface.networks[networkId].address) {
 		to_address = oracleInterface.networks[networkId].address
 	}
-	if(tokenInterface.networks[networkId].address) {
-		wt_address = tokenInterface.networks[networkId].address
+	if(userRegistryInterface.networks[networkId].address) {
+		wt_address = userRegistryInterface.networks[networkId].address
 	}
 
 	const MockTwitterOracle = new web3.eth.Contract(oracleInterface.abi, {data: oracleInterface.bytecode})//, {from: owner});
-	const WokeToken = new web3.eth.Contract(tokenInterface.abi)//, {from: owner});
+	const UserRegistry = new web3.eth.Contract(userRegistryInterface.abi)//, {from: owner});
 
 	let oracleServer, wt, to, mockTwitter, claimString;
 
@@ -63,7 +64,7 @@ const initClient = async (simulate) => {
 	debug.m(`MockTwitterOracle deployed at ${to.options.address}`);
 
 	if(!wt_address) {
-		wt = await WokeToken.deploy(
+		wt = await UserRegistry.deploy(
 			{data: tokenInterface.bytecode, arguments: [to.options.address, maxSupply]}
 		).send({
 			from: owner,
@@ -72,11 +73,11 @@ const initClient = async (simulate) => {
 		});
 
 	} else {
-		wt = WokeToken;
+		wt = UserRegistry;
 		wt.options.address = wt_address
 		// TODO check contract deployment status
 	}
-	debug.m(`WokeToken deployed at ${wt.options.address}`);
+	debug.m(`UserRegistry deployed at ${wt.options.address}`);
 
 	let getwoketoke_account = await web3.eth.accounts.wallet.add('0x002e4d79c9725def6de38c72894e9339d697430242b8a60a563b0e96c39575ce');
 
@@ -122,8 +123,10 @@ const initClient = async (simulate) => {
 	}
 
 	//oracleServer = new TinyOracle(web3, oracleInterface, to.options.address, networkId, {twitter: mockTwitter});
-	oracleServer = new TinyOracle(web3, undefined, to.options.address, networkId, {twitter: mockTwitter});
-	await oracleServer.start(oraclize_cb);
+	//oracleServer = new TinyOracle(web3, undefined, to.options.address, networkId, {twitter: mockTwitter});
+	//await oracleServer.start(oraclize_cb);
+	const oracleSystem = new OracleSystem(undefined, { persist: false, twitterStub });
+	oracleSystem.start();
 	debug.t('Started tiny-oracle.');
 
 		//debug.name(u.handle, u.claimString); 
@@ -179,7 +182,7 @@ const initClient = async (simulate) => {
 
 module.exports = initClient;
 
-if(debug.debug.enabled && require.main === module) {
+if(debug.enabled && require.main === module) {
 	var argv = process.argv.slice(2);
 	const [simulate, ...rest] = argv;
 	debug.h(`Send test transactoins? ${simulate}`);

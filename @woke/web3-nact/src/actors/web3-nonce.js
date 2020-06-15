@@ -1,5 +1,5 @@
 const { dispatch, query } = require('nact');
-const { block } = require('./nact-utils');
+const { block } = require('@woke/wact').ActorSystem;
 
 // Keep track of the nonce
 const nonceActor = {

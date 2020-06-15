@@ -1,4 +1,4 @@
-const { actors } = require('@woke/wact');
+const { actors: { SinkAdapter } } = require('@woke/wact');
 // Each tip is a simple linear state machine
 const statuses = [
 	'UNSETTLED',
@@ -49,7 +49,7 @@ function handleQuerySubscription(msg, ctx, state) {
 	switch(eventName) {
 		case 'FindTweetLodged': {
 			// Event update from subscription
-			dispatch(ctx.self, { ...msg, type: 'query' }, ctx.self);
+			dispatch(ctx.self, { type: 'query', query: msg.log }, ctx.self);
 			break;
 		}
 
@@ -122,13 +122,13 @@ function handleIncomingQuery(msg, ctx, state) {
 	let job = jobRepo[queryId];
 	if(!job) {
 		job = { queryId, userId, status: statusEnum.UNSETTLED, error: null };
-		job.a_job = settle_job(job);
+		job.a_job = ctx.receivers.settle_job(job);
 		// start the job
 	} else {
 		// attempt to settle existing job
 		switch(job.status) {
 			case statusEnum.UNSETTLED: {
-				job.a_job = settle_job(job);
+				job.a_job = ctx.receivers.settle_job(job);
 			}
 
 			case statusEnum.FAILED: {
@@ -142,42 +142,44 @@ function handleIncomingQuery(msg, ctx, state) {
 	return { ...state, jobRepo };
 }
 
-function OracleOrchestrator(a_twitterAgent, a_contract_TwitterOracle) {
-	return {
-		properties: {
-			initialState: {
-				sinkHandlers: {
-					subscribe_log: handleQuerySubscription,
-					queryJob: handleJobResponse,
-				},
-
-				receivers: (bundle) => ({ 
-					settle_job: settle_job(bundle),
-					sink: sink(bundle),
-				}),
-			}
-		},
-
-		actions: {
-			...SinkAdapter(),
-			'init': (msg, ctx, state) => {
-				const { a_contract_UserRegistry } = state;
-
-				// Subscribe to unclaimed transfers
-
-				// Rely on subscription to submit logs from block 0
-				// @TODO persist last seen block number
-				dispatch(a_contract_TwitterOracle, {	type: 'subscribe_log',
-					eventName: 'Tx',
-					opts: { fromBlock: 0 },
-					filter: e => e.claimed == false,
-				}, ctx.self);
+//function OracleOrchestrator(a_twitterAgent, a_contract_TwitterOracle) {
+module.exports = {
+	properties: {
+		initialState: {
+			sinkHandlers: {
+				subscribe_log: handleQuerySubscription,
+				//queryJob: handleJobResponse,
 			},
 
-			'query': handleIncomingQuery,
-			'update_job': update_job,
+			a_twitterAgent: null,
+			a_contract_TwitterOracle: null,
+
+			receivers: (bundle) => ({ 
+				settle_job: settle_job(bundle),
+				//sink: sink(bundle),
+			}),
 		}
-	};
+	},
+
+	actions: {
+		...SinkAdapter(),
+		'init': (msg, ctx, state) => {
+			const { a_contract_UserRegistry } = state;
+
+			// Subscribe to unclaimed transfers
+
+			// Rely on subscription to submit logs from block 0
+			// @TODO persist last seen block number
+			dispatch(a_contract_TwitterOracle, {	type: 'subscribe_log',
+				eventName: 'FindTweetLodged',
+				opts: { fromBlock: 0 },
+				filter: e => e,
+			}, ctx.self);
+		},
+
+		'query': handleIncomingQuery,
+		'update_job': update_job,
+	}
 }
 
-module.exports = OracleOrchestrator;
+//module.exports = OracleOrchestrator;

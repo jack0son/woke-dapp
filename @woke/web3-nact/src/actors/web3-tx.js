@@ -1,12 +1,13 @@
-const { dispatch, query } = require('nact');
-const { block } = require('../actor-system');
-const { withEffect } = require('./effects');
-const { initContract } = require('../lib/web3');
+const { ActorSystem, effects } = require('@woke/wact');
+const { dispatch, block } = require('@woke/wact').ActorSystem;
+const { initContract } = require('@woke/lib').web3Tools.utils;
+const { withEffect } = effects;;
 //const web3Errors = require('web3-core-helpers').errors;
 
 const properties = {
 	initialState: {
 		sinks: [],
+		kind: 'tx',
 
 		opts: {
 			call: null,
