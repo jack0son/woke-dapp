@@ -1,4 +1,4 @@
-const { dispatch } = require('nact');
+const { ActorSystem: { dispatch } } = require('@woke/wact');
 const { web3Tools } = require('@woke/lib');
 
 const delay = async (ms) => new Promise(res => setTimeout(res, ms));
@@ -24,12 +24,15 @@ const Web3Actor = (init_web3 = web3Tools.init, maxAttempts = MAX_ATTEMPTS, opts)
 	actions: {
 		'get': async (msg, ctx, state) => {
 			const { web3Instance } = state;
+			console.log(msg);
+			console.log(state);
 
 			if(!web3Instance) {
 				return forwardToInit();
 			}
 
 			try {
+				console.log('connect to web3');
 				let networkId = await web3Instance.web3.eth.net.getId();
 				dispatch(ctx.sender, { type: 'web3', web3Instance }, ctx.self);
 			} catch(error) {
@@ -40,6 +43,7 @@ const Web3Actor = (init_web3 = web3Tools.init, maxAttempts = MAX_ATTEMPTS, opts)
 
 			// Forward the get request to init
 			function forwardToInit() {
+				console.log(ctx);
 				dispatch(ctx.self, { type: 'init' }, ctx.sender); 
 				return;
 			}
@@ -69,7 +73,9 @@ const Web3Actor = (init_web3 = web3Tools.init, maxAttempts = MAX_ATTEMPTS, opts)
 		},
 		
 		'init': (msg, ctx, state) => {
+			console.log('haefaldfadsfasdj');
 			const { queue } = state;
+			console.log(msg);
 			// Add this caller to the queue
 			// NB the wait message must be dispatched before triggering
 			// instantiation in order to synchronise the queue

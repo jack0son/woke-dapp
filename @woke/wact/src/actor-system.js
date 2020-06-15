@@ -160,13 +160,7 @@ const start_persistent = _persistentSystem => (_name, _definition, _initialState
 // Instantiate a nact actor system
 // @returns nact actor system and bound methods
 function bootstrap(_persistenceEngine) {
-	let system;
-	if(_persistenceEngine) {
-		system = start(configurePersistence(_persistenceEngine));
-	} else {
-		system = start();
-	}
-
+	const system = _persistenceEngine  ? start(configurePersistence(_persistenceEngine)) : start();
 	return {
 		start_actor: start_actor(system),
 		start_persistent: _persistenceEngine ? start_persistent(system) : undefined,
@@ -176,10 +170,12 @@ function bootstrap(_persistenceEngine) {
 }
 
 module.exports = {
-	block,
 	bootstrap,
 	spawn_actor,
+	spawnStateless,
 	start_actor,
 	start_persistent,
 	dispatch,
+	query,
+	block,
 }

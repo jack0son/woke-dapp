@@ -1,9 +1,9 @@
 const src = '../src';
-const { spawnStateless, dispatch, query } = require('nact');
-const { Web3, contract } = require(src + '/actors');
+//const { spawnStateless, dispatch, query } = require('nact');
+const { Web3, Contract } = require(src);
 const subscriberActor = require(src + '/actors/subscriber');
 
-const { bootstrap, start_actor, block } = require(src + '/actor-system');
+const { ActorSystem } = require('@woke/wact');
 
 const loadContract = require(src + '/lib/contracts').load;
 const debug = require('@woke/lib').Logger('sys_tip');
@@ -23,7 +23,7 @@ function create_woken_contract_actor(director) {
 	}));
 
 	// Initialise Woken Contract agent
-	const a_wokenContract = director.start_actor('woken_contract', contract, {
+	const a_wokenContract = director.start_actor('woken_contract', Contract, {
 		a_web3, 
 		contractInterface: loadContract('WokeToken'),
 	})
@@ -39,10 +39,12 @@ const opts = {
 
 const filter = e => e.claimed == false;
 
-const director = bootstrap();
+const director = ActorSystem.bootstrap();
 const a_wokenContract = create_woken_contract_actor(director);
 
-const a_catch_logs = spawnStateless(director.system,
+console.log(director);
+
+const a_catch_logs = ActorSystem.spawnStateless(director.system,
 	(msg, ctx) => {
 		console.log(msg);
 	},

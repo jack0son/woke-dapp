@@ -1,11 +1,12 @@
 // Client assumes that the Token is migrated and (paired with the mock oracle?)
 
 const Web3 = require('web3');
-const { Logger, protocol: { genClaimString }, web3Tools, twitter} = require('@woke/lib');
+const { Logger, protocol, web3Tools, twitter} = require('@woke/lib');
 const assert = require('assert');
-const waitForEvent = web3Tools.waitForEventWeb3;
+const waitForEvent = web3Tools.utils.waitForEventWeb3;
 
 const web3 = new Web3('ws://localhost:8545');
+const genClaimString = protocol.genClaimString(web3);
 const oracleInterface = require('../../contracts/development/TwitterOracleMock.json')
 const tokenInterface = require('../../contracts/development/WokeToken.json')
 const userRegistryInterface = require('../../contracts/development/UserRegistry.json')
@@ -85,25 +86,29 @@ const initClient = async (simulate) => {
 
 		getwoketoke: {
 			account: getwoketoke_account.address,
+			followers: 1000,
 			handle: 'getwoketoke',
 			id: getwoketoke_id
 		},
 
 		whalepanda: {
 			account: claimer,
+			followers: 300,
 			handle: 'whalepanda',
 			id: '10'
 		},
 
 		jack: {
 			account: stranger_a,
+			followers: 30,
 			handle: 'jack',
 			id: '11'
 		},
 
-		ayden: {
+		denk: {
 			account: stranger_b,
-			handle: 'ayden',
+			followers: 15,
+			handle: 'denk',
 			id: '12'
 		}
 	}
@@ -111,7 +116,7 @@ const initClient = async (simulate) => {
 
 	for(let u of Object.values(users)) {
 		debug.m(`With user @${u.handle}, id: ${u.id}, account: ${u.account} ...`);
-		u.claimString = await genClaimString(web3, u.account, u.id) + ' garbage text';
+		u.claimString = await genClaimString(u.account, u.id) + ' garbage text';
 		//debug.name(u.handle, u.claimString); 
 	}
 
@@ -125,9 +130,9 @@ const initClient = async (simulate) => {
 	//oracleServer = new TinyOracle(web3, oracleInterface, to.options.address, networkId, {twitter: mockTwitter});
 	//oracleServer = new TinyOracle(web3, undefined, to.options.address, networkId, {twitter: mockTwitter});
 	//await oracleServer.start(oraclize_cb);
-	const oracleSystem = new OracleSystem(undefined, { persist: false, twitterStub });
-	oracleSystem.start();
-	debug.t('Started tiny-oracle.');
+	//const oracleSystem = new OracleSystem(undefined, { persist: false, twitterStub });
+	//oracleSystem.start();
+	//debug.t('Started tiny-oracle.');
 
 		//debug.name(u.handle, u.claimString); 
 
@@ -140,10 +145,10 @@ const initClient = async (simulate) => {
 		let receipt = await web3.eth.sendTransaction(fundOpts);
 		for(let u of Object.values(users)) {
 			try {
-				if(u.handle == 'getwoketoke') throw new Error('SKIP THIS USER');
+				//if(u.handle == 'getwoketoke') throw new Error('SKIP THIS USER');
 				opts.from = u.account
 				debug.name(u.handle, `Lodging claim from ${u.account}`);
-				let r = await wt.methods.claimUser(u.id, u.handle).send(opts);
+				let r = await wt.methods.claimUser(u.id).send(opts);
 				let bn = r.blockNumber;
 				let queryId = r.events['Lodged'].returnValues.queryId;
 				debug.t('queryId: ', queryId);
@@ -163,7 +168,7 @@ const initClient = async (simulate) => {
 		opts.from = users.getwoketoke.account
 		let r = await wt.methods.transferClaimed(users.jack.id, 1).send(opts);
 		debug.m(`Sent`)
-		opts.from = users.ayden.account
+		opts.from = users.denk.account
 		r = await wt.methods.transferClaimed(users.getwoketoke.id, 4).send(opts);
 		debug.m(`Sent`)
 
@@ -173,7 +178,7 @@ const initClient = async (simulate) => {
 		debug.m(`Sent`)
 
 		for(let u of Object.values(users)) {
-			let balance = await wt.methods.balanceOf(u.account).call();
+			let balance = await wt.methods.balanceOf(u.id).call();
 			debug.name(u.handle, `balance: ${balance} WOKE`);
 		}
 	}
@@ -182,7 +187,7 @@ const initClient = async (simulate) => {
 
 module.exports = initClient;
 
-if(debug.enabled && require.main === module) {
+if(require.main === module) {
 	var argv = process.argv.slice(2);
 	const [simulate, ...rest] = argv;
 	debug.h(`Send test transactoins? ${simulate}`);

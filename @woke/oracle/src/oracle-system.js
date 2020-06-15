@@ -40,7 +40,7 @@ class OracleSystem {
 			create_contracts_system(director, ['TwitterOracleMock'],  {persist: this.persist});
 
 		this.a_oracle = director[this.persist ? 'start_persistent' : 'start_actor']('oracle', Oracle, {
-			a_oracleContract: this.contracts.TwitterOracleMock,
+			a_contract_TwitterOracle: this.contracts.TwitterOracleMock,
 			a_tweeter: this.a_tweeter,
 		});
 	}
@@ -56,15 +56,7 @@ class OracleSystem {
 			}
 		}
 
-		const dispatch = ActorSystem.dispatch;
-		//dispatch(self.a_tipper, { type: 'resume' });
-
-		//dispatch(self.a_polling, { type: 'poll',
-		//	target: self.a_tMon,
-		//	action: 'find_tips',
-		//	period: self.config.TWITTER_POLLING_INTERVAL,
-		//	msg: { a_polling: self.a_polling },
-		//}, self.a_tweetForwarder);
+		ActorSystem.dispatch(self.a_oracle, { type: 'init' });
 
 		console.log(`Started oracle system.`);
 	}

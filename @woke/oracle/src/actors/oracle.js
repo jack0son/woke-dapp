@@ -1,4 +1,5 @@
-const { actors: { SinkAdapter } } = require('@woke/wact');
+const { actors: { SinkAdapter }, ActorSystem } = require('@woke/wact');
+const { dispatch } = ActorSystem;
 // Each tip is a simple linear state machine
 const statuses = [
 	'UNSETTLED',
@@ -44,20 +45,6 @@ function settle_job({msg, ctx, state}) {
 	}
 }
 
-function handleQuerySubscription(msg, ctx, state) {
-	const { eventName } = msg;
-	switch(eventName) {
-		case 'FindTweetLodged': {
-			// Event update from subscription
-			dispatch(ctx.self, { type: 'query', query: msg.log }, ctx.self);
-			break;
-		}
-
-		default: {
-			ctx.debug.info(msg, `No action defined for subscription to '${eventName}' events`);
-		}
-	}
-}
 //
 		//		-- is it tip or tipper that is responsible for tip.status?
 async function update_job(msg, ctx, state) {
@@ -142,13 +129,47 @@ function handleIncomingQuery(msg, ctx, state) {
 	return { ...state, jobRepo };
 }
 
+// ----- Sink handlers
+function handleContractResponse(msg, ctx, state) {
+	switch(msg.action) {
+		case 'subscribe_log': {
+			const { a_sub } = msg;
+			// Once subscription received from contract, start the subscription
+			if(a_sub) {
+				const a_tweet_lodged_sub = a_sub;
+				dispatch(a_tweet_lodged_sub,  {type: 'start'}, ctx.self);
+				return { ...state, a_tweet_lodged_sub };
+			}
+		}
+		default: {
+			debug.d(msg, `No handler defined for response to ${action}`);
+		}
+	}
+}
+
+function handleQuerySubscription(msg, ctx, state) {
+	const { eventName } = msg;
+	switch(eventName) {
+		case 'FindTweetLodged': {
+			// Event update from subscription
+			dispatch(ctx.self, { type: 'query', query: msg.log }, ctx.self);
+			break;
+		}
+
+		default: {
+			ctx.debug.info(msg, `No action defined for subscription to '${eventName}' events`);
+		}
+	}
+}
+
 //function OracleOrchestrator(a_twitterAgent, a_contract_TwitterOracle) {
+// ----- Oracle actor definition
 module.exports = {
 	properties: {
 		initialState: {
 			sinkHandlers: {
 				subscribe_log: handleQuerySubscription,
-				//queryJob: handleJobResponse,
+				a_contract: handleContractResponse,
 			},
 
 			a_twitterAgent: null,
@@ -164,7 +185,7 @@ module.exports = {
 	actions: {
 		...SinkAdapter(),
 		'init': (msg, ctx, state) => {
-			const { a_contract_UserRegistry } = state;
+			const { a_contract_TwitterOracle } = state;
 
 			// Subscribe to unclaimed transfers
 
@@ -173,12 +194,16 @@ module.exports = {
 			dispatch(a_contract_TwitterOracle, {	type: 'subscribe_log',
 				eventName: 'FindTweetLodged',
 				opts: { fromBlock: 0 },
-				filter: e => e,
+				filter: e => true,
 			}, ctx.self);
 		},
 
 		'query': handleIncomingQuery,
 		'update_job': update_job,
+
+		'stop': (msg, ctx, state) => {
+			// Stop subscription
+		},
 	}
 }
 

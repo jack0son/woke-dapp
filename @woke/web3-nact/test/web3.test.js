@@ -1,14 +1,11 @@
 const assert = require('assert');
 const expect = require('chai').use(require('chai-as-promised')).expect
 
-
-const { query, dispatch } = require('nact');
-const { Web3 } = require('../src/actors');
-const bootstrap = require('../src/actor-system');
-
-const Web3Actor = Web3;
-
+const { ActorSystem } = require('@woke/wact');
+const { query, dispatch, bootstrap } = ActorSystem;
 const { delay } = require('../src/lib/utils');
+const { Web3 } = require('../src');
+const Web3Actor = Web3;
 
 const TIME_OKAY = 10;
 const TIME_LONG = 100;

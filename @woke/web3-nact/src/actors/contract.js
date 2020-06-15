@@ -1,5 +1,6 @@
 const { dispatch, query } = require('nact');
-const { start_actor, block } = require('@woke/wact').ActorSystem;
+const { ActorSystem, receivers: { sink } } = require('@woke/wact');
+const { start_actor, block } = ActorSystem;
 const { initContract } = require('@woke/lib').web3Tools.utils;
 
 const txActor = require('./web3-tx');
@@ -42,9 +43,14 @@ const contractActor = {
 			a_nonce: undefined,
 			contractInterface: undefined,
 			logSubscriptions: [],
+			kind: 'a_contract',
 			//contract,
 			//web3Instance,
 		},
+
+		receivers: (bundle) => ({
+			sink: sink(bundle),
+		}),
 
 		onCrash: {
 			// Crash reasons
@@ -102,7 +108,9 @@ const contractActor = {
 				filter,
 				subscribers: [ctx.sender],
 			}, ctx, state);
-			dispatch(ctx.sender, { type: 'a_contract', action: 'new_sub', a_sub}, ctx.self);
+
+			ctx.receivers.sink({ a_sub })
+			//dispatch(ctx.sender, { type: 'a_contract', kind: 'contract', action: 'new_sub', a_sub}, ctx.self);
 
 			logSubscriptions.push(a_sub);
 			return  { ...state, logSubscriptions };
