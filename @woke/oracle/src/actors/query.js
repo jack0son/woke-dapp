@@ -5,8 +5,8 @@ const { tweetToProofString } = require('../lib/proof-protcol');
 
 
 function fetchProofTweet(msg, ctx, state) {
-	debug.d(msg, 'Fetching twitter data');
-	const { a_twitterAgent, userId } = state;
+	const { a_twitterAgent, job: { userId }} = state;
+	ctx.debug.d(msg, `Fetching twitter data for user ${userId}`);
 	dispatch(a_twitterAgent,  { type: 'find_proof_tweet', userId }, ctx.self);
 }
 
@@ -24,14 +24,14 @@ function handleTwitterResponse(msg, ctx, state) {
 			return handleProofTweet(msg, ctx, state);
 		}
 		default: {
-			debug.d(msg, `No handler defined for response to ${action}`);
+			ctx.debug.d(msg, `No handler defined for response to ${action}`);
 			return state;
 		}
 	}
 }
 
 function submitQueryTx(msg, ctx, state) {
-	debug.d(msg, 'Submitting query response transaction');
+	ctx.debug.d(msg, 'Submitting query response transaction');
 	const { query, a_contract_TwitterOracle, tweet, userData } = state;
 
 	const proofString = tweetToProofString(tweet, userData);
@@ -46,7 +46,7 @@ function submitQueryTx(msg, ctx, state) {
 
 function complete(msg, ctx, state) {
 	const { queryId, userId, responseTx } = state;
-	debug.d(msg, `${queryId}: Query complete`);
+	ctx.debug.d(msg, `${queryId}: Query complete`);
 	dispatch(ctx.parent, { type: 'update_job',
 		queryId,
 		userId,
@@ -58,7 +58,7 @@ function complete(msg, ctx, state) {
 }
 
 function handleQueryFailure(msg, ctx, state) {
-	debug.d(msg, 'Query failed');
+	ctx.debug.d(msg, 'Query failed');
 	const { queryId, userId } = state;
 	dispatch(ctx.parent, { type: 'update_query', queryId, userId, status: 'failed' }, ctx.self);
 }
@@ -85,7 +85,7 @@ const queryComplete = Pattern(
 );
 
 const queryFailed = Pattern(
-	({responseTx}) => {
+	({twitterData, responseTx}) => {
 		return !!twitterData && !!responseTx && !!responseTx.error
 	},
 	handleQueryFailure
@@ -110,7 +110,7 @@ module.exports = {
 				a_contract_TwitterOracle: null,
 				a_twitterAgent: null,
 				sinkHandlers: {
-					twitter: handleTwitterResponse, 
+					twitterAgent: handleTwitterResponse, 
 					tx: handleQueryTx,
 				},
 				kind: 'queryJob',
@@ -124,6 +124,7 @@ module.exports = {
 		},
 		actions: {
 			...SinkAdapter(reducer),
+			'start': reducer,
 		}
 }
 //module.exports = QueryJob;

@@ -1,5 +1,7 @@
 const appUrl = 'https://getwoke.me';
 const emojis = require('./emojis');
+const Logger = require('./debug');
+const debug = Logger('twitter_stub');
 
 // Errors: 
 // [ { code: 220, message: 'Your credentials do not allow access to this resource.' } ]
@@ -16,17 +18,17 @@ class TwitterStub {
 	}
 
 	async findClaimTweet(userId) {
+		const { client } = this;
 		// Human readable log
 		let userData = {};
 		try {
-			userData = await twitter.getUserData(query.userId);
+			userData = await client.getUserData(userId);
 			//console.log(userData);
 		} catch (error) {
 			debug.error(error);
 		}
-		debug.h(`Got query ${userData.handle}:${query.userId}, queryId: ${qid}, `);
-		//let tweet = await twitter.findClaimTweet(query.userId);
-		let tweets = await twitter.searchClaimTweets(userData.handle);
+
+		let tweets = await client.searchClaimTweets(userData.handle);
 		if(tweets.length < 1) {
 			throw new Error('No claim tweet found');
 		}

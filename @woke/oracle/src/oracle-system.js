@@ -2,9 +2,11 @@ const { Logger, twitter, TwitterStub } = require('@woke/lib');
 const { ActorSystem, PersistenceEngine } = require('@woke/wact');
 const { create_contracts_system } = require('@woke/actors');
 
+const TwitterAgent = require('./actors/twitter-agent');
 const Oracle = require('./actors/oracle');
 
-const twitterMock = require('../../lib/mocks/twitter-client');
+//const twitterMock = require('../../lib/mocks/twitter-client');
+const twitterMock = require('../test/mocks/twitter-stub.mock');
 
 const debug = Logger('sys_oracle');
 
@@ -17,12 +19,13 @@ function TwitterClient() {
 
 class OracleSystem {
 	constructor(contracts, opts) {
-		const { twitterStub, persist, retryInterval } = opts;
+		const { twitterClient, persist, retryInterval } = opts;
 		this.persist = !!persist;
 		this.config = {
 			QUERY_RETRY_INTERVAL: retryInterval || 15000*3,
 		};
-		this.twitterStub = opts.twitterStub || new TwitterStub(TwitterClient())
+		//this.twitterStub = opts.twitterStub || new TwitterStub(TwitterClient())
+		this.twitterStub = new TwitterStub(twitterClient || TwitterClient())
 
 		// Persistence
 		if(this.persist) {
@@ -38,6 +41,8 @@ class OracleSystem {
 		// Actors
 		this.contracts = contracts ||
 			create_contracts_system(director, ['TwitterOracleMock'],  {persist: this.persist});
+
+		this.a_twitterAgent = director.start_actor('twitterAgent', TwitterAgent(this.twitterStub));
 
 		this.a_oracle = director[this.persist ? 'start_persistent' : 'start_actor']('oracle', Oracle, {
 			a_contract_TwitterOracle: this.contracts.TwitterOracleMock,

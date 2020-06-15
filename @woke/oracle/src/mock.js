@@ -4,6 +4,7 @@ const Web3 = require('web3');
 const { Logger, protocol, web3Tools, twitter} = require('@woke/lib');
 const assert = require('assert');
 const waitForEvent = web3Tools.utils.waitForEventWeb3;
+const twitterMock = require('../test/mocks/twitter-stub.mock');
 
 const web3 = new Web3('ws://localhost:8545');
 const genClaimString = protocol.genClaimString(web3);
@@ -11,7 +12,7 @@ const oracleInterface = require('../../contracts/development/TwitterOracleMock.j
 const tokenInterface = require('../../contracts/development/WokeToken.json')
 const userRegistryInterface = require('../../contracts/development/UserRegistry.json')
 
-const oracleSystem = require('./oracle-system');
+const OracleSystem = require('./oracle-system');
 
 const debug = Logger('mock-claim');
 
@@ -22,6 +23,7 @@ const gasPrice = '20000000000';
 const gasLimit = '6721975';
 const maxSupply = 200000;
 const getwoketoke_id = '932596541822419000'; // Ambassador twitter account
+const makeUsers = require('../test/mocks/users');
 
 // To do
 //  1. configure develop network with mnemonic
@@ -48,6 +50,7 @@ const initClient = async (simulate) => {
 
 	const accounts = await web3.eth.getAccounts();
 	const [defaultAccount, owner, oraclize_cb, claimer, stranger_a, stranger_b, unclaimed, ...rest] = accounts;
+	let users = makeUsers(accounts);
 
 	if(!to_address) {
 		to = await MockTwitterOracle.deploy(
@@ -82,36 +85,6 @@ const initClient = async (simulate) => {
 
 	let getwoketoke_account = await web3.eth.accounts.wallet.add('0x002e4d79c9725def6de38c72894e9339d697430242b8a60a563b0e96c39575ce');
 
-	let users = {
-
-		getwoketoke: {
-			account: getwoketoke_account.address,
-			followers: 1000,
-			handle: 'getwoketoke',
-			id: getwoketoke_id
-		},
-
-		whalepanda: {
-			account: claimer,
-			followers: 300,
-			handle: 'whalepanda',
-			id: '10'
-		},
-
-		jack: {
-			account: stranger_a,
-			followers: 30,
-			handle: 'jack',
-			id: '11'
-		},
-
-		denk: {
-			account: stranger_b,
-			followers: 15,
-			handle: 'denk',
-			id: '12'
-		}
-	}
 
 
 	for(let u of Object.values(users)) {
@@ -119,22 +92,12 @@ const initClient = async (simulate) => {
 		u.claimString = await genClaimString(u.account, u.id) + ' garbage text';
 		//debug.name(u.handle, u.claimString); 
 	}
+	
+	const twitterClient = twitterMock.createMockClient(users);
 
-	mockTwitter = {
-		initClient: async () => true,
-		findClaimTweet: (handle) => new Promise((resolve, reject) => {
-			setTimeout(() => resolve(users[handle].claimString), 1000)
-		})
-	}
-
-	//oracleServer = new TinyOracle(web3, oracleInterface, to.options.address, networkId, {twitter: mockTwitter});
-	//oracleServer = new TinyOracle(web3, undefined, to.options.address, networkId, {twitter: mockTwitter});
 	//await oracleServer.start(oraclize_cb);
-	//const oracleSystem = new OracleSystem(undefined, { persist: false, twitterStub });
-	//oracleSystem.start();
-	//debug.t('Started tiny-oracle.');
-
-		//debug.name(u.handle, u.claimString); 
+	// TODO pass oraclize_cb to oracle system
+	const oracleSystem = new OracleSystem(undefined, { persist: false, twitterClient });
 
 	if(simulate == true) {
 		let opts = {from: undefined, gas: gasLimit, gasPrice: gasPrice};

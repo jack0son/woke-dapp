@@ -40,7 +40,8 @@ function settle_job({msg, ctx, state}) {
 	return (job) => {
 		ctx.debug.info(msg, `Spawning job actor...`);
 		const a_job = spawn_job(ctx.self, job, state.a_contract_TwitterOracle, state.a_twitterAgent);
-		dispatch(a_job, { type: 'job', job: job }, ctx.self);
+		dispatch(a_job, { type: 'start' }, ctx.self);
+		//dispatch(a_job, { type: 'start', job: job }, ctx.self);
 		return a_job;
 	}
 }

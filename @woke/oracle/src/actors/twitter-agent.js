@@ -1,11 +1,11 @@
-const { dispatch } = require('nact');
 const { Logger } = require('@woke/lib');
-const { receivers } = require('@woke/wact');
+const { ActorSystem: { dispatch }, receivers } = require('@woke/wact');
 
 function TwitterAgent(twitterStub) {
 	return {
 		properties: {
 			initialState: {
+				kind: 'twitterAgent',
 				twitter: twitterStub,
 			},
 
