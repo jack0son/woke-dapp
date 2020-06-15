@@ -44,7 +44,8 @@ function subsumeReduce(patterns){ return (msg, ctx, state) => {
 	return { ...state, ...patterns.reduce(
 		(effect, pattern) => pattern.predicate(state) ? pattern.effect : effect,
 		noEffect
-	)(msg, ctx, state)};
+	)(msg, ctx, state)
+	};
 }
 
 function fsmReduce(msg, ctx, state) {
@@ -52,10 +53,11 @@ function fsmReduce(msg, ctx, state) {
 
 // Apply all effects that match in a pipline
 function reducePipe(msg, ctx, state) {
-	patterns.reduce(
+	return { ...state, ...patterns.reduce(
 		(state, pattern) => pattern.predicate(state) ? pattern.effect(state) : state,
 		state,
-	);
+	)(msg, ctx, state)
+	};
 }
 
 // FSM engine. FSM table defined in events table.
@@ -85,12 +87,6 @@ function reduceEvent(msg, ctx, state) {
 
 // Use class instead of closure pattern for actor wrapper
 // - so many being instantiated, memory is running out
-
-
-class Actor extends Receivers {
-	constructor() {
-	}
-}
 
 function Saga() {}
 

@@ -1,0 +1,28 @@
+{
+  "name": "@woke/actors",
+  "version": "0.2.0",
+  "description": "Common actors: woke contracts, twitter",
+  "private": true,
+  "main": "index.js",
+  "scripts": {
+    "test": "./node_modules/.bin/mocha ./test/test*.js",
+    "test:debug": "DEBUG=oracle:* ./node_modules/.bin/mocha"
+  },
+  "author": "Jackson Virgo",
+  "license": "ISC",
+  "dependencies": {
+    "@woke/wact": "0.1.0",
+    "@woke/web3-nact": "0.1.0",
+    "@woke/contracts": "0.4.0",
+    "@woke/lib": "0.4.0",
+    "dotenv": "^8.2.0",
+    "nact": "^7.2.2",
+    "nact-persistence-postgres": "^7.3.1"
+  },
+  "devDependencies": {
+    "chai": "^4.2.0",
+    "chai-as-promised": "^7.1.1",
+    "minimist": "^1.2.0",
+    "mocha": "^6.2.2"
+  }
+}

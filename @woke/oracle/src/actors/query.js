@@ -14,13 +14,18 @@ function fetchTwitterData(msg, ctx, state) {
 
 function submitQueryTx(msg, ctx, state) {
 	debug.d(msg, 'Submitting query response transaction');
-	//dispatch(a_oracleContract, {
+	//dispatch(a_contract_TwitterOracle, {
 }
 
 function complete(msg, ctx, state) {
-	const { queryId, userId } = state;
+	const { queryId, userId, queryResponse } = state;
 	debug.d(msg, 'Query complete');
-	dispatch(ctx.parent, { type: 'update_query', queryId, userId, status: 'settled' }, ctx.self);
+	dispatch(ctx.parent, { type: 'update_query',
+		queryId,
+		userId,
+		status: 'settled',
+		txHash: queryResponse.txHash,
+	}, ctx.self);
 }
 
 function handleQueryFailure(msg, ctx, state) {
@@ -43,7 +48,7 @@ const sumbitQuery = Pattern(
 	submitQueryTx
 );
 
-const submitQuery = Pattern(
+const queryComplete = Pattern(
 	({twitterData, queryResponse}) => {
 		return !!twitterData && !!queryResponse && !!queryResponse.receipt;
 	},
@@ -85,7 +90,7 @@ function handleQueryResponse(msg, ctx, state) {
 	return  { ...state, queryResponse: { error, tx, status }};
 }
 
-function OracleOrchestrator(a_twitterAgent, a_oracleContract) {
+function QueryJob(a_twitterAgent, a_contract_TwitterOracle) {
 	return {
 		properties: {
 			initialState: {
