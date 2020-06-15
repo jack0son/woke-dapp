@@ -23,8 +23,7 @@ function block(_consumer, _msg) {
 function remap_debug(_name) {
 	const debug = {};
 	// Remap debugger functions to prefix each with message type
-	Object.entries(Logger(`${DEBUG_PREFIX}:${_name}`)).forEach(entry => {
-		const [key, val] = entry;
+	Object.entries(Logger(`${DEBUG_PREFIX}:${_name}`)).forEach(([key, val]) => {
 		if(key == 'control' || key == 'log') {
 			debug[key] = val;
 		} else {

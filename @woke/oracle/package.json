@@ -1,5 +1,5 @@
 {
-  "name": "@woke/tiny-oracle",
+  "name": "@woke/oracle",
   "version": "0.1.0",
   "description": "Tiny oracle for Twitter API to avoid waiting for Oraclize",
   "private": true,

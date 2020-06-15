@@ -13,9 +13,9 @@ RUN npm install --loglevel notice
 COPY @woke/lib ./@woke/lib
 COPY @woke/bot ./@woke/bot
 COPY @woke/contracts ./@woke/contracts
-COPY @woke/tiny-oracle ./@woke/tiny-oracle
+COPY @woke/oracle ./@woke/oracle
 
 COPY lerna.json .
 RUN lerna bootstrap
 
-CMD [ "npm", "--prefix", "@woke/tiny-oracle", "run", "start-docker" ]
+CMD [ "npm", "--prefix", "@woke/oracle", "run", "start-docker" ]
