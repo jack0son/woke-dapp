@@ -34,16 +34,15 @@ function TwitterAgent(twitterStub) {
 		},
 
 		actions: {
-			find_proof_tweet: async (msg, ctx, state) => {
+			find_proof_tweet: (msg, ctx, state) => {
 				const { twitter } = state;
 				const { userId } = msg;
 
-				twitter.findClaimTweet(userId).then(({tweet, userData}) => {
+				return twitter.findClaimTweet(userId).then(({tweet, userData}) => {
 					ctx.receivers.sink({ userId, tweet, userData});
 				}).catch(error => {
 					ctx.receivers.sink({ userId, error });
 				});
-
 			},
 
 			get_user_data: (msg, ctx, state) => {

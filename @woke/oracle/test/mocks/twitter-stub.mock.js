@@ -1,11 +1,9 @@
-const users = require('./users')(Array(10).fill('0x0'));
+const usersMap = require('./users')(Array(10).fill('0x0'));
 
-const usersById = {};
-Object.values(users).forEach(user => usersById[user.id] = user);
-
-const createMockClient = (usersMap = users) => {
+const createMockClient = (users = usersMap) => {
 	const usersById = {};
 	Object.values(usersMap).forEach(user => usersById[user.id] = user);
+
 	return {
 		initClient: async () => true,
 		getUserData: (id) => {
@@ -13,7 +11,10 @@ const createMockClient = (usersMap = users) => {
 			return new Promise((resolve, reject) => user ? resolve(user) : reject(new Error('User not found')));
 		},
 		searchClaimTweets: (handle) => new Promise((resolve, reject) => {
-			setTimeout(() => resolve(users[handle].claimString), 1000)
+			let user = users[handle];
+			setTimeout(() => resolve(
+				user && user.claimString ? [{ full_text: user.claimString }] : [],
+			), 500)
 		})
 	}
 }

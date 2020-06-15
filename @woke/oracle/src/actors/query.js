@@ -11,7 +11,11 @@ function fetchProofTweet(msg, ctx, state) {
 }
 
 function handleProofTweet(msg, ctx, state) {
-	const { userId, tweet, userData } = msg;
+	const { userId, tweet, userData, error } = msg;
+	if(error) {
+		// Catch error in on crash, schedule new attempt
+		throw new Error(error);
+	}
 	if(!userId == state.userId) throw new Error(`Query received user data for incorrect user ${userId}, expected ${state.userId}`);
 
 	return { ...state, tweet, userData }; 
@@ -20,7 +24,7 @@ function handleProofTweet(msg, ctx, state) {
 function handleTwitterResponse(msg, ctx, state) {
 	const { action, user, error } = msg;
 	switch(action) {
-		case find_proof_tweet: {
+		case 'find_proof_tweet': {
 			return handleProofTweet(msg, ctx, state);
 		}
 		default: {

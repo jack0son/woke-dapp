@@ -19,13 +19,12 @@ class TwitterStub {
 
 	async findClaimTweet(userId) {
 		const { client } = this;
-		// Human readable log
 		let userData = {};
 		try {
 			userData = await client.getUserData(userId);
-			//console.log(userData);
 		} catch (error) {
 			debug.error(error);
+			throw new Error(`User ${userId} not found`);
 		}
 
 		let tweets = await client.searchClaimTweets(userData.handle);
@@ -35,7 +34,7 @@ class TwitterStub {
 
 		//let tweet = tweets[0].full_text;
 		let tweet = tweets[0];
-		debug.name(abr, `Found tweet: ${tweet.full_text}`);
+		debug.d(`Found tweet: ${tweet.full_text}`);
 		return { tweet, userData };
 	}
 

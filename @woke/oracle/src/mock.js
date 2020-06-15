@@ -86,7 +86,6 @@ const initClient = async (simulate) => {
 	let getwoketoke_account = await web3.eth.accounts.wallet.add('0x002e4d79c9725def6de38c72894e9339d697430242b8a60a563b0e96c39575ce');
 
 
-
 	for(let u of Object.values(users)) {
 		debug.m(`With user @${u.handle}, id: ${u.id}, account: ${u.account} ...`);
 		u.claimString = await genClaimString(u.account, u.id) + ' garbage text';
@@ -98,6 +97,7 @@ const initClient = async (simulate) => {
 	//await oracleServer.start(oraclize_cb);
 	// TODO pass oraclize_cb to oracle system
 	const oracleSystem = new OracleSystem(undefined, { persist: false, twitterClient });
+	oracleSystem.start();
 
 	if(simulate == true) {
 		let opts = {from: undefined, gas: gasLimit, gasPrice: gasPrice};

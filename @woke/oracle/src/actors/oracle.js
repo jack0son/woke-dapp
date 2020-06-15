@@ -4,6 +4,7 @@ const { dispatch, start_actor } = ActorSystem;
 // Each job is a simple linear state machine
 const statuses = [
 	'UNSETTLED',
+	'PENDING',
 	'SETTLED',
 	'FAILED',
 	'INVALID',
@@ -107,7 +108,7 @@ function handleIncomingQuery(msg, ctx, state) {
 
 	let job = jobRepo[queryId];
 	if(!job) {
-		job = { queryId, userId, status: statusEnum.UNSETTLED, error: null };
+		job = { queryId, userId, status: statusEnum.PENDING, error: null };
 		job.a_job = ctx.receivers.settle_job(job);
 		// start the job
 	} else {
@@ -117,14 +118,18 @@ function handleIncomingQuery(msg, ctx, state) {
 				job.a_job = ctx.receivers.settle_job(job);
 			}
 
+			case statusEnum.PENDING: {
+				ctx.debug.d(msg, `Query already pending: ${queryId}`);
+			}
+
 			case statusEnum.FAILED: {
-				debug.d(msg, `Query ${query.id} already failed.`);
+				ctx.debug.d(msg, `Query already failed: ${queryId}`);
 				break;
 			}
 			default:
 		}
 	}
-	jobRepo[query.id] = job;
+	jobRepo[queryId] = job;
 	return { ...state, jobRepo };
 }
 
@@ -141,7 +146,7 @@ function handleContractResponse(msg, ctx, state) {
 			}
 		}
 		default: {
-			debug.d(msg, `No handler defined for response to ${action}`);
+			ctx.debug.d(msg, `No handler defined for response to ${action}`);
 		}
 	}
 }
