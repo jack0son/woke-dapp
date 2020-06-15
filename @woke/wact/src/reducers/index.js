@@ -1,37 +1,16 @@
-const { dispatch } = require('nact');
-const { tip_str } = require('../lib/utils');
-
-const properties = {
-	initialState: {
-		stage: 'INIT',
-	},
-
-	// Receivers are bound the message bundle and attached to the context
-	receivers: (msg, state, ctx) => ({
-		// Reduce forwards a message to the reduce action
-		reduce: (_msg) => {
-			_msg.type = 'reduce';
-			dispatch(ctx.self, {...msg, ..._msg}, ctx.self);
-		}
-	}),
-
-	onCrash: undefined,
-}
-
-// Subsumption state machin
 // Patterns in descending order of precedence
-const patterns = [
-	{
-		predicate: ({prop1, prop2}) => {
-			return prop1 == 'thing' && prop2;
-		},
-		effect: (msg, ctx, state) => {
-			dispatch(ctx.sender, { type: 'effect' }, ctx.self);
-
-			return {...state, stage: 'PENDING'};
-		},
-	},
-];
+//const patterns = [
+//	{
+//		predicate: ({prop1, prop2}) => {
+//			return prop1 == 'thing' && prop2;
+//		},
+//		effect: (msg, ctx, state) => {
+//			dispatch(ctx.sender, { type: 'effect' }, ctx.self);
+//
+//			return {...state, stage: 'PENDING'};
+//		},
+//	},
+//];
 
 // 1. actor receives message that mutates state
 // 2. actor applies the state mutation
@@ -40,25 +19,30 @@ const patterns = [
 
 const noEffect = (msg, ctx, state) => state;
 
+function Pattern(predicate, effect) { return { predicate, effect } }
+
+// Apply last effect in patterns list that matches
 function subsumeReduce(patterns){ return (msg, ctx, state) => {
-	return { ...state, ...patterns.reduce(
-		(effect, pattern) => pattern.predicate(state) ? pattern.effect : effect,
-		noEffect
-	)(msg, ctx, state)
-	};
+		return { ...state, ...patterns.reduce(
+			(effect, pattern) => pattern.predicate(state) ? pattern.effect : effect,
+			noEffect
+		)(msg, ctx, state)
+		};
+	}
 }
 
-function fsmReduce(msg, ctx, state) {
-}
 
-// Apply all effects that match in a pipline
+// Apply all effects that match in a sequential pipline
 function reducePipe(msg, ctx, state) {
 	return { ...state, ...patterns.reduce(
-		(state, pattern) => pattern.predicate(state) ? pattern.effect(state) : state,
-		state,
-	)(msg, ctx, state)
+			(state, pattern) => pattern.predicate(state) ? pattern.effect(state) : state,
+			state,
+		)(msg, ctx, state)
 	};
 }
+
+//function fsmReduce(msg, ctx, state) {
+//}
 
 // FSM engine. FSM table defined in events table.
 function reduceEvent(msg, ctx, state) {
@@ -85,10 +69,7 @@ function reduceEvent(msg, ctx, state) {
 	return nextState;
 }
 
+module.exports = { Pattern, reduceEvent, noEffect, subsumeReduce, reducePipe };
+
 // Use class instead of closure pattern for actor wrapper
 // - so many being instantiated, memory is running out
-
-function Saga() {}
-
-function StateMachine() {
-}

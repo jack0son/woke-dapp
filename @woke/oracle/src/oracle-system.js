@@ -41,7 +41,7 @@ class OracleSystem {
 
 		this.a_oracle = director[this.persist ? 'start_persistent' : 'start_actor']('oracle', Oracle, {
 			a_contract_TwitterOracle: this.contracts.TwitterOracleMock,
-			a_tweeter: this.a_tweeter,
+			a_twitterAgent: this.a_twitterAgent,
 		});
 	}
 

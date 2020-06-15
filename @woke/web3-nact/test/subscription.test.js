@@ -1,5 +1,4 @@
 const src = '../src';
-//const { spawnStateless, dispatch, query } = require('nact');
 const { Web3, Contract } = require(src);
 const subscriberActor = require(src + '/actors/subscriber');
 
@@ -25,7 +24,7 @@ function create_woken_contract_actor(director) {
 	// Initialise Woken Contract agent
 	const a_wokenContract = director.start_actor('woken_contract', Contract, {
 		a_web3, 
-		contractInterface: loadContract('WokeToken'),
+		contractInterface: loadContract('UserRegistry'),
 	})
 
 	return a_wokenContract;
@@ -53,8 +52,8 @@ const a_catch_logs = ActorSystem.spawnStateless(director.system,
 
 (async () => {
 	const filter = (event) => event.claimed == false;
-	const { a_sub } = await query(a_wokenContract, { type: 'subscribe_log', eventName, filter }, 10*1000);
+	const { a_sub } = await ActorSystem.query(a_wokenContract, { type: 'subscribe_log', eventName, filter }, 10*1000);
 	//console.log(a_sub);
-	dispatch(a_sub,  {type: 'start'}, a_catch_logs);
+	ActorSystem.dispatch(a_sub,  {type: 'start'}, a_catch_logs);
 })()
 

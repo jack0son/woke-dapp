@@ -1,11 +1,7 @@
-const { dispatch } = require('nact');
-const { tip_str } = require('../lib/utils');
-const { receivers } = require('@woke/wact');
-
+const { ActorSystem, receivers, reducers, actors: { SinkAdapter } } = require('@woke/wact');
+const { dispatch } = ActorSystem;
+const { subsumeReduce, Pattern } = reducers;
 const { tweetToProofString } = require('../lib/proof-protcol');
-
-const { subsumeReduce } = require('./state-machine');
-const { SinkAdapter, Pattern } = require('./adapters');
 
 
 function fetchProofTweet(msg, ctx, state) {
@@ -74,7 +70,7 @@ const init = Pattern(
 	fetchProofTweet
 );
 
-const sumbitQuery = Pattern(
+const submitQuery = Pattern(
 	({twitterData, queryReceipt}) => {
 		return !!twitterData && !queryReceipt;
 	},
@@ -96,7 +92,7 @@ const queryFailed = Pattern(
 );
 
 const patterns = [init, submitQuery, queryFailed, queryComplete];
-const reducer = subsumeReduce(patterns);
+const reducer = reducers.subsumeReduce(patterns);
 
 // Add tx data to state
 function handleQueryTx(msg, ctx, state) {
@@ -106,13 +102,13 @@ function handleQueryTx(msg, ctx, state) {
 	}
 }
 
-function QueryJob(a_twitterAgent, a_contract_TwitterOracle) {
-	return {
+//function QueryJob(a_twitterAgent, a_contract_TwitterOracle) {
+module.exports = {
 		properties: {
 			initialState: {
 				userId: null,
-				a_contract_TwitterOracle,
-				a_twitterAgent,
+				a_contract_TwitterOracle: null,
+				a_twitterAgent: null,
 				sinkHandlers: {
 					twitter: handleTwitterResponse, 
 					tx: handleQueryTx,
@@ -121,7 +117,7 @@ function QueryJob(a_twitterAgent, a_contract_TwitterOracle) {
 			},
 
 			receivers: (bundle) => ({
-				sink: sink(bundle),
+				sink: receivers.sink(bundle),
 			}),
 
 			onCrash: undefined,
@@ -129,8 +125,5 @@ function QueryJob(a_twitterAgent, a_contract_TwitterOracle) {
 		actions: {
 			...SinkAdapter(reducer),
 		}
-	}
 }
-
-
-module.exports = OracleOrchestrator;
+//module.exports = QueryJob;

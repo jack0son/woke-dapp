@@ -46,9 +46,9 @@ const spawn_actor = (_parent, _name, _actionsMap, _initialState, _properties) =>
 	spawn(
 		_parent,
 		(state = _initialState, msg, context) => {
+			context.debug = remap_debug(_name);
 			return route_action(_actionsMap, state, msg, {
 				...context,
-				debug: remap_debug(_name),
 				receivers: bind_receivers(_properties.receivers, msg, state, context),
 			})
 		},

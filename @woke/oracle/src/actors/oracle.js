@@ -1,6 +1,7 @@
 const { actors: { SinkAdapter }, ActorSystem } = require('@woke/wact');
-const { dispatch } = ActorSystem;
-// Each tip is a simple linear state machine
+const QueryJob = require('./query');
+const { dispatch, start_actor } = ActorSystem;
+// Each job is a simple linear state machine
 const statuses = [
 	'UNSETTLED',
 	'SETTLED',
@@ -25,8 +26,8 @@ function handleJobResponse(msg, ctx, state) {
 // @returns tip actor
 function spawn_job(_parent, job, a_contract_TwitterOracle, a_twitterAgent) {
 		return start_actor(_parent)(
-			`_job-${job.id}`,
-			jobActor,
+			`_job-${job.queryId}`,
+			QueryJob,
 			{
 				a_contract_TwitterOracle,
 				a_twitterAgent,
@@ -38,15 +39,12 @@ function spawn_job(_parent, job, a_contract_TwitterOracle, a_twitterAgent) {
 function settle_job({msg, ctx, state}) {
 	return (job) => {
 		ctx.debug.info(msg, `Spawning job actor...`);
-		const a_job = spawn_job(ctx.self, msg.job, state.a_wokenContract, state.a_twit);
-		dispatch(a_job, { type: 'job', job: msg.job }, ctx.self);
+		const a_job = spawn_job(ctx.self, job, state.a_contract_TwitterOracle, state.a_twitterAgent);
+		dispatch(a_job, { type: 'job', job: job }, ctx.self);
 		return a_job;
-
 	}
 }
 
-//
-		//		-- is it tip or tipper that is responsible for tip.status?
 async function update_job(msg, ctx, state) {
 	const { jobRepo, wokenContract } = state;
 	const { job, status, error} = msg;
@@ -151,8 +149,11 @@ function handleQuerySubscription(msg, ctx, state) {
 	const { eventName } = msg;
 	switch(eventName) {
 		case 'FindTweetLodged': {
+			const { log } = msg;
 			// Event update from subscription
-			dispatch(ctx.self, { type: 'query', query: msg.log }, ctx.self);
+			const { event, ...logData } = log;
+			const query = { ...event, logData };
+			dispatch(ctx.self, { type: 'query', query }, ctx.self);
 			break;
 		}
 
@@ -167,6 +168,7 @@ function handleQuerySubscription(msg, ctx, state) {
 module.exports = {
 	properties: {
 		initialState: {
+			jobRepo: [],
 			sinkHandlers: {
 				subscribe_log: handleQuerySubscription,
 				a_contract: handleContractResponse,
@@ -175,11 +177,12 @@ module.exports = {
 			a_twitterAgent: null,
 			a_contract_TwitterOracle: null,
 
-			receivers: (bundle) => ({ 
-				settle_job: settle_job(bundle),
-				//sink: sink(bundle),
-			}),
-		}
+		},
+
+		receivers: (bundle) => ({ 
+			settle_job: settle_job(bundle),
+			//sink: sink(bundle),
+		}),
 	},
 
 	actions: {
@@ -199,6 +202,7 @@ module.exports = {
 		},
 
 		'query': handleIncomingQuery,
+		'a_sub': handleQuerySubscription,
 		'update_job': update_job,
 
 		'stop': (msg, ctx, state) => {

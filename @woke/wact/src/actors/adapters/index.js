@@ -19,7 +19,6 @@ function matchSink(msg, state, ctx) {
 	}
 }
 
-function Pattern(predicate, effect) { return { predicate, effect } }
 
 // Adapters are actor API interface mixins
 // @desc Call matchin handler for received sink message and apply reducer if
@@ -41,4 +40,4 @@ function EffectAdapter(reducer, actions) {
 }
 
 
-module.exports = { SinkAdapter, EffectAdapter, Pattern };
+module.exports = { SinkAdapter, EffectAdapter };

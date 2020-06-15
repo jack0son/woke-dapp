@@ -28,8 +28,7 @@ const subscriptionActor = {
 		},
 
 		onCrash: (msg, error, ctx) => {
-			console.log(`Subscription crash`);
-			console.log(msg);
+			console.log(`Subscription crash on msg:`, msg);
 			console.log(error);
 			switch(msg.type) {
 				case 'handle':
@@ -54,21 +53,17 @@ const subscriptionActor = {
 			if(state.subscription) {
 				await state.subscription.stop();
 			}
-			console.log(msg, eventName);
 
 			// Always get a fresh contract instance
 			const { web3Instance } = await block(state.a_web3, { type: 'get' });
-			console.log('got web3');
 			const contract = initContract(web3Instance, contractInterface);
 
 			const callback = (error, log) => {
-				console.log('callback', log);
 				// Seperate subcription init from handling into distinict messages
 				dispatch(ctx.self,  { type: 'handle', error, log }, ctx.self);
 			}
 
 			const latestBlock = state.latestBlock ? state.latestBlock : 0;
-			console.log('subscribing');
 			const subscription = makeLogEventSubscription(web3Instance.web3)(
 				contract,
 				eventName,
