@@ -34,12 +34,12 @@ function TwitterAgent(twitterStub) {
 		},
 
 		actions: {
-			find_proof_tweet: (msg, ctx, state) => {
+			find_proof_tweet: async (msg, ctx, state) => {
 				const { twitter } = state;
 				const { userId } = msg;
 
-				twitter.findClaimTweet(userId).then(user => {
-					ctx.receivers.sink({ userId, user });
+				twitter.findClaimTweet(userId).then(tweet => {
+					ctx.receivers.sink({ userId, tweet});
 				}).catch(error => {
 					ctx.receivers.sink({ userId, error });
 				});

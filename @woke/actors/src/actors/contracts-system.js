@@ -1,4 +1,4 @@
-const { contract, Web3, nonce } = require('../../actors');
+const { contract, Web3, nonce } = require('@woke/web3-act');
 const loadContract = require('../contracts').load;
 
 function create_contracts_system(director, contractNames, opts) {

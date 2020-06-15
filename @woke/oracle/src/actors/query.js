@@ -1,5 +1,6 @@
 const { dispatch } = require('nact');
 const { tip_str } = require('../lib/utils');
+const { receivers } = require('@woke/wact');
 
 const { subsumeReduce } = require('./state-machine');
 const { SinkAdapter, Pattern } = require('./adapters');
@@ -7,18 +8,25 @@ const { SinkAdapter, Pattern } = require('./adapters');
 
 function fetchTwitterData(msg, ctx, state) {
 	debug.d(msg, 'Fetching twitter data');
+	const { a_twitterAgent, userId } = state;
+	dispatch(a_twitterAgent,  { type: 'find_proof_tweet', userId }, ctx.self);
 }
 
 function submitQueryTx(msg, ctx, state) {
 	debug.d(msg, 'Submitting query response transaction');
+	//dispatch(a_oracleContract, {
 }
 
 function complete(msg, ctx, state) {
+	const { queryId, userId } = state;
 	debug.d(msg, 'Query complete');
+	dispatch(ctx.parent, { type: 'update_query', queryId, userId, status: 'settled' }, ctx.self);
 }
 
 function handleQueryFailure(msg, ctx, state) {
-	debug.d(msg, 'Query complete');
+	debug.d(msg, 'Query failed');
+	const { queryId, userId } = state;
+	dispatch(ctx.parent, { type: 'update_query', queryId, userId, status: 'failed' }, ctx.self);
 }
 
 const init = Pattern(
@@ -53,6 +61,10 @@ const patterns = [init, submitQuery, queryFailed, queryComplete];
 const reducer = subsumeReduce(patterns);
 
 function handleProofTweet(msg, ctx, state) {
+	const { userId, tweet } = msg;
+	if(!userId == state.userId) throw new Error(`Query received user data for incorrect user ${userId}, expected ${state.userId}`);
+
+	return { ...state, twitterData: { tweet } }; 
 }
 
 function handleTwitterResponse(msg, ctx, state) {
@@ -73,16 +85,20 @@ function handleQueryResponse(msg, ctx, state) {
 	return  { ...state, queryResponse: { error, tx, status }};
 }
 
-
 function OracleOrchestrator(a_twitterAgent, a_oracleContract) {
 	return {
 		properties: {
 			initialState: {
+				userId: null,
 				sinkHandlers: {
 					twitter: handleTwitterResponse, 
 					queryTx: handleQueryResponse,
 				},
 			},
+
+			receiversDisabled: (bundle) => ({
+				sink: sink(bundle),
+			}),
 
 			onCrash: undefined,
 		},
