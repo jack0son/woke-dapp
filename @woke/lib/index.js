@@ -3,6 +3,7 @@ const Logger = require('./debug');
 const protocol = require('./protocol');
 const twitter = require('./twitter');
 const TwitterStub = require('./twitter-stub');
+const utils = require('./utils');
 
 module.exports = {
 	web3Tools,
@@ -10,4 +11,5 @@ module.exports = {
 	protocol,
 	twitter,
 	TwitterStub,
+	utils,
 }

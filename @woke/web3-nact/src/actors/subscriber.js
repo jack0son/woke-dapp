@@ -74,7 +74,7 @@ const subscriptionActor = {
 			);
 
 			subscription.start();
-			ctx.debug.info(msg, `Subscribed to ${contractInterface.contractName}-${eventName}: ${state.subscribers.map(s => s.name)}`);
+			ctx.debug.info(msg, `Subscribed with subscribers: ${state.subscribers.map(s => s.name)}`);
 
 			// So that the polling actor can use a query.
 			dispatch(ctx.sender, {type: 'a_sub', action: 'subscribed'}, ctx.self);
