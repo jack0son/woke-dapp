@@ -23,6 +23,8 @@ function matchSink(msg, state, ctx) {
 // Adapters are actor API interface mixins
 // @desc Call matchin handler for received sink message and apply reducer if
 // one is specified
+// @dev Supervisor steps (return ctx.stop etc) must be handled in effects not
+// sink handlers
 function SinkAdapter(reducer) {
 	return {
 		'sink': (msg, ctx, state) => {

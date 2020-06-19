@@ -10,15 +10,18 @@ function fetchProofTweet(msg, ctx, state) {
 	dispatch(a_twitterAgent,  { type: 'find_proof_tweet', userId }, ctx.self);
 }
 
-function handleProofTweet(msg, ctx, state) {
-	const { userId, tweet, userData, error } = msg;
+
+function handleFailure(msg, ctx, state) {
+	const { error } = state;
 	if(error) {
 		// Catch error in on crash, schedule new attempt
-		throw new Error(error);
+		if(error.message.includes('not found') || error.message.includes('No tweets found')) {
+			ctx.receivers.update_job({ status: 'failed' }, error);
+			return ctx.stop;
+		}
+		throw error;
 	}
-	if(!userId == state.userId) throw new Error(`Query received user data for incorrect user ${userId}, expected ${state.userId}`);
-
-	return { ...state, tweet, userData }; 
+	return state;
 }
 
 function handleTwitterResponse(msg, ctx, state) {
@@ -32,6 +35,18 @@ function handleTwitterResponse(msg, ctx, state) {
 			return state;
 		}
 	}
+}
+
+function handleProofTweet(msg, ctx, state) {
+	const { userId, tweet, userData, error } = msg;
+
+	if(error) {
+		return { ...state, error };
+	}
+
+	if(!userId == state.userId) throw new Error(`Query received user data for incorrect user ${userId}, expected ${state.userId}`);
+
+	return { ...state, tweet, userData }; 
 }
 
 function submitQueryTx(msg, ctx, state) {
@@ -59,27 +74,18 @@ function handleQueryTx(msg, ctx, state) {
 function handleQueryFailure(msg, ctx, state) {
 	ctx.debug.d(msg, 'Query failed');
 	const { job: { queryId }, userId, txResponse } = state;
-	dispatch(ctx.parent, { type: 'update_job',
-		job: {
-			queryId,
-			userId,
-			status: 'failed'
-		},
-		error: txResponse.error,
-	}, ctx.self);
+	ctx.receivers.update_job({ status: 'failed' }, txResponse.error);
 }
 
 function complete(msg, ctx, state) {
 	const { job: { queryId, userId }, responseTx } = state;
-	ctx.debug.d(msg, `${queryId}: Query complete`);
-	dispatch(ctx.parent, { type: 'update_job',
-		job: {
-			queryId,
-			userId,
-			status: 'settled',
-			txHash: responseTx.txHash,
-		}
-	}, ctx.self);
+	ctx.debug.d(msg, `Query complete`);
+	ctx.receivers.update_job({
+		queryId,
+		userId,
+		status: 'settled',
+		txHash: responseTx.txHash,
+	});
 
 	return ctx.stop;
 }
@@ -93,30 +99,28 @@ const init = Pattern(
 	fetchProofTweet											// effect
 );
 
+const failed = Pattern(
+	({ error }) => !!error,	// predicate
+	handleFailure,
+);
+
 const submitQuery = Pattern(
-	({responseTx, ...state }) => {
-		return haveTwitterData(state) && !responseTx;
-	},
+	({responseTx, ...state }) => haveTwitterData(state) && !responseTx,
 	submitQueryTx
 );
 
 const queryComplete = Pattern(
-	({responseTx, ...state}) => {
-		return haveTwitterData(state) && !!responseTx && !!responseTx.tx.receipt;
-	},
+	({responseTx, ...state}) => haveTwitterData(state) && !!responseTx && !!responseTx.tx.receipt,
 	complete
 );
 
 const queryFailed = Pattern(
-	({responseTx, ...state}) => {
-		return haveTwitterData(state) && !!responseTx && !!responseTx.error
-	},
+	({responseTx, ...state}) => haveTwitterData(state) && !!responseTx && !!responseTx.error,
 	handleQueryFailure
 );
 
-const patterns = [init, submitQuery, queryFailed, queryComplete];
+const patterns = [init, submitQuery, queryFailed, queryComplete, failed];
 const reducer = reducers.subsumeReduce(patterns);
-
 
 //function QueryJob(a_twitterAgent, a_contract_TwitterOracle) {
 module.exports = {
@@ -132,8 +136,15 @@ module.exports = {
 				kind: 'queryJob',
 			},
 
-			receivers: (bundle) => ({
-				sink: receivers.sink(bundle),
+			receivers: ({msg, ctx, state}) => ({
+				sink: receivers.sink({msg, ctx, state}),
+				update_job: (job, error) => {
+					const { job: { queryId }, userId } = state;
+					dispatch(ctx.parent, { type: 'update_job',
+						job: { queryId, userId, ...job },
+						error
+					}, ctx.self);
+				}
 			}),
 
 			onCrash: undefined,

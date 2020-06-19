@@ -46,16 +46,17 @@ async function update_job(msg, ctx, state) {
 		await ctx.persist(msg);
 	}
 
-	if(job.error) {
-		ctx.debug.error(msg, `job ${job.id} from ${job.fromHandle} error: ${job.error}`)
+	if(error) {
+		job.error = error;
+		ctx.debug.error(msg, `job ${job.queryId}, error: ${job.error}`)
 	}
-	ctx.debug.d(msg, `Updated job:${job.id} to ⊰ ${job.status} ⊱`)
+	ctx.debug.d(msg, `Updated job:${job.queryId} to ⊰ ${job.status} ⊱`)
 
 	// FSM effects
 	if(!ctx.recovering) {
 		switch(job.status) {
 			case 'SETTLED': {
-				log(`\njob settled: @${job.fromHandle} jobped @${job.toHandle} ${job.amount} WOKENS\n`)
+				log(`\njob settled: user ${job.userId} query ${job.queryId}\n`)
 				dispatch(ctx.self, { type: 'notify', job }, ctx.self);
 				break;
 			}
@@ -69,7 +70,7 @@ async function update_job(msg, ctx, state) {
 			}
 
 			case 'FAILED': {
-				if(job.error) {
+				if(error) {
 					//ctx.debug.error(msg, `job ${job.id} from ${job.fromHandle} error: ${job.error}`)
 					log(`\njob failed: ${job.error}`);
 				}
@@ -81,8 +82,8 @@ async function update_job(msg, ctx, state) {
 		}
 	}
 
-	jobRepo[job.id] = {
-		...jobRepo[job.id],
+	jobRepo[job.queryId] = {
+		...jobRepo[job.queryId],
 		...job,
 	}
 
@@ -104,6 +105,10 @@ function handleIncomingQuery(msg, ctx, state) {
 	} else {
 		// attempt to settle existing job
 		switch(job.status) {
+			case statusEnum.SETTLED:
+				ctx.debug.d(msg, `Query already settled: ${queryId}`);
+				break;
+
 			case statusEnum.UNSETTLED:
 				job.a_job = ctx.receivers.settle_job(job);
 				break;

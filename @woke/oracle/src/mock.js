@@ -105,7 +105,7 @@ const initClient = async (simulate) => {
 		let fundOpts = {...opts, from: defaultAccount, value: web3.utils.toWei('0.1', 'ether'), to: users.getwoketoke.account};
 		debug.name('getwoketoke', fundOpts);
 		let receipt = await web3.eth.sendTransaction(fundOpts);
-		for(let u of Object.values(users).slice(0,1)) {
+		for(let u of Object.values(users)) {
 			try {
 				//if(u.handle == 'getwoketoke') throw new Error('SKIP THIS USER');
 				opts.from = u.account

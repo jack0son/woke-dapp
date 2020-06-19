@@ -22,10 +22,10 @@ const noEffect = (msg, ctx, state) => state;
 function Pattern(predicate, effect) { return { predicate, effect } }
 
 // Apply last effect in patterns list with truthy predicate 
-function subsumeReduce(patterns) { return (msg, ctx, state) => {
+function subsumeReduce(patterns, _default) { return (msg, ctx, state) => {
 		return { ...state, ...patterns.reduce(
 			(effect, pattern) => pattern.predicate(state) ? pattern.effect : effect,
-			noEffect
+			_default || noEffect
 		)(msg, ctx, state)
 		};
 	}
