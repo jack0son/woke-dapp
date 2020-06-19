@@ -12,29 +12,18 @@ const statuses = [
 const statusEnum = {};
 statuses.forEach((s, i) => statusEnum[s] = i);
 
-function handleJobResponse(msg, ctx, state) {
-	const { action } = state;
-
-	update_job(msg, ctx, state);
-	//switch(action) {
-	//	case 'complete': {
-	//		return completeJob(msg, ctx, state);
-	//	}
-	//}
-}
-
 // Send tip to WokeToken contract
 // @returns tip actor
 function spawn_job(_parent, job, a_contract_TwitterOracle, a_twitterAgent) {
-		return start_actor(_parent)(
-			`_job-${job.queryId}`,
-			QueryJob,
-			{
-				a_contract_TwitterOracle,
-				a_twitterAgent,
-				job,
-			}
-		);
+	return start_actor(_parent)(
+		`_job-${job.queryId}`,
+		QueryJob,
+		{
+			a_contract_TwitterOracle,
+			a_twitterAgent,
+			job,
+		}
+	);
 }
 
 function settle_job({msg, ctx, state}) {
@@ -49,7 +38,7 @@ function settle_job({msg, ctx, state}) {
 
 async function update_job(msg, ctx, state) {
 	const { jobRepo, wokenContract } = state;
-	const { job, status, error} = msg;
+	const { job, error } = msg;
 
 	const log = (...args) => { if(!ctx.recovering) console.log(...args) }
 
@@ -108,25 +97,25 @@ function handleIncomingQuery(msg, ctx, state) {
 
 	let job = jobRepo[queryId];
 	if(!job) {
-		job = { queryId, userId, status: statusEnum.PENDING, error: null };
+		job = { queryId, userId, status: statusEnum.PENDING };
 		job.a_job = ctx.receivers.settle_job(job);
+		ctx.debug.d(msg, `Started query job: ${queryId}`);
 		// start the job
 	} else {
 		// attempt to settle existing job
 		switch(job.status) {
-			case statusEnum.UNSETTLED: {
+			case statusEnum.UNSETTLED:
 				job.a_job = ctx.receivers.settle_job(job);
-			}
-
-			case statusEnum.PENDING: {
-				ctx.debug.d(msg, `Query already pending: ${queryId}`);
-			}
-
-			case statusEnum.FAILED: {
-				ctx.debug.d(msg, `Query already failed: ${queryId}`);
 				break;
-			}
+
+			case statusEnum.PENDING:
+				ctx.debug.d(msg, `Query already pending: ${queryId}`);
+				break;
+
+			case statusEnum.FAILED:
+				ctx.debug.d(msg, `Query already failed: ${queryId}`);
 			default:
+				return state;
 		}
 	}
 	jobRepo[queryId] = job;

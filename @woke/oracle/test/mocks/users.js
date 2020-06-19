@@ -5,28 +5,28 @@ module.exports = (accounts) => {
 	return {
 		getwoketoke: {
 			account: rest[0],
-			followers: 1000,
+			followers_count: 1000,
 			handle: 'getwoketoke',
 			id: getwoketoke_id
 		},
 
 		whalepanda: {
 			account: claimer,
-			followers: 300,
+			followers_count: 300,
 			handle: 'whalepanda',
 			id: '10'
 		},
 
 		jack: {
 			account: stranger_a,
-			followers: 30,
+			followers_count: 30,
 			handle: 'jack',
 			id: '11'
 		},
 
 		denk: {
 			account: stranger_b,
-			followers: 15,
+			followers_count: 15,
 			handle: 'denk',
 			id: '12'
 		}

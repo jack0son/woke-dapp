@@ -1,4 +1,4 @@
-const { ActorSystem, effects } = require('@woke/wact');
+const { ActorSystem, effects, receivers: { sink } } = require('@woke/wact');
 const { dispatch, block } = require('@woke/wact').ActorSystem;
 const { initContract } = require('@woke/lib').web3Tools.utils;
 const { withEffect } = effects;;
@@ -13,7 +13,11 @@ const properties = {
 			call: null,
 			send: null,
 		}
-	}
+	},
+
+	receivers: (bundle) => ({
+		sink: sink(bundle)
+	})
 }
 
 const MAX_ATTEMPTS = 4;
@@ -29,7 +33,7 @@ function dispatchSinks(msg, ctx, state) {
 	const prevState = state._state;
 	const prevStatus = resolveStatus({...prevState.tx, error: prevState.error})
 
-	const { tx, error, sinks } = state;
+	const { tx, error, sinks, kind } = state;
 	//console.log(sinks);
 
 	const status = resolveStatus({...tx, error});
@@ -37,8 +41,11 @@ function dispatchSinks(msg, ctx, state) {
 	//console.log(status);
 	if(status != prevStatus ) {
 		//sinks.forEach(sink => console.log(sink));
-		sinks.forEach(sink => {
-			dispatch(sink, {type: 'tx', tx: state.tx, error, txStatus: status}, ctx.self)
+		sinks.forEach(a_sink => {
+			const msgPayload = {type: 'tx', tx: state.tx, error, txStatus: status};
+			//dispatch(a_sink, msgPayload, ctx.self)
+			dispatch(a_sink, { type: 'sink', action: 'send', kind, tx: state.tx, error, txStatus: status}, ctx.self)
+			//ctx.receivers.sink(msgPayload);
 		});
 		ctx.debug.info(msg, `${prevStatus} => ${status}`);
 
@@ -90,6 +97,7 @@ function reduce(msg, ctx, state) {
 }
 
 const actions = {
+
 	'get_status': (msg, ctx, state) => {
 		dispatch(ctx.sender, { status: resolveStatus(ctx.txState), txState }, ctx.self);
 	},
@@ -191,13 +199,13 @@ const actions = {
 		const contract = initContract(web3Instance, state.contractInterface);
 		const result = await contract.methods[method](...tx.args).call(opts)
 
-		dispatch(ctx.sender, { type: 'tx', tx, result }, ctx.parent);
+		//dispatch(ctx.sender, { type: 'tx', tx, result }, ctx.parent);
+		ctx.receivers.sink({ tx, result }, ctx.parent);
 		return ctx.stop;
 	},
 
 	'send': async (msg, ctx, state) => {
 		const { tx, failedNonce } = msg; 
-
 
 		tx.type = 'send';
 		const { web3Instance } = await block(state.a_web3, { type: 'get' });

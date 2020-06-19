@@ -21,8 +21,8 @@ const noEffect = (msg, ctx, state) => state;
 
 function Pattern(predicate, effect) { return { predicate, effect } }
 
-// Apply last effect in patterns list that matches
-function subsumeReduce(patterns){ return (msg, ctx, state) => {
+// Apply last effect in patterns list with truthy predicate 
+function subsumeReduce(patterns) { return (msg, ctx, state) => {
 		return { ...state, ...patterns.reduce(
 			(effect, pattern) => pattern.predicate(state) ? pattern.effect : effect,
 			noEffect
@@ -30,7 +30,6 @@ function subsumeReduce(patterns){ return (msg, ctx, state) => {
 		};
 	}
 }
-
 
 // Apply all effects that match in a sequential pipline
 function reducePipe(msg, ctx, state) {

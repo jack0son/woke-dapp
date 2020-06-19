@@ -12,7 +12,7 @@ function matchSink(msg, state, ctx) {
 		let handler = sinkHandlers[actor.name];
 		if(!handler) handler = sinkHandlers[kind];
 		if(!handler) {
-			ctx.debug.warn(msg, `No applicable stages for actor ${actor.name}:${kind}>`);
+			ctx.debug.warn(msg, `No sink handler for actor ${actor.name}:${kind}>`);
 			return noEffect;
 		}
 		return handler;

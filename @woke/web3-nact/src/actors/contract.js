@@ -1,6 +1,5 @@
-const { dispatch, query } = require('nact');
 const { ActorSystem, receivers: { sink } } = require('@woke/wact');
-const { start_actor, block } = ActorSystem;
+const { start_actor, dispatch, block } = ActorSystem;
 const { initContract } = require('@woke/lib').web3Tools.utils;
 
 const txActor = require('./web3-tx');
@@ -80,7 +79,6 @@ const contractActor = {
 
 			const a_tx = spawn_tx(ctx, state); // parent is me
 			dispatch(a_tx, {type: 'send', tx: { method, args, opts}}, ctx.sender);
-
 		},
 
 		'call': async (msg, ctx, state) => {

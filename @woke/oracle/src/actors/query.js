@@ -36,67 +36,17 @@ function handleTwitterResponse(msg, ctx, state) {
 
 function submitQueryTx(msg, ctx, state) {
 	ctx.debug.d(msg, 'Submitting query response transaction');
-	const { query, a_contract_TwitterOracle, tweet, userData } = state;
+	const { job, a_contract_TwitterOracle, tweet, userData } = state;
 
 	const proofString = tweetToProofString(tweet, userData);
-	dispatch(a_contract_TwitterOracle, {type: 'send', 
+	dispatch(a_contract_TwitterOracle, { type: 'send', 
 		method: '__callback',
-		args: [quer.queryId, proofString, '0x0'],
+		args: [job.queryId, proofString, '0x0'],
 		sinks: [ctx.self],
 	}, ctx.self);
 
 	return {...state, txSent: true };
 }
-
-function complete(msg, ctx, state) {
-	const { queryId, userId, responseTx } = state;
-	ctx.debug.d(msg, `${queryId}: Query complete`);
-	dispatch(ctx.parent, { type: 'update_job',
-		queryId,
-		userId,
-		status: 'settled',
-		txHash: responseTx.txHash,
-	}, ctx.self);
-
-	return ctx.stop;
-}
-
-function handleQueryFailure(msg, ctx, state) {
-	ctx.debug.d(msg, 'Query failed');
-	const { queryId, userId } = state;
-	dispatch(ctx.parent, { type: 'update_query', queryId, userId, status: 'failed' }, ctx.self);
-}
-
-const init = Pattern(
-	({twitterData}) => {
-		return !twitterData;
-	},
-	fetchProofTweet
-);
-
-const submitQuery = Pattern(
-	({twitterData, queryReceipt}) => {
-		return !!twitterData && !queryReceipt;
-	},
-	submitQueryTx
-);
-
-const queryComplete = Pattern(
-	({twitterData, responseTx}) => {
-		return !!twitterData && !!responseTx && !!responseTx.receipt;
-	},
-	complete
-);
-
-const queryFailed = Pattern(
-	({twitterData, responseTx}) => {
-		return !!twitterData && !!responseTx && !!responseTx.error
-	},
-	handleQueryFailure
-);
-
-const patterns = [init, submitQuery, queryFailed, queryComplete];
-const reducer = reducers.subsumeReduce(patterns);
 
 // Add tx data to state
 function handleQueryTx(msg, ctx, state) {
@@ -105,6 +55,68 @@ function handleQueryTx(msg, ctx, state) {
 		return  { ...state, responseTx: { error, tx, status }};
 	}
 }
+
+function handleQueryFailure(msg, ctx, state) {
+	ctx.debug.d(msg, 'Query failed');
+	const { job: { queryId }, userId, txResponse } = state;
+	dispatch(ctx.parent, { type: 'update_job',
+		job: {
+			queryId,
+			userId,
+			status: 'failed'
+		},
+		error: txResponse.error,
+	}, ctx.self);
+}
+
+function complete(msg, ctx, state) {
+	const { job: { queryId, userId }, responseTx } = state;
+	ctx.debug.d(msg, `${queryId}: Query complete`);
+	dispatch(ctx.parent, { type: 'update_job',
+		job: {
+			queryId,
+			userId,
+			status: 'settled',
+			txHash: responseTx.txHash,
+		}
+	}, ctx.self);
+
+	return ctx.stop;
+}
+
+function haveTwitterData(state) {
+	return !!state.userData && !!state.tweet;
+}
+
+const init = Pattern(
+	(state) => !haveTwitterData(state),	// predicate
+	fetchProofTweet											// effect
+);
+
+const submitQuery = Pattern(
+	({responseTx, ...state }) => {
+		return haveTwitterData(state) && !responseTx;
+	},
+	submitQueryTx
+);
+
+const queryComplete = Pattern(
+	({responseTx, ...state}) => {
+		return haveTwitterData(state) && !!responseTx && !!responseTx.tx.receipt;
+	},
+	complete
+);
+
+const queryFailed = Pattern(
+	({responseTx, ...state}) => {
+		return haveTwitterData(state) && !!responseTx && !!responseTx.error
+	},
+	handleQueryFailure
+);
+
+const patterns = [init, submitQuery, queryFailed, queryComplete];
+const reducer = reducers.subsumeReduce(patterns);
+
 
 //function QueryJob(a_twitterAgent, a_contract_TwitterOracle) {
 module.exports = {

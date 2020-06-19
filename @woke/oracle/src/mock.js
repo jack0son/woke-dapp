@@ -85,10 +85,9 @@ const initClient = async (simulate) => {
 
 	let getwoketoke_account = await web3.eth.accounts.wallet.add('0x002e4d79c9725def6de38c72894e9339d697430242b8a60a563b0e96c39575ce');
 
-
 	for(let u of Object.values(users)) {
 		debug.m(`With user @${u.handle}, id: ${u.id}, account: ${u.account} ...`);
-		u.claimString = await genClaimString(u.account, u.id) + ' garbage text';
+		u.claimString = await genClaimString(u.account, u.id, u.followers_count) + ' garbage text';
 		//debug.name(u.handle, u.claimString); 
 	}
 	
@@ -106,7 +105,7 @@ const initClient = async (simulate) => {
 		let fundOpts = {...opts, from: defaultAccount, value: web3.utils.toWei('0.1', 'ether'), to: users.getwoketoke.account};
 		debug.name('getwoketoke', fundOpts);
 		let receipt = await web3.eth.sendTransaction(fundOpts);
-		for(let u of Object.values(users)) {
+		for(let u of Object.values(users).slice(0,1)) {
 			try {
 				//if(u.handle == 'getwoketoke') throw new Error('SKIP THIS USER');
 				opts.from = u.account
@@ -125,7 +124,6 @@ const initClient = async (simulate) => {
 				debug.error(err);
 			}
 		}
-
 
 		// Send some claimed transactions
 		opts.from = users.getwoketoke.account
