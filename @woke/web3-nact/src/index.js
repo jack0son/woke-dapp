@@ -1,15 +1,9 @@
-const Web3 = require('./actors/web3');
-const Nonce = require ('./actors/web3-nonce');
-const Contract = require('./actors/contract');
-const Tx = require('./actors/web3-tx');
-const Subscriber = require('./actors/subscriber');
+const actors = require('./actors');
 const utils = require('./lib/utils');
+const ContractsSystem = require('./systems/contracts-system');
 
 module.exports = {
-	Web3,
-	Nonce,
-	Contract,
-	Tx,
-	Subscriber,
+	...actors,
 	utils,
+	ContractsSystem,
 };

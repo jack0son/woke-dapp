@@ -22,7 +22,7 @@
   "author": "Jackson Virgo",
   "license": "ISC",
   "dependencies": {
-    "@woke/actors": "0.1.0",
+    "@woke/web3-nact": "0.1.0",
     "@woke/contracts": "0.4.0",
     "@woke/lib": "0.4.0",
     "@woke/wact": "0.1.0",

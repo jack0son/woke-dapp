@@ -1,6 +1,7 @@
-const { Contract, Web3, Nonce, utils: { loadContract } } = require('@woke/web3-nact');
+const { Contract, Web3, Nonce } = require('../actors');
+const { loadContract } = require('../lib/utils');
 
-function create_contracts_system(director, contractNames, opts) {
+function ContractsSystem(director, contractNames, opts) {
 	const MAX_ATTEMPTS = opts && opts.maxAttempts || 5;
 	const RETRY_DELAY = opts && opts.retryDelay || 3000;
 
@@ -30,4 +31,4 @@ function create_contracts_system(director, contractNames, opts) {
 	return a_contracts;
 }
 
-module.exports = create_contracts_system;
+module.exports = ContractsSystem;
