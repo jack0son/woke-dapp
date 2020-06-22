@@ -16,7 +16,7 @@ const { blockTime } = init().network;
 const INFURA_WS_TIMEOUT = 5*60*1000;
 const GETH_NODE = 60*60*1000;
 //const DEFAULT_WATCHDOG_INTERVAL = GETH_NODE;
-const DEFAULT_WATCHDOG_INTERVAL = 4*1000;
+const DEFAULT_WATCHDOG_INTERVAL = 30*1000;
 
 let idx = 0;
 const subscriptionActor = {
@@ -87,14 +87,15 @@ const subscriptionActor = {
 		'start': (msg, ctx, state) => {
 			const { resubscribeInterval } = msg;
 			const { contractInterface, eventName, watchdog } = state;
+			const period = resubscribeInterval || blockTime || DEFAULT_WATCHDOG_INTERVAL;
 			if(watchdog && !state.a_watchdog) {
 				ctx.debug.info(msg, `Starting subscription watchdog...`);
 				state.a_watchdog = start_actor(ctx.self)('_watchdog', Polling);
 				dispatch(state.a_watchdog, { type: 'poll',
 					target: ctx.self,
 					action: 'subscribe',
-					period: resubscribeInterval || blockTime || DEFAULT_WATCHDOG_INTERVAL,
-					blockTimeout: (blockTime || DEFAULT_WATCHDOG_INTERVAL)*3, // wait for action complete before next poll
+					period,
+					blockTimeout: period*10, // wait for action complete before next poll
 				}, state.a_watchdog);
 			} else {
 				dispatch(ctx.self, {type: 'subscribe'}, ctx.self);
