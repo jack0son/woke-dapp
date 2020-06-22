@@ -51,7 +51,7 @@ const spawn_actor = (_parent, _name, _actionsMap, _initialState, _properties) =>
 
 const spawn_persistent = (_parent, _name, _actionsMap, _initialState, _properties) => {
 	if(!_properties || !_properties.persistenceKey) {
-		throw new Error(`Persistent actor must define key property`);
+		throw new Error(`Persistent actor must define 'persistenceKey' property`);
 	}
 	const { persistenceKey, ...otherProperties } = _properties;
 
@@ -124,7 +124,7 @@ function start_actor(_parent) {
 		const { actions, properties } = _definition;
 		const { initialState, ...otherProperties} = properties;
 		if(!actions) {
-			throw new Error(`No actions defined for {${_name}} actor`);
+			throw new Error(`No actions defined for '${_name}' actor`);
 		}
 
 		return spawn_actor(

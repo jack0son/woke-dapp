@@ -192,7 +192,6 @@ module.exports = {
 		'init': (msg, ctx, state) => {
 			const { a_contract_TwitterOracle, subscriptionWatchdogInterval } = state;
 
-			console.log('subscriptionWatchdogInterval', subscriptionWatchdogInterval);
 			// Rely on subscription to submit logs from block 0
 			// @TODO persist last seen block number
 			dispatch(a_contract_TwitterOracle, {	type: 'subscribe_log',
