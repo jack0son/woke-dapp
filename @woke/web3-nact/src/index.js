@@ -3,7 +3,7 @@ const Nonce = require ('./actors/web3-nonce');
 const Contract = require('./actors/contract');
 const Tx = require('./actors/web3-tx');
 const Subscriber = require('./actors/subscriber');
-const utils = require('./lib/contracts');
+const utils = require('./lib/utils');
 
 module.exports = {
 	Web3,

@@ -167,6 +167,8 @@ function handleQuerySubscription(msg, ctx, state) {
 // ----- Oracle actor definition
 module.exports = {
 	properties: {
+		persistenceKey: 'oracle', // only ever 1, static key OK
+
 		initialState: {
 			jobRepo: [],
 			sinkHandlers: {
@@ -188,11 +190,12 @@ module.exports = {
 	actions: {
 		...SinkAdapter(),
 		'init': (msg, ctx, state) => {
-			const { a_contract_TwitterOracle } = state;
+			const { a_contract_TwitterOracle, subscriptionWatchdogInterval } = state;
 
 			// Rely on subscription to submit logs from block 0
 			// @TODO persist last seen block number
 			dispatch(a_contract_TwitterOracle, {	type: 'subscribe_log',
+				resubscribeInterval: subscriptionWatchdogInterval,
 				eventName: 'FindTweetLodged',
 				opts: { fromBlock: 0 },
 				filter: e => true,

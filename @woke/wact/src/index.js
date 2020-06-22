@@ -3,13 +3,13 @@ const actors = require('./actors');
 const receivers = require('./receivers');
 const reducers = require('./reducers');
 const effects = require('./lib/effects');
-const persistenceEngine = require('./persistence-engine');
+const PersistenceEngine = require('./persistence-engine');
 const supervision = require('./supervision');
 
 module.exports = {
 	ActorSystem,
+	PersistenceEngine,
 	actors,
-	persistenceEngine,
 	receivers,
 	reducers,
 	effects,

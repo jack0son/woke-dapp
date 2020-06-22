@@ -17,12 +17,15 @@ function TwitterClient() {
 	return twitterMock.createMockClient(3);
 }
 
+
 class OracleSystem {
 	constructor(contracts, opts) {
-		const { twitterClient, persist, retryInterval } = opts;
+		const { twitterClient, persist, retryInterval, subscriptionWatchdogInterval, persistenceConfig } = opts;
 		this.persist = !!persist;
 		this.config = {
 			QUERY_RETRY_INTERVAL: retryInterval || 15000*3,
+			SUBSCRIPTION_WATCHDOG_INTERVAL: subscriptionWatchdogInterval || 15000*10,
+			persistenceConfig,
 		};
 		//this.twitterStub = opts.twitterStub || new TwitterStub(TwitterClient())
 		this.twitterStub = new TwitterStub(twitterClient || TwitterClient())
@@ -30,7 +33,7 @@ class OracleSystem {
 		// Persistence
 		if(this.persist) {
 			debug.d(`Using persistence...`);
-			this.persistenceEngine = PersistenceEngine()
+			this.persistenceEngine = PersistenceEngine(this.config.persistenceConfig)
 		} else {
 			debug.warn(`Persistence not enabled.`);
 		}
@@ -47,6 +50,7 @@ class OracleSystem {
 		this.a_oracle = director[this.persist ? 'start_persistent' : 'start_actor']('oracle', Oracle, {
 			a_contract_TwitterOracle: this.contracts.TwitterOracleMock,
 			a_twitterAgent: this.a_twitterAgent,
+			subscriptionWatchdogInterval: this.config.SUBSCRIPTION_WATCHDOG_INTERVAL,
 		});
 	}
 
@@ -56,6 +60,7 @@ class OracleSystem {
 		if(self.persist) {
 			try {
 				await self.persistenceEngine.db.then(db => db.connect())
+				debug.d(`Connected to persistence repository.`);
 			} catch(error) {
 				throw error;
 			}

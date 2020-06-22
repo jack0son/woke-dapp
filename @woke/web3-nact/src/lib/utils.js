@@ -1,6 +1,6 @@
 const artifacts = require('@woke/contracts')[process.env.NODE_ENV !== 'production' ? 'development' : 'production'];
 
-function load(name) {
+function loadContract(name) {
 	const a = artifacts[name];
 	if(!a) {
 		throw new Error(`Could not find artifact for '${name}' contract`);
@@ -10,4 +10,4 @@ function load(name) {
 
 const delay = async (ms) => new Promise(res => setTimeout(res, ms)); 
 
-module.exports = { delay };
+module.exports = { delay, loadContract };

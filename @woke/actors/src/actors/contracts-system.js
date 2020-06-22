@@ -1,5 +1,4 @@
-const { Contract, Web3, Nonce, utils } = require('@woke/web3-nact');
-const loadContract = utils.load;
+const { Contract, Web3, Nonce, utils: { loadContract } } = require('@woke/web3-nact');
 
 function create_contracts_system(director, contractNames, opts) {
 	const MAX_ATTEMPTS = opts && opts.maxAttempts || 5;

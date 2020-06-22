@@ -59,8 +59,9 @@ const spawn_persistent = (_parent, _name, _actionsMap, _initialState, _propertie
 	debug.control.enabledByApp = debug.control.enabled();
 
 	let recovering = false;
-	const f = debug.control.enabledByApp ? 
+	const target = debug.control.enabledByApp ? 
 		(state = _initialState, msg, context) => {
+			context = {...context, debug }
 			if(context.recovering) {
 				if(!recovering) {
 					recovering = true;
@@ -77,15 +78,22 @@ const spawn_persistent = (_parent, _name, _actionsMap, _initialState, _propertie
 				debug.log(`----- ... recovery complete.`);
 			}
 
-			return route_action(_actionsMap, state, msg, {...context, debug })
-		} :
-		(state = _initialState, msg, context) => {
-			return route_action(_actionsMap, state, msg, {...context, debug })
+			return route_action(_actionsMap, state, msg, {
+				...context,
+				receivers: bind_receivers(_properties.receivers, msg, state, context),
+			})
+		}
+		: (state = _initialState, msg, context) => {
+			context = {...context, debug }
+			return route_action(_actionsMap, state, msg, {
+				...context,
+				receivers: bind_receivers(_properties.receivers, msg, state, context),
+			})
 		};
 
 	return spawnPersistent(
 		_parent,
-		f,
+		target,
 		persistenceKey,
 		_name,
 		_properties,
@@ -129,9 +137,9 @@ function start_actor(_parent) {
 	}
 }
 
-function isPersistentSystem(system) {
+function isPersistentSystem(_system) {
 	// TODO define precise persistent properties
-	return !!_persistentSystem && !!_persistentSystem.name;
+	return !!_system && !!_system.name;
 }
 
 // Spawn a persistent actor

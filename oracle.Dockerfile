@@ -1,6 +1,6 @@
 FROM node:10-alpine
 
-WORKDIR /usr/src/app
+WORKDIR /usr/src/oracle
 
 RUN npm i lerna -g --loglevel notice
 
@@ -13,10 +13,11 @@ RUN npm install --loglevel notice
 COPY @woke/lib ./@woke/lib
 COPY @woke/wact ./@woke/wact
 COPY @woke/web3-nact ./@woke/web3-nact
+COPY @woke/actors ./@woke/actors
 COPY @woke/contracts ./@woke/contracts
 COPY @woke/oracle ./@woke/oracle
 
 COPY lerna.json .
 RUN lerna bootstrap
 
-CMD [ "npm", "--prefix", "@woke/oracle", "run", "start-docker" ]
+CMD [ "npm", "--prefix", "@woke/oracle", "run", "start" ]
