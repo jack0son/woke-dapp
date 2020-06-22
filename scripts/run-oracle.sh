@@ -1,2 +1,2 @@
 #!/bin/bash
-docker run -d -e NODE_ENV=production jvindustries/woke:oracle
+docker-compose -f oracle.docker-compose.yml up -d
