@@ -85,9 +85,9 @@ const subscriptionActor = {
 		},
 
 		'start': (msg, ctx, state) => {
+			const { contractInterface, eventName, watchdog, watchdogInterval } = state;
 			const { resubscribeInterval } = msg;
-			const { contractInterface, eventName, watchdog } = state;
-			const period = resubscribeInterval || blockTime || DEFAULT_WATCHDOG_INTERVAL;
+			const period = resubscribeInterval || watchdogInterval || blockTime || DEFAULT_WATCHDOG_INTERVAL;
 			if(watchdog && !state.a_watchdog) {
 				ctx.debug.info(msg, `Starting subscription watchdog...`);
 				state.a_watchdog = start_actor(ctx.self)('_watchdog', Polling);

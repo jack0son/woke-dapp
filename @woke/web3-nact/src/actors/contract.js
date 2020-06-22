@@ -25,6 +25,7 @@ const spawn_sub = (msg, ctx, state) => {
 		`_sub-${sub_idx++}-${state.contractInterface.contractName}-${msg.eventName}`,
 		subActor,
 		{
+			watchdogInterval: msg.resubscribeInterval,
 			watchdog: true,
 			eventName: msg.eventName,
 			filter: msg.filter,
@@ -99,11 +100,12 @@ const contractActor = {
 		},
 
 		'subscribe_log': async (msg, ctx, state) => {
-			const { eventName, filter, subscribers, opts } = msg;
+			const { eventName, filter, subscribers, opts, resubscribeInterval } = msg;
 			const { logSubscriptions, contractInterface } = state;
-			const a_sub = spawn_sub({eventName,
+			const a_sub = spawn_sub({ eventName,
 				contractInterface,
 				filter,
+				resubscribeInterval,
 				subscribers: [ctx.sender],
 			}, ctx, state);
 
