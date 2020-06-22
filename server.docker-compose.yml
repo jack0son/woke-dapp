@@ -19,7 +19,7 @@ services:
     environment:
       DEBUG: server*
       WOKE_ROLE: funder
-      ETH_ENV: goerli_infura
+      ETH_ENV: goerli_2
       NODE_ENV: production
       WAIT_HOSTS: db:5432
 

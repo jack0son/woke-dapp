@@ -11,7 +11,7 @@ services:
       #ports:
       #- '5433:5432'
   oracle:
-    image: jvindustries/woke:notifier
+    image: jvindustries/woke:oracle
     depends_on:
       - oracle-db
     environment:
