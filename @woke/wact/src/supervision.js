@@ -1,5 +1,7 @@
 const { dispatch } = require('nact');
-const { delay } = require('../lib/utils');
+//const { delay } = require('../lib/utils');
+
+const delay = (ms) => new Promise((resolve, reject) => setTimeout(resolve, ms));
 
 const terminate = (msg, err, ctx) => {
   let path = ctx.path.toString();
@@ -7,7 +9,8 @@ const terminate = (msg, err, ctx) => {
   return ctx.stop;
 };
 
-const exponentialRetry = (factor) => {
+// @param maxAttempts: optional
+const exponentialRetry = (factor, maxAttempts) => {
 	let count = 1;
 	return async (msg, error, ctx) => {
 		console.log(error);
@@ -16,10 +19,13 @@ const exponentialRetry = (factor) => {
 		// Should stop incrementing counter once a reliable delay is found
 		if(msg._crashed) count++; 
 
-		await delay((2**count - 1)*factor);
-		msg._crashed = count;
-		dispatch(ctx.self, msg, ctx.sender);
-		return ctx.resume;
+		if(!maxAttempts || count < maxAttempts) {
+			await delay((2**count - 1)*factor);
+			msg._crashed = count;
+			dispatch(ctx.self, msg, ctx.sender);
+			return ctx.resume;
+		}
+		return ctx.stop;
 	};
 }
 

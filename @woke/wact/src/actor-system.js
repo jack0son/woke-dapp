@@ -13,14 +13,7 @@ actors = require('./actors');
 const { Logger } = require('@woke/lib');
 
 const DEBUG_PREFIX = 'actor';
-const FATAL_HANG_TIME = 1000*1000; //ms
 const DEBUG_RECOVERY= process.env.DEBUG_RECOVERY =='true' ? true : false
-
-function blockOld(_consumer, _msg) {
-	return query(_consumer, _msg, FATAL_HANG_TIME).catch( error => {
-		throw new Error(`APPLICATION HANG: blocking query timed out (${FATAL_HANG_TIME}ms). Are you sure you want temporally couple actors?`); 
-	});
-}
 
 function remap_debug(_name) {
 	const debug = {};
@@ -29,7 +22,7 @@ function remap_debug(_name) {
 		if(key == 'control' || key == 'log') {
 			debug[key] = val;
 		} else {
-			debug[key] = (msg, args) => val(`${msg.type}>> ` + args)
+			debug[key] = (msg, args) => val(`${msg.type} >> ` + args)
 		}
 	})
 	return debug;
@@ -136,10 +129,15 @@ function start_actor(_parent) {
 	}
 }
 
+function isPersistentSystem(system) {
+	// TODO define precise persistent properties
+	return !!_persistentSystem && !!_persistentSystem.name;
+}
+
 // Spawn a persistent actor
 // @returns persistant actor instance
 const start_persistent = _persistentSystem => (_name, _definition, _initialState) => {
-	if(!_persistentSystem && _persistentSystem.name) {
+	if(!isPersistentSystem(_persistentSystem)) {
 		throw new Error(`Persistent system must be provided`);
 	}
 	const { actions, properties } = _definition;

@@ -1,6 +1,8 @@
 const { ActorSystem, actors: { Polling } } = require('@woke/wact');
-const { initContract } = require('@woke/lib').web3Tools.utils;
+const { utils: { initContract }, init } = require('@woke/lib').web3Tools;
 const { dispatch, block, start_actor } = ActorSystem;
+
+const { network: blockTime } = init();
 
 /*
  *
@@ -56,6 +58,7 @@ const subscriptionActor = {
 
 			// Always get a fresh contract instance
 			const { web3Instance } = await block(state.a_web3, { type: 'get' });
+			const blockTime = web3Instance.network.blockTime; 
 			const contract = initContract(web3Instance, contractInterface);
 
 			const callback = (error, log) => {
@@ -82,15 +85,16 @@ const subscriptionActor = {
 		},
 
 		'start': (msg, ctx, state) => {
-			const {contractInterface, eventName, watchdog} = state;
+			const { resubscribeInterval } = msg;
+			const { contractInterface, eventName, watchdog } = state;
 			if(watchdog && !state.a_watchdog) {
 				ctx.debug.info(msg, `Starting subscription watchdog...`);
 				state.a_watchdog = start_actor(ctx.self)('_watchdog', Polling);
 				dispatch(state.a_watchdog, { type: 'poll',
 					target: ctx.self,
 					action: 'subscribe',
-					period: DEFAULT_WATCHDOG_INTERVAL,
-					blockTimeout: DEFAULT_WATCHDOG_INTERVAL*2, // wait for action complete before next poll
+					period: resubscribeInterval || blockTime || DEFAULT_WATCHDOG_INTERVAL,
+					blockTimeout: (blockTime || DEFAULT_WATCHDOG_INTERVAL)*3, // wait for action complete before next poll
 				}, state.a_watchdog);
 			} else {
 				dispatch(ctx.self, {type: 'subscribe'}, ctx.self);

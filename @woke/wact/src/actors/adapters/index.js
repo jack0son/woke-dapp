@@ -1,27 +1,15 @@
+// Adapters are actor API interface mixins. They return an actions object that
+// can be included in other actor definitions.
 const { dispatch } = require('nact');
+const { matchSink } = require('../../receivers');
 
 function SinkHandler(handler, match) {
 }
 
 const noEffect = (msg, state, ctx) => state;
 
-function matchSink(msg, state, ctx) { 
-	const { kind } = msg;
-	const { sinkHandlers } = state;
-	return actor => {
-		let handler = sinkHandlers[actor.name];
-		if(!handler) handler = sinkHandlers[kind];
-		if(!handler) {
-			ctx.debug.warn(msg, `No sink handler for actor ${actor.name}:${kind}>`);
-			return noEffect;
-		}
-		return handler;
-	}
-}
 
-
-// Adapters are actor API interface mixins
-// @desc Call matchin handler for received sink message and apply reducer if
+// @desc Call matching handler for received sink message and apply reducer if
 // one is specified
 // @dev Supervisor steps (return ctx.stop etc) must be handled in effects not
 // sink handlers
@@ -29,8 +17,8 @@ function SinkAdapter(reducer) {
 	return {
 		'sink': (msg, ctx, state) => {
 			const actorId = ctx.sender.id;
-			return reducer ? reducer(msg, ctx, matchSink(msg, state, ctx)(ctx.sender)(msg, ctx, state))
-				: matchSink(msg, state, ctx)(ctx.sender)(msg, ctx, state);
+			return reducer ? reducer(msg, ctx, matchSink({msg, state, ctx})(ctx.sender)(msg, ctx, state))
+				: matchSink({msg, state, ctx})(ctx.sender)(msg, ctx, state);
 		}
 	};
 }

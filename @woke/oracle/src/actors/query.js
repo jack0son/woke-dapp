@@ -10,7 +10,6 @@ function fetchProofTweet(msg, ctx, state) {
 	dispatch(a_twitterAgent,  { type: 'find_proof_tweet', userId }, ctx.self);
 }
 
-
 function handleFailure(msg, ctx, state) {
 	const { error } = state;
 	if(error) {

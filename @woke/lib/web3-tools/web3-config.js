@@ -11,6 +11,7 @@ const rinkeby = {
 	host: `rinkeby.infura.io/ws/v3/${infuraApiKey}`,
 	gasPrice: 40*GWei,
 	gasLimit:  '6590000',
+	blockTime: 20000,
 	defaultCommon: {
 		customChain: {
 			name: 'rin',
@@ -29,6 +30,7 @@ const goerli_infura = {
 	host: `goerli.infura.io/ws/v3/${infuraApiKey}`,
 	gasPrice: 20*GWei,
 	gasLimit:  '8000000',
+	blockTime: 15000,
 	defaultCommon: {
 		customChain: {
 			name: 'goerli',
@@ -47,6 +49,7 @@ const goerli_1 = {
 	port: 8546,
 	gasPrice: 20*GWei,
 	gasLimit:  '8000000',
+	blockTime: 15000,
 	defaultCommon: {
 		customChain: {
 			name: 'goerli',
@@ -64,6 +67,7 @@ const goerli_2 = {
 	host: `geth-goerli-2.us-west2-a.c.woke-network-services.internal`,
 	port: 8546,
 	gasPrice: 20*GWei,
+	blockTime: 15000,
 	gasLimit:  '8000000',
 	defaultCommon: {
 		customChain: {
@@ -87,6 +91,7 @@ module.exports = {
 				host: 'localhost',
 				port: 8545,
 				gasPrice: '20000000000',
+				blockTime: 3000,
 				gasLimit: '8000000',
 				defaultCommon: {
 					customChain: {
@@ -104,6 +109,7 @@ module.exports = {
 				protocol: 'wss',
 				host: `ropsten.infura.io/ws/v3/${infuraApiKey}`,
 				gasPrice: 40*GWei,
+				blockTime: 20000,
 				gasLimit: '8000000',
 			},
 

@@ -141,7 +141,6 @@ const actions = {
 			// should be notified of and errors that the tx should just handle itself
 			//	-- if you wanted to get complex the sink could specifiy an error
 			//	policy the same way an actor specifies an onCrash policy
-			//
 			if(error) {
 				console.log(error);
 				if(error instanceof OnChainError) {

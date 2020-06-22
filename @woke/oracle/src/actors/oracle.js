@@ -135,7 +135,7 @@ function handleContractResponse(msg, ctx, state) {
 			// Once subscription received from contract, start the subscription
 			if(a_sub) {
 				const a_tweet_lodged_sub = a_sub;
-				dispatch(a_tweet_lodged_sub,  {type: 'start'}, ctx.self);
+				dispatch(a_tweet_lodged_sub,  { type: 'start' }, ctx.self);
 				return { ...state, a_tweet_lodged_sub };
 			}
 		}
@@ -189,8 +189,6 @@ module.exports = {
 		...SinkAdapter(),
 		'init': (msg, ctx, state) => {
 			const { a_contract_TwitterOracle } = state;
-
-			// Subscribe to unclaimed transfers
 
 			// Rely on subscription to submit logs from block 0
 			// @TODO persist last seen block number
