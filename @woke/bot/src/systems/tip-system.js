@@ -39,7 +39,7 @@ class TipSystem {
 			this.a_tweeter = director.start_actor('tweeter', Tweeter(this.twitterStub));
 		}
 
-		this.a_tippper = director[this.persist ? 'start_persistent' : 'start_actor'](
+		this.a_tipper = director[this.persist ? 'start_persistent' : 'start_actor'](
 			'tipper', // name
 			tipper,		// actor definition
 			{					// initial state
@@ -47,7 +47,6 @@ class TipSystem {
 				a_tweeter: this.a_tweeter,
 			}
 		);
-
 
 		this.a_tMon = director.start_actor('twitter_monitor', TwitterMonitor(this.twitterStub));
 		this.a_polling = director.start_actor('polling_service', actors.Polling);
