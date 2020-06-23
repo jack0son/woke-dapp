@@ -1,11 +1,7 @@
-const { bootstrap, start_actor, block } = require('./actor-system');
-const { spawnStateless, dispatch, query } = require('nact');
-const PersistenceEngine = require('./persistence-engine');
-const { notifier, Tweeter  } = require('./actors');
-
-// Lib
-//const { create_woken_contract_actor } = require('./lib/actors/woken-contract');
-const create_contracts_system = require('./lib/actors/contracts-system');
+const { ActorSystem, PersistenceEngine } = require('@woke/wact');
+const { ContractsSystem } = require('@woke/web3-nact');
+const { bootstrap,  dispatch } = ActorSystem;
+const { notifier, Tweeter  } = require('../actors');
 const TwitterStub = require('./lib/twitter-stub');
 const twitterMock = require('../test/mocks/twitter-client');
 const debug = require('@woke/lib').Logger('sys_tip');
@@ -32,17 +28,17 @@ class NotificationSystem {
 		const director = this.director;
 
 		// Actors
-		this.contracts = contracts || create_contracts_system(director, ['UserRegistry']);
+		this.contracts = contracts || ContractsSystem(director, ['UserRegistry']);
 		this.a_tweeter = director.start_actor('tweeter', Tweeter(this.twitterStub));
-		this.a_notifier = this.persist ? 
-			director.start_persistent('notifier', notifier, {
+
+		this.a_notifier = director[this.persist ? 'start_persistent' : 'start_actor'](
+			'notifier',	// name
+			notifier,		// actor definition
+			{						// initial state
 				a_contract_UserRegistry: this.contracts.UserRegistry,
 				a_tweeter: this.a_tweeter,
-			}) :
-			director.start_actor('notifier', notifier, {
-				a_contract_UserRegistry: this.contracts.UserRegistry,
-				a_tweeter: this.a_tweeter,
-			});
+			}
+		);
 	}
 
 	async start() {

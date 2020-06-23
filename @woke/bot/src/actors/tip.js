@@ -1,4 +1,4 @@
-const { dispatch } = require('nact');
+const { ActorSystem: { dispatch } } = require('@woke/wact');
 const { twitter: { tip_submitted } } = require('../lib/message-templates');
 
 const properties = {

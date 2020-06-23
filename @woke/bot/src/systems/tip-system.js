@@ -1,11 +1,8 @@
-const { spawnStateless, dispatch, query } = require('nact');
-const { bootstrap, start_actor } = require('./actor-system');
-const PersistenceEngine = require('./persistence-engine');
-const { tipper, TwitterMonitor, polling, nonce, Tweeter } = require('./actors');
+const { ActorSystem, PersistenceEngine } = require('@woke/wact');
+const { bootstrap,  dispatch, spawnStateless, actors } = ActorSystem;
+const { tipper, TwitterMonitor, Tweeter } = require('../actors');
 
-// Lib
-//const { create_woken_contract_actor } = require('./lib/actors/woken-contract');
-const create_contracts_system = require('./lib/actors/contracts-system');
+const { ContractsSystem } = require('@woke/web3-nact');
 const TwitterStub = require('./lib/twitter-stub');
 const twitterMock = require('../test/mocks/twitter-client');
 const loadContract = require('./lib/contracts').load;
@@ -37,25 +34,24 @@ class TipSystem {
 
 		// Actors
 		this.contracts = contracts ||
-			create_contracts_system(director, ['UserRegistry'],  {persist: this.persist});
+			ContractsSystem(director, ['UserRegistry'],  {persist: this.persist});
 
 		if(notify) {
 			this.a_tweeter = director.start_actor('tweeter', Tweeter(this.twitterStub));
 		}
 
-		this.a_tipper = this.persist ? 
-			director.start_persistent('tipper', tipper, {
+		this.a_tippper = director[this.persist ? 'start_persistent' : 'start_actor'](
+			'tipper', // name
+			tipper,		// actor definition
+			{					// initial state
 				a_wokenContract: this.contracts.UserRegistry,
 				a_tweeter: this.a_tweeter,
-			}) :
-			director.start_actor('tipper', tipper, {
-				a_wokenContract: this.contracts.UserRegistry,
-				a_tweeter: this.a_tweeter,
-			});
+			}
+		);
 
 
 		this.a_tMon = director.start_actor('twitter_monitor', TwitterMonitor(this.twitterStub));
-		this.a_polling = director.start_actor('polling_service', polling);
+		this.a_polling = director.start_actor('polling_service', actors.Polling);
 
 		// Forward twitter monitor messages to tipper
 		this.a_tweetForwarder = spawn_tweet_forwarder(this.a_polling, this.a_tipper);
