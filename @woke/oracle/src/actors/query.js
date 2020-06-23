@@ -74,6 +74,7 @@ function handleQueryFailure(msg, ctx, state) {
 	ctx.debug.d(msg, 'Query failed');
 	const { job: { queryId }, userId, txResponse } = state;
 	ctx.receivers.update_job({ status: 'failed' }, txResponse.error);
+	return ctx.stop;
 }
 
 function complete(msg, ctx, state) {

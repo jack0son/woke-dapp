@@ -136,7 +136,7 @@ const tipper = {
 
 		// @TODO state not clearly encapsulated here
 		//		-- is it tip or tipper that is responsible for tip.status?
-		'tip_update': async (msg, ctx, state) => {
+		'update_tip': async (msg, ctx, state) => {
 			const { tipRepo, wokenContract } = state;
 			const { tip, status, error} = msg;
 
