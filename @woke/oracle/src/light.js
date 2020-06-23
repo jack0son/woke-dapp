@@ -49,7 +49,7 @@ class TinyOracle {
 
 		while(!connected) {
 			++attempts
-			web3Instance = web3Tools.init();
+			web3Instance = web3Tools.init.instantiate();
 
 			if(attempts == 1) {
 				console.dir(web3Instance.network);

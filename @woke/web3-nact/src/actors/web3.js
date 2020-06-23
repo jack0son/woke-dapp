@@ -12,7 +12,7 @@ const AVG_BLOCK_TIME = 3*1000;
 
 // Provide a web3 instance to other actors
 // When the connection fails, re-instantiate
-const Web3Actor = (init_web3 = web3Tools.init, maxAttempts = MAX_ATTEMPTS, opts) => ({
+const Web3Actor = (init_web3 = web3Tools.init.instantiate, maxAttempts = MAX_ATTEMPTS, opts) => ({
 	properties: {
 		initialState: {
 			queue: [],

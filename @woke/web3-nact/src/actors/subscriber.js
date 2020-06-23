@@ -1,8 +1,7 @@
 const { ActorSystem, actors: { Polling } } = require('@woke/wact');
 const { utils: { initContract }, init } = require('@woke/lib').web3Tools;
 const { dispatch, block, start_actor } = ActorSystem;
-
-const { blockTime } = init().network;
+const { blockTime } = init.network;
 
 /*
  *

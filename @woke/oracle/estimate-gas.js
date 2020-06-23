@@ -6,7 +6,7 @@ const { web3Tools } = require('@woke/lib');
 const artifacts = require('@woke/contracts');
 const wokeTokenInterface = artifacts[process.env.NODE_ENV !== 'development' ? 'production' : 'development'].WokeToken;
 
-const { web3, account, network } = web3Tools.init();
+const { web3, account, network } = web3Tools.init.instantiate();
 const BN = web3.utils.BN;
 console.log(web3.version);
 

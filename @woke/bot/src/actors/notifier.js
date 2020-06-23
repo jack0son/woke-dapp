@@ -33,6 +33,10 @@ const spawn_tweet_promise = (log, _ctx) => {
 }
 
 function handleContractResponse(msg, ctx, state) {
+	const { a_sub } = msg;
+	// Once subscription received from contract, start the subscription
+	if(a_sub) {
+	}
 	switch(msg.action) {
 		case 'subscribe_log': {
 			const { a_sub } = msg;
@@ -178,6 +182,7 @@ const notifier = {
 		},
 
 		// -- Sink actions
+		'a_sub': handleQuerySubscription,
 		'a_tweeter_temp': (msg, ctx, state) => {
 			const { eventName } = msg;
 		}

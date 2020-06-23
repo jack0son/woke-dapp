@@ -1,3 +1,5 @@
+module.exports.delay = async (ms) => new Promise(res => setTimeout(res, ms));
+
 module.exports.parse_bool = str => {
 	switch(str) {
 		case 't':
