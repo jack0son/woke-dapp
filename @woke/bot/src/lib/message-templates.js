@@ -1,6 +1,6 @@
 const { emojis } = require('@woke/lib');
 
-function tip_submitted = (tip) => `Tip submitted: @${tip.fromHandle} wishes to tip @${tip.toHandle} ${tip.amount} WOKENS (#${tip.id})`
+const tip_submitted = (tip) => `Tip submitted: @${tip.fromHandle} wishes to tip @${tip.toHandle} ${tip.amount} WOKENS (#${tip.id})`;
 
 function tip_success_tweet_text(tip) {
 	return `${emojis.folded_hands} Tribute confirmed, @${tip.fromHandle} sent @${tip.toHandle} ${tip.amount} $WOKE. \n\n${tx_etherscan_url(tip)} #WokeTribute`;

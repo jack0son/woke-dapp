@@ -1,29 +1,18 @@
 require('dotenv').config()
-const { Logger, twitter } = require('@woke/lib');
+const { Logger, twitter, TwitterStub, utils } = require('@woke/lib');
+const TipSystem = require('../systems/tip-system');
 const debug = Logger();
 
-const { spawnStateless, dispatch, query } = require('nact');
-const actors = require('./actors');
-
-const actorSystem = require('./actor-system');
-const TipSystem = require('./tip-system');
-const { parse_bool } = require('./lib/utils');
-
-const TwitterStub = require('./lib/twitter-stub');
-
-
-const PERSIST = process.env.PERSIST;
-const persist = parse_bool(PERSIST);
+const PERSIST = utils.parse_bool(process.env.PERSIST);
 
 // @TODO parse polling interval
-console.log('Persist? ', persist);
 const bootstrap = async () => {
 	await twitter.initClient();
 	twitterStub = new TwitterStub(twitter);
 
 	const tipSystem = new TipSystem(undefined, {
 		twitterStub,
-		persist,
+		persist: PERSIST,
 		pollingInterval: 5*1000,
 		notify: true,
 	});
@@ -31,4 +20,3 @@ const bootstrap = async () => {
 }
 
 bootstrap().catch(console.log);
-

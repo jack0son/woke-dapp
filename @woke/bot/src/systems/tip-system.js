@@ -1,12 +1,11 @@
-const { ActorSystem, PersistenceEngine } = require('@woke/wact');
-const { bootstrap,  dispatch, spawnStateless, actors } = ActorSystem;
+const { ActorSystem, PersistenceEngine, actors} = require('@woke/wact');
+const { bootstrap,  dispatch, spawnStateless } = ActorSystem;
+const { ContractsSystem } = require('@woke/web3-nact');
+const { TwitterStub, Logger, mocks } = require('@woke/lib');
 const { tipper, TwitterMonitor, Tweeter } = require('../actors');
 
-const { ContractsSystem } = require('@woke/web3-nact');
-const TwitterStub = require('./lib/twitter-stub');
-const twitterMock = require('../test/mocks/twitter-client');
-const loadContract = require('./lib/contracts').load;
-const debug = require('@woke/lib').Logger('sys_tip');
+const twitterMock = mocks.twitterClient;
+const debug = Logger('sys_tip');
 
 function TwitterClient() {
 	return twitterMock.createMockClient(3);

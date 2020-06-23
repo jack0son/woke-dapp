@@ -5,6 +5,7 @@ const twitter = require('./twitter');
 const TwitterStub = require('./twitter-stub');
 const utils = require('./utils');
 const emojis = require('./emojis');
+const mocks = require('./mocks');
 
 module.exports = {
 	web3Tools,
@@ -13,5 +14,6 @@ module.exports = {
 	twitter,
 	TwitterStub,
 	utils,
+	mocks,
 	emojis,
 }
