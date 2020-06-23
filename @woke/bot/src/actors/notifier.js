@@ -1,7 +1,7 @@
 // Subscribe to blockchain logs and notify users on twitter
 // Manages notifications in a transactional fashion
-const { start_actor, block } = require('../actor-system');
-const { spawnStateless, dispatch, query } = require('nact');
+const { ActorSystem, actors } = require('@woke/wact');
+const { start_actor, dispatch, query, spawnStateless, block } = ActorSystem;
 
 const states = [
 	'SETTLED',	// notification sent
@@ -32,6 +32,42 @@ const spawn_tweet_promise = (log, _ctx) => {
 	);
 }
 
+function handleContractResponse(msg, ctx, state) {
+	const { a_sub } = msg;
+	// Once subscription received from contract, start the subscription
+	if(a_sub) {
+	}
+	switch(msg.action) {
+		case 'subscribe_log': {
+			const { a_sub } = msg;
+			// Once subscription received from contract, start the subscription
+			if(a_sub) {
+				const a_unclaimed_tx_sub = a_sub;
+				dispatch(a_unclaimed_tx_sub,  {type: 'start'}, ctx.self);
+				return { ...state, a_unclaimed_tx_sub };
+			}
+		}
+		default: {
+			ctx.debug.d(msg, `No handler defined for response to ${action}`);
+		}
+	}
+}
+
+function handleQuerySubscription(msg, ctx, state) {
+	const { eventName } = msg;
+	switch(eventName) {
+		case 'Tx': {
+			// Event update from subscription
+			dispatch(ctx.self, { ...msg, type: 'unclaimed_tx' }, ctx.self);
+			break;
+		}
+
+		default: {
+			ctx.debug.info(msg, `No action defined for subscription to '${eventName}' events`);
+		}
+	}
+}
+
 const notifier = {
 	properties: {
 		persistenceKey: 'notifier', // only ever 1, static key OK
@@ -40,10 +76,15 @@ const notifier = {
 			a_contract_UserRegistry: null,
 			a_tweeter: null,
 			logRepo: {},
+			sinkHandlers: {
+				subscribe_log: handleQuerySubscription,
+				a_contract: handleContractResponse,
+			},
 		},
 	},
 
 	actions: {
+		...actors.SinkAdapter(),
 		'init': (msg, ctx, state) => {
 			const { a_contract_UserRegistry } = state;
 
@@ -141,30 +182,7 @@ const notifier = {
 		},
 
 		// -- Sink actions
-		'a_sub': (msg, ctx, state) => {
-			const { eventName } = msg;
-			switch(eventName) {
-				case 'Tx': {
-					// Event update from subscription
-					dispatch(ctx.self, { ...msg, type: 'unclaimed_tx' }, ctx.self);
-					break;
-				}
-
-				default: {
-					ctx.debug.info(msg, `No action defined for subscription to '${eventName}' events`);
-				}
-			}
-		},
-
-		'a_contract': (msg, ctx, state) => {
-			const { a_sub } = msg;
-			// Once subscription received from contract, start the subscription
-			if(a_sub) {
-				const a_unclaimed_tx_sub = a_sub;
-				dispatch(a_unclaimed_tx_sub,  {type: 'start'}, ctx.self);
-			}
-		},
-
+		'a_sub': handleQuerySubscription,
 		'a_tweeter_temp': (msg, ctx, state) => {
 			const { eventName } = msg;
 		}

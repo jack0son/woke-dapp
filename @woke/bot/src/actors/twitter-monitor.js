@@ -1,7 +1,5 @@
-const { dispatch } = require('nact');
-const { Logger } = require('@woke/lib');
-const { exponentialRetry } = require('./supervision');
-const { delay } = require('../lib/utils');
+const { ActorSystem: { dispatch }, supervision: { exponentialRetry } } = require('@woke/wact');
+const { Logger, utils: { delay } } = require('@woke/lib');
 const debug = (msg, args) => Logger().name(`TMON`, `${msg.type}>> ` + args);
 // Driven by polling twitter
 // https://developer.twitter.com/en/docs/tweets/search/api-reference/get-search-tweets

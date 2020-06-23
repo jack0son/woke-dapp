@@ -183,10 +183,8 @@ const searchClaimTweets = async (handle) => { // claimString = `@getwoketoke 0xW
 		tweet_mode: 'extended',
 		count: 100,
 	};
-	console.dir(searchParams);
 
 	let r = await client.get('search/tweets', searchParams);
-	//debug.d(r);
 	let tweets = r.statuses.map(s => ({
 		full_text: s.full_text,
 		entities: s.entities,

@@ -1,0 +1,36 @@
+version: '3'
+services:
+  oracle-db:
+    image: postgres:11.1
+    environment:
+      POSTGRES_USER: woke_oracle
+      POSTGRES_PASSWORD: woke_oracle
+      POSTGRES_DB: oracle_db
+    volumes:
+      - oracle-postgres_data-dev:/var/lib/postgresql/data/
+    ports:
+      - '5434:5432'
+
+  oracle:
+    build:
+      context: ./
+      dockerfile: oracle.Dockerfile
+    depends_on:
+      - oracle-db
+    environment:
+      WOKE_ROLE: oracle
+      SUBSCRIPTION_WATCHDOG_INTERVAL: 60000
+      WAIT_HOSTS: oracle-db:5432
+      POSTGRES_HOST: oracle-db
+      POSTGRES_PORT: 5432
+      POSTGRES_USER: woke_oracle
+      POSTGRES_PASSWORD: woke_oracle
+      POSTGRES_DB: oracle_db
+      NODE_ENV: 'development'
+      ETH_ENV: 'development'
+      PERSIST: 'true'
+      DEBUG_RECOVERY: 'true'
+      DEBUG: "*"
+
+volumes:
+  oracle-postgres_data-dev:

@@ -43,7 +43,9 @@ export default function ClaimView (props) {
 
 	const Span = (props) => LargeBody({ component: 'span', color: 'primary', ...props });
 
-	const unclaimedString = () => unclaimedBalance && unclaimedBalance > 0 ? <Span>{unclaimedBalance}</Span>: 'any';
+	const unclaimedString = () => unclaimedBalance && unclaimedBalance > 0 ? <><span>your </span><Span>{unclaimedBalance}</Span></> : 'any' ;
+	// Message will make sense before unclaimed balance is loaded.
+	const grammarString = () => !(unclaimedBalance && unclaimedBalance != 0) && ` you've already been sent`;
 
 	const TweetInstruction = () => (<>
 				<LargeBody
@@ -57,7 +59,7 @@ export default function ClaimView (props) {
 						},
 					}}
 				>
-					Hey <Span color='secondary'>@</Span><Span>{userHandle}</Span>, to securely claim {unclaimedString()} <WokeSpan key="WokeSpan">WOKEN{unclaimedBalance && unclaimedBalance == 1 ? '' : 's'}</WokeSpan> you've already been sent, we need to tweet a proof message. <br/><br/>
+					Hey <Span color='secondary'>@</Span><Span>{userHandle}</Span>, to securely claim {unclaimedString()} <WokeSpan key="WokeSpan">WOKEN{unclaimedBalance && unclaimedBalance == 1 ? '' : 's'}</WokeSpan>{grammarString()}, we need to tweet a proof message. <br/><br/>
 				</LargeBody>
 			<StandardBody color='primary' styles={{
 				fontSize: '1.5rem',

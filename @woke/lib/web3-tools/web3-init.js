@@ -55,7 +55,7 @@ function selectPrivKey() {
 
 let privKey = selectPrivKey();
 
-module.exports = (opts) => {
+function instantiate(opts) {
 	const rpcUrl = config.createRpcUrl(network);
 	const web3 = new Web3(rpcUrl);
 
@@ -72,6 +72,7 @@ module.exports = (opts) => {
 		web3.eth.defaultCommon = network.defaultCommon;
 	}
 
+	// Web3Instance
 	return {
 		web3,
 		network,
@@ -80,3 +81,6 @@ module.exports = (opts) => {
 		//accounts: web3.eth.accounts,
 	}
 }
+
+module.exports = { instantiate, network };
+

@@ -28,7 +28,8 @@ export default function WalletContainer(props) {
 	} = useWeb3Context();
 	const [error, setError] = useState(null);
 
-	const wokeToken = useContract('WokeToken');
+	//const wokeToken = useContract('WokeToken');
+	const userRegistry = useContract('UserRegistry');
 
 	// Move into seperate hook
 	//const [fetchingTxData, setFetchingTxData] = useState(false);
@@ -84,7 +85,7 @@ export default function WalletContainer(props) {
 				sendTransferInput={sendTransferInput}
 				friends={friends}
 				network={network}
-				tokenAddress={wokeToken.options.address}
+				tokenAddress={userRegistry.options.address}
 			/>
 			 : <Loading message={'A Woken shared is a Woken doubled.'}/>}
 		</>

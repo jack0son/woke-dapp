@@ -1,37 +1,8 @@
-const { dispatch } = require('nact');
-const { exponentialRetry } = require('./supervision');
-const emojis = require('../lib/emojis');
-const { delay } = require('../lib/utils');
+const { ActorSystem, supervision: { exponentialRetry } } = require('@woke/wact');
+const { start_actor, dispatch, query } = ActorSystem;
 const { Logger } = require('@woke/lib');
+const messageTemplates = require('../lib/message-templates');
 const debug = (msg, args) => Logger().name(`TWEET`, `${msg.type}>> ` + args);
-
-const tx_etherscan_url = tip => `https://goerli.etherscan.io/tx/${tip.tx_hash}`;
-const tip_tweet_url = tip =>  `https://twitter.com/${tip.fromId}/status/${tip.id}`;
-
-function tip_success_tweet_text(tip) {
-	return `${emojis.folded_hands} Tribute confirmed, @${tip.fromHandle} sent @${tip.toHandle} ${tip.amount} $WOKE. \n\n${tx_etherscan_url(tip)} #WokeTribute`;
-}
-
-function tip_seen_text(tip) {
-	return `@${tip.fromHandle} I accept your offering. #tribute #${tip.id}`;
-}
-
-function tip_success_message(tip) {
-	return `${emojis.folded_hands} #WokeTribute of ${tip.amount} wokens was confirmed on chain: ${tx_etherscan_url(tip)}.\n\nTransaction auth tweet ${tip_tweet_url(tip)}`;
-}
-
-function tip_invalid_message(tip) {
-	return `${emojis.sleep_face} You need to be woke to send $WOKE. Join https://getwoke.me with a tweet \n@${tip.fromHandle}`;
-}
-
-function tip_failure_message(tip) {
-	return `${emojis.shrug} Wokens be damned! #WokeTribute failed. \n\n@${tip.fromHandle}#${tip.id}`;
-}
-
-function tip_broke_message(tip) {
-	return `${emojis.no} Broke. Spread some $WOKE @${tip.fromHandle}...`;
-	//return `${emojis.no} You're broke, not woke. Spread some enlightenment @${tip.fromHandle}...`;
-}
 
 // @TODO add to error directory on notion
 // Twitter error response:
@@ -109,7 +80,7 @@ const TweeterActor = (twitterStub) => ({
 			const { tip } = msg;
 
 			ctx.debug.info(msg, `tweeting ${tip.id} success...`);
-			const text = tip_success_tweet_text(tip);
+			const text = messageTemplates.twitter.tip_success_tweet_text(tip);
 			const tweet = await twitter.postTweetReply(text, tip.id);
 			ctx.debug.d(msg, `tweeted '${text}'`);
 
@@ -122,11 +93,11 @@ const TweeterActor = (twitterStub) => ({
 			const { tip } = msg;
 
 			ctx.debug.info(msg, `tweeting ${tip.id} invalid...`);
-			let text = tip_invalid_message(tip);
+			let text = messageTemplates.twitter.tip_invalid_message(tip);
 			if(tip.reason == 'broke') {
-				text = tip_broke_message(tip);
+				text = messageTemplates.twitter.tip_broke_message(tip);
 			} else if(tip.reason == 'unclaimed') {
-				text = tip_invalid_message(tip);
+				text = messageTemplates.twitter.tip_invalid_message(tip);
 			} else {
 				// No invalidation reason
 			}
@@ -142,7 +113,7 @@ const TweeterActor = (twitterStub) => ({
 			const { tip } = msg;
 
 			ctx.debug.info(msg, `tweeting ${tip.id} failure...`);
-			const text = tip_failure_message(tip);
+			const text = messageTemplates.twitter.tip_failure_message(tip);
 			const tweet = await twitter.postTweetReply(text, tip.id);
 			ctx.debug.d(msg, `tweeted '${text}'`);
 
