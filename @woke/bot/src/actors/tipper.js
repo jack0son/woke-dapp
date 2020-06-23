@@ -1,8 +1,8 @@
 // Keep track of unsent tips
-const { dispatch, query } = require('nact');
-const { start_actor } = require('../actor-system');
+const { start_actor, dispatch, query } = require('@woke/wact').ActorSystem;
+const { utils: { delay } } = require('@woke/lib');
 const tipActor = require('./tip');
-const { delay, tip_str } = require('../lib/utils');
+const { console: tip_submitted } = require('../lib/message-templates');
 
 // Each tip is a simple linear state machine
 const statuses = [
@@ -105,7 +105,7 @@ const tipper = {
 
 			if(!entry) {
 				// New tip
-				console.log(tip_str(tip));
+				console.log(tip_submitted(tip));
 				console.log(`Tweet: ${tip.full_text}`);
 				entry = {
 					id: tip.id,
@@ -119,7 +119,7 @@ const tipper = {
 				//console.log(entry);
 				switch(entry.status) {
 					case statusEnum.UNSETTLED: {
-						console.log(`Settling existing tip ${tip_str(tip)}...`);
+						console.log(`Settling existing tip ${tip_submitted(tip)}...`);
 						// @TODO
 						// Duplicate actor will crash tipper
 						settle_tip(msg, ctx, state);

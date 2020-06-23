@@ -1,5 +1,5 @@
 const { dispatch } = require('nact');
-const { tip_str } = require('../lib/utils');
+const { twitter: { tip_submitted } } = require('../lib/message-templates');
 
 const properties = {
 	initialState: {
@@ -52,7 +52,7 @@ const actions = {
 		const { a_wokenContract } = state;
 		const { tip } = msg;
 
-		ctx.debug.d(msg, tip_str(tip));
+		ctx.debug.d(msg, tip_submitted(tip));
 
 		ctx.receivers.reduce({ event: 'start' });
 

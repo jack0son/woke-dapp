@@ -1,7 +1,6 @@
 // Subscribe to blockchain logs and notify users on twitter
 // Manages notifications in a transactional fashion
-const { start_actor, block } = require('../actor-system');
-const { spawnStateless, dispatch, query } = require('nact');
+const { start_actor, dispatch, query, spawnStateless, block } = require('@woke/wact').ActorSystem;
 
 const states = [
 	'SETTLED',	// notification sent
