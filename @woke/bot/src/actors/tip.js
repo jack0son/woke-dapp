@@ -1,5 +1,5 @@
 const { ActorSystem: { dispatch } } = require('@woke/wact');
-const { twitter: { tip_submitted } } = require('../lib/message-templates');
+const { console: { tip_submitted } } = require('../lib/message-templates');
 
 const properties = {
 	initialState: {
@@ -7,7 +7,7 @@ const properties = {
 	},
 
 	// Receivers are bound the message bundle and attached to the context
-	receivers: (msg, state, ctx) => ({
+	receivers: ({ msg, state, ctx }) => ({
 		// Reduce forwards a message to the reduce action
 		reduce: (_msg) => {
 			_msg.type = 'reduce';
@@ -43,6 +43,32 @@ function reduceEvent(msg, ctx, state) {
 	return nextState;
 }
 
+function txSink(msg, ctx, state) {
+	const { tx, txStatus} = msg;
+
+	switch(tx.method) {
+		case 'userClaimed': {
+			ctx.receivers.reduce({ event: 'check_claim-recv'});
+			break;
+		}
+
+		case 'balanceOf': {
+			ctx.receivers.reduce({ event: 'check_bal-recv'});
+			break;
+		}
+
+		case 'tip': {
+			ctx.receivers.reduce({ event: 'send_tip-recv',  ...msg});
+			break;
+		}
+
+		default: {
+			ctx.debug.warn(msg, `sink:tx: ${tx.method} has no sink action`)
+			return;
+		}
+	}
+}
+
 const actions = {
 	// --- Internal
 	'reduce': reduceEvent,
@@ -64,29 +90,12 @@ const actions = {
 	},
 
 	// --- Sink Actions
-	'tx': (msg, ctx, state) => {
-		const { tx, txStatus} = msg;
-
-		switch(tx.method) {
-			case 'userClaimed': {
-				ctx.receivers.reduce({ event: 'check_claim-recv'});
-				break;
-			}
-
-			case 'balanceOf': {
-				ctx.receivers.reduce({ event: 'check_bal-recv'});
-				break;
-			}
-
-			case 'tip': {
-				ctx.receivers.reduce({ event: 'send_tip-recv',  ...msg});
-				break;
-			}
-
-			default: {
-				ctx.debug.warn(msg, `sink:tx: ${tx.method} has no sink action`)
-				return;
-			}
+	'sink': (msg, ctx, state) => {
+		switch(msg.kind) {
+			case 'tx': 
+				return txSink(msg, ctx, state);
+			default: 
+				ctx.debug.warn(msg, `sink:${msg.kind} has no sink action`);
 		}
 	},
 }

@@ -82,5 +82,5 @@ function instantiate(opts) {
 	}
 }
 
-module.exports = { init, network };
+module.exports = { instantiate, network };
 

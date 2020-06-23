@@ -2,7 +2,7 @@
 const { ActorSystem: { start_actor, dispatch, query } } = require('@woke/wact');
 const { utils: { delay } } = require('@woke/lib');
 const tipActor = require('./tip');
-const { console: tip_submitted } = require('../lib/message-templates');
+const { console: { tip_submitted } } = require('../lib/message-templates');
 
 // Each tip is a simple linear state machine
 const statuses = [
