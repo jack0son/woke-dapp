@@ -164,7 +164,7 @@ const start_persistent = _persistentSystem => (_name, _definition, _initialState
 }
 
 // Instantiate a nact actor system
-// @returns nact actor system and bound methods
+// @returns director: nact actor system with bound methods
 function bootstrap(_persistenceEngine) {
 	const system = _persistenceEngine  ? start(configurePersistence(_persistenceEngine)) : start();
 	return {

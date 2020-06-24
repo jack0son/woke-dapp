@@ -3,10 +3,10 @@ const TxManager = require('../actors/tx-manager');
 
 function TxSystem(director, opts) {
 	const defaults = { name: 'txManager' };
-	const { name, ...rest } = { ...defaults, ...opts };
+	const { name, ...coreOpts } = { ...defaults, ...opts };
 	const a_txManager = director.start_actor(
 		name,
-		TxManager(CoreSystem(director, rest)),
+		TxManager(CoreSystem(director, coreOpts)),
 		{}
 	);
 
