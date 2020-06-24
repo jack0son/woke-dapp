@@ -13,9 +13,10 @@ function TwitterClient() {
 
 class NotificationSystem {
 	constructor(contracts, opts) {
-		const { twitterStub, persist } = opts;
+		const { twitterStub, persist, networkList } = opts;
 		this.persist = persist ? true : false;
 		this.twitterStub = opts.twitterStub || new TwitterStub(TwitterClient())
+		this.config = { networkList }; 
 
 		// Persistence
 		if(this.persist) {
@@ -29,7 +30,10 @@ class NotificationSystem {
 		const director = this.director;
 
 		// Actors
-		this.contracts = contracts || ContractsSystem(director, ['UserRegistry']);
+		this.contracts = contracts || ContractsSystem(director, ['UserRegistry'], {
+				persist: this.persist,
+				networkList: this.config.networkList,
+		});
 		this.a_tweeter = director.start_actor('tweeter', Tweeter(this.twitterStub));
 
 		this.a_notifier = director[this.persist ? 'start_persistent' : 'start_actor'](

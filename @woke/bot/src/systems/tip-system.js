@@ -13,10 +13,11 @@ function TwitterClient() {
 
 class TipSystem {
 	constructor(contracts, opts) {
-		const { twitterStub, persist, pollingInterval, notify} = opts;
+		const { twitterStub, persist, pollingInterval, notify, networkList } = opts;
 		this.persist = persist ? true : false;
 		this.config = {
 			TWITTER_POLLING_INTERVAL: pollingInterval || 100*1000,
+			networkList,
 		};
 		this.twitterStub = opts.twitterStub || new TwitterStub(TwitterClient())
 
@@ -32,8 +33,10 @@ class TipSystem {
 		const director = this.director;
 
 		// Actors
-		this.contracts = contracts ||
-			ContractsSystem(director, ['UserRegistry'],  {persist: this.persist});
+		this.contracts = contracts || ContractsSystem(director, ['UserRegistry'],  {
+				persist: this.persist,
+				networkList: this.config.networkList,
+		});
 
 		if(notify) {
 			this.a_tweeter = director.start_actor('tweeter', Tweeter(this.twitterStub));

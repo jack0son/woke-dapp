@@ -1,6 +1,6 @@
 const Web3 = require('web3');
 const config = require('./web3-config');
-const network = config.web3.networks[process.env.ETH_ENV || process.env.NODE_ENV || 'development'];
+const defaultNetwork = config.web3.networks[process.env.ETH_ENV || process.env.NODE_ENV || 'development'];
 
 const privKeys = {
 	oracle: '0xd90e07ec113aae69c3b018bef0b85ba44595294b43e55468807e6ef8399e1f54',
@@ -55,11 +55,19 @@ function selectPrivKey() {
 
 let privKey = selectPrivKey();
 
-function instantiate(opts) {
+function instantiate(networkName, opts) {
+	const defaults = {
+		handleRevert: true,
+	};
+	const { handleRevert } = {...defaults, ...opts};
+
+	const network = !!networkName && config.web3.networks[networkName] ?
+		config.web3.networks[networkName]
+		: defaultNetwork;
+
 	const rpcUrl = config.createRpcUrl(network);
 	const web3 = new Web3(rpcUrl);
-
-	web3.eth.handleRevert = opts && opts.handleRevert || true;
+	web3.eth.handleRevert = handleRevert;
 
 	let wallet = null;
 	if(!privKey) {
@@ -82,5 +90,5 @@ function instantiate(opts) {
 	}
 }
 
-module.exports = { instantiate, network };
+module.exports = { instantiate, network: defaultNetwork };
 

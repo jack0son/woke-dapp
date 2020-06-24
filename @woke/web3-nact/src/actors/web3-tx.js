@@ -2,7 +2,10 @@ const { ActorSystem, effects, receivers: { sink } } = require('@woke/wact');
 const { dispatch, block } = require('@woke/wact').ActorSystem;
 const { initContract } = require('@woke/lib').web3Tools.utils;
 const { withEffect } = effects;;
+const { ParamError, TransactionError, OnChainError } = require('../lib/errors');
 //const web3Errors = require('web3-core-helpers').errors;
+
+// @TODO handle revert error
 
 const properties = {
 	initialState: {
@@ -317,45 +320,3 @@ module.exports = { actions, properties };
           at /home/jack/Repositories/jgitgud/woke-dapp/@woke/lib/node_modules/web3-core-method/src/index.js:495:40
           at process._tickCallback (internal/process/next_tick.js:68:7) receipt: undefined },
 					*/
-
-
-class DomainError extends Error {
-	constructor(message) {
-		super(message);
-		this.name = this.constructor.name;
-		Error.captureStackTrace(this, this.constructor);
-	}
-}
-
-class ParamError extends DomainError {
-	constructor(error, tx) { // and tx data?
-		super(`Transaction '${tx.method}' failed due to invalid parameters.`);
-		this.web3Error = error;
-		this.data = { tx };
-	}
-}
-
-class TransactionError extends DomainError {
-	constructor(error, tx) { // and tx data?
-		super(`Transaction '${tx.method}' failed.`);
-		this.web3Error = error;
-		this.data = { tx };
-	}
-}
-
-class OnChainError extends DomainError {
-	constructor(error, tx, receipt) { // and tx data?
-		super(`Transactions ${receipt.transactionHash} failed on chain.`);
-		this.web3Error = error;
-		this.data = { receip, tx };
-	}
-}
-
-class RevertError extends DomainError {
-	constructor(error, tx) {
-		super(`Transaction reverted ${error.reason ? `'${error.reason}'` : ` with no reason provided`}`);
-		this.web3Error = error;
-		this.reason = error.reason;
-		this.data = { tx }
-	}
-}

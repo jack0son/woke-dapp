@@ -12,6 +12,8 @@ RUN npm install --loglevel notice
 # Lerna will fail gracefully when packages listed inside lerna.json do not exist
 COPY @woke/lib ./@woke/lib
 COPY @woke/contracts ./@woke/contracts
+COPY @woke/wact ./@woke/wact
+COPY @woke/web3-nact ./@woke/web3-nact
 COPY @woke/bot ./@woke/bot
 
 COPY lerna.json .
@@ -22,5 +24,5 @@ RUN lerna bootstrap
 COPY @woke/server/scripts/wait /usr/bin/wait
 RUN chmod +x /usr/bin/wait
 
-CMD ["sh", "-c", "/usr/bin/wait && exec npm --prefix @woke/bot run start"]
+CMD ["sh", "-c", "/usr/bin/wait && exec npm --prefix @woke/bot run tipper"]
 #CMD [ "npm", "--prefix", "@woke/server", "run", "start-docker" ]
