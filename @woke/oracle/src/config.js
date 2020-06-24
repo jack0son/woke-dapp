@@ -1,5 +1,6 @@
 require('dotenv').config()
 const { utils } = require('@woke/lib');
+const { config: { networkList } } = require('@woke/web3-nact');
 const CONTEXT = process.env.CONTEXT;
 
 const persistenceConfig = {
@@ -12,15 +13,9 @@ const persistenceConfig = {
 	}
 };
 
-const networkList = {
-	development: [],
-	production: ['goerli_2', 'goerli_3', 'goerli_infura'],
-	goerli: ['goerli_2', 'goerli_3', 'goerli_infura'],
-};
-
 module.exports = {
+	networkList,
 	subscriptionWatchdogInterval: Number(process.env.SUBSCRIPTION_WATCHDOG_INTERVAL),
 	persist: utils.parse_bool(process.env.PERSIST),
-	networkList: networkList[process.env.ETH_ENV],
 	persistence: persistenceConfig[process.env.CONTEXT],
 };
