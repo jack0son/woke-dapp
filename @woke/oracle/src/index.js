@@ -17,6 +17,12 @@ const config = {
 	}
 };
 
+const networkList = {
+	development: [],
+	production: ['goerli_2', 'goerli_1', 'goerli_infura'],
+	goerli: ['goerli_2', 'goerli_1', 'goerli_infura'],
+};
+
 // @TODO parse polling interval
 const bootstrap = async () => {
 	await twitter.initClient();
@@ -26,6 +32,7 @@ const bootstrap = async () => {
 		persist: PERSIST,
 		subscriptionWatchdogInterval: SUBSCRIPTION_WATCHDOG_INTERVAL,
 		persistenceConfig: config[process.env.CONTEXT],
+		networkList: networkList[process.env.ETH_ENV],
 		//retryInterval: 5*1000,
 	});
 	return oracleSystem.start();

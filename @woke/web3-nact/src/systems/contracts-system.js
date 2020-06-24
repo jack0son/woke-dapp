@@ -2,12 +2,17 @@ const { Contract, Web3, Nonce } = require('../actors');
 const { loadContract } = require('../lib/utils');
 
 function ContractsSystem(director, contractNames, opts) {
-	const MAX_ATTEMPTS = opts && opts.maxAttempts || 5;
-	const RETRY_DELAY = opts && opts.retryDelay || 3000;
+	const defaults = {
+			maxAttempts: 5,
+			retryDelay: 3000,
+			networkList: [],
+	};
+	const { maxAttempts, retryDelay, networkList } = { ...defaults, ...opts }
 
 	console.log(`No web3 actor provided, initialising my own...`)
-	const a_web3 = director.start_actor('web3', Web3(undefined, MAX_ATTEMPTS, {
-		retryDelay: RETRY_DELAY,
+	const a_web3 = director.start_actor('web3', Web3(undefined, maxAttempts, {
+		networkList,
+		retryDelay: retryDelay,
 	}));
 
 	console.log(`No nonce actor provided, initialising my own...`)

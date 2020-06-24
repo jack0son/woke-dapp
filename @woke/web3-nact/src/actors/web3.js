@@ -94,7 +94,7 @@ function Web3Actor (init_web3 = web3Tools.init.instantiate, maxAttempts = MAX_AT
 							throw new ProviderError( `FATAL ERROR: Could not instantiate Web3 after ${attempts} attempts.`)
 						}
 						attempts = 0;
-						ctx.debug.d(`Falling back to network ${networkName} with ${maxAttempts} attempts`);
+						ctx.debug.d(msg, `Falling back to network ${networkName} with ${maxAttempts} attempts`);
 					}
 					await delay(retryDelay);
 				}

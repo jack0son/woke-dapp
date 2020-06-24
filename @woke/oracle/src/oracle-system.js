@@ -14,12 +14,13 @@ function TwitterClient() {
 
 class OracleSystem {
 	constructor(contracts, opts) {
-		const { twitterClient, persist, retryInterval, subscriptionWatchdogInterval, persistenceConfig } = opts;
+		const { twitterClient, persist, retryInterval, subscriptionWatchdogInterval, persistenceConfig, networkList } = opts;
 		this.persist = !!persist;
 		this.config = {
 			QUERY_RETRY_INTERVAL: retryInterval || 15000*3,
 			SUBSCRIPTION_WATCHDOG_INTERVAL: subscriptionWatchdogInterval || 15000*10,
 			persistenceConfig,
+			networkList,
 		};
 		//this.twitterStub = opts.twitterStub || new TwitterStub(TwitterClient())
 		this.twitterStub = new TwitterStub(twitterClient || TwitterClient())
@@ -37,7 +38,10 @@ class OracleSystem {
 
 		// Actors
 		this.contracts = contracts ||
-			ContractsSystem(director, ['TwitterOracleMock'],  {persist: this.persist});
+			ContractsSystem(director, ['TwitterOracleMock'],  {
+				persist: this.persist,
+				networkList: this.config.networkList,
+			});
 
 		this.a_twitterAgent = director.start_actor('twitterAgent', TwitterAgent(this.twitterStub));
 
