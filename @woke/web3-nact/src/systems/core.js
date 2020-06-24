@@ -2,6 +2,7 @@ const { Web3, Nonce } = require('../actors');
 
 function CoreSystem(director, opts) {
 	const defaults = {
+			persist: false,
 			maxAttempts: 5,
 			retryDelay: 3000,
 			networkList: [],

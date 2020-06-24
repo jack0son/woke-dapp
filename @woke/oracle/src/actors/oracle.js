@@ -37,7 +37,7 @@ function settle_job({msg, ctx, state}) {
 }
 
 async function update_job(msg, ctx, state) {
-	const { jobRepo, wokenContract } = state;
+	const { jobRepo } = state;
 	const { job, error } = msg;
 
 	const log = (...args) => { if(!ctx.recovering) console.log(...args) }
@@ -207,6 +207,7 @@ module.exports = {
 		'update_job': update_job,
 
 		'stop': (msg, ctx, state) => {
+			// @TODO call stop
 			// Stop subscription
 		},
 	}
