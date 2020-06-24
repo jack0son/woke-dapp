@@ -1,6 +1,7 @@
 const assert = require('assert');
 const expect = require('chai').use(require('chai-as-promised')).expect
 
+const { web3Tools } = require('@woke/lib');
 const { ActorSystem } = require('@woke/wact');
 const { query, dispatch, bootstrap } = ActorSystem;
 const { delay } = require('../src/lib/utils');
@@ -11,8 +12,7 @@ const TIME_OKAY = 10;
 const TIME_LONG = 100;
 const TIME_TIMEOUT = 500;
 
-const networks = {
-	development: {
+const developmentNetwork = {
 		id: 12,
 		protocol: 'ws',
 		host: 'localhost',
@@ -28,7 +28,18 @@ const networks = {
 			baseChain: 'mainnet', 
 			hardfork: 'petersburg',
 		},
+}
+
+const networks = {
+	development: developmentNetwork,
+	fallback_1: {
+		...developmentNetwork,
+		host: 'fallback_host_1',
 	},
+	fallback_2: {
+		...developmentNetwork,
+		host: 'fallback_host_2',
+	}
 }
 const NETWORK_ID = networks.development.id;
 
@@ -73,7 +84,23 @@ const getId_timeout = async () => {
 		throw new Error('Connection timed out');
 }
 
-function Web3Mock(getId) {
+const init_web3_redundant = networks => networkName => !!networkName && networks[networkName] ?
+		networks[networkName]
+		: networks.development;
+
+const networksFailure = {
+		development: Web3Mock(getId_fail, networks.development),
+		fallback_1: Web3Mock(getId_fail, networks.fallback_1),
+		fallback_2: Web3Mock(getId_fail, networks.fallback_2),
+}
+
+const networksSuccess = {
+		development: Web3Mock(getId_fail, networks.development),
+		fallback_1: Web3Mock(getId_fail, networks.fallback_1),
+		fallback_2: Web3Mock(getId_fail_n(2), networks.fallback_2),
+};
+
+function Web3Mock(getId, network) {
 	const web3 = {
 		eth: {
 			net: {
@@ -83,8 +110,10 @@ function Web3Mock(getId) {
 	}
 
 	const account = '0x0000000000000000000000000000000000000000';
+	network = network || networks.development;
+	const rpcUrl = web3Tools.config.createRpcUrl(network);
 
-	return { web3, account, network: networks.development };
+	return { web3, account, network: networks.development, rpcUrl };
 }
 
 
@@ -150,6 +179,41 @@ context('Web3Actor', function() {
 			const { web3Instance } =  await query(a_web3, { type: 'get' }, RETRY_DELAY*ATTEMPTS*2);
 
 			return expect(web3Instance).to.have.property('account');
+		})
+
+		it('should fall through to first available provider', async function() {
+			const RETRY_DELAY = TIME_OKAY;
+			const ATTEMPTS = 5
+			const getId = getId_fail_n(ATTEMPTS - 1);
+			const networkList = Object.keys(networksSuccess);
+			a_web3 = director.start_actor('web3', Web3Actor(
+				init_web3_redundant(networksSuccess),
+				ATTEMPTS,
+				{
+					networkList,
+					retryDelay: RETRY_DELAY,
+				}
+			));
+			const timeout = RETRY_DELAY*ATTEMPTS*networkList.length*2;
+			const { web3Instance } =  await query(a_web3, { type: 'get' }, timeout);
+			return expect(web3Instance).to.have.property('account');
+		})
+
+		it('should crash fatally if all fallback providers unavailable', async function() {
+			const RETRY_DELAY = TIME_OKAY;
+			const ATTEMPTS = 5
+			const getId = getId_fail_n(ATTEMPTS - 1);
+			const networkList = Object.keys(networksFailure);
+			a_web3 = director.start_actor('web3', Web3Actor(
+				init_web3_redundant(networksFailure),
+				ATTEMPTS,
+				{
+					networkList,
+					retryDelay: RETRY_DELAY
+				}
+			));
+			const timeout = RETRY_DELAY*ATTEMPTS*networkList.length*3;
+			return expect(query(a_web3, { type: 'get' }, timeout)).to.eventually.be.rejected;
 		})
 	})
 

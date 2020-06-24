@@ -17,6 +17,8 @@ function ContractsSystem(director, contractNames, opts) {
 	} else {
 		a_nonce = director.start_actor('nonce', Nonce, { a_web3 });
 	}
+	
+	// @TODO supervision actor that decides what to do when web3 fatally crashes
 
 	// Initialise Woken Contract agent
 	let a_contracts = {};
