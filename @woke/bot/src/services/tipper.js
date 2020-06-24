@@ -1,9 +1,7 @@
-require('dotenv').config()
-const { Logger, twitter, TwitterStub, utils } = require('@woke/lib');
+const { persist, networkList } = require('../config/service-config');
+const { Logger, twitter, TwitterStub } = require('@woke/lib');
 const TipSystem = require('../systems/tip-system');
 const debug = Logger();
-
-const PERSIST = utils.parse_bool(process.env.PERSIST);
 
 // @TODO parse polling interval
 const bootstrap = async () => {
@@ -12,9 +10,10 @@ const bootstrap = async () => {
 
 	const tipSystem = new TipSystem(undefined, {
 		twitterStub,
-		persist: PERSIST,
+		persist,
 		pollingInterval: 5*1000,
 		notify: true,
+		networkList,
 	});
 	return tipSystem.start();
 }

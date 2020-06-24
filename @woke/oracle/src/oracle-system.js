@@ -37,11 +37,10 @@ class OracleSystem {
 		const director = this.director;
 
 		// Actors
-		this.contracts = contracts ||
-			ContractsSystem(director, ['TwitterOracleMock'],  {
+		this.contracts = contracts || ContractsSystem(director, ['TwitterOracleMock'],  {
 				persist: this.persist,
 				networkList: this.config.networkList,
-			});
+		});
 
 		this.a_twitterAgent = director.start_actor('twitterAgent', TwitterAgent(this.twitterStub));
 
