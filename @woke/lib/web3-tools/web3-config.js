@@ -80,6 +80,25 @@ const goerli_2 = {
 	},
 }
 
+const goerli_3 = {
+	id: 5,
+	protocol: 'ws',
+	host: `geth-goerli-2.us-west2-a.c.woke-network-services.internal`,
+	port: 8546,
+	gasPrice: 20*GWei,
+	blockTime: 15000,
+	gasLimit:  '8000000',
+	defaultCommon: {
+		customChain: {
+			name: 'goerli',
+			networkId: 5,
+			chainId: 5,
+		},
+		baseChain: 'goerli', 
+		//hardfork: 'petersburg',
+	},
+}
+
 const goerli = goerli_2;
 
 module.exports = {
@@ -117,7 +136,7 @@ module.exports = {
 
 			goerli_infura,
 
-			goerli, goerli_1, goerli_2,
+			goerli, goerli_1, goerli_2, goerli_3,
 
 			production: goerli,
 		},

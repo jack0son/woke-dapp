@@ -14,8 +14,8 @@ const persistenceConfig = {
 
 const networkList = {
 	development: [],
-	production: ['goerli_2', 'goerli_1', 'goerli_infura'],
-	goerli: ['goerli_2', 'goerli_1', 'goerli_infura'],
+	production: ['goerli_2', 'goerli_3', 'goerli_infura'],
+	goerli: ['goerli_2', 'goerli_3', 'goerli_infura'],
 };
 
 module.exports = {
