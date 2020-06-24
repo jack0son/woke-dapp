@@ -1,7 +1,5 @@
-const { ActorSystem, effects, receivers: { sink } } = require('@woke/wact');
-const { dispatch, block } = require('@woke/wact').ActorSystem;
+const {  block } = require('@woke/wact').ActorSystem;
 const { initContract } = require('@woke/lib').web3Tools.utils;
-const { withEffect } = effects;
 const { ParamError, TransactionError, OnChainError } = require('../lib/errors');
 
 const TxActor = require('./tx');
@@ -56,7 +54,7 @@ function action_send(msg, ctx, state) {
 		const { tx, web3Instance, nonce } = msg; 
 
 		const contract = initContract(web3Instance, state.contractInterface);
-		const sendMethod = contract.methods[tx.method](...tx.args);
+		const sendMethod = contract.methods[tx.method](...tx.args).send;
 
 		return txActions.action_send(msg, ctx, { ...state, sendMethod });
 }

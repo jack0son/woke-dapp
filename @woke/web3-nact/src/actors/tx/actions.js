@@ -1,5 +1,5 @@
 const { ActorSystem, effects } = require('@woke/wact');
-const { dispatch, block } = require('@woke/wact').ActorSystem;
+const { dispatch, block } = ActorSystem;
 const { withEffect } = effects;
 const { ParamError, TransactionError, OnChainError } = require('../../lib/errors');
 //const web3Errors = require('web3-core-helpers').errors;
@@ -190,7 +190,7 @@ function action_send(msg, ctx, state) {
 	}
 
 	tx.nonce = nonce;
-	sendMethod.send(opts)
+	sendMethod(opts)
 		.on('transactionHash', hash => {
 			ctx.debug.info(msg, `... Pending ${hash}`)
 			reduce({
