@@ -83,7 +83,7 @@ const goerli_2 = {
 const goerli_3 = {
 	id: 5,
 	protocol: 'ws',
-	host: `geth-goerli-2.us-west2-a.c.woke-network-services.internal`,
+	host: `geth-goerli-3.us-west2-a.c.woke-network-services.internal`,
 	port: 8546,
 	gasPrice: 20*GWei,
 	blockTime: 15000,
