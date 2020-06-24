@@ -1,7 +1,12 @@
 const { ActorSystem, effects } = require('@woke/wact');
 const { dispatch, block } = require('@woke/wact').ActorSystem;
 const { withEffect } = effects;
-const { ParamError, TransactionError, OnChainError } = require('../lib/errors');
+const { ParamError, TransactionError, OnChainError } = require('../../lib/errors');
+//const web3Errors = require('web3-core-helpers').errors;
+
+// @TODO replace this state machine with new reducer pattern
+// @TODO handle revert error
+const MAX_ATTEMPTS = 4;
 
 function resolveStatus(txState) {
 	//console.log(txState);
@@ -14,6 +19,11 @@ function resolveStatus(txState) {
 	} else {
 		return 'UNDEFINED'
 	}
+}
+
+function reduce(msg, ctx, state) {
+	msg.type = 'reduce';
+	dispatch(ctx.self, msg, ctx.self);
 }
 
 // A parent actor can persist the sendTx messages then spin up a send actor for
@@ -49,6 +59,20 @@ function dispatchSinks(msg, ctx, state) {
 	}
 
 	return state;
+}
+
+// Sender responses addressed to self
+async function action_tx(msg, ctx, state) {
+	const { txStatus } = msg;
+
+	if(txStatus == 'success') {
+		ctx.debug.d(msg, `Complete. Stopping...`);
+		return ctx.stop;
+	}
+}
+
+function action_getStatus(msg, ctx, state) {
+	dispatch(ctx.sender, { status: resolveStatus(ctx.txState), txState }, ctx.self);
 }
 
 async function action_sendPreflight(msg, ctx, state) {
@@ -207,4 +231,31 @@ function action_send(msg, ctx, state) {
 		})
 }
 
-module.exports = { action_sendPreflight, action_send, action_reduce }
+// Add sender to list of sinks to all changes in status
+// Pub sub pattern
+// -- could generalise this to attach to any state property
+function action_sinkStatus (msg, ctx, state) {
+	const { sinks } = state;
+
+	return {
+		...state,
+		sinks: [...sinks, ctx.sender],
+	}
+}
+
+module.exports = {
+	action_tx,
+	action_sendPreflight,
+	action_send,
+	action_reduce,
+	action_getStatus,
+	action_sinkStatus,
+}
+
+/*
+ *    { error:
+      { Error: Transaction was not mined within 50 blocks, please make sure your transaction was properly sent. Be aware that it might still be mined!
+          at Object.TransactionError (/home/jack/Repositories/jgitgud/woke-dapp/@woke/lib/node_modules/web3-core-helpers/src/errors.js:63:21)
+          at /home/jack/Repositories/jgitgud/woke-dapp/@woke/lib/node_modules/web3-core-method/src/index.js:495:40
+          at process._tickCallback (internal/process/next_tick.js:68:7) receipt: undefined },
+					*/

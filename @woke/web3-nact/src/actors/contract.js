@@ -2,7 +2,7 @@ const { ActorSystem, receivers: { sink } } = require('@woke/wact');
 const { start_actor, dispatch, block } = ActorSystem;
 const { initContract } = require('@woke/lib').web3Tools.utils;
 
-const txActor = require('./web3-tx');
+const txActor = require('./contract-tx');
 const subActor = require('./subscriber');
 
 let tx_idx = 0;
