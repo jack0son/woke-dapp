@@ -34,6 +34,7 @@ router.post('/', handleResponse(async (req, res, next) => {
 
 			debug(`Created new user ${username}, signalling funder`);
 
+			// Check funder has not crashed
 			funder.emit('new-user', userObj);
 
       return successResponse()

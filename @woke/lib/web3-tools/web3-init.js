@@ -61,9 +61,8 @@ function instantiate(networkName, opts) {
 	};
 	const { handleRevert } = {...defaults, ...opts};
 
-	const network = !!networkName && config.web3.networks[networkName] ?
-		config.web3.networks[networkName]
-		: defaultNetwork;
+	const network = !!networkName && config.web3.networks[networkName]
+		|| defaultNetwork;
 
 	const rpcUrl = config.createRpcUrl(network);
 	const web3 = new Web3(rpcUrl);

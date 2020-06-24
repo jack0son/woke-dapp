@@ -1,5 +1,5 @@
 const { actors: { SinkAdapter }, ActorSystem } = require('@woke/wact');
-const JobJob = require('./job');
+const JobActor = require('./job');
 const { dispatch, start_actor } = ActorSystem;
 // Each job is a simple linear state machine
 const statuses = [
@@ -15,15 +15,9 @@ statuses.forEach((s, i) => statusEnum[s] = i);
 // Send tip to WokeToken contract
 // @returns tip actor
 function spawn_job(_parent, job, a_txManager) {
-	return start_actor(_parent)(
-		`_job-${job.jobId}`,
-		JobJob,
-		{
-			a_contract_TwitterOracle,
-			a_twitterAgent,
-			job,
-		}
-	);
+	return start_actor(_parent)(`_job-${job.userId}`, JobActor, {
+		job, a_txManager,
+	});
 }
 
 function settle_job({msg, ctx, state}) {

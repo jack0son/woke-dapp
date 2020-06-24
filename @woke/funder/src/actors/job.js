@@ -1,7 +1,6 @@
 const { ActorSystem, receivers, reducers, actors: { SinkAdapter } } = require('@woke/wact');
 const { dispatch } = ActorSystem;
 const { subsumeReduce, Pattern } = reducers;
-const { tweetToProofString } = require('../lib/proof-protcol');
 
 function handleFailure(msg, ctx, state) {
 	const { error } = state;
@@ -20,11 +19,16 @@ function handleFailure(msg, ctx, state) {
 function submitFundTx(msg, ctx, state) {
 	ctx.debug.d(msg, 'Submitting funds transfer transaction');
 	const { job: { address }, a_txManager } = state;
-
-	dispatch(a_txManager, { type: 'send', 
+	const _msg = { type: 'send', 
 		opts: { to: address },
-		//sinks: [ctx.self],
-	}, ctx.self);
+	}
+	console.log(_msg);
+
+	dispatch(a_txManager, _msg, ctx.self);
+	//dispatch(a_txManager, { type: 'send', 
+	//	opts: { to: address },
+	//	//sinks: [ctx.self],
+	//}, ctx.self);
 
 	return {...state, txSent: true };
 }
@@ -49,6 +53,7 @@ function handleFundTx(msg, ctx, state) {
 	if(tx.action == 'send') {
 		return  { ...state, txReply: { error, tx, status }};
 	}
+	return state;
 }
 
 function handleFundFailure(msg, ctx, state) {
@@ -91,12 +96,13 @@ const jobComplete = Pattern(
 );
 
 const txFailed = Pattern(
+	//(state) => { console.log(state); },
 	({ txReply }) => !!txReply && !!txReply.error,
-	handleFundFailure
+	handleFundFailure,
 );
 
 const patterns = [start, failed, jobComplete, txFailed];
-const reducer = reducers.subsumeReduce(patterns);
+const reducer = subsumeReduce(patterns);
 
 //function FundJob(a_twitterAgent, a_contract_TwitterOracle) {
 module.exports = {
@@ -107,6 +113,7 @@ module.exports = {
 					tx: handleFundTx,
 				},
 				kind: 'fundJob',
+				txSent: false,
 			},
 
 			receivers: ({msg, ctx, state}) => ({

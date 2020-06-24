@@ -37,6 +37,7 @@ router.get('/', handleResponse(async (req, res, next) => {
     })
 
     if (existingAuth) {
+			// @todo Trigger funder
       return successResponse(existingAuth)
     }
     

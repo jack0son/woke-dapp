@@ -16,12 +16,12 @@ function isEthAddress(address) {
 }
 
 class FunderSystem {
-	constructor(contracts, opts) {
+	constructor(a_txManager, opts) {
 		const defaults = {
 			retryInterval: 150000,
-			queryTimeout: 5000,
+			queryTimeout: 60000,
 		};
-		const { persist, retryInterval, persistenceConfig, networkList, a_txManager, queryTimeout } = { ...defaults, ...opts };
+		const { persist, retryInterval, persistenceConfig, networkList, queryTimeout } = { ...defaults, ...opts };
 		this.persist = !!persist;
 		this.config = {
 			queryTimeout,
@@ -49,7 +49,7 @@ class FunderSystem {
 		});
 	}
 
-	fundWallet(address, userId) {
+	fundAccount(address, userId) {
 		const self = this;
 		if(!directorIsStarted(self.director)) throw new Error(`Funder system is not running`);
 		if(!isEthAddress(address)) throw new Error(`Not an address: ${address}`);

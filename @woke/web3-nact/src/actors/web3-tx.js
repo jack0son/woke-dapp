@@ -4,6 +4,7 @@ const txActions = TxActor.actions;
 function action_send(msg, ctx, state) {
 	const { tx, web3Instance, nonce } = msg; 
 	const sendMethod = web3Instance.web3.eth.sendTransaction;
+	// @NB Not sending a method, simply composing from another actor's function
 	return txActions.action_send(msg, ctx, { ...state, sendMethod });
 }
 

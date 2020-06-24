@@ -49,15 +49,14 @@ function Web3Actor (init_web3 = web3Tools.init.instantiate, maxAttempts = MAX_AT
 		async function createNewInstance() {
 			let web3Instance;
 			let attempts = 0;
-
 			let connected = false;
 
 			let idx = 0;
 			function getNetworkName() {
-				if(idx < networkList.length) {
+				if(!!networkList && Array.isArray(networkList) && idx < networkList.length) {
 					return networkList[idx++];
 				} 
-				return undefined;
+				return;
 			}
 
 			let networkName = getNetworkName();
