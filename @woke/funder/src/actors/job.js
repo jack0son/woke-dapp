@@ -19,16 +19,11 @@ function handleFailure(msg, ctx, state) {
 function submitFundTx(msg, ctx, state) {
 	ctx.debug.d(msg, 'Submitting funds transfer transaction');
 	const { job: { address }, a_txManager } = state;
-	const _msg = { type: 'send', 
-		opts: { to: address },
-	}
-	console.log(_msg);
 
-	dispatch(a_txManager, _msg, ctx.self);
-	//dispatch(a_txManager, { type: 'send', 
-	//	opts: { to: address },
+	dispatch(a_txManager,{ type: 'send', 
+		opts: { to: address },
 	//	//sinks: [ctx.self],
-	//}, ctx.self);
+	} , ctx.self);
 
 	return {...state, txSent: true };
 }
@@ -49,8 +44,9 @@ Tx manager reply:
 
 // Add tx data to state
 function handleFundTx(msg, ctx, state) {
-	const { error, tx, status } = msg;
-	if(tx.action == 'send') {
+	const { action, error, tx, status } = msg;
+
+	if(action === 'send') {
 		return  { ...state, txReply: { error, tx, status }};
 	}
 	return state;
@@ -67,17 +63,9 @@ function complete(msg, ctx, state) {
 	const { job: { address, userId }, txReply } = state;
 	// @TODO check correct jobId
 	ctx.debug.d(msg, `Fund complete`);
-	ctx.receivers.update_job({
-		userId,
-		status: 'settled',
-		txHash: txReply.txHash,
-	});
+	ctx.receivers.update_job({ status: 'settled',	txHash: txReply.txHash });
 
 	return ctx.stop;
-}
-
-function haveTwitterData(state) {
-	return !!state.userData && !!state.tweet;
 }
 
 const start = Pattern(
@@ -119,9 +107,9 @@ module.exports = {
 			receivers: ({msg, ctx, state}) => ({
 				sink: receivers.sink({msg, ctx, state}),
 				update_job: (job, error) => {
-					const { job: { userId }, address } = state;
+					const { job: { userId, address } } = state;
 					dispatch(ctx.parent, { type: 'update_job',
-						job: { queryId, address, ...job },
+						job: { ...job, userId, address }, // keep spawned identifiers
 						error
 					}, ctx.self);
 				}

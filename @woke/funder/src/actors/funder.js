@@ -52,15 +52,15 @@ async function action_updateJob(msg, ctx, state) {
 
 	if(error) {
 		job.error = error;
-		ctx.debug.error(msg, `job ${job.jobId}, error: ${job.error}`)
+		ctx.debug.error(msg, `job ${job.userId}, error: ${job.error}`)
 	}
-	ctx.debug.d(msg, `Updated job:${job.jobId} to ⊰ ${job.status} ⊱`)
+	ctx.debug.d(msg, `Updated job:${job.userId} to ⊰ ${job.status} ⊱`)
 
 	// FSM effects
 	if(!ctx.recovering) {
 		switch(job.status) {
 			case 'SETTLED': {
-				log(`\njob settled: user ${job.userId} job ${job.jobId}\n`)
+				log(`\njob settled: user ${job.userId} job ${job.userId}\n`)
 				//dispatch(ctx.self, { type: 'notify', job }, ctx.self);
 				break;
 			}
@@ -86,8 +86,8 @@ async function action_updateJob(msg, ctx, state) {
 		}
 	}
 
-	jobRepo[job.jobId] = {
-		...jobRepo[job.jobId],
+	jobRepo[job.userId] = {
+		...jobRepo[job.userId],
 		...job,
 	}
 
@@ -97,19 +97,19 @@ async function action_updateJob(msg, ctx, state) {
 function action_incomingJob(msg, ctx, state) {
 	const { address, userId } = msg;
 	const { jobRepo } = state;
-	const jobId = userId;
 
-	let job = jobRepo[jobId];
+	let job = jobRepo[userId];
 	if(!job) {
 		job = { address, userId, status: statusEnum.PENDING };
-		job.a_job = ctx.receivers.settle_job(job);
-		ctx.debug.d(msg, `Started job: ${jobId}`);
+		console.log(job);
+		ctx.receivers.settle_job(job);
+		ctx.debug.d(msg, `Started job: ${userId}`);
 		// start the job
 	} else {
 		// attempt to settle existing job
 		switch(job.status) {
 			case statusEnum.SETTLED:
-				ctx.debug.d(msg, `Job already settled: ${jobId}`);
+				ctx.debug.d(msg, `Job already settled: ${userId}`);
 				break;
 
 			case statusEnum.UNSETTLED:
@@ -117,16 +117,16 @@ function action_incomingJob(msg, ctx, state) {
 				break;
 
 			case statusEnum.PENDING:
-				ctx.debug.d(msg, `Job already pending: ${jobId}`);
+				ctx.debug.d(msg, `Job already pending: ${userId}`);
 				break;
 
 			case statusEnum.FAILED:
-				ctx.debug.d(msg, `Job already failed: ${jobId}`);
+				ctx.debug.d(msg, `Job already failed: ${userId}`);
 			default:
 				return state;
 		}
 	}
-	jobRepo[jobId] = job;
+	jobRepo[userId] = job;
 	return { ...state, jobRepo };
 }
 
