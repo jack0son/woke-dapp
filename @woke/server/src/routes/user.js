@@ -4,10 +4,6 @@ const { handleResponse, successResponse, errorResponseBadRequest, errorResponseS
 var express = require('express')
 var router = express.Router()
 
-const WalletFunder = require('../lib/walletFunder');
-
-const funder = new WalletFunder();
-
 /**
  * Create record in Users table
  * body should contain {username, walletAddress}
@@ -35,9 +31,9 @@ function UserRouter({ fundingSystem }) {
 				await models.User.create(userObj);
 
 				debug(`Created new user ${username}, signalling funder`);
+				fundingSystem.fundAccount(walletAddress, username);
 
 				// @TODO Check funder has not crashed
-				fundingSystem.fundAccount(walletAddress, username);
 
 				return successResponse()
 			} catch (err) {

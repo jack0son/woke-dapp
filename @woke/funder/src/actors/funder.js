@@ -96,11 +96,11 @@ async function action_updateJob(msg, ctx, state) {
 
 function action_incomingJob(msg, ctx, state) {
 	const { address, userId } = msg;
-	const { jobRepo } = state;
+	const { jobRepo, fundAmount } = state;
 
 	let job = jobRepo[userId];
 	if(!job) {
-		job = { address, userId, status: statusEnum.PENDING };
+		job = { address, userId, status: statusEnum.PENDING, fundAmount };
 		console.log(job);
 		ctx.receivers.settle_job(job);
 		ctx.debug.d(msg, `Started job: ${userId}`);
@@ -150,6 +150,7 @@ module.exports = {
 
 		initialState: {
 			jobRepo: [],
+			fundAmount: 0,
 		},
 
 		receivers: (bundle) => ({ 

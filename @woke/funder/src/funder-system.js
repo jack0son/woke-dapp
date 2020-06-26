@@ -3,6 +3,10 @@ const { ActorSystem, PersistenceEngine } = require('@woke/wact');
 const { TxSystem } = require('@woke/web3-nact');
 const Funder = require('./actors/funder');
 
+const web3Utils = require('web3-utils');
+//const DEFAULT_WEI = web3Utils.toWei('0.08', 'ether');
+const DEFAULT_WEI = web3Utils.toWei('0.2', 'ether');
+
 const debug = Logger('sys_funder');
 
 function directorIsStarted(director) {
@@ -18,10 +22,11 @@ function isEthAddress(address) {
 class FunderSystem {
 	constructor(a_txManager, opts) {
 		const defaults = {
+			fundAmount: DEFAULT_WEI,
 			retryInterval: 150000,
 			queryTimeout: 60000,
 		};
-		const { persist, retryInterval, persistenceConfig, networkList, queryTimeout } = { ...defaults, ...opts };
+		const { persist, retryInterval, persistenceConfig, networkList, queryTimeout, fundAmount } = { ...defaults, ...opts };
 		this.persist = !!persist;
 		this.config = {
 			queryTimeout,
@@ -29,6 +34,8 @@ class FunderSystem {
 			persistenceConfig,
 			networkList,
 		};
+
+		this.fundAmount = fundAmount;
 
 		// Persistence
 		if(this.persist) {
@@ -46,6 +53,7 @@ class FunderSystem {
 
 		this.a_funder = director[this.persist ? 'start_persistent' : 'start_actor']('funder', Funder, {
 			a_txManager: this.a_txManager,
+			fundAmount,
 		});
 	}
 

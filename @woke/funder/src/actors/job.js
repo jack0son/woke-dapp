@@ -17,11 +17,11 @@ function handleFailure(msg, ctx, state) {
 
 
 function submitFundTx(msg, ctx, state) {
-	ctx.debug.d(msg, 'Submitting funds transfer transaction');
-	const { job: { address }, a_txManager } = state;
+	const { job: { address, fundAmount }, a_txManager } = state;
+	ctx.debug.d(msg, `Submitting funds transfer to ${address}`);
 
 	dispatch(a_txManager,{ type: 'send', 
-		opts: { to: address },
+		opts: { to: address, value: fundAmount },
 	//	//sinks: [ctx.self],
 	} , ctx.self);
 
@@ -63,10 +63,9 @@ function handleFundFailure(msg, ctx, state) {
 }
 
 function complete(msg, ctx, state) {
-	throw new Error('dummy');
 	const { job: { address, userId }, txReply } = state;
 	// @TODO check correct jobId
-	ctx.debug.d(msg, `Fund complete`);
+	ctx.debug.d(msg, `Funding complete`);
 	ctx.receivers.update_job({ status: 'settled',	txHash: txReply.txHash });
 
 	return ctx.stop;
