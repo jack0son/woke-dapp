@@ -12,37 +12,42 @@ const funder = new WalletFunder();
  * Create record in Users table
  * body should contain {username, walletAddress}
  */
-router.post('/', handleResponse(async (req, res, next) => {
-  let body = req.body
-  if (body.username && body.walletAddress) {
-    const username = body.username.toLowerCase()
-    const existingUser = await models.User.findOne({
-      where: {
-        username: username
-      }
-    })
+function UserRouter({ fundingSystem }) {
+	router.post('/', handleResponse(async (req, res, next) => {
+		let body = req.body
+		if (body.username && body.walletAddress) {
+			const username = body.username.toLowerCase()
+			const walletAddress = body.walletAddress;
+			const existingUser = await models.User.findOne({
+				where: {
+					username: username
+				}
+			})
 
-    if (existingUser) {
-      return errorResponseBadRequest('User already exits')
-    }
-		debug('Found no existing user');
+			if (existingUser) {
+				return errorResponseBadRequest('User already exits')
+			}
+			debug('Found no existing user');
 
-		const userObj = { username: username, walletAddress: body.walletAddress };
+			const userObj = { username: username, walletAddress: walletAddress };
 
-    try {
-      await models.User.create(userObj);
+			try {
+				await models.User.create(userObj);
 
-			debug(`Created new user ${username}, signalling funder`);
+				debug(`Created new user ${username}, signalling funder`);
 
-			// Check funder has not crashed
-			funder.emit('new-user', userObj);
+				// @TODO Check funder has not crashed
+				fundingSystem.fundAccount(walletAddress, username);
 
-      return successResponse()
-    } catch (err) {
-      console.error('Error creating user', err)
-      return errorResponseServerError('Error signing up a user')
-    }
-  } else return errorResponseBadRequest('Missing one of the required fields: username, walletAddress')
-}))
+				return successResponse()
+			} catch (err) {
+				console.error('Error creating user', err)
+				return errorResponseServerError('Error signing up a user')
+			}
+		} else return errorResponseBadRequest('Missing one of the required fields: username, walletAddress')
+	}))
 
-module.exports = router
+	return router;
+}
+
+module.exports = UserRouter;

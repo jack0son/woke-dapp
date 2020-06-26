@@ -3,8 +3,11 @@ var path = require('path')
 var logger = require('morgan')
 var cors = require('cors')
 
-var authRouter = require('./routes/authentication')
-var userRouter = require('./routes/user')
+var AuthRouter = require('./routes/authentication');
+var UserRouter = require('./routes/user');
+
+const fundingSystem = require('@woke/funder')();
+fundingSystem.start().catch(console.log);
 
 var app = express()
 
@@ -18,9 +21,11 @@ app.get('/', function (req, res, next) {
   res.status(200).send('The server is up! Please hit one of the API endpoints to use the server')
 })
 
+const routerContext = { fundingSystem };
+
 // Routes
-app.use('/authentication', authRouter)
-app.use('/user', userRouter)
+app.use('/authentication', AuthRouter(routerContext));
+app.use('/user', UserRouter(routerContext))
 
 // Error handler
 app.use(function (err, req, res, next) {

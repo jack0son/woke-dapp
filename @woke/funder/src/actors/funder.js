@@ -130,12 +130,22 @@ function action_incomingJob(msg, ctx, state) {
 	return { ...state, jobRepo };
 }
 
+function onCrash(msg, error, ctx) {
+	console.log('Funder crash');
+	console.log(msg);
+
+	// @TODO send crash message to monitoring system
+
+	return ctx.resume;
+}
+
 // ----- Sink handlers
 // None
 
 // ----- Funder actor definition
 module.exports = {
 	properties: {
+		onCrash,
 		persistenceKey: 'funder', // only ever 1, static key OK
 
 		initialState: {

@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "description": "Funding service - ensures new users receive enough ETH to claim their account",
   "private": true,
-  "main": "index.js",
+  "main": "src/index.js",
   "scripts": {
     "test": "./node_modules/.bin/mocha",
     "test:debug": "DEBUG=funder:* ./node_modules/.bin/mocha",

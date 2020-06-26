@@ -52,14 +52,18 @@ function handleFundTx(msg, ctx, state) {
 	return state;
 }
 
+// Problem with this pattern is that sink messages will not be commited to state 
+
 function handleFundFailure(msg, ctx, state) {
-	ctx.debug.d(msg, 'Fund failed');
-	const { job: { queryId }, userId, txResponse } = state;
-	ctx.receivers.update_job({ status: 'failed' }, txResponse.error);
+	ctx.debug.d(msg, `Fund failed`);
+	const { job: { userId }, txResponse } = state;
+	throw txResponse.error;
+//	ctx.receivers.update_job({ status: 'failed' }, txResponse.error);
 	return ctx.stop;
 }
 
 function complete(msg, ctx, state) {
+	throw new Error('dummy');
 	const { job: { address, userId }, txReply } = state;
 	// @TODO check correct jobId
 	ctx.debug.d(msg, `Fund complete`);
@@ -67,6 +71,7 @@ function complete(msg, ctx, state) {
 
 	return ctx.stop;
 }
+
 
 const start = Pattern(
 	({ txReply, txSent }) => !txReply && !txSent,
@@ -92,9 +97,14 @@ const txFailed = Pattern(
 const patterns = [start, failed, jobComplete, txFailed];
 const reducer = subsumeReduce(patterns);
 
+function onCrash(msg, error, ctx) {
+	return ctx.escalate;
+}
+
 //function FundJob(a_twitterAgent, a_contract_TwitterOracle) {
 module.exports = {
 		properties: {
+			onCrash,
 			initialState: {
 				userId: null,
 				sinkHandlers: {
@@ -114,8 +124,6 @@ module.exports = {
 					}, ctx.self);
 				}
 			}),
-
-			onCrash: undefined,
 		},
 		actions: {
 			...SinkAdapter(reducer),

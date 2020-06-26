@@ -11,7 +11,6 @@ const RETRY_DELAY = 400;
 
 const AVG_BLOCK_TIME = 3*1000;
 
-
 function Web3Actor (init_web3 = web3Tools.init.instantiate, maxAttempts = MAX_ATTEMPTS, opts) {
 	const defaults = {
 		retryDelay: RETRY_DELAY,
