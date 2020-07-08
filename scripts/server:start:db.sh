@@ -1,1 +1,1 @@
-docker-compose up -d --build db
+docker-compose -f server.docker-compose.local.yml up -d --build db

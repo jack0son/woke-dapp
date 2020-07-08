@@ -47,6 +47,8 @@
     "ganache:goerli": "ganache-cli -i 12 -p 8545 --gasLimit 8000000 --gasPrice  20000000000 --blockTime 15 -m 'nerve marine frozen use brave brief nasty then acid remain stereo riot'",
     "ganache:slow": "ganache-cli -i 12 -p 8545 --gasLimit 8000000 --gasPrice  20000000000 --blockTime 5 -m 'nerve marine frozen use brave brief nasty then acid remain stereo riot'",
     "ganache:lan": "ganache-cli -h 0.0.0.0 -i 12 -p 8545 --gasLimit 8000000 --gasPrice 20000000000 --blockTime 1 -m 'nerve marine frozen use brave brief nasty then acid remain stereo riot'",
+    "ganache:block": "sudo /sbin/iptables -A INPUT -p tcp --destination-port 8545 -j DROP && sudo iptables-save 1>/dev/null",
+    "ganache:allow": "sudo /sbin/iptables -D INPUT -p tcp --destination-port 8545 -j DROP && sudo iptables-save 1>/dev/null",
     "test": "truffle test --network test",
     "test:debug": "DEBUG=t:* truffle test --network test",
     "test:verbose": "DEBUG=t:* truffle test --network test --show-events",

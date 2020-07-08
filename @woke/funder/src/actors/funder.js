@@ -59,13 +59,13 @@ async function action_updateJob(msg, ctx, state) {
 	// FSM effects
 	if(!ctx.recovering) {
 		switch(job.status) {
-			case 'SETTLED': {
+			case 'settled': {
 				log(`\njob settled: user ${job.userId} job ${job.userId}\n`)
 				//dispatch(ctx.self, { type: 'notify', job }, ctx.self);
 				break;
 			}
 
-			case 'INVALID': {
+			case 'invalid': {
 				if(job.reason) {
 					//ctx.debug.error(msg, `job ${job.id} from ${job.fromHandle} error: ${job.error}`)
 					log(`\njob invalid: ${job.reason}`);
@@ -73,7 +73,7 @@ async function action_updateJob(msg, ctx, state) {
 				break;
 			}
 
-			case 'FAILED': {
+			case 'failed': {
 				if(error) {
 					//ctx.debug.error(msg, `job ${job.id} from ${job.fromHandle} error: ${job.error}`)
 					log(`\njob failed: ${job.error}`);
@@ -108,26 +108,29 @@ function action_incomingJob(msg, ctx, state) {
 	} else {
 		// attempt to settle existing job
 		switch(job.status) {
-			case statusEnum.SETTLED:
+			case 'settled': //statusEnum.SETTLED:
+				console.log( `Job already settled: ${userId}`);
 				ctx.debug.d(msg, `Job already settled: ${userId}`);
 				break;
 
-			case statusEnum.UNSETTLED:
+			case 'unsettled': //statusEnum.UNSETTLED:
 				job.a_job = ctx.receivers.settle_job(job);
 				break;
 
-			case statusEnum.PENDING:
+			case 'pending': //statusEnum.PENDING:
 				ctx.debug.d(msg, `Job already pending: ${userId}`);
 				break;
 
-			case statusEnum.FAILED:
+			case 'failed': //statusEnum.FAILED:
 				ctx.debug.d(msg, `Job already failed: ${userId}`);
 			default:
+				ctx.debug.d(msg, `No handler specified for status '${job.status}'`);
 				return state;
 		}
 	}
+
 	jobRepo[userId] = job;
-	return { ...state, jobRepo };
+	return { ...state, jobRepo: { ...jobRepo, [userId]: job } }
 }
 
 function onCrash(msg, error, ctx) {

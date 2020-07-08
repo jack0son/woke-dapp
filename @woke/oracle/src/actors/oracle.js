@@ -124,7 +124,7 @@ function handleIncomingQuery(msg, ctx, state) {
 		}
 	}
 	jobRepo[queryId] = job;
-	return { ...state, jobRepo };
+	return { ...state, jobRepo: { ...jobRepo, [queryId]: job } }
 }
 
 // ----- Sink handlers

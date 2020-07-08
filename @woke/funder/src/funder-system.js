@@ -26,6 +26,7 @@ class FunderSystem {
 			retryInterval: 150000,
 			queryTimeout: 60000,
 		};
+
 		const { persist, retryInterval, persistenceConfig, networkList, queryTimeout, fundAmount } = { ...defaults, ...opts };
 		this.persist = !!persist;
 		this.config = {
@@ -40,7 +41,6 @@ class FunderSystem {
 		// Persistence
 		if(this.persist) {
 			debug.d(`Using persistence...`);
-			console.log(config.persistenceConfig);
 			this.persistenceEngine = PersistenceEngine(this.config.persistenceConfig)
 		} else {
 			console.warn(`Persistence not enabled.`);
@@ -64,18 +64,23 @@ class FunderSystem {
 		if(!isEthAddress(address)) throw new Error(`Not an address: ${address}`);
 		if(!userId) throw new Error(`No userId provided`);
 
-		return ActorSystem.query(self.a_funder, { type: 'fund',  address, userId } , self.config.queryTimeout)
-			.then(reply => reply)
-			.catch(console.log);
+		//console.log(`Dispatching funding request ${userId}:${address}...`);
+
+		// TODO: Query timeout here trigger supervision policy for funder system
+		//ActorSystem.query(self.a_funder, { type: 'fund',  address, userId } , self.config.queryTimeout)
+			//.then(reply => reply)
+			//.catch(console.log);
+		ActorSystem.dispatch(self.a_funder, { type: 'fund',  address, userId }) 
 	}
 
 	async start() {
 		const self = this;
 
 		if(self.persist) {
+			debug.d(`persistence: Connecting ...`);
 			try {
 				await self.persistenceEngine.db.then(db => db.connect())
-				debug.d(`Connected to persistence repository.`);
+				debug.d(`persistence: Connected to persistence repository.`);
 			} catch(error) {
 				throw error;
 			}
@@ -83,7 +88,6 @@ class FunderSystem {
 
 		ActorSystem.dispatch(self.a_funder, { type: 'init' });
 
-		console.log(`Successful build`);
 		console.log(`Started funder system.`);
 	}
 }
