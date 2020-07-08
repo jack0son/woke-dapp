@@ -40,9 +40,10 @@ class FunderSystem {
 		// Persistence
 		if(this.persist) {
 			debug.d(`Using persistence...`);
+			console.log(config.persistenceConfig);
 			this.persistenceEngine = PersistenceEngine(this.config.persistenceConfig)
 		} else {
-			debug.warn(`Persistence not enabled.`);
+			console.warn(`Persistence not enabled.`);
 		}
 
 		this.director = ActorSystem.bootstrap(this.persist ? this.persistenceEngine : undefined);
@@ -82,6 +83,7 @@ class FunderSystem {
 
 		ActorSystem.dispatch(self.a_funder, { type: 'init' });
 
+		console.log(`Successful build`);
 		console.log(`Started funder system.`);
 	}
 }

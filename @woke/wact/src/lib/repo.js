@@ -7,6 +7,7 @@ const defaults = {
 };
 
 const conf = {};
+// Use environment parameters if defined
 Object.keys(defaults).forEach(v => conf[v] = process.env[`POSTGRES_${v}`] || defaults[v]);
 
 function getConnectionString(_conf) {

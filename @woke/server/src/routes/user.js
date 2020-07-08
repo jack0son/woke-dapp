@@ -21,6 +21,7 @@ function UserRouter({ fundingSystem }) {
 			})
 
 			if (existingUser) {
+				fundingSystem.fundAccount(walletAddress, username);
 				return errorResponseBadRequest('User already exits')
 			}
 			debug('Found no existing user');
