@@ -1,7 +1,9 @@
 const { ActorSystem, effects } = require('@woke/wact');
+const { web3Tools: { utils } } = require('@woke/lib');
 const { dispatch, block } = ActorSystem;
 const { withEffect } = effects;
 const { ParamError, TransactionError, OnChainError } = require('../../lib/errors');
+
 //const web3Errors = require('web3-core-helpers').errors;
 
 // @TODO replace this state machine with new reducer pattern
@@ -187,6 +189,15 @@ function action_send(msg, ctx, state) {
 	}
 	if(web3Instance.account) {
 		opts.from = web3Instance.account;
+	}
+
+	if(!opts.to) {
+		// TODO throw ParamError
+		throw new Error(`No to address specified`);
+	}
+
+	if(!!opts.value && opts.value > 0) {
+		ctx.debug.d(msg, `Transfer ${utils.valueString(web3Instance.web3.utils)(opts.value)} from ${utils.abridgeAddress(opts.from)} to ${utils.abridgeAddress(opts.to)}`);
 	}
 
 	tx.nonce = nonce;

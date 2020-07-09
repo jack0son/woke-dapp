@@ -18,7 +18,13 @@ function handleFailure(msg, ctx, state) {
 
 function submitFundTx(msg, ctx, state) {
 	const { job: { address, fundAmount }, a_txManager } = state;
-	ctx.debug.d(msg, `Submitting funds transfer to ${address}`);
+	if(!fundAmount || fundAmount <= 0) {
+		throw new Error(`Invalid fund amount: ${fundAmount}`);
+	}
+	ctx.debug.d(msg, `Submitting funding transaction to ${address}`);
+
+
+	ctx.receivers.update_job({ status: 'pending' });
 
 	dispatch(a_txManager,{ type: 'send', 
 		opts: { to: address, value: fundAmount },
@@ -97,6 +103,8 @@ const patterns = [start, failed, jobComplete, txFailed];
 const reducer = subsumeReduce(patterns);
 
 function onCrash(msg, error, ctx) {
+	console.log(`Job ${ctx.name} crash`);
+	console.log(msg);
 	return ctx.escalate;
 }
 

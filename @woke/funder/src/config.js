@@ -20,10 +20,13 @@ const persistenceConfig = {
 	}
 };
 
+const retryInterval = process.env.NODE_ENV == 'development' ? 5000 : 150000;
+
 module.exports = {
 	networkList,
 	subscriptionWatchdogInterval: Number(process.env.SUBSCRIPTION_WATCHDOG_INTERVAL),
 	persist: utils.parse_bool(process.env.PERSIST),
 	persistenceConfig: persistenceConfig[process.env.CONTEXT || local],
 	queryTimeout: 60000*5,
+	retryInterval, 
 };

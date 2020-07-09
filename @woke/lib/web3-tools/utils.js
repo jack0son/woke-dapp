@@ -116,6 +116,14 @@ function initContract(web3Instance, interface) {
 	);
 }
 
+const valueString = web3Utils => {
+	const BN = web3Utils.BN;
+	const toEth = wei => web3Utils.fromWei(wei, 'ether');
+	return (wei, delim = ', ') => `${toEth(wei)} ETH${delim}${wei.toString()} wei`;
+}
+
+// @param a: address string
+const abridgeAddress = (a, l = 8) => `${a.slice(0,2+l)}...${a.slice(a.length-l, a.length)}`;
 
 module.exports = {
 	safePriceEstimate,
@@ -123,4 +131,6 @@ module.exports = {
 	waitForEventWeb3,
 	uInt32ToHexString,
 	initContract,
+	valueString,
+	abridgeAddress
 };

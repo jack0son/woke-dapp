@@ -1,4 +1,4 @@
-const { Logger, twitter, TwitterStub } = require('@woke/lib');
+const { Logger, twitter, TwitterStub, web3Tools } = require('@woke/lib');
 const { ActorSystem, PersistenceEngine } = require('@woke/wact');
 const { TxSystem } = require('@woke/web3-nact');
 const Funder = require('./actors/funder');
@@ -89,6 +89,7 @@ class FunderSystem {
 		ActorSystem.dispatch(self.a_funder, { type: 'init' });
 
 		console.log(`Started funder system.`);
+		console.log(`Fund each user with ${web3Tools.utils.valueString(web3Utils)(self.fundAmount)}`);
 	}
 }
 

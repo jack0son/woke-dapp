@@ -24,7 +24,8 @@ function settle_job({msg, ctx, state}) {
 	return (job) => {
 		ctx.debug.info(msg, `Spawning job actor...`);
 		const a_job = spawn_job(ctx.self, job, state.a_txManager);
-		dispatch(a_job, { type: 'start' }, ctx.self);
+		dispatch(a_job, { type: 'start', meta: 'new_job' }, ctx.self);
+		dispatch(ctx.self, { type: 'update_job', job }, ctx.self);
 		return a_job;
 	}
 }
@@ -34,7 +35,7 @@ function action_resume(msg, ctx, state) {
 
 	Object.keys(jobRepo).forEach(jobId => {
 		const job = jobRepo[jobId];
-		if(job.status == 'UNSETTLED') {
+		if(job.status == 'unsettled' || job.status == 'pending') {
 			ctx.receivers.settle_job(job);
 		}
 	});
@@ -45,10 +46,12 @@ async function action_updateJob(msg, ctx, state) {
 	const { job, error } = msg;
 
 	const log = (...args) => { if(!ctx.recovering) console.log(...args) }
+	console.log(`got job with amount ${job.fundAmount}`);
 
-	if(ctx.persist && !ctx.recovering) {
+	if(!!ctx.persist && !ctx.recovering) {
 		await ctx.persist(msg);
 	}
+
 
 	if(error) {
 		job.error = error;
@@ -98,10 +101,13 @@ function action_incomingJob(msg, ctx, state) {
 	const { address, userId } = msg;
 	const { jobRepo, fundAmount } = state;
 
+	if(!fundAmount) {
+		throw new Error(`Funder must define a fundAmount`);
+	}
+
 	let job = jobRepo[userId];
 	if(!job) {
-		job = { address, userId, status: statusEnum.PENDING, fundAmount };
-		console.log(job);
+		job = { address, userId, status: 'unsettled', fundAmount };
 		ctx.receivers.settle_job(job);
 		ctx.debug.d(msg, `Started job: ${userId}`);
 		// start the job
@@ -109,7 +115,6 @@ function action_incomingJob(msg, ctx, state) {
 		// attempt to settle existing job
 		switch(job.status) {
 			case 'settled': //statusEnum.SETTLED:
-				console.log( `Job already settled: ${userId}`);
 				ctx.debug.d(msg, `Job already settled: ${userId}`);
 				break;
 
@@ -135,7 +140,8 @@ function action_incomingJob(msg, ctx, state) {
 
 function onCrash(msg, error, ctx) {
 	console.log('Funder crash');
-	console.log(msg);
+	console.log(error);
+	console.log(ctx);
 
 	// @TODO send crash message to monitoring system
 
@@ -168,7 +174,7 @@ module.exports = {
 		},
 		'fund': action_incomingJob,
 		'resume': action_resume,
-		'job':  action_incomingJob,
+		//'job':  action_incomingJob,
 		'update_job': action_updateJob,
 	}
 }
