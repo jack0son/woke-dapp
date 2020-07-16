@@ -43,7 +43,6 @@ const initClient = async () => {
 		conf = { ...conf, app_only_auth: true };
 	}
 
-
 	client = new Twit(conf);
 
 	return;
@@ -110,13 +109,8 @@ function statusUrl(status) {
 
 // Rate limit: 1000 per user; 15000 per app
 const directMessage = (recipientId, text) => { // claimString = `@getwoketoke 0xWOKE:${userId},${sig},1`;
-	if(!recipientId) {
-		throw new Error('Must provide a recipient ID');
-	}
-
-	if(!text) {
-		throw new Error('Must provide message text');
-	}
+	if(!recipientId) throw new Error('Must provide a recipient ID');
+	if(!text) throw new Error('Must provide message text');
 
 	const event = {
 		type: 'message_create',
@@ -130,10 +124,7 @@ const directMessage = (recipientId, text) => { // claimString = `@getwoketoke 0x
 		},
 	};
 
-	const params = { event };
-
-	return client.post('direct_messages/events/new', params).then(r => {
-		console.log(r);
+	return client.post('direct_messages/events/new', { event }).then(r => {
 		return r;
 	});
 }

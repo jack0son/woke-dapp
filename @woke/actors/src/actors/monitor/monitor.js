@@ -8,9 +8,6 @@ function action_notify(msg, ctx, state) {
 	const { a_channel } = state;
 	const { error, self, prefixString } = msg;
 
-	if(self) {
-	}
-
 	const text = `${prefixString ? prefixString : ''} ${error}`;
 	dispatch(a_channel, { type: 'post_private', text }, ctx.self);
 }
