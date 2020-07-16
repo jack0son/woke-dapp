@@ -117,7 +117,7 @@ function initContract(web3Instance, interface) {
 }
 
 const valueString = web3Utils => {
-	const BN = web3Utils.BN;
+	//const BN = web3Utils.BN;
 	const toEth = wei => web3Utils.fromWei(wei, 'ether');
 	return (wei, delim = ', ') => `${toEth(wei)} ETH${delim}${wei.toString()} wei`;
 }

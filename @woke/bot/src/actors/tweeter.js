@@ -1,8 +1,9 @@
 const { ActorSystem, supervision: { exponentialRetry } } = require('@woke/wact');
 const { start_actor, dispatch, query } = ActorSystem;
-const { Logger } = require('@woke/lib');
 const messageTemplates = require('../lib/message-templates');
-const debug = (msg, args) => Logger().name(`TWEET`, `${msg.type}>> ` + args);
+
+//const { Logger } = require('@woke/lib');
+//const debug = (msg, args) => Logger().name(`TWEET`, `${msg.type}>> ` + args);
 
 // @TODO add to error directory on notion
 // Twitter error response:

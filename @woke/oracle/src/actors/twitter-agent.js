@@ -19,7 +19,7 @@ function TwitterAgent(twitterStub) {
 				const { type, a_polling } = msg;
 
 				switch(type) {
-					case 'find': {
+					case 'find_proof_tweet': {
 						// @fix this error isn't handled
 						// Error: HTTP Error: 503 Service Temporarily Unavailable
 						if(a_polling) dispatch(a_polling, { type: 'interupt' });
