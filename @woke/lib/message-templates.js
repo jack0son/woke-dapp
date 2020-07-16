@@ -1,4 +1,4 @@
-const { emojis } = require('@woke/lib');
+const emojis = require('./emojis');
 
 const tip_submitted = (tip) => `Tip submitted: @${tip.fromHandle} wishes to tip @${tip.toHandle} ${tip.amount} WOKENS (#${tip.id})`;
 

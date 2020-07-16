@@ -123,6 +123,7 @@ const TweeterActor = (twitterStub) => ({
 		},
 
 		'dm': (msg, context, state) => {
+			const { text } = msg;
 			// Direct message a user
 		}
 	}

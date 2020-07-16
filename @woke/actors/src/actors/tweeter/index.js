@@ -1,7 +1,14 @@
-const MakeProperties = require('./properties');
+const makeProperties = require('./properties');
 const actions = require('./actions');
 
-module.exports = (opts) => ({
+// Must be provided with a twitter stub
+const Tweeter = (opts) => ({
 	properties: MakeProperties(opts),
 	actions,
 })
+
+module.exports = {
+	Tweeter,
+	actions,
+	Properties: makeProperties,
+}

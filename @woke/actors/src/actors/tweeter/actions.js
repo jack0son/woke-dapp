@@ -1,6 +1,6 @@
 const { ActorSystem } = require('@woke/wact');
+const { messageTemplates } = require('@woke/lib');
 const { start_actor, dispatch, query } = ActorSystem;
-const messageTemplates = require('../lib/message-templates');
 
 async function action_tweetUnclaimedTransfer(msg, ctx, state) {
 	//'tweet_unclaimed_transfer': async (msg, ctx, state) => {
