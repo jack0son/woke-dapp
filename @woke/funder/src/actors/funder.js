@@ -144,14 +144,11 @@ function action_notify(msg, ctx, state) {
 }
 
 function onCrash(msg, error, ctx) {
-	console.log('Funder crash');
+	console.log(`Funder crash, name: ${ctx.name}`);
 	console.log(error);
 	console.log(ctx);
-
 	const prefixString = `Funder crashed`;
-
 	dispatch(ctx.self, { type: 'monitor_notify', error, prefixString }, ctx.self);
-	// @TODO send crash message to monitoring system
 
 	return ctx.resume;
 }

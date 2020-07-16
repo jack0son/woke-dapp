@@ -1,5 +1,6 @@
 const { Logger, twitter, TwitterStub } = require('@woke/lib');
 const { ActorSystem, PersistenceEngine } = require('@woke/wact');
+const { MonitorSystem } = require('@woke/actors');
 const { ContractsSystem } = require('@woke/web3-nact');
 
 const TwitterAgent = require('./actors/twitter-agent');
@@ -14,16 +15,20 @@ function TwitterClient() {
 
 class OracleSystem {
 	constructor(contracts, opts) {
-		const { twitterClient, persist, retryInterval, subscriptionWatchdogInterval, persistenceConfig, networkList } = opts;
+		const { twitterClient, persist, retryInterval, subscriptionWatchdogInterval, persistenceConfig, networkList, monitoring } = opts;
 		this.persist = !!persist;
 		this.config = {
 			QUERY_RETRY_INTERVAL: retryInterval || 15000*3,
 			SUBSCRIPTION_WATCHDOG_INTERVAL: subscriptionWatchdogInterval || 15000*10,
 			persistenceConfig,
 			networkList,
+			monitoring,
 		};
+
+		this.twitterClient = twitterClient || TwitterClient();
+
 		//this.twitterStub = opts.twitterStub || new TwitterStub(TwitterClient())
-		this.twitterStub = new TwitterStub(twitterClient || TwitterClient())
+		this.twitterStub = new TwitterStub(this.twitterClient)
 
 		// Persistence
 		if(this.persist) {
@@ -36,6 +41,10 @@ class OracleSystem {
 		this.director = ActorSystem.bootstrap(this.persist ? this.persistenceEngine : undefined);
 		const director = this.director;
 
+		if(!!this.config.monitoring) {
+			this.monitorSystem = MonitorSystem({ twitterClient: this.twitterClient, director });
+		}
+
 		// Actors
 		this.contracts = contracts || ContractsSystem(director, ['TwitterOracleMock'],  {
 				persist: this.persist,
@@ -47,6 +56,7 @@ class OracleSystem {
 		this.a_oracle = director[this.persist ? 'start_persistent' : 'start_actor']('oracle', Oracle, {
 			a_contract_TwitterOracle: this.contracts.TwitterOracleMock,
 			a_twitterAgent: this.a_twitterAgent,
+			a_monitor: this.monitorSystem ? this.monitorSystem.a_monitor : undefined,
 			subscriptionWatchdogInterval: this.config.SUBSCRIPTION_WATCHDOG_INTERVAL,
 		});
 	}
