@@ -71,8 +71,11 @@ async function action_tweetTipFailed(msg, ctx, state) {
 }
 
 async function action_sendDirectMessage(msg, ctx, state) {
-	//'dm': (msg, context, state) => {
-	// Direct message a user
+	const { twitter } = state;
+	const { recipientId, text } = msg;
+	const result = await twitter.postDirectMessage(recipientId, text);
+
+	dispatch(ctx.sender, { type: msg.type, result }, ctx.self);
 }
 
 module.exports = {

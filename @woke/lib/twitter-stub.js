@@ -39,8 +39,9 @@ class TwitterStub {
 	}
 
 
-	async dm() {
-		return true;
+	async postDirectMessage (recipientId, text) {
+		const { client } = this;
+		return client.directMessage(recipientId, text);
 	}
 
 	async postUnclaimedTransfer(fromId, toId, amount, balance) {

@@ -1,20 +1,21 @@
-const { ActorSystem } = require('@woke/wact');
-const { query } = ActorSystem;
+const { ActorSystem: { dispatch, query } } = require('@woke/wact');
+
+// Broadcast system status publicly
+function action_psa(msg, ctx, state) {
+}
 
 function action_notify(msg, ctx, state) {
 	const { a_channel } = state;
-
 	const { error, self, prefixString } = msg;
 
 	if(self) {
 	}
 
 	const text = `${prefixString ? prefixString : ''} ${error}`;
-
-	await query(a_channel, { type: 'post', text }, 10000);
+	dispatch(a_channel, { type: 'post_private', text }, ctx.self);
 }
 
-const makeOnCrash() {
+function makeOnCrash() {
 	let count = 0;
 	return (msg, error, ctx) => {
 		count++;

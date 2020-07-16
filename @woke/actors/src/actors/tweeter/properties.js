@@ -17,6 +17,11 @@ function onCrash(msg, error, ctx) {
 	}
 
 	switch(twitterError.code) {
+		case 32:
+			console.log('--------- Not Authenticated ---------');
+			console.log(msg, error);
+			return ctx.stop;
+
 		case 326:
 			console.log('--------- Twitter Account locked ---------')
 			console.log(msg, error);

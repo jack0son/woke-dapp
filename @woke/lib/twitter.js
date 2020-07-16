@@ -224,7 +224,15 @@ function getBearerToken(key, secret) {
 	});
 }
 
-module.exports = {initClient, searchClaimTweets, findClaimTweet, getUserData, searchTweets, updateStatus}
+module.exports = {
+	initClient,
+	directMessage,
+	searchClaimTweets,
+	findClaimTweet,
+	getUserData,
+	searchTweets,
+	updateStatus
+}
 
 // Example call
 if(debug.control.enabled && require.main === module) {

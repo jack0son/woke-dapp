@@ -35,6 +35,7 @@
     "@woke/web3-nact": "0.1.0",
     "@woke/contracts": "0.4.0",
     "@woke/lib": "0.4.0",
+    "@woke/actors": "0.1.0",
     "dotenv": "^8.2.0",
     "nact": "^7.2.2",
     "nact-persistence-postgres": "^7.3.1"
