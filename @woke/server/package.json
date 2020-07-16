@@ -10,6 +10,7 @@
     "down": "docker-compose -f ../../server.docker-compose.local.yml down",
     "reset": "docker-compose -f ../../server.docker-compose.local.yml down -v",
     "dev": "NODE_ENV=development ETH_ENV=development DEBUG=server:*,actor* node ./bin/www",
+    "dev:verbose": "NODE_ENV=development ETH_ENV=development DEBUG=* node ./bin/www",
     "dev:persist": "NODE_ENV=development ETH_ENV=development PERSIST=true CONTEXT=local DEBUG=server*,actor*,sys_funder* node ./bin/www",
     "ropsten": "NODE_ENV=development ETH_ENV=ropsten DEBUG=server:* node ./bin/www",
     "rinkeby": "NODE_ENV=development ETH_ENV=rinkeby DEBUG=server:* node ./bin/www",

@@ -23,7 +23,7 @@ const initClient = async () => {
 			bearerToken = await getBearerToken(consumerKey, consumerSecret);
 			//console.log('Bearer token:', bearerToken);
 		} catch(e) {
-			debug.d('Failed to retrieve bearer token')
+			console.log('twitter: Failed to retrieve bearer token');
 			return process.exit(1);
 		}
 		debug.d(bearerToken);

@@ -138,11 +138,19 @@ function action_incomingJob(msg, ctx, state) {
 	return { ...state, jobRepo: { ...jobRepo, [userId]: job } }
 }
 
+function action_notify(msg, ctx, state) {
+	const { a_monitor } = state;
+	dispatch(a_monitor, { ...msg, type: 'notify' }, ctx.self);
+}
+
 function onCrash(msg, error, ctx) {
 	console.log('Funder crash');
 	console.log(error);
 	console.log(ctx);
 
+	const prefixString = `Funder crashed`;
+
+	dispatch(ctx.self, { type: 'monitor_notify', error, prefixString }, ctx.self);
 	// @TODO send crash message to monitoring system
 
 	return ctx.resume;
@@ -173,6 +181,7 @@ module.exports = {
 			return action_resume(msg, ctx, state);
 		},
 		'fund': action_incomingJob,
+		'monitor_notify': action_notify,
 		'resume': action_resume,
 		//'job':  action_incomingJob,
 		'update_job': action_updateJob,

@@ -1,4 +1,5 @@
 const { Logger, twitter, TwitterStub, web3Tools } = require('@woke/lib');
+const { MonitorSystem } = require('@woke/actors');
 const { ActorSystem, PersistenceEngine } = require('@woke/wact');
 const { TxSystem } = require('@woke/web3-nact');
 const Funder = require('./actors/funder');
@@ -21,15 +22,18 @@ function isEthAddress(address) {
 
 class FunderSystem {
 	constructor(a_txManager, opts) {
+		// CLEAN THIS CONFIG MESS WTF WHY SO MUCH REPEATING???
 		const defaults = {
+			monitoring: true,
 			fundAmount: DEFAULT_WEI,
 			retryInterval: 150000,
 			queryTimeout: 60000,
 		};
 
-		const { persist, retryInterval, persistenceConfig, networkList, queryTimeout, fundAmount } = { ...defaults, ...opts };
+		const { persist, retryInterval, persistenceConfig, networkList, queryTimeout, fundAmount, monitoring } = { ...defaults, ...opts };
 		this.persist = !!persist;
 		this.config = {
+			monitoring,
 			queryTimeout,
 			retryInterval,
 			persistenceConfig,
@@ -49,11 +53,16 @@ class FunderSystem {
 		this.director = ActorSystem.bootstrap(this.persist ? this.persistenceEngine : undefined);
 		const director = this.director;
 
+		if(!!this.config.monitoring) {
+			this.monitorSystem = MonitorSystem({ twitterClient: null, director });
+		}
+
 		// Actors
 		this.a_txManager = a_txManager || TxSystem(director, { networkList, persist })
 
 		this.a_funder = director[this.persist ? 'start_persistent' : 'start_actor']('funder', Funder, {
 			a_txManager: this.a_txManager,
+			a_monitor: this.monitorSystem ? this.monitorSystem.a_monitor : undefined,
 			fundAmount,
 		});
 	}
