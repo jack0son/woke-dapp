@@ -1,4 +1,5 @@
 const Twitter = require('twitter');
+const Twit = require('twit');
 const fs = require('fs');
 var request = require('request-promise-native');
 
@@ -16,7 +17,8 @@ var client;
 const initClient = async () => {
 	let bearerToken = process.env.TWITTER_BEARER_TOKEN;
 
-	if(bearerToken == undefined) {
+	if(!bearerToken && !accessKey && !accessSecret) {
+	//if(!bearerToken && ) {
 		try {
 			bearerToken = await getBearerToken(consumerKey, consumerSecret);
 			//console.log('Bearer token:', bearerToken);
@@ -27,14 +29,22 @@ const initClient = async () => {
 		debug.d(bearerToken);
 	}
 
-	const conf = {
+	let conf = {
 		consumer_key: consumerKey, 
 		consumer_secret: consumerSecret,
-		access_token_key: accessKey, 
-		access_token_secret: accessSecret,
-		//bearer_token: bearerToken, 
 	};
-	client = new Twitter(conf);
+
+	if(!!accessKey && !!accessSecret) {
+		conf = { ...conf, 
+			access_token: accessKey, 
+			access_token_secret: accessSecret,
+		};
+	} else {
+		conf = { ...conf, app_only_auth: true };
+	}
+
+
+	client = new Twit(conf);
 
 	return;
 }
@@ -309,6 +319,15 @@ if(debug.control.enabled && require.main === module) {
 					const defaultText = 'test dm';
 
 					let r = await directMessage(recipient, text ? text : defaultText);
+					console.log(r);
+					break;
+				}
+
+				case 'tweet': {
+					const [text] = args;
+					const defaultText = 'cheep cheep';
+
+					let r = await updateStatus(text || defaultText);
 					console.log(r);
 					break;
 				}
