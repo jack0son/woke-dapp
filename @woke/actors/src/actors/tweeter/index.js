@@ -3,7 +3,7 @@ const actions = require('./actions');
 
 // Must be provided with a twitter stub
 const Tweeter = (opts) => ({
-	properties: MakeProperties(opts),
+	properties: makeProperties(opts),
 	actions,
 })
 

@@ -1,8 +1,8 @@
 const { ActorSystem, PersistenceEngine, actors} = require('@woke/wact');
 const { bootstrap,  dispatch, spawnStateless } = ActorSystem;
+const { MonitorSystem, tweeter: { Tweeter } } = require('@woke/actors');
 const { ContractsSystem } = require('@woke/web3-nact');
 const { TwitterStub, Logger, mocks } = require('@woke/lib');
-const { tweeter: { Tweeter } } = require('@woke/actors');
 const { tipper, TwitterMonitor } = require('../actors');
 
 const twitterMock = mocks.twitterClient;
@@ -14,13 +14,18 @@ function TwitterClient() {
 
 class TipSystem {
 	constructor(contracts, opts) {
-		const { twitterStub, persist, pollingInterval, notify, networkList } = opts;
+		const defaults = {
+			monitoring: true,
+		};
+		const { twitterStub, persist, pollingInterval, notify, networkList, monitoring } = { ...defaults, ...opts };
 		this.persist = persist ? true : false;
 		this.config = {
 			TWITTER_POLLING_INTERVAL: pollingInterval || 100*1000,
 			networkList,
+			monitoring,
 		};
-		this.twitterStub = opts.twitterStub || new TwitterStub(TwitterClient())
+		this.twitterClient = TwitterClient();
+		this.twitterStub = opts.twitterStub || new TwitterStub(this.twitterClient)
 
 		// Persistence
 		if(this.persist) {
@@ -32,6 +37,10 @@ class TipSystem {
 
 		this.director = this.persist ? bootstrap(this.persistenceEngine) : bootstrap();
 		const director = this.director;
+
+		if(!!this.config.monitoring) {
+			this.monitorSystem = MonitorSystem({ twitterClient: this.twitterClient, director });
+		}
 
 		// Actors
 		this.contracts = contracts || ContractsSystem(director, ['UserRegistry'],  {
@@ -49,6 +58,7 @@ class TipSystem {
 			{					// initial state
 				a_wokenContract: this.contracts.UserRegistry,
 				a_tweeter: this.a_tweeter,
+				a_monitor: this.monitorSystem ? this.monitorSystem.a_monitor : undefined,
 			}
 		);
 

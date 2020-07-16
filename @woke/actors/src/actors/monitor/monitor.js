@@ -9,6 +9,8 @@ function action_notify(msg, ctx, state) {
 	const { error, self, prefixString } = msg;
 
 	const text = `${prefixString ? prefixString : ''} ${error}`;
+	console.log(`Sending system monitoring data...`)
+	ctx.debug.d(msg, `${ctx.name} sending monitoring data`);
 	dispatch(a_channel, { type: 'post_private', text }, ctx.self);
 }
 

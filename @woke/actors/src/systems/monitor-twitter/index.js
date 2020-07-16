@@ -9,20 +9,20 @@ const debug = Logger('sys_monitor');
 const recipientId =  '932596541822418944'; // Oracle of Woke
 
 // System monitor using twitter DMs as output channel
-async function MonitorSystem(opts) {
+function MonitorSystem(opts) {
 	const { director, twitterClient } = opts;
 	let _twitterClient = twitter;
 	if(!!twitterClient) {
 		_twitterClient = twitterClient;
 	} else {
-		await _twitterClient.initClient();
+		_twitterClient.initClient().then(_ => console.log);
 	}
 
 	const _director = director || ActorSystem.bootstrap();
 	twitterStub = new TwitterStub(_twitterClient);
 
 	// Make twitter channel
-	const a_tweeter = _director.start_actor('tweeter', Tweeter({ twitterStub, recipientId }));
+	const a_tweeter = _director.start_actor('monitor-tweeter', Tweeter({ twitterStub, recipientId }));
 	const a_channel = _director.start_actor('channel-twitter', Channel({ actor: a_tweeter, postActionName: 'send_directMessage' }));
 	const a_monitor = _director.start_actor('monitor', Monitor({ a_channel }));
 

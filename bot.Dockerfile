@@ -11,6 +11,7 @@ RUN npm install --loglevel notice
 
 # Lerna will fail gracefully when packages listed inside lerna.json do not exist
 COPY @woke/lib ./@woke/lib
+COPY @woke/actors ./@woke/actors
 COPY @woke/contracts ./@woke/contracts
 COPY @woke/bot ./@woke/bot
 

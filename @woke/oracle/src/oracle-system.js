@@ -15,7 +15,11 @@ function TwitterClient() {
 
 class OracleSystem {
 	constructor(contracts, opts) {
-		const { twitterClient, persist, retryInterval, subscriptionWatchdogInterval, persistenceConfig, networkList, monitoring } = opts;
+		const defaults = {
+			monitoring: true,
+		};
+
+		const { twitterClient, persist, retryInterval, subscriptionWatchdogInterval, persistenceConfig, networkList, monitoring } = {...defaults, ...opts};
 		this.persist = !!persist;
 		this.config = {
 			QUERY_RETRY_INTERVAL: retryInterval || 15000*3,

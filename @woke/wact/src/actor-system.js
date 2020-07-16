@@ -9,7 +9,6 @@ const {
 	dispatch,
 } = require('nact');
 const { block } = require('./lib/nact-utils');
-actors = require('./actors');
 const { Logger } = require('@woke/lib');
 
 const DEBUG_PREFIX = 'actor';

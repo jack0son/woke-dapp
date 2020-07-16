@@ -68,9 +68,25 @@ function handleQuerySubscription(msg, ctx, state) {
 	}
 }
 
+function onCrash(msg, error, ctx) {
+	console.log('Notifier crash');
+	console.log(error);
+	//console.log(ctx);
+	const prefixString = `Notifier crashed`;
+	dispatch(ctx.self, { type: 'monitor_notify', error, prefixString }, ctx.self);
+
+	return ctx.resume;
+}
+
+function action_notify(msg, ctx, state) {
+	const { a_monitor } = state;
+	dispatch(a_monitor, { ...msg, type: 'notify' }, ctx.self);
+}
+
 const notifier = {
 	properties: {
 		persistenceKey: 'notifier', // only ever 1, static key OK
+		onCrash,
 
 		initialState: {
 			a_contract_UserRegistry: null,
@@ -185,7 +201,8 @@ const notifier = {
 		'a_sub': handleQuerySubscription,
 		'a_tweeter_temp': (msg, ctx, state) => {
 			const { eventName } = msg;
-		}
+		},
+		'monitor_notify': action_notify,
 	},
 }
 
