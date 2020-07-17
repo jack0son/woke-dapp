@@ -54,6 +54,7 @@ class FunderSystem {
 		const director = this.director;
 
 		if(!!this.config.monitoring) {
+			// Initialise monitor using own actor system and twitter client
 			this.monitor = useMonitor({ director });
 		}
 
@@ -62,7 +63,6 @@ class FunderSystem {
 
 		this.a_funder = director[this.persist ? 'start_persistent' : 'start_actor']('funder', Funder, {
 			a_txManager: this.a_txManager,
-			//a_monitor: this.monitorSystem ? this.monitorSystem.a_monitor : undefined,
 			fundAmount,
 		});
 	}

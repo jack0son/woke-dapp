@@ -1,4 +1,5 @@
 const { actors: { SinkAdapter }, ActorSystem } = require('@woke/wact');
+const { useNotifyOnCrash } = require('@woke/actors');
 const QueryJob = require('./query');
 const { dispatch, start_actor } = ActorSystem;
 // Each job is a simple linear state machine
@@ -163,27 +164,12 @@ function handleQuerySubscription(msg, ctx, state) {
 	}
 }
 
-function onCrash(msg, error, ctx) {
-	console.log('Funder crash');
-	console.log(error);
-	console.log(ctx);
-	const prefixString = `Oracle crashed`;
-	dispatch(ctx.self, { type: 'monitor_notify', error, prefixString }, ctx.self);
-
-	return ctx.resume;
-}
-
-function action_notify(msg, ctx, state) {
-	const { a_monitor } = state;
-	dispatch(a_monitor, { ...msg, type: 'notify' }, ctx.self);
-}
-
 //function OracleOrchestrator(a_twitterAgent, a_contract_TwitterOracle) {
 // ----- Oracle actor definition
 module.exports = {
 	properties: {
 		persistenceKey: 'oracle', // only ever 1, static key OK
-		onCrash,
+		onCrash: useNotifyOnCrash(),
 
 		initialState: {
 			jobRepo: [],
@@ -226,7 +212,6 @@ module.exports = {
 			// @TODO call stop
 			// Stop subscription
 		},
-		'monitor_notify': action_notify,
 	}
 }
 

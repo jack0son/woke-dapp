@@ -124,6 +124,7 @@ const reducer = reducers.subsumeReduce(patterns);
 
 function onCrash(msg, error, ctx) {
 	console.log(`oracle:query crash, name: ${ctx.name}`);
+	error.actorName = ctx.name;
 	return ctx.escalate;
 }
 
