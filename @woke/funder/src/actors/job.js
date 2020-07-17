@@ -15,7 +15,6 @@ function handleFailure(msg, ctx, state) {
 	return state;
 }
 
-
 function submitFundTx(msg, ctx, state) {
 	const { job: { address, fundAmount }, a_txManager } = state;
 	if(!fundAmount || fundAmount <= 0) {

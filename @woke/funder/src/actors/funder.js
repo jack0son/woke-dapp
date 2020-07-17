@@ -1,8 +1,8 @@
 const { actors: { SinkAdapter }, ActorSystem } = require('@woke/wact');
 const JobActor = require('./job');
 
-const { useMonitor } = require('@woke/actors');
-const monitor = useMonitor();
+const { useNotifyOnCrash } = require('@woke/actors');
+const notifyOnCrash = useNotifyOnCrash();
 
 const { dispatch, start_actor } = ActorSystem;
 // Each job is a simple linear state machine
@@ -137,15 +137,8 @@ function action_incomingJob(msg, ctx, state) {
 	return { ...state, jobRepo: { ...jobRepo, [userId]: job } }
 }
 
-
 function onCrash(msg, error, ctx) {
-	let actorName = ctx.name;
-	if(!!error.actorName) actorName = error.actorName;
-	const prefixString = `Funder service crashed: actor< ${actorName} >, action< ${msg.type} >`;
-	console.log(prefixString);
-	console.log(error);
-	monitor.notify(error, prefixString);
-	return ctx.resume;
+	return notifyOnCrash(msg, error, ctx);
 }
 
 // ----- Sink handlers
