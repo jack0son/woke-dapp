@@ -4,7 +4,7 @@
   "description": "Wallet backend: account creation and funding.",
   "private": true,
   "scripts": {
-    "start": "DEBUG=server*,actor*,sys_funder* node ./bin/www",
+    "start": "DEBUG=server*,actor*,sys_* node ./bin/www",
     "start:production": "NODE_ENV=production ETH_ENV=production WOKE_ROLE=funder DEBUG=server*,actor*,sys_funder* node ./bin/www",
     "db": "docker-compose -f ../../server.docker-compose.local.yml up -d --build db",
     "down": "docker-compose -f ../../server.docker-compose.local.yml down",

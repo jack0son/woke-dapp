@@ -12,10 +12,10 @@ const persistenceConfig = {
 		PORT: 5432,
 	},
 	production: {
-		USER: 'woke_oracle',
-		PWD: 'woke_oracle',
-		DB: 'oracle_db',
-		HOST: 'localhost',
+		USER: 'postgres',
+		PWD: 'postgres',
+		DB: 'woke_dapp',
+		HOST: 'db',
 		PORT: 5432,
 	}
 };

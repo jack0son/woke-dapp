@@ -18,9 +18,9 @@ services:
       - '8443:8443'
     environment:
       NODE_ENV: production
-      DEBUG: server*
       WOKE_ROLE: funder
-      ETH_ENV: goerli_2
+      DEBUG: server*,actor*,sys_*
+      ETH_ENV: production
       WAIT_HOSTS: db:5432
 
 volumes:
