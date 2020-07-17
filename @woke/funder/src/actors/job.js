@@ -104,7 +104,7 @@ const reducer = subsumeReduce(patterns);
 
 function onCrash(msg, error, ctx) {
 	console.log(`Job ${ctx.name} crash`);
-	console.log(msg);
+	error.actorName = ctx.name;
 	return ctx.escalate;
 }
 

@@ -41,7 +41,6 @@ class TwitterStub {
 
 	async postDirectMessage (recipientId, text) {
 		const { client } = this;
-		console.log(client);
 		return client.directMessage(recipientId, text);
 	}
 

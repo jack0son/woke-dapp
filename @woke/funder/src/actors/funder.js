@@ -1,5 +1,9 @@
 const { actors: { SinkAdapter }, ActorSystem } = require('@woke/wact');
 const JobActor = require('./job');
+
+const { useMonitor } = require('@woke/actors');
+const monitor = useMonitor();
+
 const { dispatch, start_actor } = ActorSystem;
 // Each job is a simple linear state machine
 const statuses = [
@@ -45,56 +49,51 @@ async function action_updateJob(msg, ctx, state) {
 	const { jobRepo } = state;
 	const { job, error } = msg;
 
+	const existingJob = jobRepo[job.userId];
+	const newJob = { ...existingJob, ...job };
+
 	const log = (...args) => { if(!ctx.recovering) console.log(...args) }
-	console.log(`got job with amount ${job.fundAmount}`);
 
 	if(!!ctx.persist && !ctx.recovering) {
 		await ctx.persist(msg);
 	}
 
-
 	if(error) {
-		job.error = error;
-		ctx.debug.error(msg, `job ${job.userId}, error: ${job.error}`)
+		newJob.error = error;
+		ctx.debug.error(msg, `job ${newJob.userId}, error: ${newJob.error}`);
 	}
-	ctx.debug.d(msg, `Updated job:${job.userId} to ⊰ ${job.status} ⊱`)
+	ctx.debug.d(msg, `Updated job:${newJob.userId} to ⊰ ${newJob.status} ⊱`)
 
 	// FSM effects
 	if(!ctx.recovering) {
-		switch(job.status) {
-			case 'settled': {
-				log(`\njob settled: user ${job.userId} job ${job.userId}\n`)
-				//dispatch(ctx.self, { type: 'notify', job }, ctx.self);
+		console.log(`Got job with amount ${newJob.fundAmount}`);
+		switch(newJob.status) {
+			case 'settled': 
+				log(`\njob settled: user ${newJob.userId} job ${newJob.userId}\n`)
 				break;
-			}
 
-			case 'invalid': {
-				if(job.reason) {
-					//ctx.debug.error(msg, `job ${job.id} from ${job.fromHandle} error: ${job.error}`)
-					log(`\njob invalid: ${job.reason}`);
+			case 'pending':
+				break;
+
+			case 'invalid': 
+				if(newJob.reason) {
+					log(`\njob invalid: ${newJob.reason}`);
 				}
 				break;
-			}
 
-			case 'failed': {
+			case 'failed':
 				if(error) {
-					//ctx.debug.error(msg, `job ${job.id} from ${job.fromHandle} error: ${job.error}`)
-					log(`\njob failed: ${job.error}`);
+					//ctx.debug.error(msg, `job ${newJob.id} from ${newJob.fromHandle} error: ${newJob.error}`)
+					log(`\njob failed: ${newJob.error}`);
 				}
 				break;
-			}
 
-			default: {
-			}
+			default:
+				throw new Error(`Unspecified job status '${newJob.status}`);
 		}
 	}
 
-	jobRepo[job.userId] = {
-		...jobRepo[job.userId],
-		...job,
-	}
-
-	return { ...state, jobRepo }
+	return { ...state, jobRepo: { ...jobRepo, [job.userId]: newJob } };
 }
 
 function action_incomingJob(msg, ctx, state) {
@@ -138,18 +137,14 @@ function action_incomingJob(msg, ctx, state) {
 	return { ...state, jobRepo: { ...jobRepo, [userId]: job } }
 }
 
-function action_notify(msg, ctx, state) {
-	const { a_monitor } = state;
-	dispatch(a_monitor, { ...msg, type: 'notify' }, ctx.self);
-}
 
 function onCrash(msg, error, ctx) {
-	console.log(`Funder crash, name: ${ctx.name}`);
+	let actorName = ctx.name;
+	if(!!error.actorName) actorName = error.actorName;
+	const prefixString = `Funder service crashed: actor< ${actorName} >, action< ${msg.type} >`;
+	console.log(prefixString);
 	console.log(error);
-	console.log(ctx);
-	const prefixString = `Funder crashed`;
-	dispatch(ctx.self, { type: 'monitor_notify', error, prefixString }, ctx.self);
-
+	monitor.notify(error, prefixString);
 	return ctx.resume;
 }
 
@@ -178,7 +173,6 @@ module.exports = {
 			return action_resume(msg, ctx, state);
 		},
 		'fund': action_incomingJob,
-		'monitor_notify': action_notify,
 		'resume': action_resume,
 		//'job':  action_incomingJob,
 		'update_job': action_updateJob,

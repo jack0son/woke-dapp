@@ -19,7 +19,7 @@ function makeOnCrash() {
 	return (msg, error, ctx) => {
 		count++;
 		console.log(error);
-		dispatch(ctx.self, msg, ctx.sender);
+		//dispatch(ctx.self, msg, ctx.sender);
 		return ctx.resume;
 	}
 }

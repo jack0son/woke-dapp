@@ -1,4 +1,4 @@
-const MonitorSystem = require('./monitor-twitter');
+const MonitorSystem = require('../systems/monitor-twitter');
 const { ActorSystem: { dispatch } } = require('@woke/wact');
 
 var Monitor = function (opts) {
@@ -27,9 +27,8 @@ function useMonitor(_conf) {
 	const monitor = Monitor.getInstance(conf);
 
 	return {
-		notify: monitor.system !== null ? notify(monitor.system) : doNothing,
+		notify: monitor.system === null || !conf.enabled ? doNothing : notify(monitor.system),
 	};
 }
 
 module.exports = useMonitor;
-

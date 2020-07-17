@@ -14,7 +14,9 @@ function MonitorSystem({ director, twitterClient }) {
 	if(!!twitterClient) {
 		_twitterClient = twitterClient;
 	} else {
-		_twitterClient.initClient().then(_ => console.log);
+		_twitterClient.initClient()
+			.then(() => debug.d(`Monitor initialised twitter client`))
+			.catch(console.log);
 	}
 
 	const _director = director || ActorSystem.bootstrap();

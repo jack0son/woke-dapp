@@ -1,5 +1,5 @@
 const { Logger, twitter, TwitterStub, web3Tools } = require('@woke/lib');
-const { MonitorSystem } = require('@woke/actors');
+const { useMonitor } = require('@woke/actors');
 const { ActorSystem, PersistenceEngine } = require('@woke/wact');
 const { TxSystem } = require('@woke/web3-nact');
 const Funder = require('./actors/funder');
@@ -54,7 +54,7 @@ class FunderSystem {
 		const director = this.director;
 
 		if(!!this.config.monitoring) {
-			this.monitorSystem = MonitorSystem({ twitterClient: null, director });
+			this.monitor = useMonitor({ director });
 		}
 
 		// Actors
@@ -62,7 +62,7 @@ class FunderSystem {
 
 		this.a_funder = director[this.persist ? 'start_persistent' : 'start_actor']('funder', Funder, {
 			a_txManager: this.a_txManager,
-			a_monitor: this.monitorSystem ? this.monitorSystem.a_monitor : undefined,
+			//a_monitor: this.monitorSystem ? this.monitorSystem.a_monitor : undefined,
 			fundAmount,
 		});
 	}

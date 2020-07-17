@@ -17,7 +17,9 @@ function Channel({ actor, postActionName }) {
 		},
 		actions: {
 			'post_private': action_post,
+
 			// Sink
+			// @fix does not match sink pattern
 			[postActionName]: action_result,
 		}
 	}
