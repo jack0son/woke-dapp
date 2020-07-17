@@ -1,6 +1,7 @@
 // Subscribe to blockchain logs and notify users on twitter
 // Manages notifications in a transactional fashion
 const { ActorSystem, actors } = require('@woke/wact');
+const { useNotifyOnCrash } = require('@woke/actors');
 const { start_actor, dispatch, query, spawnStateless, block } = ActorSystem;
 
 const states = [
@@ -68,19 +69,10 @@ function handleQuerySubscription(msg, ctx, state) {
 	}
 }
 
+const notifyOnCrash = useNotifyOnCrash();
 function onCrash(msg, error, ctx) {
 	console.log('Notifier crash');
-	console.log(error);
-	//console.log(ctx);
-	const prefixString = `Notifier crashed`;
-	dispatch(ctx.self, { type: 'monitor_notify', error, prefixString }, ctx.self);
-
-	return ctx.resume;
-}
-
-function action_notify(msg, ctx, state) {
-	const { a_monitor } = state;
-	dispatch(a_monitor, { ...msg, type: 'notify' }, ctx.self);
+	return notifyOnCrash(msg, error, ctx);
 }
 
 const notifier = {
@@ -202,7 +194,6 @@ const notifier = {
 		'a_tweeter_temp': (msg, ctx, state) => {
 			const { eventName } = msg;
 		},
-		'monitor_notify': action_notify,
 	},
 }
 

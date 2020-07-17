@@ -1,6 +1,7 @@
 // Keep track of unsent tips
 const { ActorSystem: { start_actor, dispatch, query } } = require('@woke/wact');
 const { utils: { delay } } = require('@woke/lib');
+const { useNotifyOnCrash } = require('@woke/actors');
 const tipActor = require('./tip');
 const { messageTemplates: { console: { tip_submitted } } } = require('@woke/lib');
 
@@ -51,27 +52,13 @@ function settle_tip(msg, ctx, state) {
 	return a_tip;
 }
 
-function onCrash(msg, error, ctx) {
-	console.log('Tipper crash');
-	console.log(error);
-	console.log(ctx);
-	const prefixString = `Notifier crashed`;
-	dispatch(ctx.self, { type: 'monitor_notify', error, prefixString }, ctx.self);
-
-	return ctx.resume;
-}
-
-function action_notify(msg, ctx, state) {
-	const { a_monitor } = state;
-	dispatch(a_monitor, { ...msg, type: 'notify' }, ctx.self);
-}
 
 const tipper = {
 	statusEnum,
 
 	properties: {
 		persistenceKey: 'tipper', // only ever 1, static key OK
-		onCrash, 
+		onCrash: useNotifyOnCrash(), 
 
 		initialState: {
 			tipRepo: {},
@@ -241,8 +228,6 @@ const tipper = {
 			});
 
 		},
-
-		'monitor_notify': action_notify,
 
 		'distribute': (msg, ctx, state) => {
 			// Each new user joining adds to the distro pool

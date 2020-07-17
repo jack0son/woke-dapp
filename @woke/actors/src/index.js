@@ -1,7 +1,7 @@
 const tweeter = require('./actors/tweeter');
 const MonitorSystem = require('./systems/monitor-twitter');
 const useMonitor = require('./hooks/use-monitor');
-const useMonitor = require('./hooks/use-oncrash-notify');
+const useNotifyOnCrash = require('./hooks/use-oncrash-notify');
 
 module.exports = {
 	MonitorSystem,

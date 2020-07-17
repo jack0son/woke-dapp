@@ -213,6 +213,7 @@ const reducer = reducers.subsumeReduce(patterns);
 
 function onCrash(msg, error, ctx) {
 	console.log(`tipper:tip, name: ${ctx.name}`);
+	error.actorName = ctx.name;
 	return ctx.escalate;
 }
 
