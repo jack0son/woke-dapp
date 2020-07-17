@@ -1,5 +1,6 @@
 const { Logger, twitter, TwitterStub } = require('@woke/lib');
 const { ActorSystem, PersistenceEngine } = require('@woke/wact');
+const { useMonitor } = require('@woke/actors');
 const { ContractsSystem } = require('@woke/web3-nact');
 
 const TwitterAgent = require('./actors/twitter-agent');
@@ -14,16 +15,24 @@ function TwitterClient() {
 
 class OracleSystem {
 	constructor(contracts, opts) {
-		const { twitterClient, persist, retryInterval, subscriptionWatchdogInterval, persistenceConfig, networkList } = opts;
+		const defaults = {
+			monitoring: true,
+		};
+
+		const { twitterClient, persist, retryInterval, subscriptionWatchdogInterval, persistenceConfig, networkList, monitoring } = {...defaults, ...opts};
 		this.persist = !!persist;
 		this.config = {
 			QUERY_RETRY_INTERVAL: retryInterval || 15000*3,
 			SUBSCRIPTION_WATCHDOG_INTERVAL: subscriptionWatchdogInterval || 15000*10,
 			persistenceConfig,
 			networkList,
+			monitoring,
 		};
+
+		this.twitterClient = twitterClient || TwitterClient();
+
 		//this.twitterStub = opts.twitterStub || new TwitterStub(TwitterClient())
-		this.twitterStub = new TwitterStub(twitterClient || TwitterClient())
+		this.twitterStub = new TwitterStub(this.twitterClient)
 
 		// Persistence
 		if(this.persist) {
@@ -35,6 +44,11 @@ class OracleSystem {
 
 		this.director = ActorSystem.bootstrap(this.persist ? this.persistenceEngine : undefined);
 		const director = this.director;
+
+		if(!!this.config.monitoring) {
+			// Initialise monitor using own actor system and twitter client
+			this.monitor = useMonitor({ twitterClient: this.twitterClient, director });
+		}
 
 		// Actors
 		this.contracts = contracts || ContractsSystem(director, ['TwitterOracleMock'],  {

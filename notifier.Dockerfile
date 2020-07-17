@@ -14,6 +14,7 @@ COPY @woke/lib ./@woke/lib
 COPY @woke/contracts ./@woke/contracts
 COPY @woke/wact ./@woke/wact
 COPY @woke/web3-nact ./@woke/web3-nact
+COPY @woke/actors ./@woke/actors
 COPY @woke/bot ./@woke/bot
 
 COPY lerna.json .

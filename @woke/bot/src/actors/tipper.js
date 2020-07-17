@@ -1,8 +1,9 @@
 // Keep track of unsent tips
 const { ActorSystem: { start_actor, dispatch, query } } = require('@woke/wact');
 const { utils: { delay } } = require('@woke/lib');
+const { useNotifyOnCrash } = require('@woke/actors');
 const tipActor = require('./tip');
-const { console: { tip_submitted } } = require('../lib/message-templates');
+const { messageTemplates: { console: { tip_submitted } } } = require('@woke/lib');
 
 // Each tip is a simple linear state machine
 const statuses = [
@@ -51,11 +52,13 @@ function settle_tip(msg, ctx, state) {
 	return a_tip;
 }
 
+
 const tipper = {
 	statusEnum,
 
 	properties: {
 		persistenceKey: 'tipper', // only ever 1, static key OK
+		onCrash: useNotifyOnCrash(), 
 
 		initialState: {
 			tipRepo: {},
@@ -73,6 +76,7 @@ const tipper = {
 		middleware: (msg, ctx, state) => {
 		},
 
+		/*
 		onCrash: (() => {
 			reset = resetWithExponentialDelay(1)
 			return (msg, error, ctx) => {
@@ -88,7 +92,7 @@ const tipper = {
 				}
 			}
 		})(),
-		onCrash: undefined,
+		*/
 	},
 
 	// Message 'type' handlers

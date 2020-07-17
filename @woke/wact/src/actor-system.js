@@ -9,7 +9,6 @@ const {
 	dispatch,
 } = require('nact');
 const { block } = require('./lib/nact-utils');
-actors = require('./actors');
 const { Logger } = require('@woke/lib');
 
 const DEBUG_PREFIX = 'actor';
@@ -164,7 +163,7 @@ const start_persistent = _persistentSystem => (_name, _definition, _initialState
 }
 
 // Instantiate a nact actor system
-// @returns nact actor system and bound methods
+// @returns director: nact actor system with bound methods
 function bootstrap(_persistenceEngine) {
 	const system = _persistenceEngine  ? start(configurePersistence(_persistenceEngine)) : start();
 	return {

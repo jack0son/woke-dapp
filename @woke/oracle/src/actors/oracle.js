@@ -1,4 +1,5 @@
 const { actors: { SinkAdapter }, ActorSystem } = require('@woke/wact');
+const { useNotifyOnCrash } = require('@woke/actors');
 const QueryJob = require('./query');
 const { dispatch, start_actor } = ActorSystem;
 // Each job is a simple linear state machine
@@ -37,7 +38,7 @@ function settle_job({msg, ctx, state}) {
 }
 
 async function update_job(msg, ctx, state) {
-	const { jobRepo, wokenContract } = state;
+	const { jobRepo } = state;
 	const { job, error } = msg;
 
 	const log = (...args) => { if(!ctx.recovering) console.log(...args) }
@@ -124,7 +125,7 @@ function handleIncomingQuery(msg, ctx, state) {
 		}
 	}
 	jobRepo[queryId] = job;
-	return { ...state, jobRepo };
+	return { ...state, jobRepo: { ...jobRepo, [queryId]: job } }
 }
 
 // ----- Sink handlers
@@ -168,6 +169,7 @@ function handleQuerySubscription(msg, ctx, state) {
 module.exports = {
 	properties: {
 		persistenceKey: 'oracle', // only ever 1, static key OK
+		onCrash: useNotifyOnCrash(),
 
 		initialState: {
 			jobRepo: [],
@@ -207,6 +209,7 @@ module.exports = {
 		'update_job': update_job,
 
 		'stop': (msg, ctx, state) => {
+			// @TODO call stop
 			// Stop subscription
 		},
 	}

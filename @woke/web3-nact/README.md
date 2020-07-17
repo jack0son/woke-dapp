@@ -1,0 +1,4 @@
+# Properties
+
+* Provider transparency
+* 

@@ -95,7 +95,7 @@ const initClient = async (simulate) => {
 
 	//await oracleServer.start(oraclize_cb);
 	// TODO pass oraclize_cb to oracle system
-	const oracleSystem = new OracleSystem(undefined, { persist: false, twitterClient });
+	const oracleSystem = new OracleSystem(undefined, { persist: false, twitterClient, subscriptionWatchdogInterval: 5000 });
 	oracleSystem.start();
 
 	if(simulate == true) {

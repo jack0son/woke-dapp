@@ -8,7 +8,7 @@
     "test": "./node_modules/.bin/mocha ./test/test*.js",
     "test:debug": "DEBUG=oracle:* ./node_modules/.bin/mocha",
     "tipper:verbose": "DEBUG_RECOVERY=true NODE_ENV=production DEBUG=* node src/services/tipper.js",
-    "tipper": "DEBUG=actor*,-*:twitter_monitor*,-*:_tip-*:info node src/services/tipper.js",
+    "tipper": "DEBUG=actor*,sys_*,-*:twitter_monitor*,-*:_tip-*:info node src/services/tipper.js",
     "notifier": "DEBUG=* node src/services/notifier.js",
     "notifier:development": "PERSIST=true DEBUG=* NODE_ENV=development node src/services/notifier.js",
     "notifier:production": "PERSIST=true DEBUG=* NODE_ENV=development node src/services/notifier.js",
@@ -35,9 +35,8 @@
     "@woke/web3-nact": "0.1.0",
     "@woke/contracts": "0.4.0",
     "@woke/lib": "0.4.0",
-    "dotenv": "^8.2.0",
-    "nact": "^7.2.2",
-    "nact-persistence-postgres": "^7.3.1"
+    "@woke/actors": "0.1.0",
+    "dotenv": "^8.2.0"
   },
   "devDependencies": {
     "chai": "^4.2.0",

@@ -1,0 +1,36 @@
+{
+  "name": "@woke/funder",
+  "version": "0.1.0",
+  "description": "Funding service - ensures new users receive enough ETH to claim their account",
+  "private": true,
+  "main": "src/index.js",
+  "scripts": {
+    "test": "./node_modules/.bin/mocha",
+    "test:debug": "DEBUG=funder:* ./node_modules/.bin/mocha",
+    "start": "NODE_ENV=production ETH_ENV=production WOKE_ROLE=funder DEBUG=* node src/index.js",
+    "start:docker": "ETH_ENV=development NODE_ENV=development CONTEXT=local DEBUG_RECOVERY=true DEBUG=* node src/index.js",
+    "start:docker:dev": "docker-compose -f ../../funder.docker-compose.local.yml up",
+    "dev": "NODE_ENV=development ETH_ENV=development PERSIST=false CONTEXT=local DEBUG=*,twitter node src/index.js",
+    "mock": "NODE_ENV=development ETH_ENV=development PERSIST=false CONTEXT=local DEBUG=* node src/mock.js",
+    "goerli": "NODE_ENV=development ETH_ENV=goerli DEBUG=*,twitter node src/index.js",
+    "dev:with_client": "DEBUG=funder:* node src/lib/client.js",
+    "docker:db": "docker-compose -f ../../funder.docker-compose.local.yml up -d --build funder-db",
+    "docker:down": "docker-compose -f ../../funder.docker-compose.local.yml down",
+    "docker:reset": "docker-compose -f ../../funder.docker-compose.local.yml down -v"
+  },
+  "author": "Jackson Virgo",
+  "license": "ISC",
+  "dependencies": {
+    "@woke/web3-nact": "0.1.0",
+    "@woke/contracts": "0.4.0",
+    "@woke/actors": "0.1.0",
+    "@woke/lib": "0.4.0",
+    "@woke/wact": "0.1.0",
+    "dotenv": "^8.2.0"
+  },
+  "devDependencies": {
+    "web3": "^1.2.9",
+    "minimist": "^1.2.0",
+    "mocha": "^6.2.0"
+  }
+}

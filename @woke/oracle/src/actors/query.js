@@ -122,9 +122,17 @@ const queryFailed = Pattern(
 const patterns = [init, submitQuery, queryFailed, queryComplete, failed];
 const reducer = reducers.subsumeReduce(patterns);
 
+function onCrash(msg, error, ctx) {
+	console.log(`oracle:query crash, name: ${ctx.name}`);
+	error.actorName = ctx.name;
+	return ctx.escalate;
+}
+
 //function QueryJob(a_twitterAgent, a_contract_TwitterOracle) {
 module.exports = {
 		properties: {
+			onCrash,
+
 			initialState: {
 				userId: null,
 				a_contract_TwitterOracle: null,
@@ -146,8 +154,6 @@ module.exports = {
 					}, ctx.self);
 				}
 			}),
-
-			onCrash: undefined,
 		},
 		actions: {
 			...SinkAdapter(reducer),

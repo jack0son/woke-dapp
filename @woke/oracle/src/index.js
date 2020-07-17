@@ -13,6 +13,7 @@ const bootstrap = async () => {
 		subscriptionWatchdogInterval,
 		persistenceConfig,
 		networkList,
+		monitoring: true,
 		//retryInterval: 5*1000,
 	});
 	return oracleSystem.start();

@@ -10,6 +10,7 @@ services:
     ports:
       - '5432:5432'
   auth-server:
+    network_mode: "host"
     build:
       context: ./
       dockerfile: server.Dockerfile
@@ -19,7 +20,13 @@ services:
       - '3001:3001'
       - '8443:8443'
     environment:
-      WAIT_HOSTS: db:5432
+      NODE_ENV: development-docker
+      ETH_ENV: development
+      DEBUG: server*,actor*
+      CONTEXT: local
+      POSTGRES_HOST: localhost
+      WOKE_ROLE: funder
+      WAIT_HOSTS: localhost:5432
 
 volumes:
   postgres_data:

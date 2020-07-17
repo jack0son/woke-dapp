@@ -1,4 +1,5 @@
 const Twitter = require('twitter');
+const Twit = require('twit');
 const fs = require('fs');
 var request = require('request-promise-native');
 
@@ -16,25 +17,33 @@ var client;
 const initClient = async () => {
 	let bearerToken = process.env.TWITTER_BEARER_TOKEN;
 
-	if(bearerToken == undefined) {
+	if(!bearerToken && !accessKey && !accessSecret) {
+	//if(!bearerToken && ) {
 		try {
 			bearerToken = await getBearerToken(consumerKey, consumerSecret);
 			//console.log('Bearer token:', bearerToken);
 		} catch(e) {
-			debug.d('Failed to retrieve bearer token')
+			console.log('twitter: Failed to retrieve bearer token');
 			return process.exit(1);
 		}
 		debug.d(bearerToken);
 	}
 
-	const conf = {
+	let conf = {
 		consumer_key: consumerKey, 
 		consumer_secret: consumerSecret,
-		access_token_key: accessKey, 
-		access_token_secret: accessSecret,
-		//bearer_token: bearerToken, 
 	};
-	client = new Twitter(conf);
+
+	if(!!accessKey && !!accessSecret) {
+		conf = { ...conf, 
+			access_token: accessKey, 
+			access_token_secret: accessSecret,
+		};
+	} else {
+		conf = { ...conf, app_only_auth: true };
+	}
+
+	client = new Twit(conf);
 
 	return;
 }
@@ -100,13 +109,8 @@ function statusUrl(status) {
 
 // Rate limit: 1000 per user; 15000 per app
 const directMessage = (recipientId, text) => { // claimString = `@getwoketoke 0xWOKE:${userId},${sig},1`;
-	if(!recipientId) {
-		throw new Error('Must provide a recipient ID');
-	}
-
-	if(!text) {
-		throw new Error('Must provide message text');
-	}
+	if(!recipientId) throw new Error('Must provide a recipient ID');
+	if(!text) throw new Error('Must provide message text');
 
 	const event = {
 		type: 'message_create',
@@ -120,10 +124,7 @@ const directMessage = (recipientId, text) => { // claimString = `@getwoketoke 0x
 		},
 	};
 
-	const params = { event };
-
-	return client.post('direct_messages/events/new', params).then(r => {
-		console.log(r);
+	return client.post('direct_messages/events/new', { event }).then(r => {
 		return r;
 	});
 }
@@ -224,7 +225,15 @@ function getBearerToken(key, secret) {
 	});
 }
 
-module.exports = {initClient, searchClaimTweets, findClaimTweet, getUserData, searchTweets, updateStatus}
+module.exports = {
+	initClient,
+	directMessage,
+	searchClaimTweets,
+	findClaimTweet,
+	getUserData,
+	searchTweets,
+	updateStatus
+}
 
 // Example call
 if(debug.control.enabled && require.main === module) {
@@ -301,6 +310,15 @@ if(debug.control.enabled && require.main === module) {
 					const defaultText = 'test dm';
 
 					let r = await directMessage(recipient, text ? text : defaultText);
+					console.log(r);
+					break;
+				}
+
+				case 'tweet': {
+					const [text] = args;
+					const defaultText = 'cheep cheep';
+
+					let r = await updateStatus(text || defaultText);
 					console.log(r);
 					break;
 				}

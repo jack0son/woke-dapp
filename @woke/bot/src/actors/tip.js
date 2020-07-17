@@ -1,7 +1,7 @@
 const { ActorSystem, receivers, reducers, actors: { SinkAdapter } } = require('@woke/wact');
 const { dispatch } = ActorSystem;
 const { subsumeReduce, Pattern } = reducers;
-const { console: { tip_submitted } } = require('../lib/message-templates');
+const { messageTemplates: { console: { tip_submitted } } } = require('@woke/lib');
 
 // Handle results from transaction actor
 function txSink(msg, ctx, state) {
@@ -211,8 +211,15 @@ const failure = Pattern(
 const patterns = [init, gotClaimStatus, gotUserBalance, tipTxSuccess, tipTxFailure, failure];
 const reducer = reducers.subsumeReduce(patterns);
 
+function onCrash(msg, error, ctx) {
+	console.log(`tipper:tip, name: ${ctx.name}`);
+	error.actorName = ctx.name;
+	return ctx.escalate;
+}
+
 module.exports = {
 	properties: {
+		onCrash,
 		initialState: {
 			stage: 'INIT',
 			results: {},
@@ -234,8 +241,6 @@ module.exports = {
 				}, ctx.self);
 			}
 		}),
-
-		onCrash: undefined,
 	},
 
 	actions: {

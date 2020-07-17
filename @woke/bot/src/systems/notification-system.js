@@ -1,8 +1,9 @@
 const { ActorSystem, PersistenceEngine } = require('@woke/wact');
 const { bootstrap,  dispatch } = ActorSystem;
+const { useMonitor, tweeter: { Tweeter } } = require('@woke/actors');
 const { ContractsSystem } = require('@woke/web3-nact');
 const { TwitterStub, Logger, mocks } = require('@woke/lib');
-const { notifier, Tweeter  } = require('../actors');
+const { notifier  } = require('../actors');
 
 const twitterMock = mocks.twitterClient;
 const debug = Logger('sys_notify');
@@ -13,10 +14,14 @@ function TwitterClient() {
 
 class NotificationSystem {
 	constructor(contracts, opts) {
-		const { twitterStub, persist, networkList } = opts;
+		const defaults = {
+			monitoring: true,
+		};
+		const { twitterStub, persist, networkList, monitoring } = { ...defaults, ...opts };
 		this.persist = persist ? true : false;
-		this.twitterStub = opts.twitterStub || new TwitterStub(TwitterClient())
-		this.config = { networkList }; 
+		this.twitterClient = TwitterClient();
+		this.twitterStub = opts.twitterStub || new TwitterStub(this.twitterClient)
+		this.config = { networkList, monitoring }; 
 
 		// Persistence
 		if(this.persist) {
@@ -28,6 +33,11 @@ class NotificationSystem {
 
 		this.director = this.persist ? bootstrap(this.persistenceEngine) : bootstrap();
 		const director = this.director;
+
+		if(!!this.config.monitoring) {
+			// Initialise monitor using own actor system and twitter client
+			this.monitor = useMonitor({ twitterClient: this.twitterClient, director });
+		}
 
 		// Actors
 		this.contracts = contracts || ContractsSystem(director, ['UserRegistry'], {

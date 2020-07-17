@@ -11,7 +11,6 @@ const RETRY_DELAY = 400;
 
 const AVG_BLOCK_TIME = 3*1000;
 
-
 function Web3Actor (init_web3 = web3Tools.init.instantiate, maxAttempts = MAX_ATTEMPTS, opts) {
 	const defaults = {
 		retryDelay: RETRY_DELAY,
@@ -49,15 +48,14 @@ function Web3Actor (init_web3 = web3Tools.init.instantiate, maxAttempts = MAX_AT
 		async function createNewInstance() {
 			let web3Instance;
 			let attempts = 0;
-
 			let connected = false;
 
 			let idx = 0;
 			function getNetworkName() {
-				if(idx < networkList.length) {
+				if(!!networkList && Array.isArray(networkList) && idx < networkList.length) {
 					return networkList[idx++];
 				} 
-				return undefined;
+				return;
 			}
 
 			let networkName = getNetworkName();
