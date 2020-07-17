@@ -9,8 +9,7 @@ const debug = Logger('sys_monitor');
 const recipientId =  '932596541822418944'; // Oracle of Woke
 
 // System monitor using twitter DMs as output channel
-function MonitorSystem(opts) {
-	const { director, twitterClient } = opts;
+function MonitorSystem({ director, twitterClient }) {
 	let _twitterClient = twitter;
 	if(!!twitterClient) {
 		_twitterClient = twitterClient;
@@ -28,7 +27,8 @@ function MonitorSystem(opts) {
 
 	debug.d('Using twitter DM system monitoring');
 	return {
-		a_monitor
+		a_monitor,
+		director: _director,
 	};
 }
 
