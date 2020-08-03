@@ -9,11 +9,9 @@ module.exports = userRegistry => {
 		}
 
 		if(events.length && events.length > 0) {
-			let users = [];
+			const users = [];
 			for(e of events) {
-				let u = e.returnValues;
-				u.balance = await userRegistry.methods.balanceOf(u.userId).call();
-				users.push(u);
+				users.push({ ...e.returnValues, balance: (await userRegistry.methods.balanceOf(e.returnValues.userId).call()) });
 			}
 			return users;
 		}

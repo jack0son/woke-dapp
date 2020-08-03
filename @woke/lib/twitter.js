@@ -14,6 +14,10 @@ const accessSecret = process.env.TWITTER_ACCESS_SECRET;
 
 var client;
 
+// @NB Swapping twitter client lib to twit
+// Reponse obeject is no longer just the response data
+// Twit response object: { data, resp }
+
 const initClient = async () => {
 	let bearerToken = process.env.TWITTER_BEARER_TOKEN;
 
@@ -90,16 +94,16 @@ const findClaimTweet = async (userId, claimFrame = CLAIM_FRAME) => {
 const getUserData = async (userId) => {
 	const params = {
 		user_id: userId
-	}
+	};
 
-	let userObject = await client.get('users/show', params);
+	const { data } = await client.get('users/show', params);
 
 	return {
-		...userObject,
-		name: userObject.name,
-		handle: userObject.screen_name,
-		avatar: userObject.profile_image_url_https,
-		followers_count: userObject.followers_count,
+		...data,
+		name: data.name,
+		handle: data.screen_name,
+		avatar: data.profile_image_url_https,
+		followers_count: data.followers_count,
 	}
 }
 

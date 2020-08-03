@@ -60,10 +60,10 @@ const createCommands = ctx => ({
 			console.log('None found.');
 			return;
 		}
+
 		await fetchUserHandles(ctx.twitterUsers)(users.map(u => u.userId));
-
-		users.forEach((u,i) => console.log(`${i}:${printId(ctx.twitterUsers.users[u.userId].handle)}\t${printId(u.userId)}${printAmount(u.balance)}W ${printFollowers(ctx.twitterUsers.users[u.userId].followers_count)}\t${u.account}`));
-
+		console.log(`${''.padStart(4)}${printId('Handle')}${printId('ID')}${printAmount('Balance')}${printFollowers('Followers')}\t${'Address'}`);
+		users.forEach((u,i) => console.log(`${i.toString().padStart(3)}:${printId(ctx.twitterUsers.users[u.userId].handle)}${printId(u.userId)}${printAmount(u.balance)}W ${printFollowers(ctx.twitterUsers.users[u.userId].followers_count)}\t${u.account}`));
 		return;
 	},
 

@@ -1,10 +1,11 @@
 const MonitorSystem = require('../systems/monitor-twitter');
 const { ActorSystem: { dispatch } } = require('@woke/wact');
 
-var Monitor = function (opts) {
+// Monitoring singleton
+const Monitor = function (opts) {
 	if (Monitor._instance) return Monitor._instance;
 
-	// Only disable if asked explicitly 
+	// Only disable if specified explicitly 
 	const { enabled, ...systemOpts } = opts;
 	this.system = enabled === false ? null : MonitorSystem(systemOpts); 
 	Monitor._instance = this;
@@ -15,6 +16,8 @@ Monitor.getInstance = function (opts) {
 }
 
 const doNothing = () => {};
+// TODO
+// @param stacktrace
 const notify = (monitorSystem) => (error, prefixString) => {
 	const { a_monitor } = monitorSystem;
 	dispatch(a_monitor, { type: 'notify', error, prefixString });
