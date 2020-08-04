@@ -36,11 +36,11 @@ export default function makeBaseClient({
 	const request = {
 		get: (path, params) => sendClientRequest('get', client, path, params),
 		post: (path, params) => sendClientRequest('post', client, path, params),
-	}
+	};
 
 	return {
 		request,
-	}
+	};
 }
 
 function sendClientRequest(type, client, path, params) {

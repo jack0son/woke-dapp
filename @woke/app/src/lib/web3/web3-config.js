@@ -2,10 +2,10 @@ import config from '../../config/config';
 // Statically configure contract artifacts
 //import TwitterOracleMock from '../../contracts/production/TwitterOracleMock.json';
 //import WokeToken from '../../contracts/production/WokeToken.json';
-
 const artifacts = require('../../contracts');
 const nodeEnv = process.env.NODE_ENV;
 const ethNetwork = process.env.REACT_APP_ETH_NETWORK;
+
 
 export function loadContractArtifacts() {
 	return artifacts;

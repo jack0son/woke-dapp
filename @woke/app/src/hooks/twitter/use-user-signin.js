@@ -72,6 +72,8 @@ export default function useUserSignin() {
 	}
 
 	async function handleStartAuth() {
+		console.log('START AUTH');
+		console.log(oAuthApi);
 		const requestToken = await oAuthApi.getUserRequestToken();
 		if (requestToken.oauth_callback_confirmed !== 'true') {
 			throw new Error('Twitter OAuth 1.0: callback confirmation failed');
@@ -90,7 +92,6 @@ export default function useUserSignin() {
 	function signOut() {
 		dispatch({type: 'sign-out'});
 	}
-
 
 	// @dev Extract callback response params from verifier callback
 	useEffect(() => {

@@ -8,7 +8,7 @@ const twitterApi = {
 	callback_path: 'oauth_twitter',
 }
 
-const host = process.env.REACT_APP_HOST || '192.168.1.183';
+const host = process.env.REACT_APP_HOST || '192.168.1.167';
 
 export default {
 	web3: {

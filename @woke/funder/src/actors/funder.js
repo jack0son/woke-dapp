@@ -72,6 +72,9 @@ async function action_updateJob(msg, ctx, state) {
 				log(`\njob settled: user ${newJob.userId} job ${newJob.userId}\n`)
 				break;
 
+			case 'unsettled': 
+				break;
+
 			case 'pending':
 				break;
 
