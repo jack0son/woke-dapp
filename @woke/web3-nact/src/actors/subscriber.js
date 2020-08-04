@@ -109,7 +109,8 @@ const subscriptionActor = {
 				throw new SubscriptionError(error, eventName);
 			}
 
-			if(log && filter ? filter(log.event) : true) {
+			if(log && filter(log.event)) {
+			//if(log && filter ? filter(log.event) : true) {
 				const latestBlock = log.blockNumber > state.latestBlock ?
 					log.blockNumber : state.latestBlock;
 
@@ -152,6 +153,8 @@ const makeLogEventSubscription = web3 => (contract, eventName, handleFunc, opts)
 		contract._jsonInterface,
 		o => o.name === eventName && o.type === 'event',
 	);
+
+	// Handle subscription data
 	const handleUpdate = (error, result) => {
 		let event = result ? web3.eth.abi.decodeLog(
 			eventJsonInterface.inputs,
@@ -170,8 +173,8 @@ const makeLogEventSubscription = web3 => (contract, eventName, handleFunc, opts)
 
 		//console.log(`... Subscribed to ${eventName} ${opts && opts.fromBlock ? `bn: ${opts.fromBlock}` : ''}`);
 		//console.log(newSub);
+		//subscription.on("data", console.log);
 		subscription = newSub;
-		subscription.on("data", log => console.log);
 	}
 
 	// @fix Ubscribing does not appear to work on web3js@1.2.5

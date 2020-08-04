@@ -18,7 +18,7 @@ services:
       NODE_ENV: 'production'
       ETH_ENV: 'production'
       WOKE_ROLE: 'oracle'
-      NETWORK_LIST: 'goerli_1,goerli_2,goerli_3,goerli_infura'
+      NETWORK_LIST: 'goerli_3,goerli_infura,goerli_2,goerli_1'
       SUBSCRIPTION_WATCHDOG_INTERVAL: 300000
       PERSIST: 'true'
       DEBUG_RECOVERY: 'true'

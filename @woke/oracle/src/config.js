@@ -17,5 +17,5 @@ module.exports = {
 	networkList,
 	subscriptionWatchdogInterval: Number(process.env.SUBSCRIPTION_WATCHDOG_INTERVAL),
 	persist: utils.parse_bool(process.env.PERSIST),
-	persistence: persistenceConfig[process.env.CONTEXT],
+	persistenceConfig: persistenceConfig[process.env.CONTEXT],
 };

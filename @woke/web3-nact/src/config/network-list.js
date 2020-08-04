@@ -2,7 +2,7 @@ require('dotenv').config()
 const networkList = {
 	development: [],
 	production: ['goerli_2', 'goerli_3', 'goerli_infura'],
-	goerli: ['goerli_2', 'goerli_3', 'goerli_infura'],
+	goerli: ['goerli_3', 'goerli_2', 'goerli_infura'],
 };
 
 const NETWORK_LIST = process.env.NETWORK_LIST;
