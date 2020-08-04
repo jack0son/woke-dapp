@@ -193,7 +193,7 @@ function action_send(msg, ctx, state) {
 
 	if(!opts.to) {
 		// TODO throw ParamError
-		throw new Error(`No to address specified`);
+		console.warn(`No to address specified`);
 	}
 
 	if(!!opts.value && opts.value > 0) {
