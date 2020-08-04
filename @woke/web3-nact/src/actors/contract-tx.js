@@ -75,5 +75,4 @@ const ContractTx = {
 	}
 }
 
-
 module.exports = ContractTx;

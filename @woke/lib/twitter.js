@@ -62,9 +62,9 @@ const getUserTimeline = async (userId, count) => { // claimString = `@getwoketok
 		count: 10,
 	};
 
-	let r = await client.get('statuses/user_timeline', params);
+	let { data } = await client.get('statuses/user_timeline', params);
 
-	if(r.length < 1) {
+	if(data.length < 1) {
 		throw new Error('No tweets found');
 	}
 
@@ -128,9 +128,7 @@ const directMessage = (recipientId, text) => { // claimString = `@getwoketoke 0x
 		},
 	};
 
-	return client.post('direct_messages/events/new', { event }).then(r => {
-		return r;
-	});
+	return client.post('direct_messages/events/new', { event }).then(({ data }) => data);
 }
 
 const updateStatus = (text, _params) => { // claimString = `@getwoketoke 0xWOKE:${userId},${sig},1`;
@@ -146,10 +144,7 @@ const updateStatus = (text, _params) => { // claimString = `@getwoketoke 0xWOKE:
 	// For each update attempt, the update text is compared with the authenticating user's recent Tweets. Any attempt that would result in duplication will be blocked, resulting in a 403 error. A user cannot submit the same status twice in a row.
 
   // While not rate limited by the API, a user is limited in the number of Tweets they can create at a time. If the number of updates posted by the user reaches the current allowed limit this method will return an HTTP 403 error.
-	return client.post('statuses/update', params).then(r => {
-		//console.log(r);
-		return r;
-	});
+	return client.post('statuses/update', params)
 }
 
 const getStatus = (id, _params) => { // claimString = `@getwoketoke 0xWOKE:${userId},${sig},1`;
@@ -158,11 +153,8 @@ const getStatus = (id, _params) => { // claimString = `@getwoketoke 0xWOKE:${use
 		..._params,
 		id,
 	};
-	return client.get('statuses/show', params).then(r => {
-		return r;
-	});
+	return client.get('statuses/show', params).then(({ data }) => data);
 }
-
 
 const searchTweets = (params) => { // claimString = `@getwoketoke 0xWOKE:${userId},${sig},1`;
 	const searchParams = {
@@ -173,9 +165,9 @@ const searchTweets = (params) => { // claimString = `@getwoketoke 0xWOKE:${userI
 		...params,
 	};
 
-	return client.get('search/tweets', searchParams).then(r => {
-		debug.d(`Found ${r.statuses.length || 0} tweets for query '${searchParams.q}'`);
-		return r.statuses;
+	return client.get('search/tweets', searchParams).then(({ data }) => {
+		debug.d(`Found ${data.statuses.length || 0} tweets for query '${searchParams.q}'`);
+		return data.statuses;
 	});
 }
 
@@ -189,11 +181,12 @@ const searchClaimTweets = async (handle) => { // claimString = `@getwoketoke 0xW
 		count: 100,
 	};
 
-	let r = await client.get('search/tweets', searchParams);
-	let tweets = r.statuses.map(s => ({
+	const { data } = await client.get('search/tweets', searchParams);
+	const tweets = data.statuses.map(s => ({
 		full_text: s.full_text,
 		entities: s.entities,
 	}));
+
 	if(tweets.length < 1) {
 		throw new Error('No tweets found');
 	}
