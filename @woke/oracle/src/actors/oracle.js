@@ -55,31 +55,28 @@ async function action_updateJob(msg, ctx, state) {
 
 	// FSM effects
 	if(!ctx.recovering) {
-		switch(job.status) {
-			case 'SETTLED': {
+		switch(job.status.toLowerCase()) {
+			case 'settled':
 				log(`\njob settled: user ${job.userId} query ${job.queryId}\n`)
-				dispatch(ctx.self, { type: 'notify', job }, ctx.self);
 				break;
-			}
 
-			case 'INVALID': {
+			case 'invalid':
 				if(job.reason) {
 					//ctx.debug.error(msg, `job ${job.id} from ${job.fromHandle} error: ${job.error}`)
 					log(`\njob invalid: ${job.reason}`);
 				}
 				break;
-			}
 
-			case 'FAILED': {
+			case 'failed': 
 				if(error) {
 					//ctx.debug.error(msg, `job ${job.id} from ${job.fromHandle} error: ${job.error}`)
 					log(`\njob failed: ${job.error}`);
 				}
 				break;
-			}
 
-			default: {
-			}
+			default: 
+				throw new Error(`Attempt to update query to unknown status: ${job.status}`);
+				break;
 		}
 	}
 
@@ -93,10 +90,10 @@ async function action_updateJob(msg, ctx, state) {
 
 const isUnresolvedQuery = query => (query.status === 'settled' || query.status === 'pending');
 
-// Find any unresolved queries and complete them
+// Find any unresolved queries and resume processing them
 function action_resumeQueries(msg, ctx, state) {
 	const { jobRepo } = state;
-	const unresolvedQueries = Object.keys(jobRepo).filter(isUnresolvedQuery)
+	const unresolvedQueries = Object.keys(jobRepo).filter(isUnresolvedQuery);
 	ctx.debug.d(msg, `Settling ${unresolvedQueries.length} unresolved queries...`);
 	unresolvedQueries.forEach(ctx.receivers.settle_job);
 }
@@ -107,7 +104,7 @@ function action_handleIncomingQuery(msg, ctx, state) {
 
 	const { queryId, userId } = query;
 
-	const idStr = `userId:${userId} queryId:${queryId}`;
+	const idStr = `userId: ${userId} queryId: ${queryId}`;
 
 	let job = jobRepo[queryId];
 	if(!job) {
