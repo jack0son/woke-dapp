@@ -37,7 +37,7 @@ function settle_job({msg, ctx, state}) {
 	}
 }
 
-async function update_job(msg, ctx, state) {
+async function action_updateJob(msg, ctx, state) {
 	const { jobRepo } = state;
 	const { job, error } = msg;
 
@@ -91,7 +91,17 @@ async function update_job(msg, ctx, state) {
 	return { ...state, jobRepo }
 }
 
-function handleIncomingQuery(msg, ctx, state) {
+const isUnresolvedQuery = query => (query.status === 'settled' || query.status === 'pending');
+
+// Find any unresolved queries and complete them
+function action_resumeQueries(msg, ctx, state) {
+	const { jobRepo } = state;
+	const unresolvedQueries = Object.keys(jobRepo).filter(isUnresolvedQuery)
+	ctx.debug.d(msg, `Settling ${unresolvedQueries.length} unresolved queries...`);
+	unresolvedQueries.forEach(ctx.receivers.settle_job);
+}
+
+function action_handleIncomingQuery(msg, ctx, state) {
 	const { query } = msg;
 	const { jobRepo } = state;
 
@@ -103,8 +113,12 @@ function handleIncomingQuery(msg, ctx, state) {
 	if(!job) {
 		ctx.debug.d(msg, `New query ${idStr}. Settling...`);
 		job = { queryId, userId, status: statusEnum.PENDING };
-		job.a_job = ctx.receivers.settle_job(job);
+
+		// @TODO do not need to associate job actor to job lookup
+		// Doing this would cause actor memory to be persisted
+		//job.a_job = ctx.receivers.settle_job(job);
 		// start the job
+		ctx.receivers.settle_job(job);
 	} else {
 		// Attempt to settle existing job
 		switch(job.status.toLowerCase()) {
@@ -116,7 +130,7 @@ function handleIncomingQuery(msg, ctx, state) {
 			case 'unsettled':
 			//case statusEnum.UNSETTLED:
 				ctx.debug.d(msg, `Incoming ${idStr}. Settling...`);
-				job.a_job = ctx.receivers.settle_job(job);
+				ctx.receivers.settle_job(job);
 				break;
 
 			case 'pending':
@@ -155,7 +169,7 @@ function handleContractResponse(msg, ctx, state) {
 	}
 }
 
-function handleQuerySubscription(msg, ctx, state) {
+function action_handleQuerySubscription(msg, ctx, state) {
 	const { eventName } = msg;
 	switch(eventName) {
 		case 'FindTweetLodged': {
@@ -183,7 +197,7 @@ module.exports = {
 		initialState: {
 			jobRepo: [],
 			sinkHandlers: {
-				subscribe_log: handleQuerySubscription,
+				subscribe_log: action_handleQuerySubscription,
 				a_contract: handleContractResponse,
 			},
 
@@ -211,11 +225,13 @@ module.exports = {
 				opts: { fromBlock: 0 },
 				filter: e => true,
 			}, ctx.self);
+
+			return action_resumeQueries(msg, ctx, state);
 		},
 
-		'query': handleIncomingQuery,
-		'a_sub': handleQuerySubscription,
-		'update_job': update_job,
+		'query': action_handleIncomingQuery,
+		'a_sub': action_handleQuerySubscription,
+		'update_job': action_updateJob,
 
 		'stop': (msg, ctx, state) => {
 			// @TODO call stop
