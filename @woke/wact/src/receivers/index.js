@@ -4,7 +4,7 @@
 // defintion of receivers less verbose.
 const { dispatch } = require('nact');
 
-// @desc Standardised message response. Provides a common 'socket' that enables
+// @desc Standardised message response. Provides a common socket that enables
 // actors to interact without deep knowledge of each other's interfaces.
 // @dev Promise-like behaviour
 const sink = ({ msg, state, ctx }) => (_msg, from) => {

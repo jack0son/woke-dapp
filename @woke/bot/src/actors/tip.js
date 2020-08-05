@@ -1,6 +1,6 @@
 const { ActorSystem, receivers, reducers, actors: { SinkAdapter } } = require('@woke/wact');
 const { dispatch } = ActorSystem;
-const { subsumeReduce, Pattern } = reducers;
+const { subsumeEffects, Pattern } = reducers;
 const { messageTemplates: { console: { tip_submitted } } } = require('@woke/lib');
 
 // Handle results from transaction actor
@@ -209,7 +209,7 @@ const failure = Pattern(
 );
 
 const patterns = [init, gotClaimStatus, gotUserBalance, tipTxSuccess, tipTxFailure, failure];
-const reducer = reducers.subsumeReduce(patterns);
+const reducer = reducers.subsumeEffects(patterns);
 
 function onCrash(msg, error, ctx) {
 	console.log(`tipper:tip, name: ${ctx.name}`);

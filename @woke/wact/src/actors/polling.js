@@ -2,18 +2,26 @@ const { dispatch, query } = require('nact');
 const { Logger } = require('@woke/lib');
 const debug = (msg, args) => Logger('polling').name(`info:`, `${msg.type}>> ` + args);
 
-const iface = {
-	poll: 'poll',
-}
+// @TODO remove this iface trash
+// @TODO use symbols
+// expose actions interface  
+const actionsList = [
+	'poll',
+	'perform',
+	'resume',
+	'interupt',
+	'stop',
+];
+const iface = actionsList.reduce((obj, actionName) => ({ ...obj, [actionName]: actionName }), {});
 
+// Cron-like behaviour
 const pollingActor = {
-	iface, 
+	iface: ifaceList, 
 
 	properties: {
 		initialState: {
 			halt: false,
 			blockTimeout: null,
-
 		},
 
 		onCrash: (msg, error, ctx) => {
@@ -64,7 +72,7 @@ const pollingActor = {
 			}
 		},
 
-		'perform': async (msg, ctx, state) => {
+		[iface.perform]: async (msg, ctx, state) => {
 			const { halt, blockTimeout } = state;
 			const { target, action, period, args } = msg;
 
@@ -86,7 +94,7 @@ const pollingActor = {
 			return state;
 		},
 
-		'resume': (msg, ctx, state) => {
+		[iface.resume]: (msg, ctx, state) => {
 			const { currentAction } = state;
 			if(!currentAction) {
 				throw new Error(`No action being polled`);
@@ -96,12 +104,12 @@ const pollingActor = {
 			return { ...state, halt: false };
 		},
 
-		'interupt': (msg, ctx, state) => {
+		[iface.interupt]: (msg, ctx, state) => {
 			debug(msg, `Interupting polling of {${state.target.name}:${state.action}}`);
 			return { ...state, halt: true };
 		},
 
-		'stop': (msg, ctx, state) => {
+		[iface.stop]: (msg, ctx, state) => {
 			debug(msg, `Stopping polling of {${state.target.name}:${state.action}}`);
 			return ctx.stop;
 		}

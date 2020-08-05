@@ -9,36 +9,25 @@ const {
 	dispatch,
 } = require('nact');
 const { block } = require('./lib/nact-utils');
-const { Logger } = require('@woke/lib');
+const MessageDebugger = require('./lib/message-debugger');
 
-const DEBUG_PREFIX = 'actor';
-const DEBUG_RECOVERY= process.env.DEBUG_RECOVERY =='true' ? true : false
+// @TODO Use class instead of closure pattern for actor wrapper
+// - so many being instantiated, memory is being exhausted
 
-function remap_debug(_name) {
-	const debug = {};
-	// Remap debugger functions to prefix each with message type
-	Object.entries(Logger(`${DEBUG_PREFIX}:${_name}`)).forEach(([key, val]) => {
-		if(key == 'control' || key == 'log') {
-			debug[key] = val;
-		} else {
-			debug[key] = (msg, args) => val(`${msg.type} >> ` + args)
-		}
-	})
-	return debug;
-}
-
-// Make receiver functions available to the actions by binding them to the
-// message bundle.
-// @returns Map string -> function
+// Make receiver functions available to actor actions by binding them to
+// the message bundle.
+// @param receivers fn
+// @returns Map string -> fn
 const bind_receivers = (receivers, msg, state, ctx) => receivers ?
 	receivers({ msg, state, ctx })
 	: undefined;
 
+// Spawn a stateful actor
 const spawn_actor = (_parent, _name, _actionsMap, _initialState, _properties) =>
 	spawn(
 		_parent,
 		(state = _initialState, msg, context) => {
-			context.debug = remap_debug(_name);
+			context.debug = MessageDebugger(_name); // provide debug to receiver context
 			return route_action(_actionsMap, state, msg, {
 				...context,
 				receivers: bind_receivers(_properties.receivers, msg, state, context),
@@ -48,13 +37,14 @@ const spawn_actor = (_parent, _name, _actionsMap, _initialState, _properties) =>
 		_properties,
 	);
 
+// Spawn an actor which can persist its state to a storage repository
 const spawn_persistent = (_parent, _name, _actionsMap, _initialState, _properties) => {
 	if(!_properties || !_properties.persistenceKey) {
 		throw new Error(`Persistent actor must define 'persistenceKey' property`);
 	}
 	const { persistenceKey, ...otherProperties } = _properties;
 
-	const debug = remap_debug(_name);
+	const debug = MessageDebugger(_name);
 	debug.control.enabledByApp = debug.control.enabled();
 
 	let recovering = false;
@@ -103,7 +93,7 @@ const spawn_persistent = (_parent, _name, _actionsMap, _initialState, _propertie
 // @returns next actor state
 const route_action = async (_actionsMap, _state, _msg, _context) => {
 	let action = _actionsMap[_msg.type];
-	if (action && typeof (action) == "function") {
+	if(action && typeof (action) == "function") {
 		const nextState = await action(_msg, _context, _state);
 		return nextState !== undefined ? nextState : _state;
 	}
@@ -113,11 +103,16 @@ const route_action = async (_actionsMap, _state, _msg, _context) => {
 	}
 }
 
+const isSystem = _system => !!_system && !!_system.name;
+
+// @TODO define persistent properties
+const isPersistentSystem = _system => isSystem(_system);
+
 // Spawn an actor instance using an actor definition
 // @returns actor instance
 function start_actor(_parent) {
 	return (_name, _definition, _initialState) => {
-		if(!_parent && _parent.name) {
+		if(!isSystem(_parent)) {
 			throw new Error(`Parent actor must be provided`);
 		}
 		const { actions, properties } = _definition;
@@ -134,11 +129,6 @@ function start_actor(_parent) {
 			otherProperties,
 		);
 	}
-}
-
-function isPersistentSystem(_system) {
-	// TODO define precise persistent properties
-	return !!_system && !!_system.name;
 }
 
 // Spawn a persistent actor

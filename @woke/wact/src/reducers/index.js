@@ -13,7 +13,7 @@ function Pattern(predicate, effect) { return { predicate, effect } }
 //		4. reduce applies predicates to the new state and returns an effect result
 // Patterns are listed in descending order of precedence - i.e. apply the last
 // matching effect.
-function subsumeReduce(patterns, _default) { return (msg, ctx, state) => {
+function subsumeEffects (patterns, _default) { return (msg, ctx, state) => {
 		return { ...state, ...patterns.reduce(
 			(effect, pattern) => pattern.predicate(state) ? pattern.effect : effect,
 			_default || noEffect
@@ -23,7 +23,7 @@ function subsumeReduce(patterns, _default) { return (msg, ctx, state) => {
 }
 
 // Apply all matching effects in a sequential pipline
-function reducePipe(msg, ctx, state) {
+function pipeEffects(msg, ctx, state) {
 	return { ...state, ...patterns.reduce(
 			(state, pattern) => pattern.predicate(state) ? pattern.effect(state) : state,
 			state,
@@ -54,12 +54,11 @@ function reduceFSM(eventsTable) {
 			return state;
 		}
 
-		ctx.reduce = ctx.receivers.reduce; // convenience
+		ctx.reduce = ctx.receivers.reduce;
 
 		const nextState = {...state, ...action.effect(msg, ctx, state)};
 		return nextState;
 	}
 }
 
-module.exports = { Pattern, reduceFSM, noEffect, subsumeReduce, reducePipe };
-
+module.exports = { Pattern, reduceFSM, noEffect, subsumeEffects, pipeEffects };

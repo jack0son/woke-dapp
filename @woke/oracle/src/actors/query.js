@@ -1,6 +1,6 @@
 const { ActorSystem, receivers, reducers, actors: { SinkAdapter } } = require('@woke/wact');
 const { dispatch } = ActorSystem;
-const { subsumeReduce, Pattern } = reducers;
+const { subsumeEffects, Pattern } = reducers;
 const { tweetToProofString } = require('../lib/proof-protcol');
 
 
@@ -120,7 +120,7 @@ const queryFailed = Pattern(
 );
 
 const patterns = [init, submitQuery, queryFailed, queryComplete, failed];
-const reducer = reducers.subsumeReduce(patterns);
+const reducer = reducers.subsumeEffects(patterns);
 
 function onCrash(msg, error, ctx) {
 	console.log(`oracle:query crash, name: ${ctx.name}`);

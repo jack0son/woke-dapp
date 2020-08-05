@@ -1,6 +1,6 @@
 const { ActorSystem, receivers, reducers, actors: { SinkAdapter } } = require('@woke/wact');
 const { dispatch } = ActorSystem;
-const { subsumeReduce, Pattern } = reducers;
+const { subsumeEffects, Pattern } = reducers;
 
 function handleFailure(msg, ctx, state) {
 	const { error } = state;
@@ -99,7 +99,7 @@ const txFailed = Pattern(
 );
 
 const patterns = [start, failed, jobComplete, txFailed];
-const reducer = subsumeReduce(patterns);
+const reducer = subsumeEffects(patterns);
 
 function onCrash(msg, error, ctx) {
 	console.log(`Job ${ctx.name} crash`);
