@@ -14,14 +14,31 @@ const MessageDebugger = require('./lib/message-debugger');
 // @TODO Use class instead of closure pattern for actor wrapper
 // - so many being instantiated, memory is being exhausted
 
-// Make receiver functions available to actor actions by binding them to
-// the message bundle.
-// @param receivers fn
-// @returns Map string -> fn
+/**
+ * Make receiver functions available to actor actions by binding them to the
+ * message bundle.
+ *
+ * @function bind_receivers
+ * @param {(Bundle) => receiver: string -> fn} receivers - Make receivers HOF
+ * @param {Message} msg - Received message
+ * @param {object} state - Actor state
+ * @param {Context} ctx - Actor context
+ * @return {receiver: string -> fn} Receivers map
+ */
 const bind_receivers = (receivers, msg, state, ctx) =>
 	receivers ? receivers({ msg, state, ctx }) : undefined;
 
-// Spawn a stateful actor
+/**
+ * Spawn a stateful actor
+ *
+ * @function spawn_actor
+ * @param {System} _parent - Parent system
+ * @param {string} _name - Actor name
+ * @param {action: string -> Action} _actionsMap - Mapping of action names to functions
+ * @param {object} _initialState - Actor's inital state object
+ * @param {Propertiesj} _properties - Actor properties
+ * @return {Actor} Actor instance
+ */
 const spawn_actor = (_parent, _name, _actionsMap, _initialState, _properties) =>
 	spawn(
 		_parent,
@@ -36,7 +53,17 @@ const spawn_actor = (_parent, _name, _actionsMap, _initialState, _properties) =>
 		_properties
 	);
 
-// Spawn an actor which can persist its state to a storage repository
+/**
+ * Spawn an actor which can persist its state to a storage repository
+ *
+ * @function spawn_actor
+ * @param {System} _parent - Parent system
+ * @param {string} _name - Actor name
+ * @param {action: string -> Action} _actionsMap - Mapping of action names to functions
+ * @param {object} _initialState - Actor's inital state object
+ * @param {Propertiesj} _properties - Actor properties
+ * @return {Actor} Actor instance
+ */
 const spawn_persistent = (
 	_parent,
 	_name,
@@ -47,7 +74,7 @@ const spawn_persistent = (
 	if (!_properties || !_properties.persistenceKey) {
 		throw new Error(`Persistent actor must define 'persistenceKey' property`);
 	}
-	const { persistenceKey, ...otherProperties } = _properties;
+	const { persistenceKey, ...properties } = _properties;
 
 	const debug = MessageDebugger(_name);
 	debug.control.enabledByApp = debug.control.enabled();
@@ -88,15 +115,24 @@ const spawn_persistent = (
 	return spawnPersistent(_parent, target, persistenceKey, _name, _properties);
 };
 
-// Pass message bundle to action handler
-// @returns next actor state
-const route_action = async (_actionsMap, _state, _msg, _context) => {
+/**
+ * Pass message bundle to action handler
+ *
+ * @async
+ * @function route_action
+ * @param {action: string -> Action} _actionsMap - Mapping of action names to functions
+ * @param {object} _state - Actor state
+ * @param {Message} _msg - Received message
+ * @param {Context} _ctx - Actor context
+ * @return {Promise<state: object>} Next actor state
+ */
+const route_action = async (_actionsMap, _state, _msg, _ctx) => {
 	let action = _actionsMap[_msg.type];
 	if (action && typeof action == 'function') {
-		const nextState = await action(_msg, _context, _state);
+		const nextState = await action(_msg, _ctx, _state);
 		return nextState !== undefined ? nextState : _state;
 	} else {
-		console.warn(`${_context.name} ignored unknown message:`, _msg);
+		console.warn(`${_ctx.name} ignored unknown message:`, _msg);
 		return _state;
 	}
 };
@@ -106,9 +142,18 @@ const isSystem = (_system) => !!_system && !!_system.name;
 // @TODO define persistent properties
 const isPersistentSystem = (_system) => isSystem(_system);
 
-// Spawn an actor instance using an actor definition
-// @returns actor instance
+/**
+ * Spawn an actor instance using an actor definition
+ * @param {System} _parent - Parent system
+ * @return {fn} Actor constructor
+ */
 function start_actor(_parent) {
+	/**
+	 * @param {string} _name - Actor name
+	 * @param {Definition} _definition - Actor definition
+	 * @param {object} _initialState - Actor's inital state object
+	 * @return {Actor} Actor instance
+	 */
 	return (_name, _definition, _initialState) => {
 		if (!isSystem(_parent)) {
 			throw new Error(`Parent actor must be provided`);
@@ -129,8 +174,11 @@ function start_actor(_parent) {
 	};
 }
 
-// Spawn a persistent actor
-// @returns persistant actor instance
+/**
+ * Spawn a persistent actor instance using an actor definition
+ * @param {System} _parent - Parent system
+ * @return {fn} Actor constructor
+ */
 const start_persistent = (_persistentSystem) => (
 	_name,
 	_definition,
@@ -154,8 +202,12 @@ const start_persistent = (_persistentSystem) => (
 	);
 };
 
-// Instantiate a nact actor system
-// @returns director: nact actor system with bound methods
+/**
+ * Instantiate a nact actor system
+ *
+ * @param {PersistenceEngine} _persistenceEngine - Persistence engine
+ * @return {Director} Nact actor system with bound methods
+ */
 function bootstrap(_persistenceEngine) {
 	const system = _persistenceEngine
 		? start(configurePersistence(_persistenceEngine))
