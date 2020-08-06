@@ -11,7 +11,7 @@ const {
 const { block } = require('./lib/nact-utils');
 const MessageDebugger = require('./lib/message-debugger');
 
-// @TODO Use class instead of closure pattern for actor wrapper
+// @TODO Use class/prototype instead of closure pattern for actor wrapper
 // - so many being instantiated, memory is being exhausted
 
 /**
@@ -35,7 +35,7 @@ const bind_receivers = (receivers, msg, state, ctx) =>
  * @param {System} _parent - Parent system
  * @param {string} _name - Actor name
  * @param {action: string -> Action} _actionsMap - Mapping of action names to functions
- * @param {object} _initialState - Actor's inital state object
+ * @param {object} _initialState - Actor's inital state
  * @param {Propertiesj} _properties - Actor properties
  * @return {Actor} Actor instance
  */
@@ -60,7 +60,7 @@ const spawn_actor = (_parent, _name, _actionsMap, _initialState, _properties) =>
  * @param {System} _parent - Parent system
  * @param {string} _name - Actor name
  * @param {action: string -> Action} _actionsMap - Mapping of action names to functions
- * @param {object} _initialState - Actor's inital state object
+ * @param {object} _initialState - Actor's inital state
  * @param {Propertiesj} _properties - Actor properties
  * @return {Actor} Actor instance
  */
@@ -151,7 +151,7 @@ function start_actor(_parent) {
 	/**
 	 * @param {string} _name - Actor name
 	 * @param {Definition} _definition - Actor definition
-	 * @param {object} _initialState - Actor's inital state object
+	 * @param {object} _initialState - Actor's inital state
 	 * @return {Actor} Actor instance
 	 */
 	return (_name, _definition, _initialState) => {
