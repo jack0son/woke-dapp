@@ -4,6 +4,9 @@
 
 const noEffect = (msg, ctx, state) => state;
 
+// Make Pattern object
+// @param predicate Boolean
+// @param effect Fn
 function Pattern(predicate, effect) { return { predicate, effect } }
 
 // @dev Apply last effect in patterns list with truthy predicate 
@@ -13,6 +16,9 @@ function Pattern(predicate, effect) { return { predicate, effect } }
 //		4. reduce applies predicates to the new state and returns an effect result
 // Patterns are listed in descending order of precedence - i.e. apply the last
 // matching effect.
+// @param patterns: Pattern[] 
+// @parame _default: Fn 
+// @returns effect: Fn
 function subsumeEffects (patterns, _default) { return (msg, ctx, state) => {
 		return { ...state, ...patterns.reduce(
 			(effect, pattern) => pattern.predicate(state) ? pattern.effect : effect,
@@ -23,6 +29,7 @@ function subsumeEffects (patterns, _default) { return (msg, ctx, state) => {
 }
 
 // Apply all matching effects in a sequential pipline
+// @returns Actor State
 function pipeEffects(msg, ctx, state) {
 	return { ...state, ...patterns.reduce(
 			(state, pattern) => pattern.predicate(state) ? pattern.effect(state) : state,
@@ -30,9 +37,6 @@ function pipeEffects(msg, ctx, state) {
 		)(msg, ctx, state)
 	};
 }
-
-// @TODO Use class instead of closure pattern for actor wrapper
-// - so many being instantiated, memory is running out
 
 // FSM engine. FSM table defined in events table.
 function reduceFSM(eventsTable) {
