@@ -5,8 +5,6 @@ const debug = (msg, args) =>
 
 // Cron-like behaviour
 const pollingActor = {
-	iface: ifaceList,
-
 	properties: {
 		initialState: {
 			halt: false,

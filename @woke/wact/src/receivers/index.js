@@ -35,7 +35,7 @@ const noEffect = (_, __, state) => state;
  *
  * @function matchSink
  * @param {Actor} actor - Actor reference
- * @return {Action} Handler
+ * @return {Action} Handler function
  */
 const matchSink = ({ msg, state, ctx }) => (actor) => {
 	const { kind } = msg;

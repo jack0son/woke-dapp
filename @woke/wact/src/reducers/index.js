@@ -29,7 +29,7 @@ function Pattern(predicate, effect) {
  *
  * @param {Pattern[]} patterns - List of Patterns to evaluate
  * @param {Action} defaultEffect - Default effect to return
- * @return {Action} Reducer
+ * @return {Action} Reducer function
  */
 const subsumeEffects = (patterns, defaultEffect) => (msg, ctx, state) => ({
 	...state,
@@ -55,19 +55,19 @@ const pipeEffects = (patterns) => (msg, ctx, state) => ({
 });
 
 /**
- * FSM engine. FSM table defined in events table.
+ * Imperative FSM engine. States and effects specified in effects map.
  *
  * @function effectFSM
- * @param {event: string -> stages: string[] -> Action} effectsTable - Finite
+ * @param {event: string -> stages: string[] -> Action} effectsMap - Finite
  * state machine definition
- * @return {Action} Reducer
+ * @return {Action} Reducer function
  */
-const effectFSM = (effectsTable) => (msg, ctx, state) => {
+const effectFSM = (effectsMap) => (msg, ctx, state) => {
 	const { stage } = state;
 	const { event } = msg;
 
 	ctx.debug.info(msg, `Got <${event}> in stage ╢ ${stage} ╟`);
-	const applicableStages = effectsTable[event];
+	const applicableStages = effectsMap[event];
 
 	if (!applicableStages) {
 		ctx.debug.warn(msg, `No applicable stages for event <${event}>`);

@@ -11,6 +11,9 @@ const {
 const { block } = require('./lib/nact-utils');
 const MessageDebugger = require('./lib/message-debugger');
 
+// Should revovery stage in persistent actor print debug logs
+const DEBUG_RECOVERY = process.env.DEBUG_RECOVERY == 'true' ? true : false;
+
 // @TODO Use class/prototype instead of closure pattern for actor wrapper
 // - so many being instantiated, memory is being exhausted
 
@@ -26,7 +29,7 @@ const MessageDebugger = require('./lib/message-debugger');
  * @return {receiver: string -> fn} Receivers map
  */
 const bind_receivers = (receivers, msg, state, ctx) =>
-	receivers ? receivers({ msg, state, ctx }) : undefined;
+	receivers && receivers({ msg, state, ctx });
 
 /**
  * Spawn a stateful actor
@@ -39,11 +42,18 @@ const bind_receivers = (receivers, msg, state, ctx) =>
  * @param {Propertiesj} _properties - Actor properties
  * @return {Actor} Actor instance
  */
-const spawn_actor = (_parent, _name, _actionsMap, _initialState, _properties) =>
-	spawn(
+const spawn_actor = (
+	_parent,
+	_name,
+	_actionsMap,
+	_initialState,
+	_properties
+) => {
+	const debug = MessageDebugger(_name);
+	return spawn(
 		_parent,
 		(state = _initialState, msg, context) => {
-			context.debug = MessageDebugger(_name); // provide debug to receiver context
+			context.debug = debug; // provide debug to receiver context
 			return route_action(_actionsMap, state, msg, {
 				...context,
 				receivers: bind_receivers(_properties.receivers, msg, state, context),
@@ -52,6 +62,7 @@ const spawn_actor = (_parent, _name, _actionsMap, _initialState, _properties) =>
 		_name,
 		_properties
 	);
+};
 
 /**
  * Spawn an actor which can persist its state to a storage repository
@@ -59,7 +70,8 @@ const spawn_actor = (_parent, _name, _actionsMap, _initialState, _properties) =>
  * @function spawn_actor
  * @param {System} _parent - Parent system
  * @param {string} _name - Actor name
- * @param {action: string -> Action} _actionsMap - Mapping of action names to functions
+ * @param {action: string -> Action} _actionsMap - Mapping of action names to
+ *		handler functions.
  * @param {object} _initialState - Actor's inital state
  * @param {Propertiesj} _properties - Actor properties
  * @return {Actor} Actor instance
@@ -82,7 +94,7 @@ const spawn_persistent = (
 	let recovering = false;
 	const target = debug.control.enabledByApp
 		? (state = _initialState, msg, context) => {
-				context = { ...context, debug };
+				context.debug = debug;
 				if (context.recovering) {
 					if (!recovering) {
 						recovering = true;
@@ -105,7 +117,7 @@ const spawn_persistent = (
 				});
 		  }
 		: (state = _initialState, msg, context) => {
-				context = { ...context, debug };
+				context.debug = debug;
 				return route_action(_actionsMap, state, msg, {
 					...context,
 					receivers: bind_receivers(_properties.receivers, msg, state, context),
@@ -214,7 +226,7 @@ function bootstrap(_persistenceEngine) {
 		: start();
 	return {
 		start_actor: start_actor(system),
-		start_persistent: _persistenceEngine ? start_persistent(system) : undefined,
+		start_persistent: _persistenceEngine && start_persistent(system),
 		stop: () => stop(system),
 		system,
 	};

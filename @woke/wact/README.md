@@ -1,13 +1,13 @@
 # wAct - Woke Actor System
 
 wAct is a wrapper around [Nact](https://github.com/ncthbrt/nact) that provides
-message and actor structure conventions, common actor behaviour (like
-state machines), and supervision policies.
+message and actor structure, common actor behaviour (like state machines), and
+supervision policies.
 
-The actor model is useful in the functional paradigm as it clearly
-relegates all state mutations to the edge of the domain logic. Nact is
-a compact message-oriented middleware which facilitates message based communication
-between isolated entities called actors.
+Nact is a compact message-oriented middleware which facilitates message based
+communication between isolated entities called actors. The actor model is useful
+in the functional paradigm as it relegates all state mutations to the edge of
+the domain logic by using a sequential execution lifecycle within each actor.
 
 All credit to [Nick Cuthbert](https://github.com/ncthbrt) for the core of this
 package.
@@ -20,13 +20,14 @@ Core specification of the Woke Actor System is contained in `src/actor-system.js
 
 Messages to an actor are stored in a FIFO queue and operated on sequentially.
 
-Actors execute a target function only upon receipt of a message. Upon conclusion,
-stateful actors may mutate their own encapsulated state which will be fed to the
-target function on its next execution.
+Actors execute a target function only upon receipt of a message. Upon
+conclusion, stateful actors may mutate their own encapsulated state which will
+be fed to the target function on its next execution. Deterministic behaviour
+using function composition is natural and achievable with the target function.
 
-_NB_ Some rules which are not enforced by the library must be followed to
-maintain the reactive and side-effect resistant characteristics of actors.
-For example, messages should not contain functions which reference the state of
+**NB** Some rules which are not enforced by the library must be followed to
+maintain the reactive and side-effect resistant characteristics of actors. For
+example, messages should not contain functions which reference the state of
 another actor.
 
 ## Rationale
@@ -41,9 +42,10 @@ errors within their own bounded fault context.
 
 **For example**, a transaction management service might promise to ensure the
 transaction is processed by a remote system, managing any network availability
-issues, thus requiring the caller to have less knowledge of the transaction system
-and minimise its failure modes - it may only need to be aware of errors with the
-transaction's arguments.
+issues, thus requiring the caller to have less knowledge of the transaction
+system and minimise its failure modes - it may only need to be aware of errors
+with the transaction's arguments, and avoids exposure to any system crash
+encountered by the service.
 
 This helps achieve fault tolerance, particularly when some components of the
 system have many or random failure modes. It also clearly delineates
@@ -59,7 +61,8 @@ into a top-down tree of execution contexts in which each node may defer to its
 parent to make decisions about faults.
 
 By confining faults to a supervision context it becomes much easier to model and
-manage failure scenarios. Read more at [The Reactive
+manage failure scenarios. System intent is clearer as domain logic is less
+interleaved with error handling. Read more at [The Reactive
 Manifesto](https://www.reactivemanifesto.org/).
 
 - Redux on the server
