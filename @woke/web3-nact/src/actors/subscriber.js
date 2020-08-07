@@ -63,7 +63,7 @@ const subscriptionActor = {
 			};
 
 			const latestBlock = state.latestBlock ? state.latestBlock : 0;
-			console.log('subscribe with latestBlock', latestBlock);
+			console.log('Subscribe with latestBlock', latestBlock);
 			const subscription = makeLogEventSubscription(web3Instance.web3)(
 				contract,
 				eventName,
@@ -85,18 +85,10 @@ const subscriptionActor = {
 		},
 
 		start: (msg, ctx, state) => {
-			const {
-				contractInterface,
-				eventName,
-				watchdog,
-				watchdogInterval,
-			} = state;
+			const { contractInterface, eventName, watchdog, watchdogInterval } = state;
 			const { resubscribeInterval } = msg;
 			const period =
-				resubscribeInterval ||
-				watchdogInterval ||
-				blockTime ||
-				DEFAULT_WATCHDOG_INTERVAL;
+				resubscribeInterval || watchdogInterval || blockTime || DEFAULT_WATCHDOG_INTERVAL;
 			if (watchdog && !state.a_watchdog) {
 				ctx.debug.info(msg, `Starting subscription watchdog...`);
 				state.a_watchdog = start_actor(ctx.self)('_watchdog', Polling);
@@ -126,13 +118,9 @@ const subscriptionActor = {
 
 			if (log && filter(log.event)) {
 				//if(log && filter ? filter(log.event) : true) {
-				console.log(
-					`Prev BN: ${state.latestBlock}, Log BN: ${log.blockNumber}`
-				);
+				console.log(`Prev BN: ${state.latestBlock}, Log BN: ${log.blockNumber}`);
 				const latestBlock =
-					log.blockNumber > state.latestBlock
-						? log.blockNumber
-						: state.latestBlock;
+					log.blockNumber > state.latestBlock ? log.blockNumber : state.latestBlock;
 				console.log(`New latestBlock: ${latestBlock}`);
 
 				subscribers.forEach((a_subscriber) => {

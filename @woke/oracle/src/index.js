@@ -1,4 +1,9 @@
-const { persist, persistenceConfig, networkList, subscriptionWatchdogInterval } = require('./config');
+const {
+	persist,
+	persistenceConfig,
+	networkList,
+	subscriptionWatchdogInterval,
+} = require('./config');
 const { Logger, twitter, utils } = require('@woke/lib');
 const OracleSystem = require('./oracle-system');
 const debug = Logger();
@@ -17,6 +22,6 @@ const bootstrap = async () => {
 		//retryInterval: 5*1000,
 	});
 	return oracleSystem.start();
-}
+};
 
 bootstrap().catch(console.log);

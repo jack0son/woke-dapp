@@ -9,17 +9,10 @@ const waitForEvent = (_event, _from = 0, _to = 'latest') =>
 const waitForEventWeb3 = (_contract, _event, _from = 0, _to = 'latest') =>
 	//event: {fromBlock: _from, toBlock: _to}, (err, event) =>
 	new Promise((resolve, reject) =>
-		_contract.once(_event, {}, (err, event) =>
-			err ? reject(err) : resolve(event)
-		)
+		_contract.once(_event, {}, (err, event) => (err ? reject(err) : resolve(event)))
 	);
 
-const makeLogEventSubscription = (web3) => (
-	contract,
-	eventName,
-	handleFunc,
-	opts
-) => {
+const makeLogEventSubscription = (web3) => (contract, eventName, handleFunc, opts) => {
 	let subscription = null;
 
 	const eventJsonInterface = web3.utils._.find(
@@ -50,11 +43,11 @@ const makeLogEventSubscription = (web3) => (
 			handleUpdate
 		);
 
-		console.log(
-			`... Subscribed to ${eventName} ${
-				opts && opts.fromBlock ? `bn: ${opts.fromBlock}` : ''
-			}`
-		);
+		// console.log(
+		// 	`... Subscribed to ${eventName} ${
+		// 		opts && opts.fromBlock ? `bn: ${opts.fromBlock}` : ''
+		// 	}`
+		// );
 		//console.log(newSub);
 		//subscription.on("data", console.log);
 		subscription = newSub;
@@ -81,8 +74,7 @@ const makeLogEventSubscription = (web3) => (
 // @param method: web3Contract[method]
 const safePriceEstimate = (web3) => async (contract, method, args, txOpts) => {
 	const toEth = (wei) => web3.utils.fromWei(wei, 'ether');
-	const valStr = (wei, delim = ', ') =>
-		`${toEth(wei)} ETH${delim}${wei.toString()} wei`;
+	const valStr = (wei, delim = ', ') => `${toEth(wei)} ETH${delim}${wei.toString()} wei`;
 	const BN = web3.utils.BN;
 
 	let gasPrice = new BN(txOpts.gasPrice);
@@ -107,10 +99,10 @@ const safePriceEstimate = (web3) => async (contract, method, args, txOpts) => {
 
 		const logOpts = ({ limit, price, cost }) => {
 			console.log(
-				`\tGas:\t${limit.toString()}\n\tPrice:\t${valStr(
-					price,
+				`\tGas:\t${limit.toString()}\n\tPrice:\t${valStr(price, '\t')}\n\tCost:\t${valStr(
+					cost,
 					'\t'
-				)}\n\tCost:\t${valStr(cost, '\t')}`
+				)}`
 			);
 		};
 
@@ -184,9 +176,9 @@ const uInt32ToHexString = (uInt32) => {
 };
 
 const _uInt32ToHexString = (uInt32) =>
-	Buffer.from(
-		new DataView(new ArrayBuffer(4)).setUint32(0, uInt32, false)
-	).toString('hex');
+	Buffer.from(new DataView(new ArrayBuffer(4)).setUint32(0, uInt32, false)).toString(
+		'hex'
+	);
 
 const initContract = (web3Instance, interface) =>
 	new web3Instance.web3.eth.Contract(
@@ -197,8 +189,7 @@ const initContract = (web3Instance, interface) =>
 const valueString = (web3Utils) => {
 	//const BN = web3Utils.BN;
 	const toEth = (wei) => web3Utils.fromWei(wei, 'ether');
-	return (wei, delim = ', ') =>
-		`${toEth(wei)} ETH${delim}${wei.toString()} wei`;
+	return (wei, delim = ', ') => `${toEth(wei)} ETH${delim}${wei.toString()} wei`;
 };
 
 // @param a: address string

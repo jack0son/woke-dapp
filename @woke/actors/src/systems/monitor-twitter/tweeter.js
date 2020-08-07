@@ -1,5 +1,7 @@
-const { Properties, actions: { action_sendDirectMessage } } = require('../../actors/tweeter');
-
+const {
+	Properties,
+	actions: { action_sendDirectMessage },
+} = require('../../actors/tweeter');
 
 module.exports = ({ twitterStub, recipientId }) => {
 	function send_dm(_msg, ctx, state) {
@@ -10,9 +12,7 @@ module.exports = ({ twitterStub, recipientId }) => {
 	return {
 		properties: Properties({ twitterStub }),
 		actions: {
-			'send_directMessage': send_dm,
-		}
-	}
+			send_directMessage: send_dm,
+		},
+	};
 };
-
-

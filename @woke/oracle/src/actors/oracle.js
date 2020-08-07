@@ -3,7 +3,7 @@ const {
 	ActorSystem,
 } = require('@woke/wact');
 const { useNotifyOnCrash } = require('@woke/actors');
-const QueryJob = require('./query');
+const QueryQuery = require('./query');
 const { dispatch, start_actor } = ActorSystem;
 // Each job is a simple linear state machine
 const statuses = ['UNSETTLED', 'PENDING', 'SETTLED', 'FAILED', 'INVALID'];
@@ -13,7 +13,7 @@ statuses.forEach((s, i) => (statusEnum[s] = i));
 // Send tip to WokeToken contract
 // @returns tip actor
 function spawn_job(_parent, job, a_contract_TwitterOracle, a_twitterAgent) {
-	return start_actor(_parent)(`_job-${job.queryId}`, QueryJob, {
+	return start_actor(_parent)(`_job-${job.queryId}`, QueryQuery, {
 		a_contract_TwitterOracle,
 		a_twitterAgent,
 		job,
@@ -35,7 +35,7 @@ function settle_job({ msg, ctx, state }) {
 	};
 }
 
-async function action_updateJob(msg, ctx, state) {
+async function action_updateQuery(msg, ctx, state) {
 	const { jobRepo } = state;
 	const { job, error } = msg;
 
@@ -56,30 +56,25 @@ async function action_updateJob(msg, ctx, state) {
 	if (!ctx.recovering) {
 		switch (job.status.toLowerCase()) {
 			case 'settled':
-				log(`Job settled: user ${job.userId} query ${job.queryId}`);
-				console.log(
-					`\nQuery resolved: user ${job.userId} query ${job.queryId}\n`
-				);
+				log(`\nQuery resolved: user ${job.userId} query ${job.queryId}\n`);
 				break;
 
 			case 'invalid':
 				if (job.reason) {
 					//ctx.debug.error(msg, `job ${job.id} from ${job.fromHandle} error: ${job.error}`)
-					log(`\nJob invalid: ${job.reason}`);
+					log(`\nQuery invalid: ${job.reason}`);
 				}
 				break;
 
 			case 'failed':
 				if (error) {
 					//ctx.debug.error(msg, `job ${job.id} from ${job.fromHandle} error: ${job.error}`)
-					log(`\nJob failed: ${job.error}`);
+					log(`\nQuery failed: ${job.error}`);
 				}
 				break;
 
 			default:
-				throw new Error(
-					`Attempt to update query to unknown status: ${job.status}`
-				);
+				throw new Error(`Attempt to update query to unknown status: ${job.status}`);
 				break;
 		}
 	}
@@ -99,10 +94,7 @@ const isUnresolvedQuery = (query) =>
 function action_resumeQueries(msg, ctx, state) {
 	const { jobRepo } = state;
 	const unresolvedQueries = Object.keys(jobRepo).filter(isUnresolvedQuery);
-	ctx.debug.d(
-		msg,
-		`Settling ${unresolvedQueries.length} unresolved queries...`
-	);
+	ctx.debug.d(msg, `Settling ${unresolvedQueries.length} unresolved queries...`);
 	unresolvedQueries.forEach(ctx.receivers.settle_job);
 }
 
@@ -188,10 +180,7 @@ function action_handleQuerySubscription(msg, ctx, state) {
 		}
 
 		default: {
-			ctx.debug.info(
-				msg,
-				`No action defined for subscription to '${eventName}' events`
-			);
+			ctx.debug.info(msg, `No action defined for subscription to '${eventName}' events`);
 		}
 	}
 }
@@ -244,7 +233,7 @@ module.exports = {
 
 		query: action_handleIncomingQuery,
 		a_sub: action_handleQuerySubscription,
-		update_job: action_updateJob,
+		update_job: action_updateQuery,
 
 		stop: (msg, ctx, state) => {
 			// @TODO call stop
