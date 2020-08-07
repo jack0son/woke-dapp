@@ -11,7 +11,7 @@ const {
 const { block } = require('./lib/nact-utils');
 const MessageDebugger = require('./lib/message-debugger');
 
-// Should revovery stage in persistent actor print debug logs
+// Whether revovery stage in persistent actor should print debug logs
 const DEBUG_RECOVERY = process.env.DEBUG_RECOVERY == 'true' ? true : false;
 
 // @TODO Use class/prototype instead of closure pattern for actor wrapper
@@ -127,6 +127,10 @@ const spawn_persistent = (
 	return spawnPersistent(_parent, target, persistenceKey, _name, _properties);
 };
 
+const isAction = (action) => action && typeof action == 'function';
+const isSystem = (system) => !!system && !!system.name;
+const isPersistentSystem = (system) => isSystem(system); // @TODO define persistent properties
+
 /**
  * Pass message bundle to action handler
  *
@@ -139,20 +143,15 @@ const spawn_persistent = (
  * @return {Promise<state: object>} Next actor state
  */
 const route_action = async (_actionsMap, _state, _msg, _ctx) => {
-	let action = _actionsMap[_msg.type];
-	if (action && typeof action == 'function') {
-		const nextState = await action(_msg, _ctx, _state);
-		return nextState !== undefined ? nextState : _state;
-	} else {
+	const action = _actionsMap[_msg.type];
+	if (!isAction(action)) {
 		console.warn(`${_ctx.name} ignored unknown message:`, _msg);
 		return _state;
 	}
+
+	const nextState = await action(_msg, _ctx, _state);
+	return nextState !== undefined ? nextState : _state;
 };
-
-const isSystem = (_system) => !!_system && !!_system.name;
-
-// @TODO define persistent properties
-const isPersistentSystem = (_system) => isSystem(_system);
 
 /**
  * Spawn an actor instance using an actor definition

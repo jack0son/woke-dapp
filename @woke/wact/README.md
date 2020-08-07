@@ -5,7 +5,7 @@ message and actor structure, common actor behaviour (like state machines), and
 supervision policies.
 
 Nact is a compact message-oriented middleware which facilitates message based
-communication between isolated entities called actors. The actor model is useful
+communication between isolated entities called actors. An actor model is useful
 in the functional paradigm as it relegates all state mutations to the edge of
 the domain logic by using a sequential execution lifecycle within each actor.
 
@@ -20,10 +20,10 @@ Core specification of the Woke Actor System is contained in `src/actor-system.js
 
 Messages to an actor are stored in a FIFO queue and operated on sequentially.
 
-Actors execute a target function only upon receipt of a message. Upon
-conclusion, stateful actors may mutate their own encapsulated state which will
-be fed to the target function on its next execution. Deterministic behaviour
-using function composition is natural and achievable with the target function.
+Actors execute a target function only upon receipt of a message. Stateful actors
+may mutate their own encapsulated state by returning the new state which will be
+fed to the target function on its next execution. Deterministic behaviour using
+function composition is achieved naturally within the target function.
 
 **NB** Some rules which are not enforced by the library must be followed to
 maintain the reactive and side-effect resistant characteristics of actors. For
@@ -48,20 +48,23 @@ with the transaction's arguments, and avoids exposure to any system crash
 encountered by the service.
 
 This helps achieve fault tolerance, particularly when some components of the
-system have many or random failure modes. It also clearly delineates
-error handling from the domain logic, separating control flow into two coexistent
-architectures:
+system have many or random failure modes - perhaps an unreliable data source or
+buggy dependency. It also clearly delineates error handling from the domain
+logic, separating control flow into two coexistent architectures:
 
 1. **Domain**: Message oriented services - _Flat structure_
 2. **Fault management**: Supervision tree - _Hierarchical structure_
 
-In other words, the system does its job by passing messages among
-several encapsulated modules, and manages failure by structuring these modules
-into a top-down tree of execution contexts in which each node may defer to its
-parent to make decisions about faults.
+In other words, the system _*does its job*_ by passing messages among several
+encapsulated modules, and _*manages failure*_ by structuring these modules into
+a tree of execution contexts in which each node may defer to its parent to make
+decisions about faults (supervision policy).
+
+Supervision policies can be easily shared between different services for common
+failure patterns such as API rate-limits or excessive runtime.
 
 By confining faults to a supervision context it becomes much easier to model and
-manage failure scenarios. System intent is clearer as domain logic is less
+manage failure scenarios. System intent is also clearer as domain logic is less
 interleaved with error handling. Read more at [The Reactive
 Manifesto](https://www.reactivemanifesto.org/).
 

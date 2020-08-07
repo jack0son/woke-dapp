@@ -53,24 +53,26 @@ async function action_updateJob(msg, ctx, state) {
 	}
 	ctx.debug.d(msg, `Updated job:${job.queryId} to ⊰ ${job.status} ⊱`);
 
-	// FSM effects
 	if (!ctx.recovering) {
 		switch (job.status.toLowerCase()) {
 			case 'settled':
-				log(`\njob settled: user ${job.userId} query ${job.queryId}\n`);
+				log(`Job settled: user ${job.userId} query ${job.queryId}`);
+				console.log(
+					`\nQuery resolved: user ${job.userId} query ${job.queryId}\n`
+				);
 				break;
 
 			case 'invalid':
 				if (job.reason) {
 					//ctx.debug.error(msg, `job ${job.id} from ${job.fromHandle} error: ${job.error}`)
-					log(`\njob invalid: ${job.reason}`);
+					log(`\nJob invalid: ${job.reason}`);
 				}
 				break;
 
 			case 'failed':
 				if (error) {
 					//ctx.debug.error(msg, `job ${job.id} from ${job.fromHandle} error: ${job.error}`)
-					log(`\njob failed: ${job.error}`);
+					log(`\nJob failed: ${job.error}`);
 				}
 				break;
 
