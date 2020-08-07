@@ -6,7 +6,12 @@ async function action_tweetUnclaimedTransfer(msg, ctx, state) {
 	//'tweet_unclaimed_transfer': async (msg, ctx, state) => {
 	const { twitter } = state;
 	const { fromId, toId, amount, balance } = msg;
-	const tweet = await twitter.postUnclaimedTransfer(fromId, toId, amount, balance);
+	const tweet = await twitter.postUnclaimedTransfer(
+		fromId,
+		toId,
+		amount,
+		balance
+	);
 	ctx.debug.d(msg, `tweeted '${tweet.text}'`);
 	dispatch(ctx.sender, { type: msg.type, tweet }, ctx.self);
 }
@@ -33,7 +38,7 @@ async function action_tweetTipConfirmed(msg, ctx, state) {
 
 	dispatch(ctx.sender, { type: msg.type, tweet }, ctx.self);
 	// Tweet an invite
-}	
+}
 
 async function action_tweetTipInvalid(msg, ctx, state) {
 	//'tweet_tip_invalid': async (msg, ctx, state) => {
@@ -42,9 +47,9 @@ async function action_tweetTipInvalid(msg, ctx, state) {
 
 	ctx.debug.info(msg, `tweeting ${tip.id} invalid...`);
 	let text = messageTemplates.twitter.tip_invalid_message(tip);
-	if(tip.reason == 'broke') {
+	if (tip.reason == 'broke') {
 		text = messageTemplates.twitter.tip_broke_message(tip);
-	} else if(tip.reason == 'unclaimed') {
+	} else if (tip.reason == 'unclaimed') {
 		text = messageTemplates.twitter.tip_invalid_message(tip);
 	} else {
 		// No invalidation reason
@@ -79,10 +84,10 @@ async function action_sendDirectMessage(msg, ctx, state) {
 }
 
 module.exports = {
- action_tweetUnclaimedTransfer,
- action_tweetTipSeen,
- action_tweetTipConfirmed,
- action_tweetTipInvalid,
- action_tweetTipFailed,
- action_sendDirectMessage,
+	action_tweetUnclaimedTransfer,
+	action_tweetTipSeen,
+	action_tweetTipConfirmed,
+	action_tweetTipInvalid,
+	action_tweetTipFailed,
+	action_sendDirectMessage,
 };

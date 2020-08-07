@@ -5,10 +5,10 @@ const actions = require('./actions');
 const Tweeter = (opts) => ({
 	properties: makeProperties(opts),
 	actions,
-})
+});
 
 module.exports = {
 	Tweeter,
 	actions,
 	Properties: makeProperties,
-}
+};
