@@ -31,7 +31,11 @@ function Pattern(predicate, effect) {
  * @param {Action} defaultEffect - Default effect to return
  * @return {Action} Reducer function
  */
-const subsumeEffects = (patterns, defaultEffect) => (msg, ctx, state) => ({
+const subsumeEffects = (patterns, defaultEffect = noEffect) => (
+	msg,
+	ctx,
+	state
+) => ({
 	...state,
 	...patterns.reduce(
 		(effect, pattern) => (pattern.predicate(state) ? pattern.effect : effect),

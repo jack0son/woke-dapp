@@ -8,16 +8,16 @@ const defaults = {
 	PORT: 5433,
 };
 
-const conf = {};
+const defaultConf = {};
 // Use environment parameters if defined
 Object.keys(defaults).forEach(
-	(v) => (conf[v] = process.env[`POSTGRES_${v}`] || defaults[v])
+	(v) => (defaultConf[v] = process.env[`POSTGRES_${v}`] || defaults[v])
 );
 
 // e.g. "postgresql://bot:botpass@docker_db:5432/woke_dapp"
 function getConnectionString(_conf) {
-	const cf = { ...conf, ..._conf };
-	return `postgresql://${_conf.USER}:${_conf.PWD}@${_conf.HOST}:${_conf.PORT}/${_conf.DB}`;
+	const conf = { ...defaultConf, ..._conf };
+	return `postgresql://${conf.USER}:${conf.PWD}@${conf.HOST}:${conf.PORT}/${conf.DB}`;
 }
 
 module.exports = {

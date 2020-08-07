@@ -3,7 +3,7 @@ const { query } = require('nact');
 const FATAL_HANG_TIME = 1000 * 1000; //ms
 /**
  * Blocking message dispatch. Wait for a response from the consumer.
- * Intended for use by actors - in place of query which should generally
+ * Intended for use by actors in place of query which should generally
  * only be used by external callers to the actor system.
  *
  * Useful for identifing temporal dependencies between actors which
