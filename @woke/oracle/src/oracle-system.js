@@ -1,7 +1,7 @@
 const { Logger, twitter, TwitterStub } = require('@woke/lib');
 const { ActorSystem, PersistenceEngine } = require('@woke/wact');
 const { useMonitor } = require('@woke/actors');
-const { ContractsSystem } = require('@woke/web3-nact');
+const { ContractSystem } = require('@woke/web3-nact');
 
 const TwitterAgent = require('./actors/twitter-agent');
 const twitterMock = require('../test/mocks/twitter-stub.mock');
@@ -59,9 +59,9 @@ class OracleSystem {
 		}
 
 		// Actors
-		this.contracts =
-			contracts ||
-			ContractsSystem(director, ['TwitterOracleMock'], {
+		this.contractSystem =
+			contractSystem ||
+			ContractSystem(director, ['TwitterOracleMock'], {
 				persist: this.persist,
 				networkList: this.config.networkList,
 			});
@@ -75,7 +75,7 @@ class OracleSystem {
 			'oracle',
 			Oracle,
 			{
-				a_contract_TwitterOracle: this.contracts.TwitterOracleMock,
+				a_contract_TwitterOracle: this.contractSystem.TwitterOracleMock,
 				a_twitterAgent: this.a_twitterAgent,
 				subscriptionWatchdogInterval: this.config.SUBSCRIPTION_WATCHDOG_INTERVAL,
 			}

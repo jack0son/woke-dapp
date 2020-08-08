@@ -28,14 +28,10 @@ function Pattern(predicate, effect) {
  * matching effect.
  *
  * @param {Pattern[]} patterns - List of Patterns to evaluate
- * @param {Action} defaultEffect - Default effect to return
+ * @param {Action} defaultEffect - Default effect to apply
  * @return {Action} Reducer function
  */
-const subsumeEffects = (patterns, defaultEffect = noEffect) => (
-	msg,
-	ctx,
-	state
-) => ({
+const subsumeEffects = (patterns, defaultEffect = noEffect) => (msg, ctx, state) => ({
 	...state,
 	...patterns.reduce(
 		(effect, pattern) => (pattern.predicate(state) ? pattern.effect : effect),
@@ -48,12 +44,12 @@ const subsumeEffects = (patterns, defaultEffect = noEffect) => (
  *
  * @function pipeEffects
  * @param {Pattern[]} patterns - List of Patterns to evaluate
+ * @return {Action} Reducer function
  */
 const pipeEffects = (patterns) => (msg, ctx, state) => ({
 	...state,
 	...patterns.reduce(
-		(state, pattern) =>
-			pattern.predicate(state) ? pattern.effect(state) : state,
+		(state, pattern) => (pattern.predicate(state) ? pattern.effect(state) : state),
 		state
 	)(msg, ctx, state),
 });
@@ -80,10 +76,7 @@ const effectFSM = (effectsMap) => (msg, ctx, state) => {
 
 	const action = applicableStages[stage];
 	if (!action) {
-		ctx.debug.warn(
-			msg,
-			`Event <${event}> triggers on actions in stage ╢ ${stage} ╟`
-		);
+		ctx.debug.warn(msg, `Event <${event}> triggers on actions in stage ╢ ${stage} ╟`);
 		return state;
 	}
 

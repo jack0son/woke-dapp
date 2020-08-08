@@ -1,4 +1,4 @@
-const { persist, networkList } = require('../config/service-config');
+const serviceConfig = require('../config/service-config');
 const { Logger, twitter, TwitterStub } = require('@woke/lib');
 const TipSystem = require('../systems/tip-system');
 const debug = Logger();
@@ -8,14 +8,13 @@ const bootstrap = async () => {
 	await twitter.initClient();
 	twitterStub = new TwitterStub(twitter);
 
-	const tipSystem = new TipSystem(undefined, {
-		twitterStub,
-		persist,
-		pollingInterval: 5*1000,
+	const tipSystem = new TipSystem({
 		notify: true,
-		networkList,
+		twitterStub,
+		pollingInterval: 5 * 1000,
+		...serviceConfig,
 	});
 	return tipSystem.start();
-}
+};
 
 bootstrap().catch(console.log);

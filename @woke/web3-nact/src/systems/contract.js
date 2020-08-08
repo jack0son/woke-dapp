@@ -6,16 +6,17 @@ function ContractsSystem(director, contractNames, opts) {
 	const { a_web3, a_nonce } = CoreSystem(director, opts);
 
 	// Initialise Woken Contract agent
-	let a_contracts = {};
-	contractNames.forEach(name => {
-		a_contracts[name] = director.start_actor(`a_${name}`, Contract, {
-			a_web3, 
-			a_nonce,
-			contractInterface: loadContract(name),
-		})
-	});
-
-	return a_contracts;
+	return contractNames.reduce(
+		(a_contracts, name) => ({
+			...a_contracts,
+			[name]: director.start_actor(`a_${name}`, Contract, {
+				a_web3,
+				a_nonce,
+				contractInterface: loadContract(name),
+			}),
+		}),
+		{}
+	);
 }
 
 module.exports = ContractsSystem;
