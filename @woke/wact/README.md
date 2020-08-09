@@ -9,6 +9,14 @@ communication between isolated entities called actors. An actor model is useful
 in the functional paradigm as it relegates all state mutations to the edge of
 the domain logic by using a sequential execution lifecycle within each actor.
 
+Actors protect against concurrency problems caused by shared state and
+side-effects.
+
+- Failure isolation
+- State encapsulation
+- Reduced coupling
+- Recovery-oriented computing
+
 All credit to [Nick Cuthbert](https://github.com/ncthbrt) for the core of this
 package.
 
@@ -23,7 +31,8 @@ Messages to an actor are stored in a FIFO queue and operated on sequentially.
 Actors execute a target function only upon receipt of a message. Stateful actors
 may mutate their own encapsulated state by returning the new state which will be
 fed to the target function on its next execution. Deterministic behaviour using
-function composition is achieved naturally within the target function.
+function composition is achieved naturally within the target function - similar
+to a redux reducer.
 
 **NB** Some rules which are not enforced by the library must be followed to
 maintain the reactive and side-effect resistant characteristics of actors. For
@@ -63,11 +72,12 @@ decisions about faults (supervision policy).
 Supervision policies can be easily shared between different services for common
 failure patterns such as API rate-limits or excessive runtime.
 
-By confining faults to a supervision context it becomes much easier to model and
-manage failure scenarios. System intent is also clearer as domain logic is less
-interleaved with error handling. Read more at [The Reactive
-Manifesto](https://www.reactivemanifesto.org/).
+By confining faults (fault localisation) to a supervision context it becomes
+much easier to model and manage failure scenarios. System intent is also clearer
+as domain logic is less interleaved with error handling. Read more at [The
+Reactive Manifesto](https://www.reactivemanifesto.org/).
 
+- Message-based thread communication
 - Redux on the server
 - Objects with concurrency
 - 'Let it crash' philosophy

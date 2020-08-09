@@ -40,6 +40,23 @@ const subsumeEffects = (patterns, defaultEffect = noEffect) => (msg, ctx, state)
 });
 
 /**
+ *  Match reducer - apply first matching effect
+ *
+ * @param {Pattern[]} patterns - List of Patterns to evaluate
+ * @param {Action} defaultEffect - Default effect to apply
+ * @return {Action} Reducer function
+ */
+const matchEffects = (patterns, defaultEffect = noEffect) => (msg, ctx, state) => ({
+	...state,
+	...patterns
+		.reverse()
+		.reduce(
+			(effect, pattern) => (pattern.predicate(state) ? pattern.effect : effect),
+			defaultEffect
+		)(msg, ctx, state),
+});
+
+/**
  * Apply all matching effects in a sequential pipline
  *
  * @function pipeEffects
@@ -76,7 +93,7 @@ const effectFSM = (effectsMap) => (msg, ctx, state) => {
 
 	const action = applicableStages[stage];
 	if (!action) {
-		ctx.debug.warn(msg, `Event <${event}> triggers on actions in stage ╢ ${stage} ╟`);
+		ctx.debug.warn(msg, `Event <${event}> has no action in stage ╢ ${stage} ╟`);
 		return state;
 	}
 
@@ -85,4 +102,11 @@ const effectFSM = (effectsMap) => (msg, ctx, state) => {
 	return { ...state, ...action.effect(msg, ctx, state) }; // next state
 };
 
-module.exports = { Pattern, noEffect, effectFSM, subsumeEffects, pipeEffects };
+module.exports = {
+	Pattern,
+	noEffect,
+	subsumeEffects,
+	matchEffects,
+	pipeEffects,
+	effectFSM,
+};
