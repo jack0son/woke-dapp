@@ -9,16 +9,16 @@ if (require.main === module) {
 	const [command, ...args] = argv;
 
 	const usage = {
-		getTweetText: 'getTweetText <userId>',
-		getLodgedTweets: 'getLodgedTweets <userId>',
-		getUser: 'getUser <userId>',
-		getClaimedEvents: 'getClaimEvents [userId, address]',
-		getTransferEvents: 'getTransferEvents [[from,to] <userId>]',
-		getBonusEvents: 'getBonusEvents [[claimer,referrer] <userId>]',
-		supply: 'supply [minted]',
+		getTweetText: '<userId>',
+		getLodgedTweets: '<userId>',
+		getUser: '<userId>',
+		getClaimedEvents: '[userId, address]',
+		getTransferEvents: '[[from,to] <userId>]',
+		getBonusEvents: '[[claimer,referrer] <userId>]',
+		supply: '[minted]',
 	};
 
-	const printCmdUsage = () => console.log(`Usage: ${usage[command]}`);
+	const printCmdUsage = () => console.log(`Usage: ${command} ${usage[command]}`);
 
 	const start = async () => {
 		const commands = Object.keys(usage).includes(command) && (await bindCommands()); // don't work for nothing
@@ -95,7 +95,7 @@ if (require.main === module) {
 			default:
 				{
 					console.log('Woke Contracts CLI v0.1.0\nUsage: ');
-					Object.keys(usage).forEach((c) => console.log('  ' + usage[c]));
+					Object.keys(usage).forEach((c) => console.log(`  ${c} ${usage[c]}`));
 				}
 
 				return;
@@ -103,6 +103,6 @@ if (require.main === module) {
 	};
 
 	start()
-		.then(process.exit) // web3 connection keeps script alive
+		.then(() => process.exit()) // web3 connection keeps script alive
 		.catch(console.log);
 }
