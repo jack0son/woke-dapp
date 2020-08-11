@@ -12,7 +12,7 @@ const debug = Logger();
 const bootstrap = async () => {
 	await twitter.initClient();
 
-	const oracleSystem = new OracleSystem(undefined, {
+	const oracleSystem = new OracleSystem({
 		twitterClient: twitter,
 		persist,
 		subscriptionWatchdogInterval,

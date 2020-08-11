@@ -14,12 +14,13 @@ function TwitterClient() {
 }
 
 class OracleSystem {
-	constructor(contracts, opts) {
+	constructor(opts) {
 		const defaults = {
 			monitoring: true,
 		};
 
 		const {
+			contractSystem,
 			twitterClient,
 			persist,
 			retryInterval,
@@ -64,6 +65,7 @@ class OracleSystem {
 			ContractSystem(director, ['TwitterOracleMock'], {
 				persist: this.persist,
 				networkList: this.config.networkList,
+				maxAttempts: 2,
 			});
 
 		this.a_twitterAgent = director.start_actor(
