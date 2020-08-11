@@ -7,7 +7,7 @@
   "scripts": {
     "start": "DEBUG=* node index.js",
     "twitter": "DEBUG=twitter* node ../lib/twitter.js",
-    "cli": "node index.js",
+    "cli": "node --trace-warnings index.js",
     "cli:verbose": "DEBUG=* node index.js"
   },
   "author": "Jackson Virgo",
