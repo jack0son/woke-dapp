@@ -1,9 +1,9 @@
-const Statuses = require('./statuses');
+const { TaskStatuses } = require('./statuses');
 
-const properties = {
+module.exports = {
 	initialState: {
 		taskRepo: new Map(),
-		tasksByStatus: Object.values(Statuses).reduce(
+		tasksByStatus: Object.values(TaskStatuses).reduce(
 			(lut, status) => ({ ...lut, [status]: new Map() }),
 			{}
 		),

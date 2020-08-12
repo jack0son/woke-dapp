@@ -77,7 +77,12 @@ much easier to model and manage failure scenarios. System intent is also clearer
 as domain logic is less interleaved with error handling. Read more at [The
 Reactive Manifesto](https://www.reactivemanifesto.org/).
 
-- Message-based thread communication
+**Notes**
+
+- [Let it
+  crash](http://stratus3d.com/blog/2020/01/20/applying-the-let-it-crash-philosophy-outside-erlang/#:~:text=Let%20it%20crash%20is%20a%20fault%20tolerant%20design%20pattern.&text=That's%20a%20good%2C%20terse%2C%20description,program%20ought%20to%20handle%20them.)
+  philosophy
+- Message-based thread communication / similar to Communicating Sequential
+  Processes
 - Redux on the server
-- Objects with concurrency
-- 'Let it crash' philosophy
+- Object concurrency model

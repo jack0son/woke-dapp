@@ -1,5 +1,5 @@
 const { dispatch } = require('../../actor-system');
-const Statuses = require('./statuses');
+const { TaskStatuses: Statuses, isStatus } = require('./statuses');
 
 const isEffect = (effect) => effect && typeof effect === 'function';
 
@@ -12,7 +12,7 @@ function Task(taskId, task) {
 	return {
 		...task,
 		taskId,
-		status: Statuses.ready,
+		status: Statuses.init,
 		error: null,
 		reason: null,
 	};
@@ -30,36 +30,44 @@ function Actions(getId, isValidTask, { effects, reducer, resumeOn }) {
 	if (!reducer) reducer = (_, __, state) => state;
 
 	function action_newTask(msg, ctx, state) {
-		const { taskRepo } = state;
-		const { task: _task } = msg.task;
+		const { taskRepo, tasksByStatus } = state;
+		const { task: _task } = msg;
 
 		const taskId = getId(_task);
 		if (!isValidTask(_task)) throw new Error(`New task ${taskId} is not a valid task`);
 
-		return action_updateTask(
-			{ task: taskRepo.has(taskId) ? taskRepo.get(taskId) : Task(taskId, _task) },
-			ctx,
-			state
-		);
+		if (taskRepo.has(taskId)) return state;
+
+		const task = taskRepo.set(taskId, Task(taskId, _task)).get(taskId);
+		tasksByStatus[task.status].set(taskId, task);
+		return action_updateTask({ task: { ...task, status: Statuses.ready } }, ctx, {
+			...state,
+			taskRepo,
+		});
 	}
 
 	async function action_updateTask(_msg, ctx, _state) {
 		const { taskRepo, tasksByStatus } = _state;
 		const { task: _task } = _msg;
-		const taskId = getId(_task);
+		const taskId = _task.taskId || getId(_task);
 
 		if (!taskRepo.has(taskId))
 			throw new Error(`Attempt to update task ${taskId} which does not exist`);
 
-		if (!Statuses[task.status])
-			throw new Error(`Unspecified task status for taskId ${taskId}: ${task.status}`);
+		if (!isStatus(_task.status))
+			throw new Error(
+				`Unspecified task status for taskId ${taskId}: ${_task.status.toString()}`
+			);
 
 		if (ctx.persist && !ctx.recovering) await ctx.persist(_msg);
 
 		const prev = taskRepo.get(taskId);
-		if (_task.status == prev.status) {
+		if (_task.status === prev.status) {
 			!ctx.recovering &&
-				ctx.debug.d(msg, `Task ID: ${taskId} already in status ${_task.status}`);
+				ctx.debug.d(
+					_msg,
+					`Task ID: ${taskId} already has status ${_task.status.toString()}`
+				);
 			return _state;
 		}
 
@@ -75,7 +83,8 @@ function Actions(getId, isValidTask, { effects, reducer, resumeOn }) {
 		const state = { ..._state, taskRepo, tasksByStatus };
 
 		const effect = effects[task.status];
-		const msg = { task };
+		// Task actors should not reference the taskRepo
+		const msg = { task: { ...task } }; // use a copy of the task
 		return !ctx.recovering && isEffect(effect)
 			? reducer(effect(msg, ctx, state))
 			: reducer(msg, ctx, state);

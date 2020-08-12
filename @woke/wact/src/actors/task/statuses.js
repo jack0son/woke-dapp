@@ -7,4 +7,8 @@ const TaskStatuses = {
 	done: Symbol('done'),
 };
 
-module.exports = TaskStatuses;
+const statusList = Object.values(TaskStatuses);
+
+const isStatus = (status) => statusList.includes(status);
+
+module.exports = { TaskStatuses, isStatus };
