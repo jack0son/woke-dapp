@@ -1,21 +1,20 @@
-const { getEvents } =  require('../utils');
+const { getEvents } = require('../utils');
 
-module.exports = wokeToken => {
-	const getTokenSupply = _opts => {
+module.exports = (wokeToken) => {
+	const getTokenSupply = (_opts) => {
 		let opts = {
 			..._opts,
 			//from: account
 		};
 		return wokeToken.methods.totalSupply().call(opts);
-	}
+	};
 
-	const getSummonedEvents = async () => {
+	const getSummonedEvents = () => {
 		return getEvents(wokeToken)('Summoned', {});
-	}
+	};
 
 	return {
 		getTokenSupply,
 		getSummonedEvents,
-	}
-}
-
+	};
+};

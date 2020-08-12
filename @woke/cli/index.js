@@ -9,25 +9,25 @@ if (require.main === module) {
 	const [command, ...args] = argv;
 
 	const usage = {
-		getTweetText: 'getTweetText <userId>',
-		getLodgedTweets: 'getLodgedTweets <userId>',
-		getUser: 'getUser <userId>',
-		getClaimedEvents: 'getClaimEvents [userId, address]',
-		getTransferEvents: 'getTransferEvents [[from,to] <userId>]',
-		getBonusEvents: 'getBonusEvents [[claimer,referrer] <userId>]',
-		supply: 'supply [minted]',
+		getTweetText: '<userId>',
+		getLodgedTweets: '<userId>',
+		getUser: '<userId>',
+		getClaimedEvents: '[userId, address]',
+		getTransferEvents: '[[from,to] <userId>]',
+		getBonusEvents: '[[claimer,referrer] <userId>]',
+		supply: '[minted]',
 	};
 
-	const printCmdUsage = () => console.log(`Usage: ${usage[command]}`);
+	const cmdUsage = (cmd) => `${cmd} ${usage[cmd]}`;
+	const printCmdUsage = () => console.log(`Usage: ${cmdUsage(command)}`);
 
-	(async () => {
-		const commands =
-			Object.keys(usage).includes(command) && (await bindCommands()); // don't work for nothing
+	const start = async () => {
+		const commands = Object.keys(usage).includes(command) && (await bindCommands()); // don't work for nothing
 
 		switch (command) {
 			case 'supply': {
 				const showMintEvents = args[0];
-				return commands.supply(showMintEvents);
+				return await commands.supply(showMintEvents);
 			}
 
 			case 'getTweetText': {
@@ -39,7 +39,7 @@ if (require.main === module) {
 				}
 				debug.d('Getting tweet text for user ', userId);
 
-				return commands.getTweetText(userId);
+				return await commands.getTweetText(userId);
 			}
 
 			case 'getLodgedTweets': {
@@ -48,7 +48,7 @@ if (require.main === module) {
 					debug.d('Getting tweet text for user ', userId);
 				}
 
-				return commands.getLodgedTweets(userId);
+				return await commands.getLodgedTweets(userId);
 			}
 
 			case 'getUser': {
@@ -57,26 +57,23 @@ if (require.main === module) {
 					debug.d('Getting data for user', userId);
 				}
 
-				return commands.getUser(userId);
+				return await commands.getUser(userId);
 			}
 
 			case 'getClaimedEvents': {
-				return commands.getClaimedEvents();
+				return await commands.getClaimedEvents();
 			}
 
 			case 'getBonusEvents': {
 				const [selectRole, userId] = args;
-				debug.d(
-					'Getting bonus events',
-					selectRole ? `for ${selectRole} ${userId}` : ''
-				);
+				debug.d('Getting bonus events', selectRole ? `for ${selectRole} ${userId}` : '');
 				switch (selectRole) {
 					case 'claimer':
-						return commands.getBonusEvents(userId);
+						return await commands.getBonusEvents(userId);
 					case 'referrer':
-						return commands.getBonusEvents(undefined, userId);
+						return await commands.getBonusEvents(undefined, userId);
 					default:
-						return commands.getBonusEvents();
+						return await commands.getBonusEvents();
 				}
 			}
 
@@ -85,11 +82,11 @@ if (require.main === module) {
 				debug.d('Getting transfers', type ? ` for ${type} ${userId}` : '');
 				switch (type) {
 					case 'from':
-						return commands.getTransferEvents(userId);
+						return await commands.getTransferEvents(userId);
 					case 'to':
-						return commands.getTransferEvents(undefined, userId);
+						return await commands.getTransferEvents(undefined, userId);
 					default:
-						return commands.getTransferEvents();
+						return await commands.getTransferEvents();
 				}
 			}
 
@@ -99,10 +96,14 @@ if (require.main === module) {
 			default:
 				{
 					console.log('Woke Contracts CLI v0.1.0\nUsage: ');
-					Object.keys(usage).forEach((c) => console.log('  ' + usage[c]));
+					Object.keys(usage).forEach((c) => console.log(`  ${cmdUsage(c)}`));
 				}
 
 				return;
 		}
-	})().catch(console.log);
+	};
+
+	start()
+		.then(() => process.exit()) // web3 connection keeps script alive
+		.catch(console.log);
 }

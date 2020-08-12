@@ -68,31 +68,23 @@ async function initWeb3() {
 		}
 
 		try {
-			debug.d(
-				`Attempting Web3 connection on network ${web3Instance.network.id} ...`
-			);
+			debug.d(`Attempting Web3 connection on network ${web3Instance.network.id} ...`);
 			let networkId = await web3Instance.web3.eth.net.getId();
 			debug.d(`... connected to ${networkId}`);
 
 			if (networkId != web3Instance.network.id) {
-				throw new Error(
-					`... got ${networkId}, but expected ${web3Instance.network.id}`
-				);
+				throw new Error(`... got ${networkId}, but expected ${web3Instance.network.id}`);
 			}
 
 			connected = true;
 		} catch (error) {
-			debug.error(
-				'Encountered error trying to instantiate new Web3 instance ...'
-			);
+			debug.error('Encountered error trying to instantiate new Web3 instance ...');
 			debug.error('... ', error);
 		}
 
 		if (!connected) {
 			if (attempts >= maxAttempts) {
-				debug.d(
-					`FATAL ERROR: Could not instantiate Web3 after ${attempts} attempts.`
-				);
+				debug.d(`FATAL ERROR: Could not instantiate Web3 after ${attempts} attempts.`);
 				return false;
 			}
 			await timeoutPromise(3000);
@@ -112,7 +104,20 @@ function initContract(web3Instance, artifact) {
 }
 
 function nonEmptyString(str) {
-	return str !== undefined && str !== null && str.length && str.length > 0;
+	return str !== undefined && str !== null && !!str.length;
+}
+
+function timeoutPromise(ms) {
+	return new Promise((resolve, reject) =>
+		setTimeout(() => {
+			resolve();
+		}, ms)
+	);
+}
+
+function logWhyAlive() {
+	console.log('activeRequests', process._getActiveRequests());
+	console.log('activeHandles', process._getActiveHandles());
 }
 
 module.exports = {
@@ -121,4 +126,5 @@ module.exports = {
 	initWeb3,
 	initContract,
 	nonEmptyString,
+	logWhyAlive,
 };
