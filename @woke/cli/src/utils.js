@@ -104,7 +104,7 @@ function initContract(web3Instance, artifact) {
 }
 
 function nonEmptyString(str) {
-	return str !== undefined && str !== null && str.length && str.length > 0;
+	return str !== undefined && str !== null && !!str.length;
 }
 
 function timeoutPromise(ms) {

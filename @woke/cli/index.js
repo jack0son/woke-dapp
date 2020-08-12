@@ -18,7 +18,8 @@ if (require.main === module) {
 		supply: '[minted]',
 	};
 
-	const printCmdUsage = () => console.log(`Usage: ${command} ${usage[command]}`);
+	const cmdUsage = (cmd) => `${cmd} ${usage[cmd]}`;
+	const printCmdUsage = () => console.log(`Usage: ${cmdUsage(command)}`);
 
 	const start = async () => {
 		const commands = Object.keys(usage).includes(command) && (await bindCommands()); // don't work for nothing
@@ -95,7 +96,7 @@ if (require.main === module) {
 			default:
 				{
 					console.log('Woke Contracts CLI v0.1.0\nUsage: ');
-					Object.keys(usage).forEach((c) => console.log(`  ${c} ${usage[c]}`));
+					Object.keys(usage).forEach((c) => console.log(`  ${cmdUsage(c)}`));
 				}
 
 				return;
