@@ -3,7 +3,7 @@ const {
 	ActorSystem,
 } = require('@woke/wact');
 const { useNotifyOnCrash } = require('@woke/actors');
-const QueryQuery = require('./query');
+const Query = require('./query');
 const { dispatch, start_actor } = ActorSystem;
 // Each job is a simple linear state machine
 const statuses = ['UNSETTLED', 'PENDING', 'SETTLED', 'FAILED', 'INVALID'];
@@ -13,7 +13,7 @@ statuses.forEach((s, i) => (statusEnum[s] = i));
 // Send tip to WokeToken contract
 // @returns tip actor
 function spawn_job(_parent, job, a_contract_TwitterOracle, a_twitterAgent) {
-	return start_actor(_parent)(`_job-${job.queryId}`, QueryQuery, {
+	return start_actor(_parent)(`_job-${job.queryId}`, Query, {
 		a_contract_TwitterOracle,
 		a_twitterAgent,
 		job,

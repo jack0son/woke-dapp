@@ -1,4 +1,5 @@
-const Statuses = require('./Statuses');
+const { dispatch } = require('../../actor-system');
+const Statuses = require('./statuses');
 
 const isEffect = (effect) => effect && typeof effect === 'function';
 
@@ -56,6 +57,12 @@ function Actions(getId, isValidTask, { effects, reducer, resumeOn }) {
 		if (ctx.persist && !ctx.recovering) await ctx.persist(_msg);
 
 		const prev = taskRepo.get(taskId);
+		if (_task.status == prev.status) {
+			!ctx.recovering &&
+				ctx.debug.d(msg, `Task ID: ${taskId} already in status ${_task.status}`);
+			return _state;
+		}
+
 		const task = { ...prev, ..._task };
 
 		if (task.error) {
@@ -88,18 +95,20 @@ function Actions(getId, isValidTask, { effects, reducer, resumeOn }) {
 		const abortMsg = (taskId) => ({ task: { taskId, status: statuses.abort } });
 
 		// Abort a single task by taskId
-		if (taskId) {
-			return action_updateTask(abortMsg(taskId), ctx, state);
-		}
+		if (taskId) return action_updateTask(abortMsg(taskId), ctx, state);
 
+		//tasksByStatus[status].forEach(({taskId}) => dispatch(ctx.self, abortMsg(taskId)));
 		// Abort all tasks in provided status
 		return tasksByStatus[status].reduce(
 			(state, task) => action_updateTask(abortMsg(task.taskId), ctx, state),
 			state
 		);
+
 		// @note using reduce ties execution path for all task effects together - an
 		// error will cause state changes from preceeding tasks to be lost
 	}
 
 	return { action_newTask, action_updateTask, action_resumeTasks, action_abortTasks };
 }
+
+module.exports = Actions;
