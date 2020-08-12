@@ -18,7 +18,7 @@ function Task(taskId, task) {
 	};
 }
 
-const RESUME_ON = [Statuses.init, Statuses.ready];
+const RESTART_ON = [Statuses.init, Statuses.ready, Statuses.pending];
 
 /**
  * Task manager actions
@@ -26,7 +26,7 @@ const RESUME_ON = [Statuses.init, Statuses.ready];
  * @param {[TODO:type]} effects - [TODO:description]
  * @return {[TODO:type]} [TODO:description]
  */
-function Actions(getId, isValidTask, { effects, reducer, resumeOn }) {
+function Actions(getId, isValidTask, { effects, reducer, restartOn }) {
 	if (!reducer) reducer = (_, __, state) => state;
 
 	function action_newTask(msg, ctx, state) {
@@ -90,25 +90,58 @@ function Actions(getId, isValidTask, { effects, reducer, resumeOn }) {
 			: reducer(msg, ctx, state);
 	}
 
+	// Simple restart functionality
+	// Just go back to ready state
+	function action_restartTasks(msg, ctx, _state) {
+		const { tasksByStatus } = _state;
+		const { taskId } = msg;
+
+		// @fix action function does not now action type that identifies its calling
+		// actor
+		const restartMsg = (taskId) => ({
+			type: 'update',
+			task: { taskId, status: Statuses.ready },
+		});
+		const initMsg = (taskId) => ({ task: { taskId, status: Statuses.init } });
+
+		if (taskId) return action_updateTask(restartMsg(taskId), ctx, _state);
+
+		const tasks = (restartOn || RESTART_ON).reduce((tasks, status) => {
+			// Can't use reduce on a map... so we do this garbo
+			tasksByStatus[status].forEach((t) => {
+				tasks.push(t);
+			});
+			return tasks;
+		}, []);
+
+		return tasks.reduce((state, task) => {
+			dispatch(ctx.self, restartMsg(task.taskId), ctx.self);
+			return { ...state, ...action_updateTask(initMsg(task.taskId), ctx, state) };
+		}, _state);
+	}
+
+	// @TODO: unused
 	function action_resumeTasks(msg, ctx, state) {
-		const { tasksByStatus } = state;
 		// @fix will not update statuses to pending
-		(resumeOn || RESUME_ON).forEach((status) =>
-			tasksByStatus[status].forEach((task) => effects[status]({ task }, ctx, state))
-		);
+		// (restartOn || RESTART_ON).forEach((status) =>
+		// 	tasksByStatus[status].forEach((task) =>
+		// 		effects[status]({ task }, ctx, state)
+		// 	)
+		// );
+		return state;
 	}
 
 	function action_abortTasks(msg, ctx, state) {
 		const { taskId, status } = msg;
 
-		const abortMsg = (taskId) => ({ task: { taskId, status: statuses.abort } });
+		const abortMsg = (taskId) => ({ task: { taskId, status: Statuses.abort } });
 
 		// Abort a single task by taskId
 		if (taskId) return action_updateTask(abortMsg(taskId), ctx, state);
 
 		//tasksByStatus[status].forEach(({taskId}) => dispatch(ctx.self, abortMsg(taskId)));
 		// Abort all tasks in provided status
-		return tasksByStatus[status].reduce(
+		return tasksByStatus[status].values.reduce(
 			(state, task) => action_updateTask(abortMsg(task.taskId), ctx, state),
 			state
 		);
@@ -117,7 +150,7 @@ function Actions(getId, isValidTask, { effects, reducer, resumeOn }) {
 		// error will cause state changes from preceeding tasks to be lost
 	}
 
-	return { action_newTask, action_updateTask, action_resumeTasks, action_abortTasks };
+	return { action_newTask, action_updateTask, action_restartTasks, action_abortTasks };
 }
 
 module.exports = Actions;

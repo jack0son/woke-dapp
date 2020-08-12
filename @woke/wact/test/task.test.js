@@ -34,7 +34,6 @@ const Task = (task, _supervisor) => {
 			ctx.self
 		);
 		return state;
-		//return do_work(_, ctx, state);
 	};
 
 	const patterns = [
@@ -73,24 +72,22 @@ const Task = (task, _supervisor) => {
 	};
 };
 
-const Supervisor = (_effects) => {
+function Supervisor(_effects, makeTask = Task) {
 	const getId = (t) => t.foreginId;
 	const isValidTask = (t) => !!t.foreginId;
 
 	let idx = 1;
 	const makeTaskName = (i) => `task-${(idx++).toString().padStart(3, '0')}`;
 
+	// Receiver
 	const start_task = ({ msg, ctx, state }) => (task) => {
-		const a_task = start_actor(ctx.self)(makeTaskName(), Task(task, ctx.self), {});
+		const a_task = start_actor(ctx.self)(makeTaskName(), makeTask(task, ctx.self), {});
 		dispatch(a_task, { type: 'work' }, ctx.self);
 		ctx.debug.d(msg, `Started task: ${task.taskId}`);
 	};
 
-	const reportStatus = (msg) => {
-		const { task } = msg;
-		console.log(
-			`taskId:${getId(msg.task)}: triggered effect:${task.status.toString()}: `
-		);
+	const reportStatus = ({ task }) => {
+		console.log(`taskId:${getId(task)}: triggered effect:${task.status.toString()}`);
 		return true;
 	};
 
@@ -118,9 +115,28 @@ const Supervisor = (_effects) => {
 
 	const actions = TaskSupervisor.Actions(getId, isValidTask, { effects });
 
+	// Fill the supervisor state with some failed or hanging tasks
+	function action_mockRecovery(msg, ctx, state) {
+		const { taskRepo, tasksByStatus } = state;
+		const { tasks } = msg;
+
+		tasks.forEach((task) => {
+			if (isValidTask(task)) {
+				taskRepo.set(task.taskId, task);
+				tasksByStatus[task.status].set(task.taskId, task);
+			} else {
+				throw new Error(
+					`Filling supervisor memory with invalid task objects makes this test meaningless`
+				);
+			}
+		});
+
+		return { ...state, taskRepo, tasksByStatus };
+	}
+
 	return {
 		properties: {
-			...TaskSupervisor.properties,
+			...TaskSupervisor.Properties(),
 			receivers: (bundle) => ({
 				start_task: start_task(bundle),
 			}),
@@ -129,23 +145,23 @@ const Supervisor = (_effects) => {
 		actions: {
 			submit: actions.action_newTask,
 			update: actions.action_updateTask,
-			resume: actions.action_resumeTasks,
+			restart: actions.action_restartTasks,
 			abort: actions.action_abortTasks,
+			recovery: action_mockRecovery,
 		},
 	};
-};
+}
 
 context('TaskSupervisor', function() {
 	let director, a_supervisor, a_stub; // actor instances
 
 	beforeEach(function start_actors(done) {
 		director = bootstrap();
-
 		done();
 	});
 
-	afterEach(async function stop_actors() {
-		await director.stop();
+	afterEach(function stop_actors() {
+		director.stop();
 	});
 
 	describe('Task', function() {
@@ -159,6 +175,46 @@ context('TaskSupervisor', function() {
 				type: 'submit',
 				task: { foreginId: '00001', recipient: 'jack' },
 			});
+		});
+
+		it('should restart tasks after recovery', async function() {
+			const tasks = [
+				{
+					taskId: '00001',
+					foreginId: '00001',
+					status: Statuses.ready,
+					resolve: () => true,
+				},
+				{
+					taskId: '00002',
+					foreginId: '00002',
+					status: Statuses.init,
+					resolve: () => true,
+				},
+				{
+					taskId: '00003',
+					foreginId: '00003',
+					status: Statuses.pending,
+					resolve: () => true,
+				},
+			];
+
+			const complete = tasks.map((task) => new Promise(task.resolve));
+
+			const effects = {
+				[Statuses.done]: ({ task: { taskId } }, ctx, state) => {
+					state.taskRepo.get(taskId).resolve();
+					return state;
+				},
+			};
+
+			a_supervisor = director.start_actor('supervisor-restart', Supervisor(effects));
+			dispatch(a_supervisor, { type: 'recovery', tasks });
+			dispatch(a_supervisor, { type: 'restart' });
+
+			await Promise.all(complete);
+
+			return;
 		});
 	});
 });

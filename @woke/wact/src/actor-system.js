@@ -42,13 +42,7 @@ const bind_receivers = (receivers, msg, state, ctx) =>
  * @param {Propertiesj} _properties - Actor properties
  * @return {Actor} Actor instance
  */
-const spawn_actor = (
-	_parent,
-	_name,
-	_actionsMap,
-	_initialState,
-	_properties
-) => {
+const spawn_actor = (_parent, _name, _actionsMap, _initialState, _properties) => {
 	const debug = MessageDebugger(_name);
 	return spawn(
 		_parent,
@@ -76,13 +70,7 @@ const spawn_actor = (
  * @param {Propertiesj} _properties - Actor properties
  * @return {Actor} Actor instance
  */
-const spawn_persistent = (
-	_parent,
-	_name,
-	_actionsMap,
-	_initialState,
-	_properties
-) => {
+const spawn_persistent = (_parent, _name, _actionsMap, _initialState, _properties) => {
 	if (!_properties || !_properties.persistenceKey) {
 		throw new Error(`Persistent actor must define 'persistenceKey' property`);
 	}
@@ -190,11 +178,7 @@ function start_actor(_parent) {
  * @param {System} _parent - Parent system
  * @return {fn} Actor constructor
  */
-const start_persistent = (_persistentSystem) => (
-	_name,
-	_definition,
-	_initialState
-) => {
+const start_persistent = (_persistentSystem) => (_name, _definition, _initialState) => {
 	if (!isPersistentSystem(_persistentSystem)) {
 		throw new Error(`Persistent system must be provided`);
 	}

@@ -11,4 +11,4 @@ const statusList = Object.values(TaskStatuses);
 
 const isStatus = (status) => statusList.includes(status);
 
-module.exports = { TaskStatuses, isStatus };
+module.exports = { TaskStatuses, isStatus, statusList };

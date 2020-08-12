@@ -1,5 +1,5 @@
 module.exports = {
 	Actions: require('./actions'),
-	properties: require('./properties'),
+	Properties: require('./properties'),
 	Statuses: require('./statuses'),
 };
