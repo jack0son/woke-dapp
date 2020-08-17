@@ -19,7 +19,7 @@ services:
       ETH_ENV: 'production'
       WOKE_ROLE: 'notifier'
       PERSIST: 'true'
-      NETWORK_LIST: 'goerli_1,goerli_2,goerli_3,goerli_infura'
+      NETWORK_LIST: 'goerli_3,goerli_2,goerli_infura'
       DEBUG_RECOVERY: 'true'
       POSTGRES_USER: woke_bot
       POSTGRES_PWD: woke_bot
