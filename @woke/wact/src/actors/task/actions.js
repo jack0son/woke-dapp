@@ -29,7 +29,7 @@ const RESTART_ON = [Statuses.init, Statuses.ready, Statuses.pending];
 function Actions(getId, isValidTask, { effects, reducer, restartOn }) {
 	if (!reducer) reducer = (_, __, state) => state;
 
-	function action_newTask(msg, ctx, state) {
+	function action_newTask(state, msg, ctx) {
 		const { taskRepo, tasksByStatus } = state;
 		const { task: _task } = msg;
 
@@ -86,8 +86,8 @@ function Actions(getId, isValidTask, { effects, reducer, restartOn }) {
 		// Task actors should not reference the taskRepo
 		const msg = { task: { ...task } }; // use a copy of the task
 		return !ctx.recovering && isEffect(effect)
-			? reducer(effect(msg, ctx, state))
-			: reducer(msg, ctx, state);
+			? reducer(effect(state, msg, ctx))
+			: reducer(state, msg, ctx);
 	}
 
 	// Simple restart functionality
@@ -121,7 +121,7 @@ function Actions(getId, isValidTask, { effects, reducer, restartOn }) {
 	}
 
 	// @TODO: unused
-	function action_resumeTasks(msg, ctx, state) {
+	function action_resumeTasks(state, msg, ctx) {
 		// @fix will not update statuses to pending
 		// (restartOn || RESTART_ON).forEach((status) =>
 		// 	tasksByStatus[status].forEach((task) =>
@@ -131,7 +131,7 @@ function Actions(getId, isValidTask, { effects, reducer, restartOn }) {
 		return state;
 	}
 
-	function action_abortTasks(msg, ctx, state) {
+	function action_abortTasks(state, msg, ctx) {
 		const { taskId, status } = msg;
 
 		const abortMsg = (taskId) => ({ task: { taskId, status: Statuses.abort } });

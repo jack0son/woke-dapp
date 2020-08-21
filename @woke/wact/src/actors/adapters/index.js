@@ -1,9 +1,7 @@
 // Adapters are actor definition mixins. They return an actions object that
 // can be included in other actor definitions.
 const { dispatch } = require('nact');
-const { matchSink } = require('../../receivers');
-
-function SinkHandler(handler, match) {}
+const { matchSinkHandler } = require('../../receivers');
 
 /**
  * Call matching handler for received sink message and apply reducer if
@@ -14,24 +12,18 @@ function SinkHandler(handler, match) {}
  * @param {(Bundle) => state} reducer - Reducer function
  * @return {Action} Sink action
  */
-function SinkAdapter(reducer) {
+function SinkReduce(reducer) {
 	return {
 		sink: (msg, ctx, state) => {
 			const actorId = ctx.sender.id;
-			const nextState = matchSink({ msg, state, ctx })(ctx.sender)(
+			const nextState = matchSinkHandler({ state, msg, ctx })(ctx.sender)(
+				state,
 				msg,
-				ctx,
-				state
+				ctx
 			);
-			return reducer ? reducer(msg, ctx, nextState) : nextState;
+			return reducer ? reducer(state, msg, ctx) : nextState;
 		},
 	};
 }
 
-function EffectAdapter(reducer, actions) {
-	function startEffects(msg, ctx, state) {
-		return reducer(msg, ctx, state);
-	}
-}
-
-module.exports = { SinkAdapter, EffectAdapter };
+module.exports = { SinkReduce };

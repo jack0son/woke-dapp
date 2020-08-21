@@ -8,8 +8,11 @@ const {
 	spawnPersistent,
 	dispatch,
 } = require('nact');
+const deepMerge = require('deepmerge');
 const { block } = require('./lib/nact-utils');
 const MessageDebugger = require('./lib/message-debugger');
+
+const merge = (x, y) => deepMerge(x || {}, y || {});
 
 // Whether revovery stage in persistent actor should print debug logs
 const DEBUG_RECOVERY = process.env.DEBUG_RECOVERY == 'true' ? true : false;
@@ -28,8 +31,8 @@ const DEBUG_RECOVERY = process.env.DEBUG_RECOVERY == 'true' ? true : false;
  * @param {Context} ctx - Actor context
  * @return {receiver: string -> fn} Receivers map
  */
-const bind_receivers = (receivers, msg, state, ctx) =>
-	receivers && receivers({ msg, state, ctx });
+const bind_receivers = (receivers) => (state, msg, ctx) =>
+	receivers && receivers({ state, msg, ctx });
 
 /**
  * Spawn a stateful actor
@@ -43,18 +46,19 @@ const bind_receivers = (receivers, msg, state, ctx) =>
  * @return {Actor} Actor instance
  */
 const spawn_actor = (_parent, _name, _actionsMap, _initialState, _properties) => {
+	const { Receivers, ...properties } = _properties; // never reference actor definition
+	const receivers = bind_receivers(Receivers);
+	const action = route_action(_actionsMap);
 	const debug = MessageDebugger(_name);
 	return spawn(
 		_parent,
 		(state = _initialState, msg, context) => {
 			context.debug = debug; // provide debug to receiver context
-			return route_action(_actionsMap, state, msg, {
-				...context,
-				receivers: bind_receivers(_properties.receivers, msg, state, context),
-			});
+			context.receivers = receivers(state, msg, context);
+			return action(state, msg, context);
 		},
 		_name,
-		_properties
+		properties
 	);
 };
 
@@ -74,8 +78,10 @@ const spawn_persistent = (_parent, _name, _actionsMap, _initialState, _propertie
 	if (!_properties || !_properties.persistenceKey) {
 		throw new Error(`Persistent actor must define 'persistenceKey' property`);
 	}
-	const { persistenceKey, ...properties } = _properties;
+	const { persistenceKey, Receivers, ...properties } = _properties; // never reference actor definition
 
+	const action = route_action(_actionsMap);
+	const receivers = bind_receivers(Receivers);
 	const debug = MessageDebugger(_name);
 	debug.control.enabledByApp = debug.control.enabled();
 
@@ -98,21 +104,16 @@ const spawn_persistent = (_parent, _name, _actionsMap, _initialState, _propertie
 					}
 					debug.log(`----- ... recovery complete.`);
 				}
-
-				return route_action(_actionsMap, state, msg, {
-					...context,
-					receivers: bind_receivers(_properties.receivers, msg, state, context),
-				});
+				context.receivers = receivers(state, msg, context);
+				return action(state, msg, context);
 		  }
 		: (state = _initialState, msg, context) => {
 				context.debug = debug;
-				return route_action(_actionsMap, state, msg, {
-					...context,
-					receivers: bind_receivers(_properties.receivers, msg, state, context),
-				});
+				context.receivers = receivers(state, msg, context);
+				return action(state, msg, context);
 		  };
 
-	return spawnPersistent(_parent, target, persistenceKey, _name, _properties);
+	return spawnPersistent(_parent, target, persistenceKey, _name, properties);
 };
 
 const isAction = (action) => action && typeof action == 'function';
@@ -130,7 +131,7 @@ const isPersistentSystem = (system) => isSystem(system); // @TODO define persist
  * @param {Context} _ctx - Actor context
  * @return {Promise<state: object>} Next actor state
  */
-const route_action = async (_actionsMap, _state, _msg, _ctx) => {
+const route_action = (_actionsMap) => (_state, _msg, _ctx) => {
 	const action = _actionsMap[_msg.type || 'default'];
 	if (!isAction(action)) {
 		console.warn(`${_ctx.name} ignored unknown message:`, _msg);
@@ -138,10 +139,15 @@ const route_action = async (_actionsMap, _state, _msg, _ctx) => {
 	}
 
 	// @TODO temporary test that actor context is being correctly assigned to this
-	if(!this.self) throw new Error(`wact:rout_action(): Context not assigned to 'this' for actor ${_ctx.name}: ${ctx.path}`)
+	if (!this.self) {
+		// throw new Error(
+		// 	`wact:route_action(): Context not assigned to 'this' for actor ${_ctx.name}: ${ctx.path}`
+		// );
+	}
 
-	const nextState = await action(_msg, _ctx, _state);
-	return nextState !== undefined ? nextState : _state;
+	return action(_state, _msg, _ctx);
+	// const nextState = await action(_state, _msg, _ctx);
+	// return nextState !== undefined ? nextState : _state;
 };
 
 /**
@@ -161,16 +167,16 @@ function start_actor(_parent) {
 			throw new Error(`Parent actor must be provided`);
 		}
 		const { actions, properties } = _definition;
-		const { initialState, ...otherProperties } = properties;
 		if (!actions) {
 			throw new Error(`No actions defined for '${_name}' actor`);
 		}
 
+		const { initialState, ...otherProperties } = properties;
 		return spawn_actor(
 			_parent,
 			_name,
 			actions,
-			{ ...(initialState ? initialState : {}), ..._initialState },
+			merge(initialState, _initialState),
 			otherProperties
 		);
 	};
@@ -195,7 +201,7 @@ const start_persistent = (_persistentSystem) => (_name, _definition, _initialSta
 		_persistentSystem,
 		_name,
 		actions,
-		{ ...(initialState ? initialState : {}), ..._initialState },
+		merge(initialState, _initialState),
 		otherProperties
 	);
 };

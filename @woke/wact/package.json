@@ -6,13 +6,14 @@
   "main": "src/index.js",
   "scripts": {
     "test": "./node_modules/.bin/mocha",
-    "test-debug": "DEBUG=oracle:* ./node_modules/.bin/mocha"
+    "test:debug": "DEBUG=*,-mocha:* ./node_modules/.bin/mocha"
   },
   "author": "Jackson Virgo",
   "license": "ISC",
   "dependencies": {
     "@woke/contracts": "0.4.0",
     "@woke/lib": "0.4.0",
+    "deepmerge": "^4.2.2",
     "dotenv": "^8.2.0",
     "nact": "^7.2.2",
     "nact-persistence-postgres": "^7.3.1"

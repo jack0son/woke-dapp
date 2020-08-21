@@ -1,6 +1,6 @@
 # wAct - Woke Actor System
 
-wAct is a wrapper around [Nact](https://github.com/ncthbrt/nact) that provides
+wAct is a wrapper framework for [Nact](https://github.com/ncthbrt/nact) that provides
 message and actor structure, common actor behaviour (like state machines), and
 supervision policies.
 
@@ -20,7 +20,7 @@ side-effects.
 All credit to [Nick Cuthbert](https://github.com/ncthbrt) for the core of this
 package.
 
-#### Where to start?
+**Where to start?**
 
 Core specification of the Woke Actor System is contained in `src/actor-system.js`.
 
@@ -38,6 +38,38 @@ to a redux reducer.
 maintain the reactive and side-effect resistant characteristics of actors. For
 example, messages should not contain functions which reference the state of
 another actor.
+
+## Framework
+
+wAct builds actors using an action matching pattern which is simply described as
+
+Where Nact's core features and metadata are contained within the parent actor system
+and actor context/metadata, wAct describes its features using common attributes
+on actor state and messages. It behaves more like a mixin in this sense.
+
+### Actor Definitions
+
+Actor definitions should use anonymous/arrow functions for actions if they
+require access to the actor context. This can be useful for reducing code
+verbosity, but if you don't use `this` you're less likely to shoot yourself in
+the foot when piping actions / effects.
+
+### Message Protocol
+
+wAct provides a basic message protocol to facilitate common communication
+patterns such as:
+
+- issuing actions
+- request-response (sink/source)
+- pub-sub
+
+#### Actions
+
+#### Receivers
+
+Common methods made available in the actor context.
+
+#### Effects
 
 ## Rationale
 
