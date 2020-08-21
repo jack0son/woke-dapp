@@ -131,11 +131,14 @@ const isPersistentSystem = (system) => isSystem(system); // @TODO define persist
  * @return {Promise<state: object>} Next actor state
  */
 const route_action = async (_actionsMap, _state, _msg, _ctx) => {
-	const action = _actionsMap[_msg.type];
+	const action = _actionsMap[_msg.type || 'default'];
 	if (!isAction(action)) {
 		console.warn(`${_ctx.name} ignored unknown message:`, _msg);
 		return _state;
 	}
+
+	// @TODO temporary test that actor context is being correctly assigned to this
+	if(!this.self) throw new Error(`wact:rout_action(): Context not assigned to 'this' for actor ${_ctx.name}: ${ctx.path}`)
 
 	const nextState = await action(_msg, _ctx, _state);
 	return nextState !== undefined ? nextState : _state;
