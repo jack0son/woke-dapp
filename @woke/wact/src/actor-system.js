@@ -9,10 +9,12 @@ const {
 	dispatch,
 } = require('nact');
 const deepMerge = require('deepmerge');
+const isPlainObject = require('is-plain-object');
 const { block } = require('./lib/nact-utils');
 const MessageDebugger = require('./lib/message-debugger');
 
-const merge = (x, y) => deepMerge(x || {}, y || {});
+const merge = (x, y, opts) =>
+	deepMerge(x || {}, y || {}, { ...opts, isMergeableObject: isPlainObject });
 
 // Whether revovery stage in persistent actor should print debug logs
 const DEBUG_RECOVERY = process.env.DEBUG_RECOVERY == 'true' ? true : false;
@@ -145,7 +147,7 @@ const route_action = (_actionsMap) => (_state, _msg, _ctx) => {
 		// );
 	}
 
-	return action(_state, _msg, _ctx);
+	return action.call(_ctx, _state, _msg, _ctx);
 	// const nextState = await action(_state, _msg, _ctx);
 	// return nextState !== undefined ? nextState : _state;
 };

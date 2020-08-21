@@ -27,7 +27,7 @@ const RESTART_ON = [Statuses.init, Statuses.ready, Statuses.pending];
  * @return {[TODO:type]} [TODO:description]
  */
 function Actions(getId, isValidTask, { effects, reducer, restartOn }) {
-	if (!reducer) reducer = (_, __, state) => state;
+	if (!reducer) reducer = (state) => state;
 
 	function action_newTask(state, msg, ctx) {
 		const { taskRepo, tasksByStatus } = state;
@@ -40,15 +40,21 @@ function Actions(getId, isValidTask, { effects, reducer, restartOn }) {
 
 		const task = taskRepo.set(taskId, Task(taskId, _task)).get(taskId);
 		tasksByStatus[task.status].set(taskId, task);
-		return action_updateTask({ task: { ...task, status: Statuses.ready } }, ctx, {
-			...state,
-			taskRepo,
-		});
+		return action_updateTask(
+			{
+				...state,
+				taskRepo,
+			},
+			{ task: { ...task, status: Statuses.ready } },
+			ctx
+		);
 	}
 
-	async function action_updateTask(_msg, ctx, _state) {
+	async function action_updateTask(_state, _msg, ctx) {
 		const { taskRepo, tasksByStatus } = _state;
 		const { task: _task } = _msg;
+		//console.log('_task', _task);
+		if (!_task) console.log('_msg', _msg);
 		const taskId = _task.taskId || getId(_task);
 
 		if (!taskRepo.has(taskId))
@@ -92,7 +98,7 @@ function Actions(getId, isValidTask, { effects, reducer, restartOn }) {
 
 	// Simple restart functionality
 	// Just go back to ready state
-	function action_restartTasks(msg, ctx, _state) {
+	function action_restartTasks(_state, msg, ctx) {
 		const { tasksByStatus } = _state;
 		const { taskId } = msg;
 
@@ -102,9 +108,10 @@ function Actions(getId, isValidTask, { effects, reducer, restartOn }) {
 			type: 'update',
 			task: { taskId, status: Statuses.ready },
 		});
+
 		const initMsg = (taskId) => ({ task: { taskId, status: Statuses.init } });
 
-		if (taskId) return action_updateTask(restartMsg(taskId), ctx, _state);
+		if (taskId) return action_updateTask(_state, restartMsg(taskId), ctx);
 
 		const tasks = (restartOn || RESTART_ON).reduce((tasks, status) => {
 			// Can't use reduce on a map... so we do this garbo
@@ -116,7 +123,7 @@ function Actions(getId, isValidTask, { effects, reducer, restartOn }) {
 
 		return tasks.reduce((state, task) => {
 			dispatch(ctx.self, restartMsg(task.taskId), ctx.self);
-			return { ...state, ...action_updateTask(initMsg(task.taskId), ctx, state) };
+			return { ...state, ...action_updateTask(state, initMsg(task.taskId), ctx) };
 		}, _state);
 	}
 
@@ -137,12 +144,12 @@ function Actions(getId, isValidTask, { effects, reducer, restartOn }) {
 		const abortMsg = (taskId) => ({ task: { taskId, status: Statuses.abort } });
 
 		// Abort a single task by taskId
-		if (taskId) return action_updateTask(abortMsg(taskId), ctx, state);
+		if (taskId) return action_updateTask(state, abortMsg(taskId), ctx);
 
 		//tasksByStatus[status].forEach(({taskId}) => dispatch(ctx.self, abortMsg(taskId)));
 		// Abort all tasks in provided status
 		return tasksByStatus[status].values.reduce(
-			(state, task) => action_updateTask(abortMsg(task.taskId), ctx, state),
+			(state, task) => action_updateTask(state, abortMsg(task.taskId), ctx),
 			state
 		);
 

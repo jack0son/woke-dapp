@@ -8,25 +8,42 @@ const {
 	Statuses: { TaskStatuses: Statuses },
 } = TaskSupervisor;
 
+class Deferral {
+	constructor() {
+		this.promise = new Promise((resolve, reject) => {
+			this.reject = reject;
+			this.resolve = resolve;
+		});
+
+		this.promise
+			.then(() => {
+				this.done = true;
+			})
+			.catch(() => {
+				this.done = true;
+			});
+	}
+}
+
 // Simple sequential task with some async stages
 const Task = (task, _supervisor) => {
 	const WORK_TIME = 10;
-	const do_work = (_, ctx, state) => {
+	const do_work = (state, _, ctx) => {
 		setTimeout(() => dispatch(ctx.self, { type: 'work' }, ctx.self), WORK_TIME);
 		return state;
 	};
 
-	const effect_pending = (_, ctx, state) => {
+	const effect_pending = (state, _, ctx) => {
 		const { supervisor, task } = state;
 		dispatch(
 			supervisor,
 			{ type: 'update', task: { ...task, status: Statuses.pending } },
 			ctx.self
 		);
-		return do_work(_, ctx, state);
+		return do_work(state, _, ctx);
 	};
 
-	const effect_done = (_, ctx, state) => {
+	const effect_done = (state, _, ctx) => {
 		const { supervisor, task } = state;
 		dispatch(
 			supervisor,
@@ -39,22 +56,22 @@ const Task = (task, _supervisor) => {
 	const patterns = [
 		Pattern(
 			({ a, b, c }) => !a && !b && !c, // predicate
-			(_, ctx, state) => ({ ...effect_pending(_, ctx, state), a: true }) // effect
+			(state, _, ctx) => ({ ...effect_pending(state, _, ctx), a: true }) // effect
 		),
 		Pattern(
 			({ a, b }) => !!a && !b,
-			(_, ctx, state) => ({ ...do_work(_, ctx, state), b: true })
+			(state, _, ctx) => ({ ...do_work(state, _, ctx), b: true })
 		),
 		Pattern(
 			({ b, c }) => !!b && !c,
-			(_, ctx, state) => ({ ...effect_done(_, ctx, state), c: true })
+			(state, _, ctx) => ({ ...effect_done(state, _, ctx), c: true })
 		),
 	];
 
 	// Swap out for tracing
-	function action_logWork(msg, ctx, state) {
+	function action_logWork(state, msg, ctx) {
 		console.log(state);
-		const next = matchEffects(patterns)(msg, ctx, state);
+		const next = matchEffects(patterns)(state, msg, ctx);
 		console.log(next);
 		return next;
 	}
@@ -80,7 +97,7 @@ function Supervisor(_effects, makeTask = Task) {
 	const makeTaskName = (i) => `task-${(idx++).toString().padStart(3, '0')}`;
 
 	// Receiver
-	const start_task = ({ msg, ctx, state }) => (task) => {
+	const start_task = ({ state, msg, ctx }) => (task) => {
 		const a_task = start_actor(ctx.self)(makeTaskName(), makeTask(task, ctx.self), {});
 		dispatch(a_task, { type: 'work' }, ctx.self);
 		ctx.debug.d(msg, `Started task: ${task.taskId}`);
@@ -99,13 +116,13 @@ function Supervisor(_effects, makeTask = Task) {
 			return {
 				...r,
 				[status]: effect
-					? (msg, ctx, state) =>
-							reportStatus(msg) && (effect ? effect(msg, ctx, state) : state)
+					? (state, msg, ctx) =>
+							reportStatus(msg) && (effect ? effect(state, msg, ctx) : state)
 					: reportStatus,
 			};
 		},
 		{
-			[Statuses.ready]: (msg, ctx, state) => {
+			[Statuses.ready]: (state, msg, ctx) => {
 				const { task } = msg;
 				ctx.receivers.start_task(task);
 			},
@@ -116,7 +133,7 @@ function Supervisor(_effects, makeTask = Task) {
 	const actions = TaskSupervisor.Actions(getId, isValidTask, { effects });
 
 	// Fill the supervisor state with some failed or hanging tasks
-	function action_mockRecovery(msg, ctx, state) {
+	function action_mockRecovery(state, msg, ctx) {
 		const { taskRepo, tasksByStatus } = state;
 		const { tasks } = msg;
 
@@ -137,7 +154,7 @@ function Supervisor(_effects, makeTask = Task) {
 	return {
 		properties: {
 			...TaskSupervisor.Properties(),
-			receivers: (bundle) => ({
+			Receivers: (bundle) => ({
 				start_task: start_task(bundle),
 			}),
 		},
@@ -152,7 +169,7 @@ function Supervisor(_effects, makeTask = Task) {
 	};
 }
 
-context('TaskSupervisor', function() {
+context('TaskSupervisor', function () {
 	let director, a_supervisor, a_stub; // actor instances
 
 	beforeEach(function start_actors(done) {
@@ -164,8 +181,8 @@ context('TaskSupervisor', function() {
 		director.stop();
 	});
 
-	describe('Task', function() {
-		it('should start a task', function(done) {
+	describe('Task', function () {
+		it('should start a task', function (done) {
 			const effects = {
 				[Statuses.done]: () => done(),
 			};
@@ -177,33 +194,33 @@ context('TaskSupervisor', function() {
 			});
 		});
 
-		it('should restart tasks after recovery', async function() {
+		it('should restart tasks after recovery', async function () {
 			const tasks = [
 				{
 					taskId: '00001',
 					foreginId: '00001',
 					status: Statuses.ready,
-					resolve: () => true,
+					deferred: new Deferral(),
 				},
 				{
 					taskId: '00002',
 					foreginId: '00002',
 					status: Statuses.init,
-					resolve: () => true,
+					deferred: new Deferral(),
 				},
 				{
 					taskId: '00003',
 					foreginId: '00003',
 					status: Statuses.pending,
-					resolve: () => true,
+					deferred: new Deferral(),
 				},
 			];
 
-			const complete = tasks.map((task) => new Promise(task.resolve));
+			const complete = tasks.map((task) => deferred.promise);
 
 			const effects = {
 				[Statuses.done]: ({ task: { taskId } }, ctx, state) => {
-					state.taskRepo.get(taskId).resolve();
+					state.taskRepo.get(taskId).deferred.resolve();
 					return state;
 				},
 			};
