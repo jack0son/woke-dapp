@@ -1,5 +1,6 @@
 const { dispatch } = require('../../actor-system');
 const { TaskStatuses: Statuses, isStatus } = require('./statuses');
+const { TaskError, EffectError } = require('./errors');
 
 const isEffect = (effect) => effect && typeof effect === 'function';
 const isReducer = (reducer) => reducer && typeof reducer === 'function';
@@ -107,7 +108,8 @@ function Actions(getId, isValidTask, { effects, reducer, restartOn, effect_start
 		taskRepo.set(taskId, task);
 		tasksByStatus[prev.status].delete(taskId);
 		tasksByStatus[task.status].set(taskId, task);
-		const state = { ..._state, taskRepo, tasksByStatus };
+		const state = _state;
+		//const state = { ..._state, taskRepo, tasksByStatus };
 
 		const effect = effects[task.status];
 
@@ -118,11 +120,14 @@ function Actions(getId, isValidTask, { effects, reducer, restartOn, effect_start
 				? reducer.call(ctx, effect.call(ctx, state, msg, ctx))
 				: reducer.call(ctx, state, msg, ctx);
 
+		// @TODO supervisor could ensure state is preserved by adding taskRepo etc in
+		// to nextState object
+
 		if (isVoidState(nextState)) {
 			return state;
 		} else if (!isValidState(nextState)) {
 			// @TODO Should check reducer returned state as well. For now assume reducer is correct
-			throw new TaskError(
+			throw new EffectError(
 				task,
 				`${
 					isEffect(effect) ? 'Effect' : 'Reducer'
@@ -201,13 +206,6 @@ function Actions(getId, isValidTask, { effects, reducer, restartOn, effect_start
 	}
 
 	return { action_newTask, action_updateTask, action_restartTasks, action_abortTasks };
-}
-
-class TaskError extends Error {
-	constructor(task, message) {
-		super(`taskId:${task.taskId}: ` + message);
-		this.task = task;
-	}
 }
 
 module.exports = Actions;

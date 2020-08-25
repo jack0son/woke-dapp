@@ -4,31 +4,15 @@ chai.use(chaiAsPromised);
 const should = chai.should();
 
 const { TaskSupervisor } = require('../src/actors');
-const { bootstrap, start_actor, dispatch, query } = require('../src/actor-system');
+const { bootstrap, start_actor, dispatch, query, block } = require('../src/actor-system');
 const { matchEffects, subsumeEffects, Pattern } = require('../src/reducers');
+const Deferral = require('../src/lib/deferral');
 
 const {
 	Statuses: { TaskStatuses: Statuses },
 } = TaskSupervisor;
 
 const noEffect = () => {};
-
-class Deferral {
-	constructor() {
-		this.promise = new Promise((resolve, reject) => {
-			this.reject = reject;
-			this.resolve = resolve;
-		});
-
-		this.promise
-			.then(() => {
-				this.done = true;
-			})
-			.catch(() => {
-				this.done = true;
-			});
-	}
-}
 
 const SimpleTaskDefinition = (task, supervisor) => {
 	const effect_done = (state, msg, ctx) => {
@@ -56,6 +40,13 @@ const SimpleTaskDefinition = (task, supervisor) => {
 		},
 	};
 };
+
+function action_ping(_, __, ctx) {
+	dispatch(ctx.sender, 'pong', ctx.self);
+}
+
+const aliveAndUnblocked = (actor) =>
+	block(actor, { type: 'ping' }).should.eventually.equal('pong');
 
 // Simple sequential task with some async stages
 const TaskDefinition = (task, supervisor) => {
@@ -131,7 +122,7 @@ const TaskDefinition = (task, supervisor) => {
 	};
 };
 
-function Supervisor(_effects, makeTask = TaskDefinition) {
+function Supervisor(_effects, makeTask = TaskDefinition, _properties) {
 	const getId = (t) => t.foreginId;
 	const isValidTask = (t) => !!t.foreginId;
 
@@ -145,11 +136,7 @@ function Supervisor(_effects, makeTask = TaskDefinition) {
 		ctx.debug.d(msg, `Started task: ${task.taskId}`);
 	};
 
-	//const reportStatus = ({ task }) => {
 	const reportStatus = (state, msg, ctx) => {
-		//console.log('Report effect:\n\tstate: ', state, '\n\tmsg: ', msg);
-		//console.dir(t);
-		//console.log(`taskId:${getId(task)}: triggered effect:${task.status.toString()}`);
 		return state;
 	};
 
@@ -207,6 +194,7 @@ function Supervisor(_effects, makeTask = TaskDefinition) {
 			Receivers: (bundle) => ({
 				start_task: start_task(bundle),
 			}),
+			..._properties,
 		},
 
 		actions: {
@@ -216,6 +204,7 @@ function Supervisor(_effects, makeTask = TaskDefinition) {
 			abort: actions.action_abortTasks,
 			recovery: action_mockRecovery,
 			get_state: action_getState,
+			default_action: action_ping,
 		},
 	};
 }
@@ -319,7 +308,26 @@ context('TaskSupervisor', function () {
 	});
 
 	describe('Effect', function () {
-		it('should throw if effect damages supervisor state', function () {});
+		it('should throw if effect damages supervisor state', async function () {
+			const deferred = new Deferral();
+
+			const effects = {
+				[Statuses.done]: (state) => ({ junk: 'supervisor state is damaged' }),
+			};
+
+			function onCrash(msg, error, ctx) {
+				error.should.not.be.undefined; // @TODO too general
+				deferred.reject(error);
+			}
+
+			a_supervisor = director.start_actor(
+				'supervisor',
+				Supervisor(effects, SimpleTaskDefinition, { onCrash })
+			);
+			dispatch(a_supervisor, { type: 'submit', task: TaskSpec() });
+
+			await deferred.promise.should.be.rejectedWith(TaskSupervisor.errors.EffectError);
+		});
 
 		it('should allow effect to return void state', async function () {
 			const effects = {
@@ -332,6 +340,7 @@ context('TaskSupervisor', function () {
 			);
 			dispatch(a_supervisor, { type: 'submit', task: TaskSpec() });
 
+			await aliveAndUnblocked(a_supervisor);
 			const state = await query(a_supervisor, { type: 'get_state' }, 1000);
 			state.should.not.be.undefined;
 			state.should.not.be.null;

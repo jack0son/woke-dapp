@@ -19,6 +19,8 @@ const merge = (x, y, opts) =>
 // Whether revovery stage in persistent actor should print debug logs
 const DEBUG_RECOVERY = process.env.DEBUG_RECOVERY == 'true' ? true : false;
 
+const DEFAULT_ACTION_KEY = 'default_action';
+
 // @TODO Use class/prototype instead of closure pattern for actor wrapper
 // - so many being instantiated, memory is being exhausted
 
@@ -134,7 +136,7 @@ const isPersistentSystem = (system) => isSystem(system); // @TODO define persist
  * @return {Promise<state: object>} Next actor state
  */
 const route_action = (_actionsMap) => (_state, _msg, _ctx) => {
-	const action = _actionsMap[_msg.type || 'default'];
+	const action = _actionsMap[_msg.type] || _actionsMap[DEFAULT_ACTION_KEY];
 	if (!isAction(action)) {
 		console.warn(`${_ctx.name} ignored unknown message:`, _msg);
 		return _state;
