@@ -40,8 +40,6 @@ const pollingActor = {
 				throw new Error('Polling period must be non-zero');
 			}
 
-			console.log('hello');
-
 			debug(
 				msg,
 				`Start ${blockTimeout ? 'sync-' : ''}polling {${

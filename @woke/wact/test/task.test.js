@@ -1,12 +1,17 @@
-const assert = require('assert');
+const chai = require('chai');
+const chaiAsPromised = require('chai-as-promised');
+chai.use(chaiAsPromised);
+const should = chai.should();
+
 const { TaskSupervisor } = require('../src/actors');
-const { bootstrap, start_actor } = require('../src/actor-system');
+const { bootstrap, start_actor, dispatch, query } = require('../src/actor-system');
 const { matchEffects, subsumeEffects, Pattern } = require('../src/reducers');
-const { dispatch } = require('nact');
 
 const {
 	Statuses: { TaskStatuses: Statuses },
 } = TaskSupervisor;
+
+const noEffect = () => {};
 
 class Deferral {
 	constructor() {
@@ -25,32 +30,68 @@ class Deferral {
 	}
 }
 
+const SimpleTaskDefinition = (task, supervisor) => {
+	const effect_done = (state, msg, ctx) => {
+		dispatch(
+			supervisor,
+			{
+				type: 'update',
+				task: { ...task, status: Statuses.done },
+			},
+			ctx.self
+		);
+	};
+
+	const patterns = [Pattern(() => true, effect_done)];
+
+	return {
+		properties: {
+			initialState: {
+				task, //  task metadata
+				supervisor,
+			},
+		},
+		actions: {
+			work: matchEffects(patterns),
+		},
+	};
+};
+
 // Simple sequential task with some async stages
-const Task = (task, _supervisor) => {
-	const WORK_TIME = 10;
+const TaskDefinition = (task, supervisor) => {
+	// Whatever state we want the supervisor to keep track of
+	const extractStateToPersist = ({ a, b, c }) => ({ a, b, c });
+
+	const Receivers = ({ state, msg, ctx }) => ({
+		update_task: (status) => {
+			const { task } = state;
+			// extract task metadata
+			dispatch(
+				supervisor,
+				{
+					type: 'update',
+					task: { ...task, state: extractStateToPersist(state), status },
+				},
+				ctx.self
+			);
+		},
+	});
+
+	const WORK_TIME = 1;
 	const do_work = (state, _, ctx) => {
-		setTimeout(() => dispatch(ctx.self, { type: 'work' }, ctx.self), WORK_TIME);
+		setTimeout(() => {
+			dispatch(ctx.self, { type: 'work' }, ctx.self);
+		}, WORK_TIME);
 		return state;
 	};
 
 	const effect_pending = (state, _, ctx) => {
-		const { supervisor, task } = state;
-		dispatch(
-			supervisor,
-			{ type: 'update', task: { ...task, status: Statuses.pending } },
-			ctx.self
-		);
+		ctx.receivers.update_task(Statuses.pending);
 		return do_work(state, _, ctx);
 	};
 
 	const effect_done = (state, _, ctx) => {
-		const { supervisor, task } = state;
-		dispatch(
-			supervisor,
-			{ type: 'update', task: { ...task, status: Statuses.done } },
-			ctx.self
-		);
-		return state;
+		ctx.receivers.update_task(Statuses.done);
 	};
 
 	const patterns = [
@@ -78,9 +119,10 @@ const Task = (task, _supervisor) => {
 
 	return {
 		properties: {
+			Receivers,
 			initialState: {
-				task,
-				supervisor: _supervisor,
+				task, //  task metadata
+				supervisor,
 			},
 		},
 		actions: {
@@ -89,48 +131,49 @@ const Task = (task, _supervisor) => {
 	};
 };
 
-function Supervisor(_effects, makeTask = Task) {
+function Supervisor(_effects, makeTask = TaskDefinition) {
 	const getId = (t) => t.foreginId;
 	const isValidTask = (t) => !!t.foreginId;
 
 	let idx = 1;
-	const makeTaskName = (i) => `task-${(idx++).toString().padStart(3, '0')}`;
+	const newTaskName = (i) => `task-${(idx++).toString().padStart(3, '0')}`;
 
 	// Receiver
 	const start_task = ({ state, msg, ctx }) => (task) => {
-		const a_task = start_actor(ctx.self)(makeTaskName(), makeTask(task, ctx.self), {});
+		const a_task = start_actor(ctx.self)(newTaskName(), makeTask(task, ctx.self), {});
 		dispatch(a_task, { type: 'work' }, ctx.self);
 		ctx.debug.d(msg, `Started task: ${task.taskId}`);
 	};
 
-	const reportStatus = ({ task }) => {
-		console.log(`taskId:${getId(task)}: triggered effect:${task.status.toString()}`);
-		return true;
+	//const reportStatus = ({ task }) => {
+	const reportStatus = (state, msg, ctx) => {
+		//console.log('Report effect:\n\tstate: ', state, '\n\tmsg: ', msg);
+		//console.dir(t);
+		//console.log(`taskId:${getId(task)}: triggered effect:${task.status.toString()}`);
+		return state;
 	};
 
-	// Wrap effects with status report and overwrite provided effects
-	const effects = Object.values(Statuses).reduce(
-		(r, status) => {
-			const effect = r[status];
+	const defaultEffects = {
+		[Statuses.ready]: (state, msg, ctx) => {
+			const { task } = msg;
+			ctx.receivers.start_task(task);
 
-			return {
-				...r,
-				[status]: effect
-					? (state, msg, ctx) =>
-							reportStatus(msg) && (effect ? effect(state, msg, ctx) : state)
-					: reportStatus,
-			};
+			return state;
 		},
-		{
-			[Statuses.ready]: (state, msg, ctx) => {
-				const { task } = msg;
-				ctx.receivers.start_task(task);
-			},
-			..._effects,
-		}
-	);
+		..._effects,
+	};
 
-	const actions = TaskSupervisor.Actions(getId, isValidTask, { effects });
+	// @tmp Wrap effects with status report and overwrite provided effects
+	// const effects = Object.values(Statuses).reduce((effects, status) => {
+	// 	const effect = effects[status];
+	// 	effects[status] = effect
+	// 		? function (state, msg, ctx) {
+	// 				reportStatus(state, msg, ctx);
+	// 				return effect ? effect.call(ctx, state, msg, ctx) : state;
+	// 		  }
+	// 		: reportStatus;
+	// 	return effects;
+	// }, defaultEffects);
 
 	// Fill the supervisor state with some failed or hanging tasks
 	function action_mockRecovery(state, msg, ctx) {
@@ -151,6 +194,13 @@ function Supervisor(_effects, makeTask = Task) {
 		return { ...state, taskRepo, tasksByStatus };
 	}
 
+	const action_getState = (state, msg, ctx) => {
+		//console.log(`action:log_state: `, state);
+		dispatch(ctx.sender, state, ctx.self);
+	};
+
+	const actions = TaskSupervisor.Actions(getId, isValidTask, { effects: defaultEffects });
+
 	return {
 		properties: {
 			...TaskSupervisor.Properties(),
@@ -165,16 +215,22 @@ function Supervisor(_effects, makeTask = Task) {
 			restart: actions.action_restartTasks,
 			abort: actions.action_abortTasks,
 			recovery: action_mockRecovery,
+			get_state: action_getState,
 		},
 	};
 }
 
 context('TaskSupervisor', function () {
 	let director, a_supervisor, a_stub; // actor instances
+	let fId = 1;
 
-	beforeEach(function start_actors(done) {
+	const TaskSpec = () => ({
+		foreginId: (fId++).toString().padStart(5, 0),
+		recipient: 'jack',
+	});
+
+	beforeEach(function start_actors() {
 		director = bootstrap();
-		done();
 	});
 
 	afterEach(function stop_actors() {
@@ -182,56 +238,124 @@ context('TaskSupervisor', function () {
 	});
 
 	describe('Task', function () {
-		it('should start a task', function (done) {
+		it('should complete a task', function (done) {
 			const effects = {
-				[Statuses.done]: () => done(),
+				[Statuses.done]: () => {
+					done();
+				},
 			};
 
 			a_supervisor = director.start_actor('supervisor', Supervisor(effects));
-			dispatch(a_supervisor, {
-				type: 'submit',
-				task: { foreginId: '00001', recipient: 'jack' },
-			});
+			dispatch(a_supervisor, { type: 'submit', task: TaskSpec() });
+		});
+
+		it('should process several tasks', async function () {
+			const effects = {
+				[Statuses.done]: (state, { task: { taskId } }) => {
+					state.taskRepo.get(taskId).deferred.resolve();
+				},
+			};
+			a_supervisor = director.start_actor('supervisor', Supervisor(effects));
+
+			const NUM_TASKS = 5;
+			const submitMessages = [...Array(NUM_TASKS)].reduce(
+				(tasks) => [
+					...tasks,
+					{ type: 'submit', task: { ...TaskSpec(), deferred: new Deferral() } },
+				],
+				[]
+			);
+
+			await Promise.all(
+				submitMessages.map((msg) => {
+					dispatch(a_supervisor, msg);
+					return msg.task.deferred.promise;
+				})
+			);
 		});
 
 		it('should restart tasks after recovery', async function () {
 			const tasks = [
 				{
-					taskId: '00001',
+					taskId: '10001',
 					foreginId: '00001',
 					status: Statuses.ready,
 					deferred: new Deferral(),
 				},
 				{
-					taskId: '00002',
+					taskId: '10002',
 					foreginId: '00002',
 					status: Statuses.init,
 					deferred: new Deferral(),
 				},
 				{
-					taskId: '00003',
+					taskId: '10003',
 					foreginId: '00003',
 					status: Statuses.pending,
 					deferred: new Deferral(),
 				},
 			];
 
-			const complete = tasks.map((task) => deferred.promise);
-
 			const effects = {
-				[Statuses.done]: ({ task: { taskId } }, ctx, state) => {
+				[Statuses.done]: (state, { task: { taskId } }) => {
 					state.taskRepo.get(taskId).deferred.resolve();
-					return state;
 				},
 			};
 
 			a_supervisor = director.start_actor('supervisor-restart', Supervisor(effects));
 			dispatch(a_supervisor, { type: 'recovery', tasks });
+
+			// @TODO could assert that state is correcly recovered
+			// const state = await query(a_supervisor, { type: 'log' }, 1000);
+
 			dispatch(a_supervisor, { type: 'restart' });
 
-			await Promise.all(complete);
+			await Promise.all(tasks.map((t) => t.deferred.promise));
+		});
 
-			return;
+		it('should allow custom taskId generation', function () {});
+
+		it('should throw an error if an effect damages the supervisor state', function () {});
+	});
+
+	describe('Effect', function () {
+		it('should throw if effect damages supervisor state', function () {});
+
+		it('should allow effect to return void state', async function () {
+			const effects = {
+				[Statuses.done]: noEffect,
+			};
+
+			a_supervisor = director.start_actor(
+				'supervisor',
+				Supervisor(effects, SimpleTaskDefinition)
+			);
+			dispatch(a_supervisor, { type: 'submit', task: TaskSpec() });
+
+			const state = await query(a_supervisor, { type: 'get_state' }, 1000);
+			state.should.not.be.undefined;
+			state.should.not.be.null;
+		});
+
+		it('should have actor context as "this"', async function () {
+			const deferred = new Deferral();
+
+			function effect_done(_, _, ctx) {
+				ctx.should.deep.equal(this);
+				deferred.resolve();
+			}
+
+			const effects = {
+				[Statuses.done]: effect_done,
+			};
+
+			a_supervisor = director.start_actor(
+				'supervisor',
+				Supervisor(effects, SimpleTaskDefinition)
+			);
+			dispatch(a_supervisor, { type: 'submit', task: TaskSpec() });
+
+			await deferred.promise;
 		});
 	});
 });

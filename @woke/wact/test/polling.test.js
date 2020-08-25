@@ -51,7 +51,6 @@ context('Polling', function () {
 					}
 				};
 
-				console.log('dispatching');
 				dispatch(a_polling, {
 					type: 'poll',
 					target: a_stub,

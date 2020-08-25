@@ -2,6 +2,16 @@ const { dispatch } = require('../../actor-system');
 const { TaskStatuses: Statuses, isStatus } = require('./statuses');
 
 const isEffect = (effect) => effect && typeof effect === 'function';
+const isReducer = (reducer) => reducer && typeof reducer === 'function';
+const isVoidState = (state) => state === undefined || state === null;
+
+// @tmp
+const reportStatus = (state, msg, ctx) => {
+	console.log('Report effect:\n\tstate: ', state, '\n\tmsg: ', msg);
+	//console.dir(t);
+	//console.log(`taskId:${getId(task)}: triggered effect:${task.status.toString()}`);
+	return true;
+};
 
 const exampleEffects = {
 	[Statuses.init]: () => {},
@@ -13,6 +23,7 @@ function Task(taskId, task) {
 		...task,
 		taskId,
 		status: Statuses.init,
+		state: null,
 		error: null,
 		reason: null,
 	};
@@ -20,14 +31,18 @@ function Task(taskId, task) {
 
 const RESTART_ON = [Statuses.init, Statuses.ready, Statuses.pending];
 
+// Instead of merging every state update by effects
+const isValidState = ({ taskRepo, tasksByStatus }) => !!taskRepo && !!tasksByStatus;
+
+// @TODO new task function should be primary parameter
 /**
  * Task manager actions
  *
  * @param {[TODO:type]} effects - [TODO:description]
  * @return {[TODO:type]} [TODO:description]
  */
-function Actions(getId, isValidTask, { effects, reducer, restartOn }) {
-	if (!reducer) reducer = (state) => state;
+function Actions(getId, isValidTask, { effects, reducer, restartOn, effect_startTask }) {
+	if (!isReducer(reducer)) reducer = (state) => state;
 
 	function action_newTask(state, msg, ctx) {
 		const { taskRepo, tasksByStatus } = state;
@@ -40,12 +55,13 @@ function Actions(getId, isValidTask, { effects, reducer, restartOn }) {
 
 		const task = taskRepo.set(taskId, Task(taskId, _task)).get(taskId);
 		tasksByStatus[task.status].set(taskId, task);
-		return action_updateTask(
+		return action_updateTask.call(
+			ctx,
 			{
 				...state,
 				taskRepo,
 			},
-			{ task: { ...task, status: Statuses.ready } },
+			{ type: msg.type, task: { ...task, status: Statuses.ready } },
 			ctx
 		);
 	}
@@ -53,8 +69,8 @@ function Actions(getId, isValidTask, { effects, reducer, restartOn }) {
 	async function action_updateTask(_state, _msg, ctx) {
 		const { taskRepo, tasksByStatus } = _state;
 		const { task: _task } = _msg;
-		//console.log('_task', _task);
-		if (!_task) console.log('_msg', _msg);
+
+		if (!_task) throw new Error(`action:updateTask expects msg[task]`);
 		const taskId = _task.taskId || getId(_task);
 
 		if (!taskRepo.has(taskId))
@@ -75,6 +91,11 @@ function Actions(getId, isValidTask, { effects, reducer, restartOn }) {
 					`Task ID: ${taskId} already has status ${_task.status.toString()}`
 				);
 			return _state;
+		} else {
+			ctx.debug.d(
+				_msg,
+				`task: ${taskId}, ${prev.status.toString()} => ${_task.status.toString()}`
+			);
 		}
 
 		const task = { ...prev, ..._task };
@@ -89,11 +110,27 @@ function Actions(getId, isValidTask, { effects, reducer, restartOn }) {
 		const state = { ..._state, taskRepo, tasksByStatus };
 
 		const effect = effects[task.status];
+
 		// Task actors should not reference the taskRepo
 		const msg = { task: { ...task } }; // use a copy of the task
-		return !ctx.recovering && isEffect(effect)
-			? reducer(effect(state, msg, ctx))
-			: reducer(state, msg, ctx);
+		const nextState =
+			!ctx.recovering && isEffect(effect)
+				? reducer.call(ctx, effect.call(ctx, state, msg, ctx))
+				: reducer.call(ctx, state, msg, ctx);
+
+		if (isVoidState(nextState)) {
+			return state;
+		} else if (!isValidState(nextState)) {
+			// @TODO Should check reducer returned state as well. For now assume reducer is correct
+			throw new TaskError(
+				task,
+				`${
+					isEffect(effect) ? 'Effect' : 'Reducer'
+				} on task status ${task.status.toString()} damaged supervisor state: ${nextState}`
+			);
+		}
+
+		return nextState;
 	}
 
 	// Simple restart functionality
@@ -105,13 +142,16 @@ function Actions(getId, isValidTask, { effects, reducer, restartOn }) {
 		// @fix action function does not now action type that identifies its calling
 		// actor
 		const restartMsg = (taskId) => ({
-			type: 'update',
+			type: 'update', // @TODO
 			task: { taskId, status: Statuses.ready },
 		});
 
-		const initMsg = (taskId) => ({ task: { taskId, status: Statuses.init } });
+		const initMsg = (taskId) => ({
+			type: 'restart',
+			task: { taskId, status: Statuses.init },
+		});
 
-		if (taskId) return action_updateTask(_state, restartMsg(taskId), ctx);
+		if (taskId) return action_updateTask.call(ctx, _state, restartMsg(taskId), ctx);
 
 		const tasks = (restartOn || RESTART_ON).reduce((tasks, status) => {
 			// Can't use reduce on a map... so we do this garbo
@@ -122,8 +162,11 @@ function Actions(getId, isValidTask, { effects, reducer, restartOn }) {
 		}, []);
 
 		return tasks.reduce((state, task) => {
-			dispatch(ctx.self, restartMsg(task.taskId), ctx.self);
-			return { ...state, ...action_updateTask(state, initMsg(task.taskId), ctx) };
+			dispatch(ctx.self, restartMsg(task.taskId), ctx.self); // queue the restart
+			return {
+				...state,
+				...action_updateTask.call(ctx, state, initMsg(task.taskId), ctx),
+			};
 		}, _state);
 	}
 
@@ -144,12 +187,12 @@ function Actions(getId, isValidTask, { effects, reducer, restartOn }) {
 		const abortMsg = (taskId) => ({ task: { taskId, status: Statuses.abort } });
 
 		// Abort a single task by taskId
-		if (taskId) return action_updateTask(state, abortMsg(taskId), ctx);
+		if (taskId) return action_updateTask.call(ctx, state, abortMsg(taskId), ctx);
 
 		//tasksByStatus[status].forEach(({taskId}) => dispatch(ctx.self, abortMsg(taskId)));
 		// Abort all tasks in provided status
 		return tasksByStatus[status].values.reduce(
-			(state, task) => action_updateTask(state, abortMsg(task.taskId), ctx),
+			(state, task) => action_updateTask.call(ctx, state, abortMsg(task.taskId), ctx),
 			state
 		);
 
@@ -158,6 +201,13 @@ function Actions(getId, isValidTask, { effects, reducer, restartOn }) {
 	}
 
 	return { action_newTask, action_updateTask, action_restartTasks, action_abortTasks };
+}
+
+class TaskError extends Error {
+	constructor(task, message) {
+		super(`taskId:${task.taskId}: ` + message);
+		this.task = task;
+	}
 }
 
 module.exports = Actions;
