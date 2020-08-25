@@ -4,7 +4,14 @@ chai.use(chaiAsPromised);
 const should = chai.should();
 
 const { TaskSupervisor } = require('../src/actors');
-const { bootstrap, start_actor, dispatch, query, block } = require('../src/actor-system');
+const {
+	bootstrap,
+	start_actor,
+	dispatch,
+	query,
+	block,
+	stop,
+} = require('../src/actor-system');
 const { matchEffects, subsumeEffects, Pattern } = require('../src/reducers');
 const Deferral = require('../src/lib/deferral');
 
@@ -14,7 +21,7 @@ const {
 
 const noEffect = () => {};
 
-const SimpleTaskDefinition = (task, supervisor) => {
+const SimpleTaskDefinition = (doneCallback = noEffect) => (task, supervisor) => {
 	const effect_done = (state, msg, ctx) => {
 		dispatch(
 			supervisor,
@@ -24,6 +31,7 @@ const SimpleTaskDefinition = (task, supervisor) => {
 			},
 			ctx.self
 		);
+		doneCallback(state, msg, ctx);
 	};
 
 	const patterns = [Pattern(() => true, effect_done)];
@@ -122,7 +130,7 @@ const TaskDefinition = (task, supervisor) => {
 	};
 };
 
-function Supervisor(_effects, makeTask = TaskDefinition, _properties) {
+function Supervisor(effects, makeTask = TaskDefinition, _properties) {
 	const getId = (t) => t.foreginId;
 	const isValidTask = (t) => !!t.foreginId;
 
@@ -147,20 +155,12 @@ function Supervisor(_effects, makeTask = TaskDefinition, _properties) {
 
 			return state;
 		},
-		..._effects,
 	};
 
-	// @tmp Wrap effects with status report and overwrite provided effects
-	// const effects = Object.values(Statuses).reduce((effects, status) => {
-	// 	const effect = effects[status];
-	// 	effects[status] = effect
-	// 		? function (state, msg, ctx) {
-	// 				reportStatus(state, msg, ctx);
-	// 				return effect ? effect.call(ctx, state, msg, ctx) : state;
-	// 		  }
-	// 		: reportStatus;
-	// 	return effects;
-	// }, defaultEffects);
+	// Keep reference to effects object
+	Object.getOwnPropertySymbols(defaultEffects).forEach((status) => {
+		if (!effects[status]) effects[status] = defaultEffects[status];
+	});
 
 	// Fill the supervisor state with some failed or hanging tasks
 	function action_mockRecovery(state, msg, ctx) {
@@ -186,7 +186,7 @@ function Supervisor(_effects, makeTask = TaskDefinition, _properties) {
 		dispatch(ctx.sender, state, ctx.self);
 	};
 
-	const actions = TaskSupervisor.Actions(getId, isValidTask, { effects: defaultEffects });
+	const actions = TaskSupervisor.Actions(getId, isValidTask, { effects });
 
 	return {
 		properties: {
@@ -308,6 +308,17 @@ context('TaskSupervisor', function () {
 	});
 
 	describe('Effect', function () {
+		it('should perform tasks with no effects', function (done) {
+			a_supervisor = director.start_actor(
+				'supervisor',
+				Supervisor(
+					{}, // no effects
+					SimpleTaskDefinition(() => done())
+				)
+			);
+			dispatch(a_supervisor, { type: 'submit', task: TaskSpec() });
+		});
+
 		it('should throw if effect damages supervisor state', async function () {
 			const deferred = new Deferral();
 
@@ -322,7 +333,7 @@ context('TaskSupervisor', function () {
 
 			a_supervisor = director.start_actor(
 				'supervisor',
-				Supervisor(effects, SimpleTaskDefinition, { onCrash })
+				Supervisor(effects, SimpleTaskDefinition(), { onCrash })
 			);
 			dispatch(a_supervisor, { type: 'submit', task: TaskSpec() });
 
@@ -336,7 +347,7 @@ context('TaskSupervisor', function () {
 
 			a_supervisor = director.start_actor(
 				'supervisor',
-				Supervisor(effects, SimpleTaskDefinition)
+				Supervisor(effects, SimpleTaskDefinition())
 			);
 			dispatch(a_supervisor, { type: 'submit', task: TaskSpec() });
 
@@ -360,7 +371,7 @@ context('TaskSupervisor', function () {
 
 			a_supervisor = director.start_actor(
 				'supervisor',
-				Supervisor(effects, SimpleTaskDefinition)
+				Supervisor(effects, SimpleTaskDefinition())
 			);
 			dispatch(a_supervisor, { type: 'submit', task: TaskSpec() });
 

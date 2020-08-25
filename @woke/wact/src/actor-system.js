@@ -237,4 +237,5 @@ module.exports = {
 	dispatch,
 	query,
 	block,
+	stop,
 };

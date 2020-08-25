@@ -159,7 +159,6 @@ function Actions(getId, isValidTask, { effects, reducer, restartOn, effect_start
 		if (taskId) return action_updateTask.call(ctx, _state, restartMsg(taskId), ctx);
 
 		const tasks = (restartOn || RESTART_ON).reduce((tasks, status) => {
-			// Can't use reduce on a map... so we do this garbo
 			tasksByStatus[status].forEach((t) => {
 				tasks.push(t);
 			});
