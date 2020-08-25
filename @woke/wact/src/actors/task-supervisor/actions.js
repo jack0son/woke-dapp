@@ -35,6 +35,16 @@ const RESTART_ON = [Statuses.init, Statuses.ready, Statuses.pending];
 // Instead of merging every state update by effects
 const isValidState = ({ taskRepo, tasksByStatus }) => !!taskRepo && !!tasksByStatus;
 
+const ActionSymbols = {
+	update: Symbol('update'),
+	restart: Symbol('restart'),
+};
+
+const ActionDirectry = Object.keys(ActionSymbols).reduce((dir, symbol) => {
+	dir[symbol] = ActionSymbols;
+	return dir;
+}, {});
+
 // @TODO new task function should be primary parameter
 /**
  * Task manager actions
@@ -42,7 +52,11 @@ const isValidState = ({ taskRepo, tasksByStatus }) => !!taskRepo && !!tasksBySta
  * @param {[TODO:type]} effects - [TODO:description]
  * @return {[TODO:type]} [TODO:description]
  */
-function Actions(getId, isValidTask, { effects, reducer, restartOn, effect_startTask }) {
+function Actions(
+	getId,
+	isValidTask,
+	{ effects, reducer, restartOn, effect_startTask, ActionSymbols }
+) {
 	if (!isReducer(reducer)) reducer = (state) => state;
 
 	function action_newTask(state, msg, ctx) {
@@ -147,7 +161,7 @@ function Actions(getId, isValidTask, { effects, reducer, restartOn, effect_start
 		// @fix action function does not now action type that identifies its calling
 		// actor
 		const restartMsg = (taskId) => ({
-			type: 'update', // @TODO
+			type: ActionDirectry[ActionSymbols.update], // @TODO
 			task: { taskId, status: Statuses.ready },
 		});
 
@@ -207,4 +221,4 @@ function Actions(getId, isValidTask, { effects, reducer, restartOn, effect_start
 	return { action_newTask, action_updateTask, action_restartTasks, action_abortTasks };
 }
 
-module.exports = Actions;
+module.exports = { Actions, ...ActionSymbols };
