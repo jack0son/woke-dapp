@@ -35,29 +35,58 @@ const RESTART_ON = [Statuses.init, Statuses.ready, Statuses.pending];
 // Instead of merging every state update by effects
 const isValidState = ({ taskRepo, tasksByStatus }) => !!taskRepo && !!tasksByStatus;
 
-const ActionSymbols = {
-	update: Symbol('update'),
-	restart: Symbol('restart'),
-};
+// const ActionDirectry = (actionObject.entries(ActionSymbols).reduce((dir, [label, symbol]) => {
+// 	dir[symbol] = label;
+// 	return dir;
+// }, {});
 
-const ActionDirectry = Object.keys(ActionSymbols).reduce((dir, symbol) => {
-	dir[symbol] = ActionSymbols;
-	return dir;
-}, {});
+/*
+Look buddy here are the options:
+1. You could pass in a mapping that remaps the predifined action labels / symbols
+to however they are going to be used by the composed actor.
+
+2. You could make an actions class that stores the message label lookup alongside the methods
+- this would have the benefit of statically defined functions
+
+3. You could let the route_actoin lookup symbols
+*/
+
+// function SymbolDirectory(actions) {
+// 	return Object.keys(actions).reduce((dir, action) => {
+// 		dir[action] = Symbol(action);
+// 		return dir;
+// 	}, {});
+// }
+
+function SymbolDirectory(actions) {
+	return Object.keys(actions).reduce((dir, actionName) => {
+		const symbol = Symbol(actionName);
+		dir[symbol] = actions[actionName];
+		return dir;
+	}, {});
+}
+
+function ActionDirectory(symbolDirectory) {
+	return Object.getOwnPropertySymbols(symbolDirectory).reduce((dir, symbol) => {
+		dir.set(symbolDirectory[symbol], symbol);
+		return dir;
+	}, new Map());
+}
 
 // @TODO new task function should be primary parameter
-/**
- * Task manager actions
- *
- * @param {[TODO:type]} effects - [TODO:description]
- * @return {[TODO:type]} [TODO:description]
- */
-function Actions(
-	getId,
-	isValidTask,
-	{ effects, reducer, restartOn, effect_startTask, ActionSymbols }
-) {
+// Task manager actions
+function Actions(getId, isValidTask, { effects, reducer, restartOn, effect_startTask }) {
 	if (!isReducer(reducer)) reducer = (state) => state;
+
+	const actions = {
+		action_newTask,
+		action_updateTask,
+		action_restartTasks,
+		action_abortTasks,
+	};
+
+	const symbolDirectory = SymbolDirectory(actions); // method => symbol
+	const actionDirectory = ActionDirectory(symbolDirectory); // method => symbol
 
 	function action_newTask(state, msg, ctx) {
 		const { taskRepo, tasksByStatus } = state;
@@ -158,10 +187,16 @@ function Actions(
 		const { tasksByStatus } = _state;
 		const { taskId } = msg;
 
+		const restartMsgType = actionDirectory.get(action_updateTask);
+		console.dir(actionDirectory);
+		if (!restartMsgType)
+			throw new Error(`No symbol found for action: ${action_updateTask.name}`);
+
 		// @fix action function does not now action type that identifies its calling
 		// actor
 		const restartMsg = (taskId) => ({
-			type: ActionDirectry[ActionSymbols.update], // @TODO
+			//type: ActionDirectry[ActionSymbols.update], // @TODO
+			type: restartMsgType, // @TODO
 			task: { taskId, status: Statuses.ready },
 		});
 
@@ -180,6 +215,7 @@ function Actions(
 		}, []);
 
 		return tasks.reduce((state, task) => {
+			console.log(restartMsg(task.taskId));
 			dispatch(ctx.self, restartMsg(task.taskId), ctx.self); // queue the restart
 			return {
 				...state,
@@ -218,7 +254,8 @@ function Actions(
 		// error will cause state changes from preceeding tasks to be lost
 	}
 
-	return { action_newTask, action_updateTask, action_restartTasks, action_abortTasks };
+	return Object.assign(actions, symbolDirectory);
 }
 
-module.exports = { Actions, ...ActionSymbols };
+module.exports = Actions;
+//module.exports = { Actions, ...ActionSymbols };

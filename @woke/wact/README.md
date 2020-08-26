@@ -49,10 +49,16 @@ on actor state and messages. It behaves more like a mixin in this sense.
 
 ### Actor Definitions
 
-Actor definitions should use anonymous/arrow functions for actions if they
+Actor definitions should use named functions for actions if they
 require access to the actor context. This can be useful for reducing code
 verbosity, but if you don't use `this` you're less likely to shoot yourself in
 the foot when piping actions / effects.
+
+#### Actor Composition
+
+**Why use closures instead of classes to define actors?**
+Allows actions to consistently use `this` to refer to the message context, while
+also sharing some encolsing context.
 
 ### Message Protocol
 

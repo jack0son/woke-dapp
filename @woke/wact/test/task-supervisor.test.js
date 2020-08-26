@@ -186,7 +186,13 @@ function Supervisor(effects, makeTask = TaskDefinition, _properties) {
 		dispatch(ctx.sender, state, ctx.self);
 	};
 
-	const actions = TaskSupervisor.Actions(getId, isValidTask, { effects });
+	const {
+		action_newTask,
+		action_updateTask,
+		action_restartTasks,
+		action_abortTasks,
+		...actions
+	} = TaskSupervisor.Actions(getId, isValidTask, { effects });
 
 	return {
 		properties: {
@@ -198,13 +204,14 @@ function Supervisor(effects, makeTask = TaskDefinition, _properties) {
 		},
 
 		actions: {
-			submit: actions.action_newTask,
-			update: actions.action_updateTask,
-			restart: actions.action_restartTasks,
-			abort: actions.action_abortTasks,
+			submit: action_newTask,
+			update: action_updateTask,
+			restart: action_restartTasks,
+			abort: action_abortTasks,
 			recovery: action_mockRecovery,
 			get_state: action_getState,
 			default_action: action_ping,
+			...actions,
 		},
 	};
 }
@@ -233,6 +240,9 @@ context('TaskSupervisor', function () {
 					done();
 				},
 			};
+
+			// const supervisor = Supervisor(effects);
+			//console.log(supervisor.actions);
 
 			a_supervisor = director.start_actor('supervisor', Supervisor(effects));
 			dispatch(a_supervisor, { type: 'submit', task: TaskSpec() });
