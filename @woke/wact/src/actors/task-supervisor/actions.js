@@ -1,23 +1,11 @@
 const { dispatch } = require('../../actor-system');
+const { buildDirectory } = require('../../action');
 const { TaskStatuses: Statuses, isStatus } = require('./statuses');
 const { TaskError, EffectError } = require('./errors');
 
 const isEffect = (effect) => effect && typeof effect === 'function';
 const isReducer = (reducer) => reducer && typeof reducer === 'function';
 const isVoidState = (state) => state === undefined || state === null;
-
-// @tmp
-const reportStatus = (state, msg, ctx) => {
-	console.log('Report effect:\n\tstate: ', state, '\n\tmsg: ', msg);
-	//console.dir(t);
-	//console.log(`taskId:${getId(task)}: triggered effect:${task.status.toString()}`);
-	return true;
-};
-
-const exampleEffects = {
-	[Statuses.init]: () => {},
-	[Statuses.failed]: () => {},
-};
 
 function Task(taskId, task) {
 	return {
@@ -35,44 +23,6 @@ const RESTART_ON = [Statuses.init, Statuses.ready, Statuses.pending];
 // Instead of merging every state update by effects
 const isValidState = ({ taskRepo, tasksByStatus }) => !!taskRepo && !!tasksByStatus;
 
-// const ActionDirectry = (actionObject.entries(ActionSymbols).reduce((dir, [label, symbol]) => {
-// 	dir[symbol] = label;
-// 	return dir;
-// }, {});
-
-/*
-Look buddy here are the options:
-1. You could pass in a mapping that remaps the predifined action labels / symbols
-to however they are going to be used by the composed actor.
-
-2. You could make an actions class that stores the message label lookup alongside the methods
-- this would have the benefit of statically defined functions
-
-3. You could let the route_actoin lookup symbols
-*/
-
-// function SymbolDirectory(actions) {
-// 	return Object.keys(actions).reduce((dir, action) => {
-// 		dir[action] = Symbol(action);
-// 		return dir;
-// 	}, {});
-// }
-
-function SymbolDirectory(actions) {
-	return Object.keys(actions).reduce((dir, actionName) => {
-		const symbol = Symbol(actionName);
-		dir[symbol] = actions[actionName];
-		return dir;
-	}, {});
-}
-
-function ActionDirectory(symbolDirectory) {
-	return Object.getOwnPropertySymbols(symbolDirectory).reduce((dir, symbol) => {
-		dir.set(symbolDirectory[symbol], symbol);
-		return dir;
-	}, new Map());
-}
-
 // @TODO new task function should be primary parameter
 // Task manager actions
 function Actions(getId, isValidTask, { effects, reducer, restartOn, effect_startTask }) {
@@ -85,8 +35,7 @@ function Actions(getId, isValidTask, { effects, reducer, restartOn, effect_start
 		action_abortTasks,
 	};
 
-	const symbolDirectory = SymbolDirectory(actions); // method => symbol
-	const actionDirectory = ActionDirectory(symbolDirectory); // method => symbol
+	const directory = buildDirectory(actions);
 
 	function action_newTask(state, msg, ctx) {
 		const { taskRepo, tasksByStatus } = state;
@@ -187,8 +136,7 @@ function Actions(getId, isValidTask, { effects, reducer, restartOn, effect_start
 		const { tasksByStatus } = _state;
 		const { taskId } = msg;
 
-		const restartMsgType = actionDirectory.get(action_updateTask);
-		console.dir(actionDirectory);
+		const restartMsgType = directory.symbols.get(action_updateTask);
 		if (!restartMsgType)
 			throw new Error(`No symbol found for action: ${action_updateTask.name}`);
 
@@ -215,7 +163,6 @@ function Actions(getId, isValidTask, { effects, reducer, restartOn, effect_start
 		}, []);
 
 		return tasks.reduce((state, task) => {
-			console.log(restartMsg(task.taskId));
 			dispatch(ctx.self, restartMsg(task.taskId), ctx.self); // queue the restart
 			return {
 				...state,
@@ -254,7 +201,7 @@ function Actions(getId, isValidTask, { effects, reducer, restartOn, effect_start
 		// error will cause state changes from preceeding tasks to be lost
 	}
 
-	return Object.assign(actions, symbolDirectory);
+	return Object.assign(actions, directory.actions);
 }
 
 module.exports = Actions;
