@@ -15,7 +15,7 @@ const { dispatch } = require('nact');
  * @param {Message} _msg - Message to dispatch
  * @param {Actor} from - Message sender
  */
-const sink = ({ state, msg, ctx }) => (_msg, _from) =>
+const sink = ({ state, msg, ctx }) => (_msg, _from = ctx.self) =>
 	dispatch(
 		ctx.sender,
 		{
@@ -24,7 +24,7 @@ const sink = ({ state, msg, ctx }) => (_msg, _from) =>
 			action: msg.type,
 			kind: state.kind || 'unknown',
 		},
-		_from || ctx.self
+		_from
 	);
 
 const noEffect = (state) => state;

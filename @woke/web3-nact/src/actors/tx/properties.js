@@ -1,4 +1,6 @@
-const { receivers: { sink } } = require('@woke/wact');
+const {
+	receivers: { sink },
+} = require('@woke/wact');
 
 module.exports = {
 	initialState: {
@@ -8,10 +10,11 @@ module.exports = {
 		opts: {
 			call: null,
 			send: null,
-		}
+		},
 	},
 
-	receivers: (bundle) => ({
-		sink: sink(bundle)
-	})
-}
+	receivers: [sink],
+	Receivers: (bundle) => ({
+		sink: sink(bundle),
+	}),
+};

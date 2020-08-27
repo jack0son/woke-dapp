@@ -4,11 +4,7 @@ const {
 } = require('@woke/lib');
 const { dispatch, block } = ActorSystem;
 const { withEffect } = effects;
-const {
-	ParamError,
-	TransactionError,
-	OnChainError,
-} = require('../../lib/errors');
+const { ParamError, TransactionError, OnChainError } = require('../../lib/errors');
 
 //const web3Errors = require('web3-core-helpers').errors;
 
@@ -29,7 +25,7 @@ function resolveStatus(txState) {
 	}
 }
 
-function reduce(msg, ctx, state) {
+function reduce(state, msg, ctx) {
 	msg.type = 'reduce';
 	dispatch(ctx.self, msg, ctx.self);
 }
@@ -41,7 +37,7 @@ function reduce(msg, ctx, state) {
 // A sink is an actor that wants to be notified of a change to status
 // Behaves like an effect, with state.status as a dependency
 // @param _state: original state
-function dispatchSinks(msg, ctx, state) {
+function dispatchSinks(state, msg, ctx) {
 	const prevState = state._state;
 	const prevStatus = resolveStatus({ ...prevState.tx, error: prevState.error });
 
@@ -80,8 +76,12 @@ function dispatchSinks(msg, ctx, state) {
 	return state;
 }
 
+function effect_success(msg, state, ctx) {
+	dispatch(ctx.self, { type: 'tx', txStatus: status }, ctx.self);
+}
+
 // Sender responses addressed to self
-async function action_tx(msg, ctx, state) {
+async function action_tx(state, msg, ctx) {
 	const { txStatus } = msg;
 
 	if (txStatus == 'success') {
@@ -90,15 +90,11 @@ async function action_tx(msg, ctx, state) {
 	}
 }
 
-function action_getStatus(msg, ctx, state) {
-	dispatch(
-		ctx.sender,
-		{ status: resolveStatus(ctx.txState), txState },
-		ctx.self
-	);
+function action_getStatus(state, msg, ctx) {
+	dispatch(ctx.sender, { status: resolveStatus(ctx.txState), txState }, ctx.self);
 }
 
-async function action_sendPreflight(msg, ctx, state) {
+async function action_sendPreflight(state, msg, ctx) {
 	const { tx, failedNonce } = msg;
 
 	tx.type = 'send';
@@ -134,12 +130,12 @@ async function action_sendPreflight(msg, ctx, state) {
 	};
 }
 
-const action_reduce = (msg, ctx, state) =>
+const action_reduce = (state, msg, ctx) =>
 	withEffect(
+		state,
 		msg,
-		ctx,
-		state
-	)((msg, ctx, state) => {
+		ctx
+	)((state, msg, ctx) => {
 		//ctx.onlySelf()
 		const { error, tx } = msg;
 
@@ -197,7 +193,7 @@ const action_reduce = (msg, ctx, state) =>
 		return nextState;
 	})(dispatchSinks);
 
-function action_send(msg, ctx, state) {
+function action_send(state, msg, ctx) {
 	const { sendOpts, sendMethod } = state;
 	const { tx, web3Instance, nonce } = msg;
 
@@ -227,9 +223,7 @@ function action_send(msg, ctx, state) {
 			msg,
 			`Transfer ${utils.valueString(web3Instance.web3.utils)(
 				opts.value
-			)} from ${utils.abridgeAddress(opts.from)} to ${utils.abridgeAddress(
-				opts.to
-			)}`
+			)} from ${utils.abridgeAddress(opts.from)} to ${utils.abridgeAddress(opts.to)}`
 		);
 	}
 
@@ -238,6 +232,7 @@ function action_send(msg, ctx, state) {
 		.on('transactionHash', (hash) => {
 			ctx.debug.info(msg, `... Pending ${hash}`);
 			reduce(
+				state,
 				{
 					tx: { hash },
 				},
@@ -250,6 +245,7 @@ function action_send(msg, ctx, state) {
 		})
 		.on('receipt', (receipt) => {
 			reduce(
+				state,
 				{
 					tx: { receipt },
 					error: null,
@@ -261,13 +257,13 @@ function action_send(msg, ctx, state) {
 			if (receipt) {
 				// If receipt is provided web3js specifies tx was rejected on chain
 				const onChainError = new OnChainError(error, tx, receipt);
-				reduce({ error: onChainError }, ctx);
+				reduce(state, { error: onChainError }, ctx);
 			} else if (error.message.includes('not mined')) {
-				reduce({ error: new TransactionError(error, tx) }, ctx);
+				reduce(state, { error: new TransactionError(error, tx) }, ctx);
 			} else {
 				//console.dir(error);
 				const paramError = new ParamError(error, tx);
-				reduce({ error: paramError }, ctx);
+				reduce(state, { error: paramError }, ctx);
 			}
 		})
 		.then((receipt) => {
@@ -284,7 +280,7 @@ function action_send(msg, ctx, state) {
 // Add sender to list of sinks to all changes in status
 // Pub sub pattern
 // -- could generalise this to attach to any state property
-function action_sinkStatus(msg, ctx, state) {
+function action_sinkStatus(state, msg, ctx) {
 	const { sinks } = state;
 
 	return {

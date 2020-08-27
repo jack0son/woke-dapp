@@ -46,7 +46,7 @@ const subscriptionActor = {
 	},
 
 	actions: {
-		subscribe: async (msg, ctx, state) => {
+		subscribe: async (state, msg, ctx) => {
 			const { contractInterface, eventName, ...rest } = state;
 			if (state.subscription) {
 				await state.subscription.stop();
@@ -84,7 +84,7 @@ const subscriptionActor = {
 			return { ...state, subscription, latestBlock };
 		},
 
-		start: (msg, ctx, state) => {
+		start: (state, msg, ctx) => {
 			const { contractInterface, eventName, watchdog, watchdogInterval } = state;
 			const { resubscribeInterval } = msg;
 			const period =
@@ -108,7 +108,7 @@ const subscriptionActor = {
 			}
 		},
 
-		handle: (msg, ctx, state) => {
+		handle: (state, msg, ctx) => {
 			const { eventName, contractInterface, subscribers, filter } = state;
 			const { error, log } = msg;
 
@@ -140,13 +140,13 @@ const subscriptionActor = {
 			}
 		},
 
-		resubscribe: async (msg, ctx, state) => {
+		resubscribe: async (state, msg, ctx) => {
 			//const { web3Instance } = await block(state.a_web3, { type: 'get' });
 			//const contract = initContract(web3Instance, state.contractInterface);
 			dispatch(ctx.self, { type: 'start' }, ctx.self);
 		},
 
-		stop: (msg, ctx, state) => {
+		stop: (state, msg, ctx) => {
 			const { subscription, a_watchdog } = state;
 			if (a_watchdog) {
 				dispatch(a_watchdog, { type: 'stop' });
