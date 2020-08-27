@@ -1,6 +1,6 @@
 # wAct - Woke Actor System
 
-wAct is a wrapper around [Nact](https://github.com/ncthbrt/nact) that provides
+wAct is a wrapper framework for [Nact](https://github.com/ncthbrt/nact) that provides
 message and actor structure, common actor behaviour (like state machines), and
 supervision policies.
 
@@ -20,7 +20,7 @@ side-effects.
 All credit to [Nick Cuthbert](https://github.com/ncthbrt) for the core of this
 package.
 
-#### Where to start?
+**Where to start?**
 
 Core specification of the Woke Actor System is contained in `src/actor-system.js`.
 
@@ -38,6 +38,44 @@ to a redux reducer.
 maintain the reactive and side-effect resistant characteristics of actors. For
 example, messages should not contain functions which reference the state of
 another actor.
+
+## Framework
+
+wAct builds actors using an action matching pattern which is simply described as
+
+Where Nact's core features and metadata are contained within the parent actor system
+and actor context/metadata, wAct describes its features using common attributes
+on actor state and messages. It behaves more like a mixin in this sense.
+
+### Actor Definitions
+
+Actor definitions should use named functions for actions if they
+require access to the actor context. This can be useful for reducing code
+verbosity, but if you don't use `this` you're less likely to shoot yourself in
+the foot when piping actions / effects.
+
+#### Actor Composition
+
+**Why use closures instead of classes to define actors?**
+Allows actions to consistently use `this` to refer to the message context, while
+also sharing some encolsing context.
+
+### Message Protocol
+
+wAct provides a basic message protocol to facilitate common communication
+patterns such as:
+
+- issuing actions
+- request-response (sink/source)
+- pub-sub
+
+#### Actions
+
+#### Receivers
+
+Common methods made available in the actor context.
+
+#### Effects
 
 ## Rationale
 
@@ -77,7 +115,12 @@ much easier to model and manage failure scenarios. System intent is also clearer
 as domain logic is less interleaved with error handling. Read more at [The
 Reactive Manifesto](https://www.reactivemanifesto.org/).
 
-- Message-based thread communication
+**Notes**
+
+- [Let it
+  crash](http://stratus3d.com/blog/2020/01/20/applying-the-let-it-crash-philosophy-outside-erlang/#:~:text=Let%20it%20crash%20is%20a%20fault%20tolerant%20design%20pattern.&text=That's%20a%20good%2C%20terse%2C%20description,program%20ought%20to%20handle%20them.)
+  philosophy
+- Message-based thread communication / similar to Communicating Sequential
+  Processes
 - Redux on the server
-- Objects with concurrency
-- 'Let it crash' philosophy
+- Object concurrency model

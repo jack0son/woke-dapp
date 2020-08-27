@@ -21,6 +21,27 @@ const printHandle = (id) => id.padEnd(20, ' ');
 const printFollowers = (f) => f.toString().padStart(12, ' ');
 const printAmount = (f) => f.toString().padStart(24, ' ');
 
+async function initContext() {
+	const web3Instance = await utils.initWeb3();
+	const contracts = {
+		TwitterOracle: utils.initContract(web3Instance, oracleInterface),
+		UserRegistry: utils.initContract(web3Instance, userRegistryInterface),
+		WokeToken: utils.initContract(web3Instance, wokeTokenInterface),
+	};
+	await twitter.initClient();
+
+	return {
+		web3Instance,
+		api: {
+			TwitterOracle: bindApi.TwitterOracle(contracts.TwitterOracle),
+			WokeToken: bindApi.WokeToken(contracts.WokeToken),
+			UserRegistry: bindApi.UserRegistry(contracts.UserRegistry),
+		},
+		contracts,
+		twitterUsers: twitterUsers(twitter),
+	};
+}
+
 // Inefficient but convenient
 const Commands = (ctx) => ({
 	supply: async (showMintEvents) => {
@@ -202,27 +223,6 @@ const Commands = (ctx) => ({
 		return;
 	},
 });
-
-async function initContext() {
-	const web3Instance = await utils.initWeb3();
-	const contracts = {
-		TwitterOracle: utils.initContract(web3Instance, oracleInterface),
-		UserRegistry: utils.initContract(web3Instance, userRegistryInterface),
-		WokeToken: utils.initContract(web3Instance, wokeTokenInterface),
-	};
-	await twitter.initClient();
-
-	return {
-		web3Instance,
-		api: {
-			TwitterOracle: bindApi.TwitterOracle(contracts.TwitterOracle),
-			WokeToken: bindApi.WokeToken(contracts.WokeToken),
-			UserRegistry: bindApi.UserRegistry(contracts.UserRegistry),
-		},
-		contracts,
-		twitterUsers: twitterUsers(twitter),
-	};
-}
 
 const bindCommands = () => initContext().then(Commands);
 

@@ -15,11 +15,10 @@ const { dispatch } = require('nact');
  * @param {Message} _msg - Message to dispatch
  * @param {Actor} from - Message sender
  */
-const sink = ({ msg, state, ctx }) => (_msg, _from) =>
+const sink = ({ state, msg, ctx }) => (_msg, _from) =>
 	dispatch(
 		ctx.sender,
 		{
-			...msg,
 			..._msg,
 			type: 'sink',
 			action: msg.type,
@@ -28,16 +27,16 @@ const sink = ({ msg, state, ctx }) => (_msg, _from) =>
 		_from || ctx.self
 	);
 
-const noEffect = (_, __, state) => state;
+const noEffect = (state) => state;
 
 /**
  * Map response (sink) messages from other actors to a handler
  *
- * @function matchSink
+ * @function matchSinkHandler
  * @param {Actor} actor - Actor reference
  * @return {Action} Handler function
  */
-const matchSink = ({ msg, state, ctx }) => (actor) => {
+const matchSinkHandler = ({ state, msg, ctx }) => (actor) => {
 	const { kind } = msg;
 	const { sinkHandlers } = state;
 	let handler = sinkHandlers[actor.name];
@@ -49,4 +48,4 @@ const matchSink = ({ msg, state, ctx }) => (actor) => {
 	return handler;
 };
 
-module.exports = { sink, matchSink };
+module.exports = { sink, matchSinkHandler };

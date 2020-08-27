@@ -18,7 +18,8 @@ function MessageDebugger(_name, _debugPrefix = DEBUG_PREFIX) {
 		} else {
 			// Msg must be passed to debug call. Otherwise the debugger would have
 			// to be re-bound to the current msg context for each message.
-			debug[key] = (msg, args) => val(`${msg.type} >> ` + args);
+			debug[key] = (msg, args) =>
+				val(`${msg.type ? msg.type.toString() : 'void'} >> ` + args);
 		}
 	});
 	return debug;

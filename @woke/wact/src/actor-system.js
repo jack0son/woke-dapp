@@ -8,11 +8,19 @@ const {
 	spawnPersistent,
 	dispatch,
 } = require('nact');
+const deepMerge = require('deepmerge');
+const isPlainObject = require('is-plain-object');
 const { block } = require('./lib/nact-utils');
 const MessageDebugger = require('./lib/message-debugger');
+const action = require('./action');
+
+const merge = (x, y, opts) =>
+	deepMerge(x || {}, y || {}, { ...opts, isMergeableObject: isPlainObject });
 
 // Whether revovery stage in persistent actor should print debug logs
 const DEBUG_RECOVERY = process.env.DEBUG_RECOVERY == 'true' ? true : false;
+
+const DEFAULT_ACTION_KEY = 'default_action';
 
 // @TODO Use class/prototype instead of closure pattern for actor wrapper
 // - so many being instantiated, memory is being exhausted
@@ -28,8 +36,8 @@ const DEBUG_RECOVERY = process.env.DEBUG_RECOVERY == 'true' ? true : false;
  * @param {Context} ctx - Actor context
  * @return {receiver: string -> fn} Receivers map
  */
-const bind_receivers = (receivers, msg, state, ctx) =>
-	receivers && receivers({ msg, state, ctx });
+const bind_receivers = (receivers) => (state, msg, ctx) =>
+	receivers && receivers({ state, msg, ctx });
 
 /**
  * Spawn a stateful actor
@@ -42,25 +50,20 @@ const bind_receivers = (receivers, msg, state, ctx) =>
  * @param {Propertiesj} _properties - Actor properties
  * @return {Actor} Actor instance
  */
-const spawn_actor = (
-	_parent,
-	_name,
-	_actionsMap,
-	_initialState,
-	_properties
-) => {
+const spawn_actor = (_parent, _name, _actionsMap, _initialState, _properties) => {
+	const { Receivers, ...properties } = _properties; // never reference actor definition
+	const receivers = bind_receivers(Receivers);
+	const action = route_action(_actionsMap);
 	const debug = MessageDebugger(_name);
 	return spawn(
 		_parent,
 		(state = _initialState, msg, context) => {
 			context.debug = debug; // provide debug to receiver context
-			return route_action(_actionsMap, state, msg, {
-				...context,
-				receivers: bind_receivers(_properties.receivers, msg, state, context),
-			});
+			context.receivers = receivers(state, msg, context);
+			return action(state, msg, context);
 		},
 		_name,
-		_properties
+		properties
 	);
 };
 
@@ -76,18 +79,14 @@ const spawn_actor = (
  * @param {Propertiesj} _properties - Actor properties
  * @return {Actor} Actor instance
  */
-const spawn_persistent = (
-	_parent,
-	_name,
-	_actionsMap,
-	_initialState,
-	_properties
-) => {
+const spawn_persistent = (_parent, _name, _actionsMap, _initialState, _properties) => {
 	if (!_properties || !_properties.persistenceKey) {
 		throw new Error(`Persistent actor must define 'persistenceKey' property`);
 	}
-	const { persistenceKey, ...properties } = _properties;
+	const { persistenceKey, Receivers, ...properties } = _properties; // never reference actor definition
 
+	const action = route_action(_actionsMap);
+	const receivers = bind_receivers(Receivers);
 	const debug = MessageDebugger(_name);
 	debug.control.enabledByApp = debug.control.enabled();
 
@@ -110,21 +109,16 @@ const spawn_persistent = (
 					}
 					debug.log(`----- ... recovery complete.`);
 				}
-
-				return route_action(_actionsMap, state, msg, {
-					...context,
-					receivers: bind_receivers(_properties.receivers, msg, state, context),
-				});
+				context.receivers = receivers(state, msg, context);
+				return action(state, msg, context);
 		  }
 		: (state = _initialState, msg, context) => {
 				context.debug = debug;
-				return route_action(_actionsMap, state, msg, {
-					...context,
-					receivers: bind_receivers(_properties.receivers, msg, state, context),
-				});
+				context.receivers = receivers(state, msg, context);
+				return action(state, msg, context);
 		  };
 
-	return spawnPersistent(_parent, target, persistenceKey, _name, _properties);
+	return spawnPersistent(_parent, target, persistenceKey, _name, properties);
 };
 
 const isAction = (action) => action && typeof action == 'function';
@@ -142,15 +136,23 @@ const isPersistentSystem = (system) => isSystem(system); // @TODO define persist
  * @param {Context} _ctx - Actor context
  * @return {Promise<state: object>} Next actor state
  */
-const route_action = async (_actionsMap, _state, _msg, _ctx) => {
-	const action = _actionsMap[_msg.type];
+const route_action = (_actionsMap) => (_state, _msg, _ctx) => {
+	const action = _actionsMap[_msg.type] || _actionsMap[DEFAULT_ACTION_KEY];
 	if (!isAction(action)) {
 		console.warn(`${_ctx.name} ignored unknown message:`, _msg);
 		return _state;
 	}
 
-	const nextState = await action(_msg, _ctx, _state);
-	return nextState !== undefined ? nextState : _state;
+	// @TODO temporary test that actor context is being correctly assigned to this
+	if (!this.self) {
+		// throw new Error(
+		// 	`wact:route_action(): Context not assigned to 'this' for actor ${_ctx.name}: ${ctx.path}`
+		// );
+	}
+
+	return action.call(_ctx, _state, _msg, _ctx);
+	// const nextState = await action(_state, _msg, _ctx);
+	// return nextState !== undefined ? nextState : _state;
 };
 
 /**
@@ -170,16 +172,16 @@ function start_actor(_parent) {
 			throw new Error(`Parent actor must be provided`);
 		}
 		const { actions, properties } = _definition;
-		const { initialState, ...otherProperties } = properties;
 		if (!actions) {
 			throw new Error(`No actions defined for '${_name}' actor`);
 		}
 
+		const { initialState, ...otherProperties } = properties;
 		return spawn_actor(
 			_parent,
 			_name,
 			actions,
-			{ ...(initialState ? initialState : {}), ..._initialState },
+			merge(initialState, _initialState),
 			otherProperties
 		);
 	};
@@ -190,11 +192,7 @@ function start_actor(_parent) {
  * @param {System} _parent - Parent system
  * @return {fn} Actor constructor
  */
-const start_persistent = (_persistentSystem) => (
-	_name,
-	_definition,
-	_initialState
-) => {
+const start_persistent = (_persistentSystem) => (_name, _definition, _initialState) => {
 	if (!isPersistentSystem(_persistentSystem)) {
 		throw new Error(`Persistent system must be provided`);
 	}
@@ -208,7 +206,7 @@ const start_persistent = (_persistentSystem) => (
 		_persistentSystem,
 		_name,
 		actions,
-		{ ...(initialState ? initialState : {}), ..._initialState },
+		merge(initialState, _initialState),
 		otherProperties
 	);
 };
@@ -240,4 +238,6 @@ module.exports = {
 	dispatch,
 	query,
 	block,
+	stop,
+	action,
 };
