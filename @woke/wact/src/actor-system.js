@@ -12,6 +12,7 @@ const deepMerge = require('deepmerge');
 const isPlainObject = require('is-plain-object');
 const { block } = require('./lib/nact-utils');
 const MessageDebugger = require('./lib/message-debugger');
+const action = require('./action');
 
 const merge = (x, y, opts) =>
 	deepMerge(x || {}, y || {}, { ...opts, isMergeableObject: isPlainObject });
@@ -238,4 +239,5 @@ module.exports = {
 	query,
 	block,
 	stop,
+	action,
 };

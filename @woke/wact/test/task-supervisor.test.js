@@ -14,6 +14,7 @@ const {
 } = require('../src/actor-system');
 const { matchEffects, subsumeEffects, Pattern } = require('../src/reducers');
 const Deferral = require('../src/lib/deferral');
+const { adapt } = require('../src/definition');
 
 const {
 	Statuses: { TaskStatuses: Statuses },
@@ -182,38 +183,25 @@ function Supervisor(effects, makeTask = TaskDefinition, _properties) {
 	}
 
 	const action_getState = (state, msg, ctx) => {
-		//console.log(`action:log_state: `, state);
 		dispatch(ctx.sender, state, ctx.self);
 	};
 
-	const {
-		action_newTask,
-		action_updateTask,
-		action_restartTasks,
-		action_abortTasks,
-		...actions
-	} = TaskSupervisor.Actions(getId, isValidTask, { effects });
-
-	return {
-		properties: {
-			...TaskSupervisor.Properties(),
-			Receivers: (bundle) => ({
-				start_task: start_task(bundle),
-			}),
-			..._properties,
+	const defn = adapt(
+		{
+			actions: {
+				recovery: action_mockRecovery,
+				get_state: action_getState,
+				default_action: action_ping,
+			},
+			properties: {
+				receivers: [start_task],
+				..._properties,
+			},
 		},
-
-		actions: {
-			submit: action_newTask,
-			update: action_updateTask,
-			restart: action_restartTasks,
-			abort: action_abortTasks,
-			recovery: action_mockRecovery,
-			get_state: action_getState,
-			default_action: action_ping,
-			...actions,
-		},
-	};
+		TaskSupervisor.Definition([getId, isValidTask, { effects }])
+	);
+	//console.log(defn);
+	return defn;
 }
 
 context('TaskSupervisor', function () {
@@ -313,8 +301,6 @@ context('TaskSupervisor', function () {
 		});
 
 		it('should allow custom taskId generation', function () {});
-
-		it('should throw an error if an effect damages the supervisor state', function () {});
 	});
 
 	describe('Effect', function () {
@@ -329,7 +315,7 @@ context('TaskSupervisor', function () {
 			dispatch(a_supervisor, { type: 'submit', task: TaskSpec() });
 		});
 
-		it('should throw if effect damages supervisor state', async function () {
+		it('should throw if an effect damages supervisor state', async function () {
 			const deferred = new Deferral();
 
 			const effects = {

@@ -1,6 +1,6 @@
 const { dispatch } = require('../../actor-system');
 const { buildDirectory } = require('../../action');
-const { TaskStatuses: Statuses, isStatus } = require('./statuses');
+const { TaskStatuses: Statuses, isStatus, parseStatus } = require('./statuses');
 const { TaskError, EffectError } = require('./errors');
 
 const isEffect = (effect) => effect && typeof effect === 'function';
@@ -29,15 +29,15 @@ function Actions(getId, isValidTask, { effects, reducer, restartOn, effect_start
 	if (!isReducer(reducer)) reducer = (state) => state;
 
 	const actions = {
-		action_newTask,
-		action_updateTask,
-		action_restartTasks,
-		action_abortTasks,
+		action_submit,
+		action_update,
+		action_restart,
+		action_abort,
 	};
 
 	const directory = buildDirectory(actions);
 
-	function action_newTask(state, msg, ctx) {
+	function action_submit(state, msg, ctx) {
 		const { taskRepo, tasksByStatus } = state;
 		const { task: _task } = msg;
 
@@ -48,7 +48,7 @@ function Actions(getId, isValidTask, { effects, reducer, restartOn, effect_start
 
 		const task = taskRepo.set(taskId, Task(taskId, _task)).get(taskId);
 		tasksByStatus[task.status].set(taskId, task);
-		return action_updateTask.call(
+		return action_update.call(
 			ctx,
 			{
 				...state,
@@ -59,7 +59,7 @@ function Actions(getId, isValidTask, { effects, reducer, restartOn, effect_start
 		);
 	}
 
-	async function action_updateTask(_state, _msg, ctx) {
+	async function action_update(_state, _msg, ctx) {
 		const { taskRepo, tasksByStatus } = _state;
 		const { task: _task } = _msg;
 
@@ -132,13 +132,13 @@ function Actions(getId, isValidTask, { effects, reducer, restartOn, effect_start
 
 	// Simple restart functionality
 	// Just go back to ready state
-	function action_restartTasks(_state, msg, ctx) {
+	function action_restart(_state, msg, ctx) {
 		const { tasksByStatus } = _state;
 		const { taskId } = msg;
 
-		const restartMsgType = directory.symbols.get(action_updateTask);
+		const restartMsgType = directory.symbols.get(action_update);
 		if (!restartMsgType)
-			throw new Error(`No symbol found for action: ${action_updateTask.name}`);
+			throw new Error(`No symbol found for action: ${action_update.name}`);
 
 		// @fix action function does not now action type that identifies its calling
 		// actor
@@ -153,7 +153,7 @@ function Actions(getId, isValidTask, { effects, reducer, restartOn, effect_start
 			task: { taskId, status: Statuses.init },
 		});
 
-		if (taskId) return action_updateTask.call(ctx, _state, restartMsg(taskId), ctx);
+		if (taskId) return action_update.call(ctx, _state, restartMsg(taskId), ctx);
 
 		const tasks = (restartOn || RESTART_ON).reduce((tasks, status) => {
 			tasksByStatus[status].forEach((t) => {
@@ -166,13 +166,13 @@ function Actions(getId, isValidTask, { effects, reducer, restartOn, effect_start
 			dispatch(ctx.self, restartMsg(task.taskId), ctx.self); // queue the restart
 			return {
 				...state,
-				...action_updateTask.call(ctx, state, initMsg(task.taskId), ctx),
+				...action_update.call(ctx, state, initMsg(task.taskId), ctx),
 			};
 		}, _state);
 	}
 
 	// @TODO: unused
-	function action_resumeTasks(state, msg, ctx) {
+	function action_resume(state, msg, ctx) {
 		// @fix will not update statuses to pending
 		// (restartOn || RESTART_ON).forEach((status) =>
 		// 	tasksByStatus[status].forEach((task) =>
@@ -182,23 +182,40 @@ function Actions(getId, isValidTask, { effects, reducer, restartOn, effect_start
 		return state;
 	}
 
-	function action_abortTasks(state, msg, ctx) {
-		const { taskId, status } = msg;
+	function action_abort(state, msg, ctx) {
+		const { taskId, status, blocking } = msg;
 
-		const abortMsg = (taskId) => ({ task: { taskId, status: Statuses.abort } });
+		const abortMsg = (task, type) => ({
+			type,
+			task: { taskId: task.taskId, status: Statuses.abort },
+		});
 
 		// Abort a single task by taskId
-		if (taskId) return action_updateTask.call(ctx, state, abortMsg(taskId), ctx);
+		if (taskId) return action_update.call(ctx, state, abortMsg(taskId, 'abort'), ctx);
+
+		const statusSymbol = parseStatus(status);
+		if (!statusSymbol) {
+			ctx.debug.warn(msg, `Abort expects a taskId or task status symbol`);
+			return;
+		}
+
+		if (!blocking) {
+			tasksByStatus[statusSymbol].values.forEach((task) =>
+				dispatch(ctx.self, abortMsg(task, symbolDirectory(action_update)), ctx.self)
+			);
+			return;
+		}
 
 		//tasksByStatus[status].forEach(({taskId}) => dispatch(ctx.self, abortMsg(taskId)));
 		// Abort all tasks in provided status
-		return tasksByStatus[status].values.reduce(
-			(state, task) => action_updateTask.call(ctx, state, abortMsg(task.taskId), ctx),
+		return tasksByStatus[statusSymbol].values.reduce(
+			// @note using reduce ties execution path for all task effects together
+			//	- pipe behaviour
+			// error will cause state changes from preceeding tasks to be lost
+			(state, task) =>
+				action_update.call(ctx, state, abortMsg(task.taskId, 'abort'), ctx),
 			state
 		);
-
-		// @note using reduce ties execution path for all task effects together - an
-		// error will cause state changes from preceeding tasks to be lost
 	}
 
 	return Object.assign(actions, directory.actions);

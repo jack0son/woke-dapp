@@ -18,8 +18,38 @@ const buildDirectory = (actions) => {
 	return { actions: actionDirectory, symbols: SymbolDirectory(actionDirectory) };
 };
 
+const defaultLabelOpts = { trim: true };
+function labelActions(actions, _opts) {
+	const opts = { ...defaultLabelOpts, ..._opts };
+
+	if (opts.trim) {
+		return Object.keys(actions).reduce((actions, label) => {
+			if (label.startsWith('action_')) {
+				const action = actions[label];
+				delete actions[label];
+				actions[label.replace('action_', '')] = action;
+			}
+			return actions;
+		}, actions);
+	}
+
+	// Map(currentLabel => newLabel)
+	if (opts.relabelMap) {
+		return Object.keys(relabelMap).reduce((actions, currentLabel) => {
+			const newLabel = relabelMap[currentLabel];
+			if (!!actions[newLabel])
+				throw new Error(
+					`Attempt to relabel action ${currentLabel} to ${newLabel}, when action with label ${newLabel} already exists.`
+				);
+			actions[newLabel] = actions[currentLabel];
+			delete actions[currentLabel];
+		}, actions);
+	}
+}
+
 module.exports = {
 	ActionDirectory,
 	SymbolDirectory,
 	buildDirectory,
+	labelActions,
 };
