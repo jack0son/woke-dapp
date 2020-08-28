@@ -5,7 +5,7 @@ message and actor structure, common actor behaviour (like state machines), and
 supervision policies.
 
 Nact is a compact message-oriented middleware which facilitates message based
-communication between isolated entities called actors. An actor model is useful
+communication between isolated entities called actors. The actor model is useful
 in the functional paradigm as it relegates all state mutations to the edge of
 the domain logic by using a sequential execution lifecycle within each actor.
 
