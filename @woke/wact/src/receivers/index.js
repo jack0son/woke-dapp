@@ -40,6 +40,8 @@ const matchSinkHandler = ({ state, msg, ctx }) => (actor) => {
 	const { kind } = msg;
 	const { sinkHandlers } = state;
 	let handler = sinkHandlers[actor.name];
+	if (!handler && sinkHandlers.actorDirectory)
+		handler = sinkHandlers.actorDirectory.get(ctx.sender);
 	if (!handler) handler = sinkHandlers[kind];
 	if (!handler) {
 		ctx.debug.warn(msg, `No sink handler for actor ${actor.name}:${kind}>`);

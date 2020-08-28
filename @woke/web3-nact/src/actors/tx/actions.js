@@ -30,6 +30,17 @@ function reduce(state, msg, ctx) {
 	dispatch(ctx.self, msg, ctx.self);
 }
 
+// 1. sendPreflight: receive and validate transaction parameters and queue send
+// 2. send: submit tx to web3 provider and setup listeners
+// 3. reduce: reduce transaction state from listeners and peform effects:
+//	- notify tx sinks
+//	- throw errors
+
+// Match: errors in descending precedence
+// Subsume: errors in ascending precedence
+
+//	predicates are like a series of latches
+
 // A parent actor can persist the sendTx messages then spin up a send actor for
 // each one, get notified of the result, then mark the tx message discarded or
 // complete
@@ -94,6 +105,7 @@ function action_getStatus(state, msg, ctx) {
 	dispatch(ctx.sender, { status: resolveStatus(ctx.txState), txState }, ctx.self);
 }
 
+// Get web3 and prepare transaction options
 async function action_sendPreflight(state, msg, ctx) {
 	const { tx, failedNonce } = msg;
 

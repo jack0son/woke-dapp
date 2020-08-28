@@ -13,9 +13,17 @@ const SymbolDirectory = (actionDirectory) =>
 		return dir;
 	}, new Map());
 
+const getMessageType = (symbolDirectory) => (actionFunc) =>
+	symbolDirectory.get(actionFunc);
+
 const buildDirectory = (actions) => {
 	const actionDirectory = ActionDirectory(actions);
-	return { actions: actionDirectory, symbols: SymbolDirectory(actionDirectory) };
+	const symbolDirectory = SymbolDirectory(actionDirectory);
+	return {
+		actions: actionDirectory,
+		symbols: symbolDirectory,
+		address: getMessageType(symbolDirectory),
+	};
 };
 
 const defaultLabelOpts = { trim: true };

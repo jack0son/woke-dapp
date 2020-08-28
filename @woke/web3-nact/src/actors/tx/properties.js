@@ -2,7 +2,18 @@ const {
 	receivers: { sink },
 } = require('@woke/wact');
 
-module.exports = {
+function ActorDirectory() {
+	return new Map();
+}
+
+function Properties() {
+	function initialStateFunc(ctx) {
+		const actorDirectory = ActorDirectory();
+		actorDirectory.set(ctx.self);
+	}
+}
+
+const properties = {
 	initialState: {
 		sinks: [],
 		kind: 'tx',
@@ -18,3 +29,5 @@ module.exports = {
 		sink: sink(bundle),
 	}),
 };
+
+module.exports = properties;
