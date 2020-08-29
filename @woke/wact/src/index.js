@@ -9,9 +9,9 @@ const action = require('./action');
 const definition = require('./definition');
 
 module.exports = {
+	...definition,
 	ActorSystem,
 	action,
-	definition,
 	PersistenceEngine,
 	actors,
 	receivers,

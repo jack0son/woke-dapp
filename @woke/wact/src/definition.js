@@ -1,4 +1,5 @@
 const { labelActions } = require('./action');
+const { merge } = require('./lib/utils');
 
 function MakeDefinition(Actions, Properties) {
 	function Definition(actionArgs, propertyArgs = [], ...properties) {
@@ -30,7 +31,13 @@ function adaptCompose(definition, _actions, _properties, opts = {}) {
 		}, {});
 
 	const actions = labelActions({ ..._actions, ...definition.actions }, labeling);
-	const properties = { ..._properties, ...definition.properties, Receivers, receivers };
+
+	// Values from definition take precedence
+	const properties = merge(_properties, {
+		...definition.properties,
+		Receivers,
+		receivers,
+	});
 
 	return Object.assign(definition, { actions, properties });
 }

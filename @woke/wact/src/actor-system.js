@@ -8,14 +8,10 @@ const {
 	spawnPersistent,
 	dispatch,
 } = require('nact');
-const deepMerge = require('deepmerge');
-const isPlainObject = require('is-plain-object');
 const { block } = require('./lib/nact-utils');
 const MessageDebugger = require('./lib/message-debugger');
 const action = require('./action');
-
-const merge = (x, y, opts) =>
-	deepMerge(x || {}, y || {}, { ...opts, isMergeableObject: isPlainObject });
+const { merge } = require('./lib/utils');
 
 // Whether revovery stage in persistent actor should print debug logs
 const DEBUG_RECOVERY = process.env.DEBUG_RECOVERY == 'true' ? true : false;

@@ -13,10 +13,12 @@ function Properties() {
 	}
 }
 
-const properties = {
+const MAX_ATTEMPTS = 4;
+const Properties = (a_web3, a_nonce) => ({
 	initialState: {
 		sinks: [],
 		kind: 'tx',
+		maxAttempts: MAX_ATTEMPTS,
 
 		opts: {
 			call: null,
@@ -28,6 +30,6 @@ const properties = {
 	Receivers: (bundle) => ({
 		sink: sink(bundle),
 	}),
-};
+});
 
 module.exports = properties;
