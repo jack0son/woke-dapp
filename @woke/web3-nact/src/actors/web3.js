@@ -119,6 +119,17 @@ function Web3Actor(
 				}
 			}
 
+			if (!web3Instance.account) {
+				if (process.env.NODE_ENV == 'development') {
+					web3Instance.account = (await web3Instance.web3.eth.personal.getAccounts())[1];
+				}
+				ctx.debug.warn(
+					`Web3 instance has no account. ${
+						web3Instance.account ? `Using dev account ${web3Instance.account}` : ''
+					}`
+				);
+			}
+
 			dispatch(ctx.self, { type: 'wait', ready: true }, ctx.self);
 			if (ctx.sender != ctx.self) {
 				dispatch(ctx.self, { type: 'web3', web3Instance }, ctx.self);
