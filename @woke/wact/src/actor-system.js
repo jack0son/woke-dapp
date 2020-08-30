@@ -9,9 +9,10 @@ const {
 	dispatch,
 } = require('nact');
 const { block } = require('./lib/nact-utils');
-const MessageDebugger = require('./lib/message-debugger');
+const { buildReceiversHOF } = require('./receivers');
 const action = require('./action');
 const { merge } = require('./lib/utils');
+const MessageDebugger = require('./lib/message-debugger');
 
 // Whether revovery stage in persistent actor should print debug logs
 const DEBUG_RECOVERY = process.env.DEBUG_RECOVERY == 'true' ? true : false;
@@ -47,15 +48,15 @@ const bind_receivers = (receivers) => (state, msg, ctx) =>
  * @return {Actor} Actor instance
  */
 const spawn_actor = (_parent, _name, _actionsMap, _initialState, _properties) => {
-	const { Receivers, ...properties } = _properties; // never reference actor definition
-	const receivers = bind_receivers(Receivers);
+	const { Receivers, receivers, ...properties } = _properties; // never reference actor definition
+	const _receivers = bind_receivers(receivers ? buildReceiversHOF(receivers) : Receivers);
 	const action = route_action(_actionsMap);
 	const debug = MessageDebugger(_name);
 	return spawn(
 		_parent,
 		(state = _initialState, msg, context) => {
 			context.debug = debug; // provide debug to receiver context
-			context.receivers = receivers(state, msg, context);
+			context.receivers = _receivers(state, msg, context);
 			return action(state, msg, context);
 		},
 		_name,
@@ -79,10 +80,10 @@ const spawn_persistent = (_parent, _name, _actionsMap, _initialState, _propertie
 	if (!_properties || !_properties.persistenceKey) {
 		throw new Error(`Persistent actor must define 'persistenceKey' property`);
 	}
-	const { persistenceKey, Receivers, ...properties } = _properties; // never reference actor definition
+	const { persistenceKey, Receivers, receivers, ...properties } = _properties; // never reference actor definition
 
 	const action = route_action(_actionsMap);
-	const receivers = bind_receivers(Receivers);
+	const _receivers = bind_receivers(receivers ? buildReceiversHOF(receivers) : Receivers);
 	const debug = MessageDebugger(_name);
 	debug.control.enabledByApp = debug.control.enabled();
 
@@ -105,12 +106,12 @@ const spawn_persistent = (_parent, _name, _actionsMap, _initialState, _propertie
 					}
 					debug.log(`----- ... recovery complete.`);
 				}
-				context.receivers = receivers(state, msg, context);
+				context.receivers = _receivers(state, msg, context);
 				return action(state, msg, context);
 		  }
 		: (state = _initialState, msg, context) => {
 				context.debug = debug;
-				context.receivers = receivers(state, msg, context);
+				context.receivers = _receivers(state, msg, context);
 				return action(state, msg, context);
 		  };
 

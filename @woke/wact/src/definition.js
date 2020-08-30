@@ -24,18 +24,11 @@ function compose(definition, _actions, _properties, opts = {}) {
 		...((_properties && _properties.receivers) || []),
 	];
 
-	const Receivers = (bundle) =>
-		receivers.reduce((R, receiver) => {
-			R[receiver.name] = receiver(bundle);
-			return R;
-		}, {});
-
 	const actions = labelActions({ ..._actions, ...definition.actions }, labeling);
 
 	// Values from definition take precedence
 	const properties = merge(_properties, {
 		...definition.properties,
-		Receivers,
 		receivers,
 	});
 
