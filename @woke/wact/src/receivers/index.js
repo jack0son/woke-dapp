@@ -29,6 +29,9 @@ const sink = ({ state, msg, ctx }) => (_msg, _from = ctx.self) =>
 
 const noEffect = (state) => state;
 
+//throw new Error('Not defined');
+function buildReceiversHOF() {}
+
 /**
  * Map response (sink) messages from other actors to a handler
  *

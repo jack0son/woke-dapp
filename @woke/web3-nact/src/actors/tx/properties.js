@@ -4,11 +4,13 @@ const {
 const config = require('./config');
 const {
 	_receivers: { reduce, notifySinks },
+	_methods: { onCrash },
 } = require('./actions');
 
 const MAX_ATTEMPTS = 4;
 function Properties(a_web3, a_nonce, getSendMethod) {
 	return {
+		onCrash,
 		initialState: {
 			a_web3,
 			a_nonce,

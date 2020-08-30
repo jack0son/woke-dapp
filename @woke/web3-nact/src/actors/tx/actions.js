@@ -8,8 +8,8 @@ const {
 const { maxAttempts: MAX_ATTEMPTS } = require('./config');
 const errors = require('../../lib/errors');
 
-// 1. sendPreflight: receive and validate transaction parameters and queue send
-// 2. send: submit tx to web3 provider and setup listeners
+// 1. send (preflight): receive and validate transaction parameters and queue send
+// 2. publish: send tx to web3 provider and setup listeners
 // 3. reduce: reduce transaction state from listeners and peform effects:
 //	- notify tx sinks
 //	- throw errors
@@ -34,7 +34,7 @@ function isServiceInterfaceError(error) {
 
 function isServiceFailureError(error) {
 	// @TODO define service failure errors
-	return error instanceof errorrs.ProviderError;
+	return error instanceof errors.ProviderError;
 }
 
 const actions = { action_send, action_publish, action_reduceTxEvent, action_notifySinks };
@@ -46,17 +46,20 @@ function onCrash(msg, error, ctx) {
 	}
 
 	switch (msg.type) {
-		case SymbolDirectory.get(action_reduce):
+		case directory.address(action_reduceTxEvent):
 		case 'reduce':
 			return handleTransactionError(msg, error, ctx);
 
-		case SymbolDirectory.get(action_send):
+		case directory.address(action_send):
 		case 'send':
 			return handlePreflightError(msg, error, ctx);
 
-		case SymbolDirectory.get(action_publish):
+		case directory.address(action_publish):
 		case '_send':
 			return handleSendError(msg, error, ctx);
+
+		default:
+			return ctx.escalate;
 	}
 }
 
@@ -65,7 +68,7 @@ function handlePreflightError(msg, error, ctx) {
 }
 
 function handleTransactionError(msg, error, ctx) {
-	if (error instanceof ParamError) {
+	if (error instanceof errors.ParamError) {
 		if (error.web3Error.message.includes('nonce')) {
 			return retry({ failedNonce: error.data.tx.nonce });
 		} else {
@@ -73,11 +76,11 @@ function handleTransactionError(msg, error, ctx) {
 		}
 	}
 
-	if (error instanceof TransactionError) {
+	if (error instanceof errors.TransactionError) {
 		return retry();
 	}
 
-	if (error instanceof OnChainError) {
+	if (error instanceof errors.OnChainError) {
 		// Fatal error, notify sinks
 		dispatch(ctx.self, { type: directory.address(action_notifySinks), error }, ctx.self);
 	}
@@ -138,8 +141,6 @@ function action_publish(state, msg, ctx) {
 	const { sendOpts, getSendMethod } = state;
 	const { tx, web3Instance, nonce } = msg;
 
-	console.log('sent from: ', ctx.sender.name);
-
 	if (!web3Instance)
 		throw new Error(`web3:tx:action:publish: Message must contain web3Instance`);
 
@@ -188,7 +189,7 @@ function action_publish(state, msg, ctx) {
 	)(opts)
 		.on('transactionHash', (hash) => {
 			ctx.debug.info(msg, `... Pending ${hash}`);
-			reduce({ tx: { hash } });
+			reduce({ hash });
 		})
 		.on('confirmation', (confirmationNumber, receipt, latestBlockHash) => {
 			reduce({ confirmationNumber });
@@ -223,7 +224,7 @@ const retry = (opts) => {
 
 function action_reduceTxEvent(state, msg, ctx) {
 	const { error, ...tx } = msg;
-	const notifySinks = ctx.receivers.notifySinks || notifySinks({ state, ctx });
+	const notifySinks = ctx.receivers.notifySinks || notifySinks({ state, msg, ctx });
 
 	if (error) {
 		if (receipt) {
@@ -249,6 +250,8 @@ function action_reduceTxEvent(state, msg, ctx) {
 
 	const nextState = { ...state, tx: { ...state.tx, ...tx } };
 	notifySinks(resolveStatus(nextState.tx));
+	// const { a_web3, a_nonce, ...rest } = nextState;
+	// console.log(rest);
 
 	return nextState;
 }
@@ -256,7 +259,9 @@ function action_reduceTxEvent(state, msg, ctx) {
 // Allows onCrash to notify
 function action_notifySinks(state, msg, ctx) {
 	const { status, error, thenStop } = msg;
-	(ctx.receivers.notifySinks || notifySinks({ state, ctx }))(status, error, { thenStop });
+	(ctx.receivers.notifySinks || notifySinks({ state, msg, ctx }))(status, error, {
+		thenStop,
+	});
 }
 
 // Receivers
@@ -268,13 +273,18 @@ function reduce({ ctx }) {
 }
 
 // Fill sinks
-function notifySinks({ state, ctx }) {
+function notifySinks({ msg, state, ctx }) {
 	return (status, _error, opts) => {
 		const { thenStop } = opts || {};
 		const { tx, error, sinks, kind } = state;
 		if (error) {
 			tx.error = error;
 		}
+
+		ctx.debug.d(
+			msg,
+			`Notifying tx status change: ${status}. ${(tx && tx.error) || _error || ''}`
+		);
 
 		sinks.forEach((a_sink) =>
 			dispatch(
@@ -295,6 +305,7 @@ function notifySinks({ state, ctx }) {
 }
 
 const _receivers = { reduce, notifySinks };
+const _methods = { onCrash };
 
 // @ TODO receivers should not be included in actions
-module.exports = { ...actions, ...directory.actions, _receivers };
+module.exports = { ...actions, ...directory.actions, _receivers, _methods };

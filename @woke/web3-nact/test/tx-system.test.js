@@ -25,13 +25,17 @@ context('TxSystem', function () {
 	});
 
 	describe('#send', function () {
-		it('should send a transaction', async function () {
+		// @TODO
+		it('should respond with transaction pending', async function () {
 			const res = await query(a_txSystem, { type: 'send', opts: {} }, TIME_TIMEOUT);
 
 			expect(res).to.have.property('txStatus');
 			return expect(res.txStatus).to.equal('pending');
 		});
-		it('should support multiple addresses', function () {});
+
+		it('should respond with sink status updates [.... STATUSES ? ]', async function () {});
+
+		it('should support multiple addresses', async function () {});
 	});
 
 	describe('#interface errors', function () {
