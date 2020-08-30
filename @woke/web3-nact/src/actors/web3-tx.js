@@ -1,21 +1,16 @@
 const TxActor = require('./tx');
-const { adaptCompose } = require('@woke/wact');
+const { compose } = require('@woke/wact');
 
-function action_send(state, msg, ctx) {
-	const { tx, web3Instance, nonce } = msg;
-	const sendMethod = web3Instance.web3.eth.sendTransaction;
-	// @NB Not sending a method, simply composing from another actor's function
-	return TxActor.actions.action_send({ ...state, sendMethod }, msg, ctx);
-}
+const getSendMethod = (_, msg) => msg.web3Instance.web3.eth.sendTransaction;
 
 const Web3Tx = (a_web3, a_nonce) => {
-	const definition = {
-		actions: {
-			action_send,
-		},
-	};
+	const definition = {}; // additional actions and properties go here
 
-	return adaptCompose(definition, TxActor.actions, TxActor.Properties(a_web3, a_nonce));
+	return compose(
+		definition,
+		TxActor.actions,
+		TxActor.Properties(a_web3, a_nonce, getSendMethod)
+	);
 };
 
 module.exports = Web3Tx;

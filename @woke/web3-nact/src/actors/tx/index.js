@@ -1,5 +1,5 @@
 const actions = require('./actions-new');
-const properties = require('./properties');
-const Definition = require('@woke/wact').MakeDefinition(Actions, Properties);
+const Properties = require('./properties');
+const Definition = require('@woke/wact').MakeDefinition(() => actions, Properties);
 
-module.exports = { properties, actions };
+module.exports = { Definition, Properties, actions };

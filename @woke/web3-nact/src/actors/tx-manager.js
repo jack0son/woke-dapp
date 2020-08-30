@@ -3,6 +3,8 @@ const {
 	receivers: { sink },
 } = require('@woke/wact');
 const { start_actor, dispatch, block } = ActorSystem;
+//const { useNotifyOnCrash } = require('@woke/actors');
+
 const { initContract } = require('@woke/lib').web3Tools.utils;
 
 const Web3Tx = require('./web3-tx');

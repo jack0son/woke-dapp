@@ -15,9 +15,9 @@ function MakeDefinition(Actions, Properties) {
 }
 
 const adapt = (definition, { actions, properties }) =>
-	adaptCompose(definition, actions, properties);
+	compose(definition, actions, properties);
 
-function adaptCompose(definition, _actions, _properties, opts = {}) {
+function compose(definition, _actions, _properties, opts = {}) {
 	const { labeling } = opts;
 	const receivers = [
 		...((definition.properties && definition.properties.receivers) || []),
@@ -39,7 +39,10 @@ function adaptCompose(definition, _actions, _properties, opts = {}) {
 		receivers,
 	});
 
+	// console.log(Receivers({}));
+	// console.log(receivers);
+
 	return Object.assign(definition, { actions, properties });
 }
 
-module.exports = { MakeDefinition, adapt, adaptCompose };
+module.exports = { MakeDefinition, adapt, compose };

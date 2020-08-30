@@ -4,7 +4,7 @@ const { inspect } = require('util');
 const wrapInspect = (wrapper) => (obj, d = null) => wrapper(inspect(obj, { depth: d }));
 
 const DEFAULT_LINE_NUMBER_LEVELS = ['warn', 'error'];
-const applyLineNumbersToLogMethods = (levelMethods) => (
+const applyLineNumberToLevels = (levelMethods) => (
 	levels = DEFAULT_LINE_NUMBER_LEVELS
 ) => {
 	levels.forEach((methodName) => {
