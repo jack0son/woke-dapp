@@ -4,7 +4,7 @@ const {
 const config = require('./config');
 const {
 	_receivers: { reduce, notifySinks },
-} = require('./actions-new');
+} = require('./actions');
 
 const MAX_ATTEMPTS = 4;
 function Properties(a_web3, a_nonce, getSendMethod) {

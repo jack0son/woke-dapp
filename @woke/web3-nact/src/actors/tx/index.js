@@ -1,4 +1,4 @@
-const actions = require('./actions-new');
+const actions = require('./actions');
 const Properties = require('./properties');
 const Definition = require('@woke/wact').MakeDefinition(() => actions, Properties);
 

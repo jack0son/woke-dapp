@@ -75,6 +75,10 @@ patterns such as:
 
 Common methods made available in the actor context.
 
+#### Reducers
+
+#### Adapters
+
 #### Effects
 
 ## Rationale
