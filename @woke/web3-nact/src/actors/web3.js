@@ -47,7 +47,7 @@ function Web3Actor(
 
 		// @TODO: Clean up this logic: repetition
 		if (!networkList || (!!networkList && networkList.length == 0)) {
-			ctx.debug.warn(msg, `No redundancy providers specified, using default`);
+			ctx.debug.info(msg, `No redundancy providers specified, using default`);
 		}
 
 		return createNewInstance();
@@ -147,7 +147,7 @@ function Web3Actor(
 		// Add the sender to the queue
 		function forwardToQueue() {
 			dispatch(ctx.self, { type: 'wait' }, ctx.sender);
-			return;
+			return state;
 		}
 
 		if (!web3Instance) {
@@ -174,7 +174,7 @@ function Web3Actor(
 
 		// Begin instantiation
 		if (queue.length == 0) {
-			ctx.debug.info(msg, `Triggering instantiate, with queue ${queue.length}`);
+			//ctx.debug.info(msg, `Triggering instantiate, with queue ${queue.length}`);
 			dispatch(ctx.self, { type: 'instantiate' }, ctx.self);
 		}
 
@@ -188,7 +188,7 @@ function Web3Actor(
 		}
 
 		// Instantiation in progress
-		ctx.debug.info(msg, `Adding ${ctx.sender.type} to queue`);
+		//ctx.debug.info(msg, `Adding ${ctx.sender.type} to queue`);
 		return { ...state, queue: [...queue, ctx.sender] };
 	}
 

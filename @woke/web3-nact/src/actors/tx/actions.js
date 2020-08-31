@@ -26,10 +26,20 @@ function resolveStatus(txState) {
 	}
 }
 
+function TxState() {
+	return {
+		status: 'init',
+		error: null,
+		hash: undefined,
+		receipt: undefined,
+		attempts: 0,
+	};
+}
+
 // Errors that callers should receive details of
 function isServiceInterfaceError(error) {
 	// @TODO define service interface errors
-	return error instanceof errors.RevertError || false;
+	return error instanceof errors.InterfaceError || error instanceof errors.RevertError;
 }
 
 function isServiceFailureError(error) {
@@ -41,8 +51,22 @@ const actions = { action_send, action_publish, action_reduceTxEvent, action_noti
 const directory = action.buildDirectory(actions);
 
 function onCrash(msg, error, ctx) {
+	ctx.retry = retry({ msg, error, ctx });
+	ctx.notify = () => {
+		dispatch(
+			ctx.self,
+			{ type: directory.address(action_notifySinks), error, thenStop: true },
+			ctx.self
+		);
+		return ctx.resume;
+	};
+
 	if (isServiceFailureError(error)) {
 		return ctx.escalate; // a_contract or a_txManager will perform failure reporting
+	}
+
+	if (isServiceInterfaceError(error)) {
+		return ctx.notify();
 	}
 
 	switch (msg.type) {
@@ -63,26 +87,31 @@ function onCrash(msg, error, ctx) {
 	}
 }
 
+function handleSendError(msg, error, ctx) {
+	return ctx.escalate;
+}
+
 function handlePreflightError(msg, error, ctx) {
 	return ctx.escalate;
 }
 
 function handleTransactionError(msg, error, ctx) {
+	const { tx } = msg;
 	if (error instanceof errors.ParamError) {
 		if (error.web3Error.message.includes('nonce')) {
-			return retry({ failedNonce: error.data.tx.nonce });
+			return ctx.retry({ tx, failedNonce: error.data.tx.nonce });
 		} else {
 			throw error;
 		}
 	}
 
 	if (error instanceof errors.TransactionError) {
-		return retry();
+		return ctx.retry();
 	}
 
 	if (error instanceof errors.OnChainError) {
 		// Fatal error, notify sinks
-		dispatch(ctx.self, { type: directory.address(action_notifySinks), error }, ctx.self);
+		return ctx.notify();
 	}
 
 	if (error.data && error.data.tx) {
@@ -91,13 +120,30 @@ function handleTransactionError(msg, error, ctx) {
 }
 
 async function action_send(state, msg, ctx) {
-	const { tx: _tx, failedNonce, maxAttempts } = state;
-	const tx = _tx || {};
-	const _attempts = tx._attempts ? tx._attempts + 1 : 1;
+	const { maxAttempts } = state;
+	const { failedNonce } = msg;
 
-	if (_attempts > (maxAttempts || MAX_ATTEMPTS)) {
-		const error = new Error('Tx failed too many times');
-		receiver_reduce(ctx)({ error });
+	if (msg.transactionSpec && msg.tx) {
+		throw new Error('Should not receive new transaction specification with tx state');
+	}
+
+	const transactionSpec = msg.transactionSpec || state.transactionSpec;
+	if (!transactionSpec) {
+		throw new errors.InterfaceError(
+			'Must provide transaction specification (web3.transactionObject OR opts)',
+			'transactionSpec',
+			transactionSpec
+		);
+	}
+
+	// Tx property used internally by onCrash handlers so tx state from message
+	// contents must take precedence
+	const tx = msg.tx || state.tx || TxState();
+	tx.attempts++;
+
+	if (tx.attempts > (maxAttempts || MAX_ATTEMPTS)) {
+		// @TODO classify this error
+		throw new Error('Tx failed too many times');
 	}
 
 	tx.type = 'send';
@@ -119,12 +165,12 @@ async function action_send(state, msg, ctx) {
 	}
 
 	ctx.debug.info(msg, `Send from ${account}`);
-	tx.opts = { ...tx.opts, from: account };
-	console.log(directory.address(action_publish));
+	tx.opts = { ...transactionSpec, from: account };
+	tx.nonce = nonce;
 
 	dispatch(
 		ctx.self,
-		{ type: directory.address(action_publish), tx, web3Instance, nonce },
+		{ type: directory.address(action_publish), web3Instance, nonce },
 		ctx.self
 	);
 	//dispatch(ctx.self, { type: '_send', tx, web3Instance, nonce }, ctx.self);
@@ -133,13 +179,15 @@ async function action_send(state, msg, ctx) {
 	return {
 		...state,
 		error: null,
+		transactionSpec,
 		tx,
 	};
 }
 
+// Only called internally
 function action_publish(state, msg, ctx) {
-	const { sendOpts, getSendMethod } = state;
-	const { tx, web3Instance, nonce } = msg;
+	const { sendOpts, getSendMethod, transactionSpec, tx } = state;
+	const { web3Instance, nonce } = msg;
 
 	if (!web3Instance)
 		throw new Error(`web3:tx:action:publish: Message must contain web3Instance`);
@@ -153,14 +201,16 @@ function action_publish(state, msg, ctx) {
 		throw new errors.ParamError(`Message must contain transaction nonce`, tx);
 	}
 
+	tx.nonce = nonce;
 	const opts = {
 		gas: web3Instance.network.gasLimit,
 		gasPrice: web3Instance.network.gasPrice,
 		common: web3Instance.network.defaultCommon,
 		...sendOpts,
-		...tx.opts,
+		...transactionSpec,
 		nonce,
 	};
+
 	if (web3Instance.account) {
 		opts.from = web3Instance.account;
 	}
@@ -179,9 +229,7 @@ function action_publish(state, msg, ctx) {
 		);
 	}
 
-	tx.nonce = nonce;
-	const reduce = ctx.receivers.reduce || reduce({ ctx });
-
+	ctx.reduce = reduce({ ctx });
 	getSendMethod(
 		state,
 		msg,
@@ -189,34 +237,35 @@ function action_publish(state, msg, ctx) {
 	)(opts)
 		.on('transactionHash', (hash) => {
 			ctx.debug.info(msg, `... Pending ${hash}`);
-			reduce({ hash });
+			ctx.reduce({ hash });
 		})
 		.on('confirmation', (confirmationNumber, receipt, latestBlockHash) => {
-			reduce({ confirmationNumber });
+			ctx.reduce({ confirmationNumber });
 		})
 		.on('receipt', (receipt) => {
-			reduce({ receipt, error: null });
+			ctx.reduce({ receipt, error: null });
 		})
 		.on('error', (error, receipt) => {
-			reduce({ receipt, error });
+			ctx.reduce({ receipt, error });
 		})
 		.then((receipt) => {})
 		.catch((error, receipt) => {
-			ctx.debug.warn(msg, `Swallowing sendMethod error: ${error}`);
+			ctx.debug.warn(msg, `Swallowing sendMethod() error: ${error}`);
 		});
 
+	state.tx = tx;
 	return state;
 }
 
-const retry = (opts) => {
+// onCrash receiver
+const retry = ({ msg, error, ctx }) => (opts) => {
 	const { failedNonce } = opts;
 
-	ctx.debug.d(msg, `Retrying tx: ${Object.values(state.tx)}`);
+	ctx.debug.d(msg, `Retrying tx...`);
 	dispatch(
 		ctx.self,
 		{
 			type: directory.address(action_send),
-			tx: { ...state.tx, _attempts },
 			failedNonce,
 		},
 		ctx.self
@@ -225,51 +274,33 @@ const retry = (opts) => {
 };
 
 function action_reduceTxEvent(state, msg, ctx) {
-	const { type, error, ...tx } = msg;
-	const notify = notifySinks({ state, msg, ctx });
+	const { type, ..._tx } = msg;
+	//const notify = notifySinks({ state, msg, ctx });
 
-	if (error) {
-		if (receipt) {
+	const tx = { ...state.tx, ..._tx };
+
+	let error = null;
+	if (_tx._error) {
+		if (tx.receipt) {
 			// If receipt is provided web3js specifies tx was rejected on chain
-			const onChainError = new OnChainError(error, tx, receipt);
-			reduce({ error: onChainError });
+			error = new OnChainError(error, tx, receipt);
 		} else if (error.message.includes('not mined')) {
-			reduce({ error: new TransactionError(error, tx) });
+			error = new TransactionError(error, tx);
 		} else {
 			//console.dir(error);
-			const paramError = new errors.ParamError(error, tx);
-			reduce({ error: paramError });
-		}
-
-		// If caller problem, notify
-		if (isServiceInterfaceError(error)) {
-			return notify('error', error, { thenStop: true });
+			error = new errors.ParamError(error, tx);
 		}
 
 		// If internal problem, retry
-		throw error;
+		if (!isServiceInterfaceError(error)) {
+			throw error;
+		}
+		// If problem for caller, notify
 	}
 
 	// @TODO config which events are received
-	//ctx.receivers.sink;
-	const nextState = { ...state, tx: { ...state.tx, ...tx } };
-	notify(resolveStatus(nextState.tx), null, { tx: nextState.tx });
-
-	return nextState;
-	// return action_notify(
-	// 	nextState,
-	// 	{ type: msg.type, status: resolveStatus(nextState), error: null },
-	// 	ctx
-	// );
-}
-
-// Allows onCrash to notify
-function action_notifySinks(state, msg, ctx) {
-	const { status, error, thenStop } = msg;
-	notifySinks({ state, msg, ctx })(status, error, {
-		thenStop,
-	});
-	return state;
+	const nextState = { ...state, tx: { ...tx, error } };
+	return action_notifySinks(nextState, { type: 'reduce', thenStop: !!error }, ctx);
 }
 
 // Receivers
@@ -280,42 +311,56 @@ function reduce({ ctx }) {
 	};
 }
 
-// Fill sinks
-function notifySinks({ state, msg, ctx }) {
-	return (status, _error, opts) => {
-		const { thenStop, tx: _tx } = opts || {};
-		const { tx, error, sinks, kind } = state;
+// Allows onCrash to notify
+function action_notifySinks(state, msg, ctx) {
+	const { error, thenStop } = msg;
 
-		const txState = _tx || tx || {};
+	if (error) state.error = error;
+	notifySinks({ state, msg, ctx })(error, { thenStop });
+	return state;
 
-		if (error) {
-			txState.error = error;
-		}
-
-		ctx.debug.d(
-			msg,
-			`Notifying tx status change: ${status}. ${
-				(txState && txState.error) || _error || ''
-			}`
-		);
-
-		sinks.forEach((a_sink) =>
-			dispatch(
-				a_sink,
-				{
-					type: 'sink',
-					action: 'send',
-					kind,
-					status,
-					tx: txState,
-					error: _error,
-				},
-				ctx.self
-			)
-		);
-		if (thenStop) stop(ctx.self);
-	};
+	//const { status, error, thenStop } = msg;
+	//const tx = { ...state.tx, status: status || state.tx.status, error };
+	//state.tx = tx;
+	// notifySinks({ state, msg, ctx })(status, error, {
+	// 	thenStop,
+	// });
 }
+
+// Fill sinks
+const notifySinks = ({ state, msg, ctx }) => (_error, opts) => {
+	//const { thenStop, tx: _tx } = opts || {};
+	const { thenStop } = opts || {};
+	const { tx, sinks, kind } = state;
+
+	//const txState = _tx || msg.tx || state.tx;
+	// const txState = msg.tx || state.tx;
+
+	if (!tx) throw new Error('Attempt to notify of with empty tx state');
+
+	const status = _error ? 'error' : resolveStatus(tx);
+
+	ctx.debug.d(
+		msg,
+		`Notifying tx status change: ${status}. ${(tx && tx.error) || _error || ''}`
+	);
+
+	sinks.forEach((a_sink) =>
+		dispatch(
+			a_sink,
+			{
+				type: 'sink',
+				action: 'send',
+				kind,
+				status,
+				tx,
+				error: _error,
+			},
+			ctx.self
+		)
+	);
+	if (thenStop) stop(ctx.self);
+};
 
 const _receivers = { reduce, notifySinks };
 const _methods = { onCrash };

@@ -16,6 +16,7 @@ function handleTxResponse(state, msg, ctx) {
 const callerStubDefinition = {
 	properties: {
 		initialState: {
+			txState: undefined,
 			sinkHandlers: {
 				tx: handleTxResponse,
 			},
@@ -53,7 +54,7 @@ context('TxSystem', function () {
 		director.stop();
 	});
 
-	describe('#send', function () {
+	describe('#send - Tx.actions', function () {
 		// @TODO
 		it('should respond with transaction pending', async function () {
 			const res = await query(a_txSystem, { type: 'send', opts: {} }, TIME_TIMEOUT);
@@ -63,42 +64,43 @@ context('TxSystem', function () {
 			return res.should.have.deep.property('status', 'pending');
 		});
 
-		it('should respond with sink status updates [.... STATUSES ? ]', async function () {
+		it('should respond with transaction complete', async function () {
 			const deferred = new Deferral();
+			console.log(deferred);
 
-			function myHandler(state, msg, ctx) {
+			setTxHandler((state, msg, ctx) => {
 				msg.action.should.equal('send');
 				const { txState } = state;
 				const { tx, error, status } = msg;
 
-				error.should.not.exist;
 				tx.should.exist;
-				tx.should.not.exist;
+				should.not.exist(error);
+
+				//console.log('status', status);
+				//console.log('txState', txState);
+				const nextState = { ...state, txState: { tx, error, status } };
 
 				if (!txState) {
 					msg.status.should.equal('pending');
 				} else {
-					switch (txState.tx.status) {
+					switch (txState.status) {
 						case 'pending':
-							status.should.equal('complete');
-							deferred.promise.resolve();
+							status.should.equal('success');
+							deferred.resolve('resolved');
 							break;
 						case 'success':
 							throw new Error(`Completed tx should be stopped`);
 							break;
 						default:
-							throw new Error(`Unspecified tx status ${txState.tx.status}`);
+							throw new Error(`Unspecified tx status ${txState.status}`);
 					}
 				}
 
-				return { ...state, txState: { tx, error, status } };
-			}
-
-			setTxHandler(myHandler);
+				return nextState;
+			});
 
 			const sendTxMsg = { type: 'send', opts: {} };
-			console.log('txHandler', await block(a_caller, { type: 'getTxHandler' }));
-			const res = await query(
+			dispatch(
 				a_caller,
 				{ type: 'forward', to: a_txSystem, msg: sendTxMsg },
 				TIME_TIMEOUT
@@ -106,12 +108,15 @@ context('TxSystem', function () {
 			await deferred.promise;
 		});
 
+		it('should report message parameter error', async function () {});
+
 		it('should support multiple addresses', async function () {});
 
 		it('should support options x, y, z', async function () {});
 	});
 
 	describe('#interface errors', function () {
+		it('should report if no to address is provided', function () {});
 		it('should report nonce error', function () {});
 		it('should report insufficient funds / out of gas error', function () {});
 	});

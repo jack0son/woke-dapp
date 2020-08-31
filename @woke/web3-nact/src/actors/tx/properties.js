@@ -18,6 +18,11 @@ function Properties(a_web3, a_nonce, getSendMethod) {
 			sinks: [],
 			kind: 'tx',
 			maxAttempts: config.maxAttempts,
+			error: null,
+			failedNonce: null,
+
+			transactionObject: null, // transaction inputs
+			tx: {}, // transaction state
 
 			opts: {
 				call: null,

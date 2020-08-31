@@ -19,7 +19,7 @@ function spawn_tx(state, ctx) {
 function action_send(state, msg, ctx) {
 	const { opts } = msg;
 	const a_tx = spawn_tx(state, ctx); // parent is me
-	const _msg = { type: 'send', tx: { opts } };
+	const _msg = { type: 'send', transactionSpec: opts };
 	dispatch(a_tx, _msg, ctx.sender);
 }
 
