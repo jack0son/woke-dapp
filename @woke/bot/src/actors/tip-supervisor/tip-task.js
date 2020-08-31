@@ -1,7 +1,8 @@
 const {
 	ActorSystem,
 	reducers,
-	adapters: { SinkReduce, TaskSupervisor },
+	adapters: { SinkReduce },
+	actors: { TaskSupervisor },
 } = require('@woke/wact');
 const { dispatch } = ActorSystem;
 const { subsumeEffects, Pattern } = reducers;
@@ -11,10 +12,10 @@ const {
 	},
 } = require('@woke/lib');
 
-const { Statuses } = TaskSupervisor;
+const { TaskStatuses: Statuses } = TaskSupervisor;
 
 // Handle results from transaction actor
-function txSink(msg, ctx, state) {
+function txSink(state, msg, ctx) {
 	const { tx, txStatus } = msg;
 	const { results, tip } = state;
 
@@ -49,11 +50,13 @@ function txSink(msg, ctx, state) {
 	return { ...state, results: { ...results, ...newResults } };
 }
 
-function effect_checkClaimStatus(msg, ctx, state) {
-	const { tip } = state;
+function effect_checkClaimStatus(state, msg, ctx) {
+	const { tip, a_wokenContract } = state;
+	console.log(state);
+	console.log(a_wokenContract);
 	ctx.debug.d(msg, `Check @${tip.fromHandle} is claimed...`);
 	dispatch(
-		state.a_wokenContract,
+		a_wokenContract,
 		{ type: 'call', method: 'userClaimed', args: [tip.fromId] },
 		ctx.self
 	);
@@ -61,7 +64,7 @@ function effect_checkClaimStatus(msg, ctx, state) {
 	return state;
 }
 
-function effect_handleClaimStatus(msg, ctx, state) {
+function effect_handleClaimStatus(state, msg, ctx) {
 	const {
 		results: { userIsClaimed },
 		tip,
@@ -78,7 +81,7 @@ function effect_handleClaimStatus(msg, ctx, state) {
 		//tip.status = 'UNSETTLED';
 		nextStage = 'CALLING-CHECK-BALANCE';
 
-		return effect_checkUserBalance(msg, ctx, state);
+		return effect_checkUserBalance(state, msg, ctx);
 	} else if (!userIsClaimed) {
 		// Oh yes, this happens sometimes!
 		throw new Error(`User unclaimed is ${userIsClaimed}`);
@@ -87,7 +90,7 @@ function effect_handleClaimStatus(msg, ctx, state) {
 	return state;
 }
 
-function effect_checkUserBalance(msg, ctx, state) {
+function effect_checkUserBalance(state, msg, ctx) {
 	const { tip, a_wokenContract } = state;
 	dispatch(
 		a_wokenContract,
@@ -98,7 +101,7 @@ function effect_checkUserBalance(msg, ctx, state) {
 	return state;
 }
 
-function effect_handleUserBalance(msg, ctx, state) {
+function effect_handleUserBalance(state, msg, ctx) {
 	const {
 		results: { userBalance },
 		tip,
@@ -139,7 +142,7 @@ function effect_handleUserBalance(msg, ctx, state) {
 	};
 }
 
-function effect_handleTipSuccess(msg, ctx, state) {
+function effect_handleTipSuccess(state, msg, ctx) {
 	const {
 		tipTx: { tx, txStatus, error },
 		tip,
@@ -179,7 +182,7 @@ function effect_handleTipSuccess(msg, ctx, state) {
 	return ctx.stop;
 }
 
-function effect_handleTipFailure(msg, ctx, state) {
+function effect_handleTipFailure(state, msg, ctx) {
 	const {
 		tipTx: { txStatus, tx, error },
 		tip,
@@ -194,7 +197,7 @@ function effect_handleTipFailure(msg, ctx, state) {
 	return ctx.stop;
 }
 
-function effect_handleFailure(msg, ctx, state) {
+function effect_handleFailure(state, msg, ctx) {
 	const { tip, error } = state;
 	// For the moment, if web3 fails, the tip just fails
 	const errMsg = `tip:${tip.id} failed with error: ${error}`;
@@ -262,7 +265,7 @@ module.exports = {
 		},
 
 		// Receivers are bound the message bundle and attached to the context
-		Receivers: ({ msg, state, ctx }) => ({
+		Receivers: ({ state, msg, ctx }) => ({
 			// Reduce forwards a message to the reduce action
 			reduce: (_msg) => {
 				_msg.type = 'reduce';
@@ -280,16 +283,20 @@ module.exports = {
 
 	actions: {
 		// --- Source Actions
-		tip: (msg, ctx, state) => {
+		tip: (state, msg, ctx) => {
 			const { a_wokenContract } = state;
 			const { tip } = msg;
 			ctx.debug.d(msg, tip_submitted(tip));
 
-			return reducer(msg, ctx, {
-				...state,
-				stage: 'INIT',
-				tip,
-			});
+			return reducer(
+				{
+					...state,
+					stage: 'INIT',
+					tip,
+				},
+				msg,
+				ctx
+			);
 		},
 
 		// --- Sink Actions

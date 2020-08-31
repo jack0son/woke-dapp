@@ -3,12 +3,13 @@ const {
 	adapt,
 	actors: { TaskSupervisor },
 } = require('@woke/wact');
+const tipTaskDefn = require('./tip-task');
 const { useNotifyOnCrash } = require('@woke/actors');
-const { dispatch } = ActorSystem;
-const { Statuses } = TaskSupervisor;
+const { dispatch, start_actor } = ActorSystem;
+const { TaskStatuses: Statuses } = TaskSupervisor;
 
 function spawn_tip_task(_parent, tip, a_wokenContract) {
-	return start_actor(_parent)(`_tip-${tip.taskId}`, tipActor, {
+	return start_actor(_parent)(`_tip-${tip.taskId}`, tipTaskDefn, {
 		a_wokenContract,
 		tip,
 	});
@@ -19,7 +20,7 @@ function TipSupervisor(a_wokenContract, a_tweeter, opts) {
 	const start_task = ({ state, msg, ctx }) => (task) => {
 		const a_task = spawn_tip_task(ctx.self, task, state.a_wokenContract);
 		//start_actor(ctx.self)(task.taskId, makeTask(task, ctx.self), {});
-		dispatch(a_task, { type: 'work' }, ctx.self);
+		dispatch(a_task, { type: 'tip', tip: task }, ctx.self);
 		ctx.debug.d(msg, `Started task: ${task.taskId}`);
 	};
 

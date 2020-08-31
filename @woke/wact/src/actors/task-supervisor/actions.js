@@ -30,6 +30,8 @@ function Actions(
 	isValidTask,
 	{ ignoreTask, effects, reducer, restartOn, effect_startTask }
 ) {
+	console.log(Object.getOwnPropertySymbols(effects));
+
 	if (!isReducer(reducer)) reducer = (state) => state;
 
 	const actions = {
@@ -99,7 +101,7 @@ function Actions(
 		} else {
 			ctx.debug.d(
 				_msg,
-				`task: ${taskId}, ${prev.status.toString()} => ${_task.status.toString()}`
+				`task: ${taskId}, ${prev.status.toString()} -> ${_task.status.toString()}`
 			);
 		}
 
