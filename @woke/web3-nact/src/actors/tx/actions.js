@@ -223,8 +223,8 @@ const retry = (opts) => {
 };
 
 function action_reduceTxEvent(state, msg, ctx) {
-	const { error, ...tx } = msg;
-	const notifySinks = ctx.receivers.notifySinks || notifySinks({ state, msg, ctx });
+	const { type, error, ...tx } = msg;
+	const notify = notifySinks({ state, msg, ctx });
 
 	if (error) {
 		if (receipt) {
@@ -241,27 +241,31 @@ function action_reduceTxEvent(state, msg, ctx) {
 
 		// If caller problem, notify
 		if (isServiceInterfaceError(error)) {
-			return notifySinks('error', error, { thenStop: true });
+			return notify('error', error, { thenStop: true });
 		}
 
 		// If internal problem, retry
 		throw error;
 	}
 
+	// @TODO config which events are received
+	//ctx.receivers.sink;
 	const nextState = { ...state, tx: { ...state.tx, ...tx } };
-	notifySinks(resolveStatus(nextState.tx));
-	// const { a_web3, a_nonce, ...rest } = nextState;
-	// console.log(rest);
-
-	return nextState;
+	notify(resolveStatus(nextState.tx), null, { tx: nextState.tx });
+	// return action_notify(
+	// 	nextState,
+	// 	{ type: msg.type, status: resolveStatus(nextState), error: null },
+	// 	ctx
+	// );
 }
 
 // Allows onCrash to notify
 function action_notifySinks(state, msg, ctx) {
 	const { status, error, thenStop } = msg;
-	(ctx.receivers.notifySinks || notifySinks({ state, msg, ctx }))(status, error, {
+	notifySinks({ state, msg, ctx })(status, error, {
 		thenStop,
 	});
+	return state;
 }
 
 // Receivers
@@ -273,17 +277,22 @@ function reduce({ ctx }) {
 }
 
 // Fill sinks
-function notifySinks({ msg, state, ctx }) {
+function notifySinks({ state, msg, ctx }) {
 	return (status, _error, opts) => {
-		const { thenStop } = opts || {};
+		const { thenStop, tx: _tx } = opts || {};
 		const { tx, error, sinks, kind } = state;
+
+		const txState = _tx || tx || {};
+
 		if (error) {
-			tx.error = error;
+			txState.error = error;
 		}
 
 		ctx.debug.d(
 			msg,
-			`Notifying tx status change: ${status}. ${(tx && tx.error) || _error || ''}`
+			`Notifying tx status change: ${status}. ${
+				(txState && txState.error) || _error || ''
+			}`
 		);
 
 		sinks.forEach((a_sink) =>
@@ -293,7 +302,7 @@ function notifySinks({ msg, state, ctx }) {
 					type: 'sink',
 					action: 'send',
 					kind,
-					tx,
+					tx: txState,
 					error: _error,
 					txStatus: status,
 				},

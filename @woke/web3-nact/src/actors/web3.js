@@ -13,17 +13,18 @@ const RETRY_DELAY = 400;
 
 const AVG_BLOCK_TIME = 3 * 1000;
 
+const defaultOpts = {
+	retryDelay: RETRY_DELAY,
+	networkList: [],
+	monitor: undefined,
+};
+
 function Web3Actor(
 	instantiateWeb3 = web3Tools.init.instantiate,
 	maxAttempts = MAX_ATTEMPTS,
 	opts
 ) {
-	const defaults = {
-		retryDelay: RETRY_DELAY,
-		networkList: [],
-		monitor: undefined,
-	};
-	const { monitor, retryDelay, networkList } = { ...defaults, ...opts };
+	const { monitor, retryDelay, networkList } = { ...defaultOpts, ...opts };
 
 	function onCrash(msg, error, ctx) {
 		switch (msg.type) {
@@ -41,7 +42,7 @@ function Web3Actor(
 	// @dev Allow several attempts before fatally crashing
 	// @dev If network list provided to initial state, return web3 using the first
 	// provider that successfully connects
-	async function action_instantiate(state, msg, ctx) {
+	function action_instantiate(state, msg, ctx) {
 		const { queue, instance, maxAttempts, opts, networkList } = state;
 
 		// @TODO: Clean up this logic: repetition
@@ -143,8 +144,14 @@ function Web3Actor(
 	async function action_get(state, msg, ctx) {
 		const { web3Instance } = state;
 
+		// Add the sender to the queue
+		function forwardToQueue() {
+			dispatch(ctx.self, { type: 'wait' }, ctx.sender);
+			return;
+		}
+
 		if (!web3Instance) {
-			return forwardToInit();
+			return forwardToQueue();
 		}
 
 		try {
@@ -153,13 +160,7 @@ function Web3Actor(
 		} catch (error) {
 			ctx.debug.error(msg, `error getting network ID: ${error}`);
 
-			return forwardToInit();
-		}
-
-		// Forward the get request to init
-		function forwardToInit() {
-			dispatch(ctx.self, { type: 'init' }, ctx.sender);
-			return;
+			return forwardToQueue();
 		}
 	}
 
@@ -171,23 +172,24 @@ function Web3Actor(
 		const { ready } = msg;
 		const { queue, web3Instance } = state;
 
+		// Begin instantiation
 		if (queue.length == 0) {
 			ctx.debug.info(msg, `Triggering instantiate, with queue ${queue.length}`);
 			dispatch(ctx.self, { type: 'instantiate' }, ctx.self);
 		}
 
+		// Instantiation complete
 		if (ready === true) {
-			// Instaniation complete
-			queue.forEach((sender) => {
-				dispatch(sender, { type: 'web3', web3Instance }, ctx.self);
-			});
+			queue.forEach((sender) =>
+				dispatch(sender, { type: 'web3', web3Instance }, ctx.self)
+			);
 			ctx.debug.info(msg, `Responded to ${queue.length} queue members`);
 			return { ...state, queue: [] };
-		} else {
-			// Instantiation in progress
-			ctx.debug.info(msg, `Adding ${ctx.sender.type} to queue`);
-			return { ...state, queue: [...queue, ctx.sender] };
 		}
+
+		// Instantiation in progress
+		ctx.debug.info(msg, `Adding ${ctx.sender.type} to queue`);
+		return { ...state, queue: [...queue, ctx.sender] };
 	}
 
 	// Provide a web3 instance to other actors

@@ -26,9 +26,6 @@ function Properties(a_web3, a_nonce, getSendMethod) {
 		},
 
 		receivers: [sink, reduce, notifySinks],
-		Receivers: (bundle) => ({
-			sink: sink(bundle),
-		}),
 	};
 }
 

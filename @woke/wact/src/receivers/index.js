@@ -54,6 +54,14 @@ const noEffect = (state) => state;
 const matchSinkHandler = ({ state, msg, ctx }) => (actor) => {
 	const { kind } = msg;
 	const { sinkHandlers } = state;
+	if (!sinkHandlers) {
+		const error = new Error(
+			`matchSinkHandler() receiver requires sinkHandlers to be defined in actor state`
+		);
+		ctx.debug.error(msg, error);
+		throw error;
+	}
+
 	let handler = sinkHandlers[actor.name];
 	if (!handler && sinkHandlers.actorDirectory)
 		handler = sinkHandlers.actorDirectory.get(ctx.sender);

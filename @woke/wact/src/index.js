@@ -1,5 +1,6 @@
 const ActorSystem = require('./actor-system');
 const actors = require('./actors');
+const adapters = require('./adapters');
 const receivers = require('./receivers');
 const reducers = require('./reducers');
 const effects = require('./lib/effects');
@@ -14,6 +15,7 @@ module.exports = {
 	action,
 	PersistenceEngine,
 	actors,
+	adapters,
 	receivers,
 	reducers,
 	effects,
