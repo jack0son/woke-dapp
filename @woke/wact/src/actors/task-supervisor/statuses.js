@@ -2,6 +2,7 @@ const TaskStatuses = {
 	init: Symbol('init'),
 	ready: Symbol('ready'),
 	pending: Symbol('pending'),
+	invalid: Symbol('invalid'),
 	failed: Symbol('failed'),
 	abort: Symbol('abort'),
 	done: Symbol('done'),

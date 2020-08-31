@@ -56,6 +56,10 @@ the foot when piping actions / effects.
 
 #### Actor Composition
 
+`adapt()`
+
+`compose()`
+
 **Why use closures instead of classes to define actors?**
 Allows actions to consistently use `this` to refer to the message context, while
 also sharing some encolsing context.

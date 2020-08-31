@@ -186,7 +186,7 @@ function Supervisor(effects, makeTask = TaskDefinition, _properties) {
 		dispatch(ctx.sender, state, ctx.self);
 	};
 
-	const defn = adapt(
+	return adapt(
 		{
 			actions: {
 				recovery: action_mockRecovery,
@@ -200,8 +200,6 @@ function Supervisor(effects, makeTask = TaskDefinition, _properties) {
 		},
 		TaskSupervisor.Definition([getId, isValidTask, { effects }])
 	);
-	//console.log(defn);
-	return defn;
 }
 
 context('TaskSupervisor', function () {

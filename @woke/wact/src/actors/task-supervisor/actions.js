@@ -25,7 +25,11 @@ const isValidState = ({ taskRepo, tasksByStatus }) => !!taskRepo && !!tasksBySta
 
 // @TODO new task function should be primary parameter
 // Task manager actions
-function Actions(getId, isValidTask, { effects, reducer, restartOn, effect_startTask }) {
+function Actions(
+	getId,
+	isValidTask,
+	{ ignoreTask, effects, reducer, restartOn, effect_startTask }
+) {
 	if (!isReducer(reducer)) reducer = (state) => state;
 
 	const actions = {
@@ -44,6 +48,14 @@ function Actions(getId, isValidTask, { effects, reducer, restartOn, effect_start
 		const taskId = getId(_task);
 		if (!isValidTask(_task)) throw new Error(`New task ${taskId} is not a valid task`);
 
+		// Ignore task if ignoreTask predicate defined
+		const ignoreReason = ignoreTask && ignoreTask(_task);
+		if (ignoreReason) {
+			ctx.debug.d(msg, `Ignoring task ID: ${taskId}, ${ignoreReason}`);
+			return state;
+		}
+
+		// Ignore task if it already exists
 		if (taskRepo.has(taskId)) return state;
 
 		const task = taskRepo.set(taskId, Task(taskId, _task)).get(taskId);

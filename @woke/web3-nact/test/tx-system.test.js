@@ -66,7 +66,6 @@ context('TxSystem', function () {
 
 		it('should respond with transaction complete', async function () {
 			const deferred = new Deferral();
-			console.log(deferred);
 
 			setTxHandler((state, msg, ctx) => {
 				msg.action.should.equal('send');
@@ -115,6 +114,7 @@ context('TxSystem', function () {
 		it('should support options x, y, z', async function () {});
 	});
 
+	// @TODO create test mock contract that will cause deterministic errors
 	describe('#interface errors', function () {
 		it('should report if no to address is provided', function () {});
 		it('should report nonce error', function () {});
