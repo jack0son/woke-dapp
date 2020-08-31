@@ -204,6 +204,8 @@ function action_publish(state, msg, ctx) {
 		.catch((error, receipt) => {
 			ctx.debug.warn(msg, `Swallowing sendMethod error: ${error}`);
 		});
+
+	return state;
 }
 
 const retry = (opts) => {
@@ -252,6 +254,8 @@ function action_reduceTxEvent(state, msg, ctx) {
 	//ctx.receivers.sink;
 	const nextState = { ...state, tx: { ...state.tx, ...tx } };
 	notify(resolveStatus(nextState.tx), null, { tx: nextState.tx });
+
+	return nextState;
 	// return action_notify(
 	// 	nextState,
 	// 	{ type: msg.type, status: resolveStatus(nextState), error: null },
@@ -302,9 +306,9 @@ function notifySinks({ state, msg, ctx }) {
 					type: 'sink',
 					action: 'send',
 					kind,
+					status,
 					tx: txState,
 					error: _error,
-					txStatus: status,
 				},
 				ctx.self
 			)

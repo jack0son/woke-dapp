@@ -8,6 +8,7 @@ const PersistenceEngine = require('./persistence-engine');
 const supervision = require('./supervision');
 const action = require('./action');
 const definition = require('./definition');
+const Deferral = require('./lib/deferral');
 
 module.exports = {
 	...definition,
@@ -20,4 +21,5 @@ module.exports = {
 	reducers,
 	effects,
 	supervision,
+	Deferral,
 };

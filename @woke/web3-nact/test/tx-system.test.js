@@ -1,8 +1,7 @@
-const assert = require('assert');
-const expect = require('chai').use(require('chai-as-promised')).expect;
+const should = require('chai').use(require('chai-as-promised')).should();
 
-const { ActorSystem, adapters } = require('@woke/wact');
-const { query, dispatch, bootstrap } = ActorSystem;
+const { ActorSystem, adapters, Deferral } = require('@woke/wact');
+const { bootstrap, query, block, dispatch } = ActorSystem;
 const TxSystem = require('../src/systems/tx');
 const { delay } = require('../src/lib/utils');
 
@@ -26,14 +25,20 @@ const callerStubDefinition = {
 	actions: {
 		...adapters.SinkReduce(),
 		forward: (_, msg, ctx) => dispatch(msg.to, msg.msg, msg.from || ctx.self),
-		setTxHandler: (state, msg, ctx) => {
-			return { ...state, sinkHandlers: { tx: msg.txHandler } };
-		},
+		setTxHandler: (state, msg) => ({
+			...state,
+			sinkHandlers: { tx: msg.txHandler },
+		}),
+		getTxHandler: (state, msg, ctx) => dispatch(ctx.sender, state.sinkHandlers, ctx.self),
 	},
 };
 
+const createSetTxHandler = (a_caller) => (txHandler) =>
+	dispatch(a_caller, { type: 'setTxHandler', txHandler });
+
 context('TxSystem', function () {
 	let director, a_txSystem, a_caller;
+	let setTxHandler;
 
 	//const web3Instance_example = Web3Mock(getId_okay)
 
@@ -41,11 +46,11 @@ context('TxSystem', function () {
 		director = bootstrap();
 		a_txSystem = TxSystem(director);
 		a_caller = director.start_actor('caller', callerStubDefinition);
+		setTxHandler = createSetTxHandler(a_caller);
 	});
 
-	afterEach(async function () {
-		await director.stop();
-		return;
+	afterEach(function () {
+		director.stop();
 	});
 
 	describe('#send', function () {
@@ -53,18 +58,52 @@ context('TxSystem', function () {
 		it('should respond with transaction pending', async function () {
 			const res = await query(a_txSystem, { type: 'send', opts: {} }, TIME_TIMEOUT);
 
-			expect(res).to.have.property('txStatus');
-			return expect(res.txStatus).to.equal('pending');
+			res.should.have.property('status');
+			res.status.should.deep.equal('pending');
+			return res.should.have.deep.property('status', 'pending');
 		});
 
 		it('should respond with sink status updates [.... STATUSES ? ]', async function () {
+			const deferred = new Deferral();
+
+			function myHandler(state, msg, ctx) {
+				msg.action.should.equal('send');
+				const { txState } = state;
+				const { tx, error, status } = msg;
+
+				error.should.not.exist;
+				tx.should.exist;
+				tx.should.not.exist;
+
+				if (!txState) {
+					msg.status.should.equal('pending');
+				} else {
+					switch (txState.tx.status) {
+						case 'pending':
+							status.should.equal('complete');
+							deferred.promise.resolve();
+							break;
+						case 'success':
+							throw new Error(`Completed tx should be stopped`);
+							break;
+						default:
+							throw new Error(`Unspecified tx status ${txState.tx.status}`);
+					}
+				}
+
+				return { ...state, txState: { tx, error, status } };
+			}
+
+			setTxHandler(myHandler);
+
 			const sendTxMsg = { type: 'send', opts: {} };
+			console.log('txHandler', await block(a_caller, { type: 'getTxHandler' }));
 			const res = await query(
 				a_caller,
 				{ type: 'forward', to: a_txSystem, msg: sendTxMsg },
 				TIME_TIMEOUT
 			);
-			return delay(TIME_TIMEOUT);
+			await deferred.promise;
 		});
 
 		it('should support multiple addresses', async function () {});

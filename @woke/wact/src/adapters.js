@@ -15,6 +15,7 @@ const { matchSinkHandler } = require('./receivers');
 function SinkReduce(reducer) {
 	return {
 		sink: (state, msg, ctx) => {
+			console.log('SINK REDUCE:', state);
 			const actorId = ctx.sender.id;
 			const nextState = matchSinkHandler({ state, msg, ctx })(ctx.sender)(
 				state,
