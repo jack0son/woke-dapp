@@ -3,6 +3,8 @@ const {
 	receivers: { sink },
 } = require('@woke/wact');
 const { start_actor, dispatch, block } = ActorSystem;
+//const { useNotifyOnCrash } = require('@woke/actors');
+
 const { initContract } = require('@woke/lib').web3Tools.utils;
 
 const Web3Tx = require('./web3-tx');
@@ -17,7 +19,7 @@ function spawn_tx(state, ctx) {
 function action_send(state, msg, ctx) {
 	const { opts } = msg;
 	const a_tx = spawn_tx(state, ctx); // parent is me
-	const _msg = { type: 'send', tx: { opts } };
+	const _msg = { type: 'send', transactionSpec: opts };
 	dispatch(a_tx, _msg, ctx.sender);
 }
 

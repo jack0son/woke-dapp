@@ -7,6 +7,7 @@ const nonceActor = {
 
 		initialState: {
 			a_web3: null,
+			// Address pool, should use map
 			nonceRepo: {}, // address => nonce
 		},
 	},

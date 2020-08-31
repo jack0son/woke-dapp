@@ -45,6 +45,11 @@ async function action_call(state, msg, ctx) {
 	return ctx.stop;
 }
 
+function getSendMethod(state, msg, ctx) {
+	const contract = initContract(web3Instance, state.contractInterface);
+	const sendMethod = contract.methods[tx.method](...tx.args).send;
+}
+
 // @fix TODO: temporary work around
 //	-- errors from web3 promi-event don't get caught by the actor when called
 //	inside an async action without await
@@ -52,10 +57,11 @@ async function action_call(state, msg, ctx) {
 function action_send(state, msg, ctx) {
 	const { tx, web3Instance, nonce } = msg;
 
-	const contract = initContract(web3Instance, state.contractInterface);
-	const sendMethod = contract.methods[tx.method](...tx.args).send;
-
-	return txActions.action_send({ ...state, sendMethod }, msg, ctx);
+	return txActions.action_send(
+		{ ...state, sendMethod: getSendMethod(state, msg, ctx) },
+		msg,
+		ctx
+	);
 }
 
 const ContractTx = {
