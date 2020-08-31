@@ -1,3 +1,12 @@
+const {
+	ActorSystem,
+	adapt,
+	actors: { TaskSupervisor },
+} = require('@woke/wact');
+const { useNotifyOnCrash } = require('@woke/actors');
+const { dispatch } = ActorSystem;
+const { Statuses } = TaskSupervisor;
+
 function spawn_tip_task(_parent, tip, a_wokenContract) {
 	return start_actor(_parent)(`_tip-${tip.taskId}`, tipActor, {
 		a_wokenContract,
@@ -5,7 +14,8 @@ function spawn_tip_task(_parent, tip, a_wokenContract) {
 	});
 }
 
-function TipSupervisor(a_wokenContract, a_tweeter, { earliestId }) {
+function TipSupervisor(a_wokenContract, a_tweeter, opts) {
+	const earliestId = (opts && opts.earliestId) || 0;
 	const start_task = ({ state, msg, ctx }) => (task) => {
 		const a_task = spawn_tip_task(ctx.self, task, state.a_wokenContract);
 		//start_actor(ctx.self)(task.taskId, makeTask(task, ctx.self), {});
@@ -18,14 +28,15 @@ function TipSupervisor(a_wokenContract, a_tweeter, { earliestId }) {
 	// Ignore all tips that come in after the specified ID (twitter IDs ascend
 	// with time)
 	const ignoreTask = (tip) =>
-		earliestId && tip.id > earliestId
-			? false
-			: 'tip was created before the line in the sand...';
+		earliestId && tip.id < earliestId
+			? 'tip was created before the line in the sand...'
+			: false;
 
 	// @TODO check has tip properties
 	const isValidTask = (tip) => !!tip.id && true;
 
-	const notify = ({ state, msg, ctx }) => (statusSymbol) => {
+	const notify = (statusSymbol) => (state, msg, ctx) => {
+		//const notify = ({ state, msg, ctx }) => (statusSymbol) => {
 		const { a_tweeter } = state;
 		const { task: tip } = msg;
 		if (!a_tweeter) return;
@@ -52,26 +63,28 @@ function TipSupervisor(a_wokenContract, a_tweeter, { earliestId }) {
 
 			return state;
 		},
+		[Statuses.done]: notify(Statuses.done),
+		[Statuses.invalid]: notify(Statuses.invalid),
+		[Statuses.failed]: notify(Statuses.failed),
 
-		[Statuses.done]: (state, msg, ctx) => ctx.receivers.notify(Statuses.done),
-		[Statuses.invalid]: (state, msg, ctx) => ctx.receivers.notify(Statuses.invalid),
-		[Statuses.failed]: (state, msg, ctx) => ctx.receivers.notify(Statuses.failed),
+		// [Statuses.done]: (_, __, ctx) => ctx.receivers.notify(Statuses.done),
+		// [Statuses.invalid]: (_, __, ctx) => ctx.receivers.notify(Statuses.invalid),
+		// [Statuses.failed]: (_, __, ctx) => ctx.receivers.notify(Statuses.failed),
 	};
 
 	return adapt(
 		{
-			actions: {
-				get_state: action_getState,
-			},
+			actions: {},
 			properties: {
 				persistenceKey: 'tip-supervisor', // only ever 1, static key OK
 				onCrash: useNotifyOnCrash(),
 				receivers: [start_task],
 				a_wokenContract,
 				a_tweeter,
-				..._properties,
 			},
 		},
 		TaskSupervisor.Definition([getId, isValidTask, { effects, ignoreTask }])
 	);
 }
+
+module.exports = TipSupervisor;

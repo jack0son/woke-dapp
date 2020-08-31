@@ -13,9 +13,9 @@ const bootstrap = async () => {
 	//await twitter.initClient();
 	const twitterStub = new TwitterStub(mocks.twitterClient.createMockClient(3));
 	const tipSystem = new TipSystem({
+		...serviceConfig,
 		twitterStub: twitterStub,
 		pollingInterval: 10 * 1000,
-		...serviceConfig,
 	});
 	return tipSystem.start();
 };

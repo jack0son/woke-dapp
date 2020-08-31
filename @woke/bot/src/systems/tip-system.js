@@ -6,7 +6,7 @@ const {
 } = require('@woke/actors');
 const { ContractSystem } = require('@woke/web3-nact');
 const { TwitterStub, Logger, mocks } = require('@woke/lib');
-const { tipper, TwitterMonitor } = require('../actors');
+const { TipSupervisor, TwitterMonitor } = require('../actors');
 
 const twitterMock = mocks.twitterClient;
 const debug = Logger('sys_tip');
@@ -69,24 +69,20 @@ class TipSystem {
 			this.a_tweeter = director.start_actor('tweeter', Tweeter(this.twitterStub));
 		}
 
-		this.a_tipper = director[this.persist ? 'start_persistent' : 'start_actor'](
-			'tipper', // name
-			tipper, // actor definition
-			{
-				// initial state
-				a_wokenContract: this.contractSystem.UserRegistry,
-				a_tweeter: this.a_tweeter,
-			}
+		this.a_tipManager = director[this.persist ? 'start_persistent' : 'start_actor'](
+			'tip-supervisor', // name
+			TipSupervisor(this.contractSystem.UserRegistry, this.a_tweeter)
 		);
 
 		this.a_tMon = director.start_actor(
 			'twitter_monitor',
-			TwitterMonitor(this.twitterStub)
+			TwitterMonitor(this.twitterStub),
+			{}
 		);
 		this.a_polling = director.start_actor('polling_service', actors.Polling);
 
 		// Forward twitter monitor messages to tipper
-		this.a_tweetForwarder = spawn_tweet_forwarder(this.a_polling, this.a_tipper);
+		this.a_tweetForwarder = spawn_tweet_forwarder(this.a_polling, this.a_tipManager);
 	}
 
 	async start() {
@@ -100,7 +96,7 @@ class TipSystem {
 			}
 		}
 
-		dispatch(self.a_tipper, { type: 'resume' });
+		dispatch(self.a_tipManager, { type: 'restart' });
 
 		// Poll twitter API for new tips
 		dispatch(
@@ -120,12 +116,12 @@ class TipSystem {
 }
 
 // Forward tips to the tipper
-function spawn_tweet_forwarder(parent, a_tipper) {
+function spawn_tweet_forwarder(parent, a_tipManager) {
 	return spawnStateless(parent, (msg, ctx) => {
 		switch (msg.type) {
 			case 'new_tips': {
 				const { tips } = msg;
-				tips.forEach((tip) => dispatch(a_tipper, { type: 'tip', tip }));
+				tips.forEach((tip) => dispatch(a_tipManager, { type: 'submit', task: tip }));
 				break;
 			}
 

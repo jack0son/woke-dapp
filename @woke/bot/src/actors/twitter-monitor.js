@@ -64,7 +64,7 @@ const TwitterMonitor = (twitterStub) => {
 		},
 
 		actions: {
-			find_tips: (msg, ctx, state) => {
+			find_tips: (state, msg, ctx) => {
 				const { twitter, seenTips } = state;
 				// @brokenwindow
 				// Polling actor should not be a dependency
@@ -122,7 +122,7 @@ const TwitterMonitor = (twitterStub) => {
 					});
 			},
 
-			seen_tips: (msg, ctx, state) => {
+			seen_tips: (state, msg, ctx) => {
 				const { twitter, seenTips } = state;
 				const { tips } = msg;
 
@@ -135,7 +135,7 @@ const TwitterMonitor = (twitterStub) => {
 				};
 			},
 
-			get_user_data: (msg, ctx, state) => {
+			get_user_data: (state, msg, ctx) => {
 				const { twitter } = state;
 				const { userId, handle } = msg;
 
@@ -149,16 +149,16 @@ const TwitterMonitor = (twitterStub) => {
 					});
 			},
 
-			wokeness: (msg, ctx, state) => {
+			wokeness: (state, msg, ctx) => {
 				// Search for woke tweets and add their users into the leaderboard
 			},
 
-			vote: (msg, ctx, state) => {
+			vote: (state, msg, ctx) => {
 				// Search for wokens votes
 				// Daily leaderboard for most woke tweets
 			},
 
-			wokendrop: (msg, ctx, state) => {
+			wokendrop: (state, msg, ctx) => {
 				// Sent WOKENS to the top three on the leaderboard
 			},
 		},
