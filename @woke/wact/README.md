@@ -30,7 +30,20 @@ documentation](https://nact.io/en_uk/lesson/javascript/introduction) for more
 details.
 
 **Contents**
-[[_toc_]]
+
+  * [1. Actor Lifecycle](#1-actor-lifecycle)
+  * [2. Framework](#2-framework)
+    + [Actor Definitions](#actor-definitions)
+      - [Actions](#actions)
+        * [Receivers](#receivers)
+        * [Reducers](#reducers)
+        * [Effects](#effects)
+      - [Actor Composition](#actor-composition)
+        * [Adapters](#adapters)
+    + [Message Protocol](#message-protocol)
+    + [Usage Hints](#usage-hints)
+  * [3. Future Work](#3-future-work)
+  * [4. Rationale](#4-rationale)
 
 ## 1. Actor Lifecycle
 
