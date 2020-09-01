@@ -1,7 +1,7 @@
 const {
 	ActorSystem,
 	reducers,
-	adapters: { SinkReduce },
+	adapters,
 	actors: { TaskSupervisor },
 } = require('@woke/wact');
 const { dispatch } = ActorSystem;
@@ -253,6 +253,16 @@ function onCrash(msg, error, ctx) {
 	return ctx.escalate;
 }
 
+// Reduce forwards a message to the reduce action
+const reduce = ({ msg, ctx }) => (_msg) => {
+	_msg.type = 'reduce';
+	dispatch(ctx.self, { ...msg, ..._msg }, ctx.self);
+};
+
+const update_tip = ({ ctx, state }) => (tip) => {
+	dispatch(ctx.parent, { type: 'update', task: { ...state.tip, ...tip } }, ctx.self);
+};
+
 module.exports = {
 	properties: {
 		onCrash,
@@ -264,21 +274,7 @@ module.exports = {
 			},
 		},
 
-		// Receivers are bound the message bundle and attached to the context
-		Receivers: ({ state, msg, ctx }) => ({
-			// Reduce forwards a message to the reduce action
-			reduce: (_msg) => {
-				_msg.type = 'reduce';
-				dispatch(ctx.self, { ...msg, ..._msg }, ctx.self);
-			},
-			update_tip: (tip) => {
-				dispatch(
-					ctx.parent,
-					{ type: 'update', task: { ...state.tip, ...tip } },
-					ctx.self
-				);
-			},
-		}),
+		receivers: [reduce, update_tip],
 	},
 
 	actions: {
@@ -300,6 +296,6 @@ module.exports = {
 		},
 
 		// --- Sink Actions
-		...SinkReduce(reducer),
+		...adapters.SinkReduce(reducer),
 	},
 };

@@ -12,6 +12,8 @@ the domain logic by using a sequential execution lifecycle within each actor.
 Actors protect against concurrency problems caused by shared state and
 side-effects.
 
+**Mission**
+
 - Failure isolation
 - State encapsulation
 - Reduced coupling
@@ -22,9 +24,15 @@ package.
 
 **Where to start?**
 
-Core specification of the Woke Actor System is contained in `src/actor-system.js`.
+Core specification of the Woke Actor System is contained in
+`src/actor-system.js`. See [Nact's javascript
+documentation](https://nact.io/en_uk/lesson/javascript/introduction) for more
+details.
 
-## Actor Lifecycle
+**Contents**
+[[_toc_]]
+
+## 1. Actor Lifecycle
 
 Messages to an actor are stored in a FIFO queue and operated on sequentially.
 
@@ -39,29 +47,95 @@ maintain the reactive and side-effect resistant characteristics of actors. For
 example, messages should not contain functions which reference the state of
 another actor.
 
-## Framework
+## 2. Framework
 
-wAct builds actors using an action matching pattern which is simply described as
+wAct builds actors using an action matching pattern which is structured
+similarly to a Redux or React hooks reducer. Instead of passing the message
+directly to the target function, wAct peforms a switch on the message type.
 
-Where Nact's core features and metadata are contained within the parent actor system
-and actor context/metadata, wAct describes its features using common attributes
-on actor state and messages. It behaves more like a mixin in this sense.
+Where Nact's core features and metadata are contained within the parent actor
+system and actor context/members, wAct describes its features using common
+attributes on actor state and messages. It behaves more like a mixin or
+framework extension in this sense.
+
+For example, the `sink` action defines a standardised type for
+response messages, allowing response parsing to be easily shared between actors
+using a single action method definition, as opposed to a blocking query or test
+of message contents in the target function.
+
+wAct supports persistence and is completely compatible with actors built using
+Nact's actor primitive, as wActors actors are just Nactors with some wrapping
+code to build the target function at spawn time. wAct also makes the API for
+spawning Nactors available - `spawn()`, `spawnStateless()`, etc.
 
 ### Actor Definitions
 
-Actor definitions should use named functions for actions if they
-require access to the actor context. This can be useful for reducing code
-verbosity, but if you don't use `this` you're less likely to shoot yourself in
-the foot when piping actions / effects.
+An actor definition is a plain object containing and actions `property` and
+a `properties` property.
+
+#### Actions
+
+Actions are simply Nact target functions: functions with the signature
+`function(state, msg, ctx)`.
+
+##### Receivers
+
+Common methods made available in the actor context.
+
+##### Reducers
+
+##### Effects
 
 #### Actor Composition
 
-`adapt()`
+Actors can be composed by manually merging their definitions (actions and
+properties), commonly using the spread operator, or by passing their definitions
+to the `adapt()` or `compose()` methods to a new definition.
 
-`compose()`
+Constructing actor definitions using simple bags of properties simplifies
+inheritance and code reuse between actors.
+
+`wact.adapt()`
+
+`wact.compose()`
+
+Care must be taken when constructing action methods using closures, if the
+methods are intended to be used for composition of other actors.
+
+If you want an actor, or a set of actions to be able to address messages to
+specific action methods, regardless of the addressee actor's external
+API, you can build an action directory.
+
+```js
+const directory = action.buildDirectory({ action_send, action_queue });
+
+function action_send(state, msg, ctx) => {
+	dispatch(ctx.self, { type: directory.address(action_queue) }, ctx.self);
+}
+
+function action_queue(state, msg, ctx) => {
+	return [...state, ctx.sender];
+}
+```
+
+The directory maps methods to Symbols allowing the actions to be addressed by
+their method name. The directory can be exposed in the definition to be used by
+inheritors, or as a module used by other actors to address messages.
+
+##### Adapters
+
+Adapters are actor defintion mixins, usually included using the spread operator.
+
+```js
+// Simple actions adapter
+const myActorDefn = { actions: { ...actions, ...AdapterActions() }, properties };
+
+// Adapter with complete defintion, actions & properties
+const actorDefn = wact.adapt({ actions, properties }, AdapterDefinition());
+```
 
 **Why use closures instead of classes to define actors?**
-Allows actions to consistently use `this` to refer to the message context, while
+Compositional inheritence. Also allows actions to consistently use `this` to refer to the message context, while
 also sharing some encolsing context.
 
 ### Message Protocol
@@ -73,19 +147,19 @@ patterns such as:
 - request-response (sink/source)
 - pub-sub
 
-#### Actions
+### Usage Hints
 
-#### Receivers
+- Actor definitions should use named functions for actions if they
+  require access to the actor context. This can be useful for reducing code
+  verbosity, but if you don't use `this` you're less likely to shoot yourself in
+  the foot when piping actions / effects.
 
-Common methods made available in the actor context.
+## 3. Future Work
 
-#### Reducers
+Build wAct as a system extension (using the
+extension structure used to implement ctx.log and the persistence engine).
 
-#### Adapters
-
-#### Effects
-
-## Rationale
+## 4. Rationale
 
 Decoupled modules are easy to change. _Temporal decoupling_ is difficult.
 
