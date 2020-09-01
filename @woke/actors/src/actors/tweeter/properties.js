@@ -52,7 +52,7 @@ function onCrash(msg, error, ctx) {
 	}
 }
 
-function makeProperties({ twitterStub }) {
+function Properties(twitterStub) {
 	return {
 		initialState: {
 			twitter: twitterStub,
@@ -61,4 +61,4 @@ function makeProperties({ twitterStub }) {
 	};
 }
 
-module.exports = makeProperties;
+module.exports = Properties;

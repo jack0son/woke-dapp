@@ -49,15 +49,17 @@ function TipSupervisor(a_wokenContract, a_tweeter, opts) {
 		}
 
 		switch (statusSymbol) {
+			case Statuses.ready:
+				dispatch(a_tweeter, { type: 'tweet', tweetType: 'tip-seen', tip }); //, ctx.self);
+				break;
 			case Statuses.done:
-				dispatch(a_tweeter, { type: 'tweet_tip_confirmed', tip }); //, ctx.self);
+				dispatch(a_tweeter, { type: 'tweet', tweetType: 'tip-confirmed', tip }); //, ctx.self);
 				break;
 			case Statuses.invalid:
-				ctx.debug.warn('supervisor: INVALID EFFECT');
-				dispatch(a_tweeter, { type: 'tweet_tip_invalid', tip }); //, ctx.self);
+				dispatch(a_tweeter, { type: 'tweet', tweetType: 'tip-invalid', tip }); //, ctx.self);
 				break;
 			case Statuses.failed:
-				dispatch(a_tweeter, { type: 'tweet_tip_failed', tip }); //, ctx.self);
+				dispatch(a_tweeter, { type: 'tweet', tweetType: 'tip-failed', tip }); //, ctx.self);
 				break;
 			default:
 				ctx.debug.warn(msg, `No notification behaviour for status ${statusSymbol}`);
@@ -69,16 +71,12 @@ function TipSupervisor(a_wokenContract, a_tweeter, opts) {
 		[Statuses.ready]: (state, msg, ctx) => {
 			const { task } = msg;
 			ctx.receivers.start_task(task);
-
+			notify(Statuses.ready)(state, msg, ctx);
 			return state;
 		},
 		[Statuses.done]: notify(Statuses.done),
 		[Statuses.invalid]: notify(Statuses.invalid),
 		[Statuses.failed]: notify(Statuses.failed),
-
-		// [Statuses.done]: (_, __, ctx) => ctx.receivers.notify(Statuses.done),
-		// [Statuses.invalid]: (_, __, ctx) => ctx.receivers.notify(Statuses.invalid),
-		// [Statuses.failed]: (_, __, ctx) => ctx.receivers.notify(Statuses.failed),
 	};
 
 	return adapt(
@@ -88,8 +86,10 @@ function TipSupervisor(a_wokenContract, a_tweeter, opts) {
 				persistenceKey: 'tip-supervisor', // only ever 1, static key OK
 				onCrash: useNotifyOnCrash(),
 				receivers: [start_task],
-				a_wokenContract,
-				a_tweeter,
+				initialState: {
+					a_wokenContract,
+					a_tweeter,
+				},
 			},
 		},
 		TaskSupervisor.Definition([getId, isValidTask, { effects, ignoreTask }])

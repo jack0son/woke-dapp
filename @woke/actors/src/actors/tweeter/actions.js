@@ -2,50 +2,7 @@ const { ActorSystem } = require('@woke/wact');
 const { messageTemplates } = require('@woke/lib');
 const { start_actor, dispatch, query } = ActorSystem;
 
-async function action_tweetUnclaimedTransfer(msg, ctx, state) {
-	//'tweet_unclaimed_transfer': async (msg, ctx, state) => {
-	const { twitter } = state;
-	const { fromId, toId, amount, balance } = msg;
-	const tweet = await twitter.postUnclaimedTransfer(
-		fromId,
-		toId,
-		amount,
-		balance
-	);
-	ctx.debug.d(msg, `tweeted '${tweet.text}'`);
-	dispatch(ctx.sender, { type: msg.type, tweet }, ctx.self);
-}
-
-async function action_tweetTipSeen(msg, ctx, state) {
-	//'tweet_tip_seen': async (msg, ctx, state) => {
-	const { twitter } = state;
-	const { fromId, toId, amount } = msg;
-	const tweet = await twitter.postUnclaimedTransfer(fromId, toId, amount);
-	ctx.debug.d(msg, `tweeted '${tweet.text}'`);
-	dispatch(ctx.sender, { type: msg.type, tweet }, ctx.self);
-	// Tweet an invite
-}
-
-async function action_tweetTipConfirmed(msg, ctx, state) {
-	//	'tweet_tip_confirmed': async (msg, ctx, state) => {
-	const { twitter } = state;
-	const { tip } = msg;
-
-	ctx.debug.info(msg, `tweeting ${tip.id} success...`);
-	const text = messageTemplates.twitter.tip_success_tweet_text(tip);
-	const tweet = await twitter.postTweetReply(text, tip.id);
-	ctx.debug.d(msg, `tweeted '${text}'`);
-
-	dispatch(ctx.sender, { type: msg.type, tweet }, ctx.self);
-	// Tweet an invite
-}
-
-async function action_tweetTipInvalid(msg, ctx, state) {
-	//'tweet_tip_invalid': async (msg, ctx, state) => {
-	const { twitter } = state;
-	const { tip } = msg;
-
-	ctx.debug.info(msg, `tweeting ${tip.id} invalid...`);
+const tipInvalidText = (tip) => {
 	let text = messageTemplates.twitter.tip_invalid_message(tip);
 	if (tip.reason == 'broke') {
 		text = messageTemplates.twitter.tip_broke_message(tip);
@@ -54,28 +11,54 @@ async function action_tweetTipInvalid(msg, ctx, state) {
 	} else {
 		// No invalidation reason
 	}
-	const tweet = await twitter.postTweetReply(text, tip.id);
-	ctx.debug.d(msg, `tweeted '${text}'`);
+	return text;
+};
 
-	dispatch(ctx.sender, { type: msg.type, tweet }, ctx.self);
-	// Tweet an invite
-}
-
-async function action_tweetTipFailed(msg, ctx, state) {
-	//'tweet_tip_failed': async (msg, ctx, state) => {
+// Good example of an actor that could just use the Nactor primitive
+async function action_tweet(state, msg, ctx) {
 	const { twitter } = state;
-	const { tip } = msg;
+	const { tip, tweetType } = msg;
+	const { fromId, toId, amount, balance } = tip;
 
-	ctx.debug.info(msg, `tweeting ${tip.id} failure...`);
-	const text = messageTemplates.twitter.tip_failure_message(tip);
-	const tweet = await twitter.postTweetReply(text, tip.id);
-	ctx.debug.d(msg, `tweeted '${text}'`);
+	let tweet;
+	switch (tweetType) {
+		case 'unclaimed-transfer': {
+			tweet = await twitter.postUnclaimedTransfer(fromId, toId, amount, balance);
+			break;
+		}
 
+		case 'tip-confirmed': {
+			tweet = await twitter.postTweetReply(
+				messageTemplates.twitter.tip_success_tweet_text(tip),
+				tip.id
+			);
+			// @TODO Tweet an invite
+			break;
+		}
+
+		case 'tip-failed': {
+			tweet = await twitter.postTweetReply(
+				messageTemplates.twitter.tip_failure_message(tip),
+				tip.id
+			);
+			break;
+		}
+
+		case 'tip-invalid': {
+			tweet = await twitter.postTweetReply(tipInvalidText(tip), tip.id);
+			break;
+		}
+
+		case 'tip-seen':
+		default:
+			ctx.debug.warn(msg, `Unknown tweet type: ${tweetType}`);
+			return;
+	}
 	dispatch(ctx.sender, { type: msg.type, tweet }, ctx.self);
-	// Tweet an invite
+	ctx.debug.d(msg, `tweeted '${tweet.text}'`);
 }
 
-async function action_sendDirectMessage(msg, ctx, state) {
+async function action_sendDirectMessage(state, msg, ctx) {
 	const { twitter } = state;
 	const { recipientId, text } = msg;
 	const result = await twitter.postDirectMessage(recipientId, text);
@@ -84,10 +67,6 @@ async function action_sendDirectMessage(msg, ctx, state) {
 }
 
 module.exports = {
-	action_tweetUnclaimedTransfer,
-	action_tweetTipSeen,
-	action_tweetTipConfirmed,
-	action_tweetTipInvalid,
-	action_tweetTipFailed,
+	action_tweet,
 	action_sendDirectMessage,
 };
