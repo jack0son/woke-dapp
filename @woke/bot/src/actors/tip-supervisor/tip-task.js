@@ -52,8 +52,6 @@ function txSink(state, msg, ctx) {
 
 function effect_checkClaimStatus(state, msg, ctx) {
 	const { tip, a_wokenContract } = state;
-	console.log(state);
-	console.log(a_wokenContract);
 	ctx.debug.d(msg, `Check @${tip.fromHandle} is claimed...`);
 	dispatch(
 		a_wokenContract,
@@ -267,7 +265,6 @@ module.exports = {
 	properties: {
 		onCrash,
 		initialState: {
-			stage: 'INIT',
 			results: {},
 			sinkHandlers: {
 				tx: txSink,
@@ -279,21 +276,17 @@ module.exports = {
 
 	actions: {
 		// --- Source Actions
-		tip: (state, msg, ctx) => {
+		start: (state, msg, ctx) => {
 			const { a_wokenContract } = state;
 			const { tip } = msg;
 			ctx.debug.d(msg, tip_submitted(tip));
 
-			return reducer(
-				{
-					...state,
-					stage: 'INIT',
-					tip,
-				},
-				msg,
-				ctx
-			);
+			dispatch(ctx.self, { type: 'reduce' }, ctx.self);
+			return { ...state, tip };
+			//reducer({ ...state, tip }, msg, ctx);
 		},
+
+		reduce: reducer,
 
 		// --- Sink Actions
 		...adapters.SinkReduce(reducer),

@@ -31,19 +31,19 @@ details.
 
 **Contents**
 
-  * [1. Actor Lifecycle](#1-actor-lifecycle)
-  * [2. Framework](#2-framework)
-    + [Actor Definitions](#actor-definitions)
-      - [Actions](#actions)
-        * [Receivers](#receivers)
-        * [Reducers](#reducers)
-        * [Effects](#effects)
-      - [Actor Composition](#actor-composition)
-        * [Adapters](#adapters)
-    + [Message Protocol](#message-protocol)
-    + [Usage Hints](#usage-hints)
-  * [3. Future Work](#3-future-work)
-  * [4. Rationale](#4-rationale)
+- [1. Actor Lifecycle](#1-actor-lifecycle)
+- [2. Framework](#2-framework)
+  - [Actor Definitions](#actor-definitions)
+    - [Actions](#actions)
+      - [Receivers](#receivers)
+      - [Reducers](#reducers)
+      - [Effects](#effects)
+    - [Actor Composition](#actor-composition)
+      - [Adapters](#adapters)
+  - [Message Protocol](#message-protocol)
+  - [Usage Hints](#usage-hints)
+- [3. Future Work](#3-future-work)
+- [4. Rationale](#4-rationale)
 
 ## 1. Actor Lifecycle
 
@@ -140,6 +140,9 @@ inheritors, or as a module used by other actors to address messages.
 Adapters are actor defintion mixins, usually included using the spread operator.
 
 ```js
+// My actor's unique properites
+const actions = {...}; const properties = {...};
+
 // Simple actions adapter
 const myActorDefn = { actions: { ...actions, ...AdapterActions() }, properties };
 

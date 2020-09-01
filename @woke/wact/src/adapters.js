@@ -10,12 +10,11 @@ const { matchSinkHandler } = require('./receivers');
  * sink handlers.
  *
  * @param {(Bundle) => state} reducer - Reducer function
- * @return {Action} Sink action
+ * @return {Action} Sink action method
  */
 function SinkReduce(reducer) {
 	return {
 		sink: (state, msg, ctx) => {
-			const actorId = ctx.sender.id;
 			const nextState = matchSinkHandler({ state, msg, ctx })(ctx.sender)(
 				state,
 				msg,
@@ -26,4 +25,43 @@ function SinkReduce(reducer) {
 	};
 }
 
-module.exports = { SinkReduce };
+/**
+ * Apply sink handler to state and commit state before triggering a reducer or
+ * other arbitrary action.
+ *
+ * Decouples mutation due to sink from mutation due to effects
+ *
+ * @param {String | Symbol} messageType - Message type
+ * @param {options} opts - Specify message payload and parties
+ * @return {Action} Sink action method
+ */
+function SinkDispatch(messageType, { recipient, sender, payload }) {
+	return {
+		sink: (state, msg, ctx) => {
+			dispatch(
+				recipient || ctx.self,
+				{ type: messageType || 'reduce', ...payload },
+				sender || ctx.self
+			);
+			return matchSinkHandler({ state, msg, ctx })(ctx.sender)(state, msg, ctx);
+		},
+	};
+}
+
+// @TODO more sensible constructor for adapting sink protocol (including
+// required state)
+function SinkDefinition(sinkHandlers) {
+	return {
+		properties: {
+			initialState: { sinkHandlers },
+		},
+
+		actions: {
+			sink: (state, msg, ctx) => {
+				matchSinkHandler({ state, msg, ctx })(ctx.sender)(state, msg, ctx);
+			},
+		},
+	};
+}
+
+module.exports = { SinkReduce, SinkDispatch, SinkDefinition };

@@ -30,8 +30,6 @@ function Actions(
 	isValidTask,
 	{ ignoreTask, effects, reducer, restartOn, effect_startTask }
 ) {
-	console.log(Object.getOwnPropertySymbols(effects));
-
 	if (!isReducer(reducer)) reducer = (state) => state;
 
 	const actions = {
@@ -188,11 +186,9 @@ function Actions(
 	// @TODO: unused
 	function action_resume(state, msg, ctx) {
 		// @fix will not update statuses to pending
-		// (restartOn || RESTART_ON).forEach((status) =>
-		// 	tasksByStatus[status].forEach((task) =>
+		// 	tasksByStatus[Statuses.pause].forEach((task) =>
 		// 		effects[status]({ task }, ctx, state)
 		// 	)
-		// );
 		return state;
 	}
 
@@ -219,6 +215,8 @@ function Actions(
 			);
 			return;
 		}
+
+		// @TODO use parent.stopChildren
 
 		//tasksByStatus[status].forEach(({taskId}) => dispatch(ctx.self, abortMsg(taskId)));
 		// Abort all tasks in provided status
