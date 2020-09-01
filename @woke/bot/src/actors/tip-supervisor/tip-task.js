@@ -14,20 +14,15 @@ const {
 
 const { TaskStatuses: Statuses } = TaskSupervisor;
 
-const messages = new Map();
-
 // Handle results from transaction actor
 function txSink(state, msg, ctx) {
 	const { results, tip } = state;
 	const { tx, txStatus, result, error } = msg;
 
 	const newResults = {};
-	messages.set(msg, msg.i || -1);
-
 	switch (tx.method) {
 		case 'userClaimed':
 			newResults.userIsClaimed = result;
-			console.log('newResults', newResults);
 			break;
 
 		case 'balanceOf':
@@ -43,17 +38,11 @@ function txSink(state, msg, ctx) {
 			return;
 	}
 
-	const n = { ...state, results: { ...results, ...newResults } };
-	console.log('next: ', n);
-	return n;
-	//return { ...state, results: { ...results, ...newResults } };
+	return { ...state, results: { ...results, ...newResults } };
 }
 
 function effect_checkClaimStatus(state, msg, ctx) {
 	const { tip, a_wokenContract } = state;
-	console.log('effect_checkClaimStatus: state', state);
-	console.log('effect_checkClaimStatus: msg', msg);
-	console.log('message exists? ', messages.get(msg));
 	ctx.debug.d(msg, `Check @${tip.fromHandle} is claimed...`);
 	dispatch(
 		a_wokenContract,
@@ -71,7 +60,7 @@ function effect_handleClaimStatus(state, msg, ctx) {
 	} = state;
 	ctx.debug.info(msg, `userIsClaimed: ${userIsClaimed}`);
 	if (userIsClaimed === false) {
-		tip.status = Status.invalid;
+		tip.status = Statuses.invalid;
 		tip.reason = 'unclaimed';
 		//entry.status = statusEnum.INVALID;
 		//entry.error = 'unclaimed sender'
@@ -248,8 +237,8 @@ const patterns = [
 
 const subsumptionReducer = reducers.subsumeEffects(patterns);
 const reducer = (state, msg, ctx) => {
-	console.log('Reducer ctx.sender', ctx.sender.name);
-	console.log('Reducer msg: ', msg);
+	// console.log('Reducer ctx.sender', ctx.sender.name);
+	// console.log('Reducer msg: ', msg);
 	return subsumptionReducer(state, msg, ctx);
 };
 

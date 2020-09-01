@@ -40,12 +40,20 @@ function TipSupervisor(a_wokenContract, a_tweeter, opts) {
 		//const notify = ({ state, msg, ctx }) => (statusSymbol) => {
 		const { a_tweeter } = state;
 		const { task: tip } = msg;
-		if (!a_tweeter) return;
+		if (!a_tweeter) {
+			ctx.debug.warn(
+				msg,
+				`No tweeter actor available. Ignoring ${statusSymbol.toString()} effect.`
+			);
+			return;
+		}
+
 		switch (statusSymbol) {
 			case Statuses.done:
 				dispatch(a_tweeter, { type: 'tweet_tip_confirmed', tip }); //, ctx.self);
 				break;
 			case Statuses.invalid:
+				ctx.debug.warn('supervisor: INVALID EFFECT');
 				dispatch(a_tweeter, { type: 'tweet_tip_invalid', tip }); //, ctx.self);
 				break;
 			case Statuses.failed:
