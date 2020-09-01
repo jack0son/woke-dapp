@@ -5,24 +5,28 @@ const {
 const { start_actor, dispatch, block } = ActorSystem;
 const { initContract } = require('@woke/lib').web3Tools.utils;
 
-const txActor = require('./contract-tx');
-const subActor = require('./subscriber');
+const { ContractTx } = require('./contract-tx');
+const subscriberDefn = require('./subscriber');
 
 let tx_idx = 0;
 function spawn_tx(state, ctx) {
-	return start_actor(ctx.self)(`_tx-${tx_idx++}`, txActor, {
-		sinks: [ctx.sender], // forward the sender to this tx
-		a_web3: state.a_web3,
-		a_nonce: state.a_nonce,
-		contractInterface: state.contractInterface,
-	});
+	return start_actor(ctx.self)(
+		`_tx-${tx_idx++}`,
+		ContractTx(state.a_web3, state.a_nonce, state.contractInterface),
+		{
+			sinks: [ctx.sender], // forward the sender to this tx
+			// a_web3: state.a_web3,
+			// a_nonce: state.a_nonce,
+			// contractInterface: state.contractInterface,
+		}
+	);
 }
 
 let sub_idx = 0;
 const spawn_sub = (state, msg, ctx) => {
 	return start_actor(ctx.self)(
 		`_sub-${sub_idx++}-${state.contractInterface.contractName}-${msg.eventName}`,
-		subActor,
+		subscriberDefn,
 		{
 			watchdogInterval: msg.resubscribeInterval,
 			watchdog: true,

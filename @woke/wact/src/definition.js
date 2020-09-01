@@ -24,7 +24,7 @@ function compose(definition, _actions, _properties, opts = {}) {
 		...((_properties && _properties.receivers) || []),
 	];
 
-	const actions = labelActions({ ..._actions, ...definition.actions }, labeling);
+	const actions = labelActions(merge(_actions, definition.actions), labeling);
 
 	// Values from definition take precedence
 	const properties = merge(_properties, {

@@ -20,7 +20,7 @@ function SinkReduce(reducer) {
 				msg,
 				ctx
 			);
-			return reducer ? reducer(state, msg, ctx) : nextState;
+			return reducer ? reducer(nextState, msg, ctx) : nextState;
 		},
 	};
 }

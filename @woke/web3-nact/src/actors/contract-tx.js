@@ -1,47 +1,40 @@
-const { block } = require('@woke/wact').ActorSystem;
+const {
+	adapt,
+	compose,
+	ActorSystem: { block },
+} = require('@woke/wact');
 const { initContract } = require('@woke/lib').web3Tools.utils;
 const { ParamError, TransactionError, OnChainError } = require('../lib/errors');
 
 const TxActor = require('./tx');
-const txActions = TxActor.actions;
 
+// TODO add contract tx actions to directory
 const onCrash = (msg, error, ctx) => {
-	switch (msg.type) {
-		case 'send': {
-			// if the error was a block timeout we could handle and retry
-			if (error instanceof OnChainError) {
-				//return handleOnChainError(error);
-				throw error;
-			} else if (error instanceof ParamError) {
-				if (isNonceError(error)) {
-				}
-				throw error;
-			}
-		}
-
-		default: {
-			return ctx.stop();
-		}
+	if (msg.type == 'call') {
+		// special cases for call
 	}
+
+	return TxActor.actions._methods.onCrash(msg, error, ctx);
 };
 
+let i = 0;
 async function action_call(state, msg, ctx) {
 	const { tx } = msg;
 	const { method, args } = tx;
-	const { callOpts } = state;
+	const { callOpts, a_web3, contractInterface } = state;
 
 	tx.type = 'call';
-	const { web3Instance } = await block(state.a_web3, { type: 'get' });
+	const { web3Instance } = await block(a_web3, { type: 'get' });
 	const opts = {
 		...callOpts,
 		...tx.opts,
 	};
 
-	const contract = initContract(web3Instance, state.contractInterface);
+	const contract = initContract(web3Instance, contractInterface);
 	const result = await contract.methods[method](...tx.args).call(opts);
 
 	//dispatch(ctx.sender, { type: 'tx', tx, result }, ctx.parent);
-	ctx.receivers.sink({ tx, result }, ctx.parent);
+	ctx.receivers.sink({ tx, result, i: i++ }, ctx.parent);
 	return ctx.stop;
 }
 
@@ -57,27 +50,37 @@ function getSendMethod(state, msg, ctx) {
 function action_send(state, msg, ctx) {
 	const { tx, web3Instance, nonce } = msg;
 
-	return txActions.action_send(
+	return TxActor.actions.action_send(
 		{ ...state, sendMethod: getSendMethod(state, msg, ctx) },
 		msg,
 		ctx
 	);
 }
 
-const ContractTx = {
+const definition = {
 	properties: {
-		...TxActor.properties,
+		onCrash,
+		initialState: {
+			callOpts: {},
+			sendOpts: {},
+		},
 	},
 
 	actions: {
-		tx: txActions.action_tx,
-		reduce: txActions.action_reduce,
-		call: action_call,
-		send: txActions.action_sendPreflight,
-		_send: action_send,
-		get_status: txActions.action_getStatus,
-		sink_status: txActions.action_sinkStatus,
+		action_call,
+		action_send,
 	},
 };
 
-module.exports = ContractTx;
+function ContractTx(a_web3, a_nonce, contractInterface) {
+	return adapt(
+		definition,
+		compose(
+			{ properties: { initialState: { contractInterface } } },
+			TxActor.actions,
+			TxActor.Properties(a_web3, a_nonce, getSendMethod)
+		)
+	);
+}
+
+module.exports = { ContractTx, definition };

@@ -5,7 +5,7 @@ const {
 	actors: { TaskSupervisor },
 } = require('@woke/wact');
 const { dispatch } = ActorSystem;
-const { subsumeEffects, Pattern } = reducers;
+const { Pattern } = reducers;
 const {
 	messageTemplates: {
 		console: { tip_submitted },
@@ -14,44 +14,46 @@ const {
 
 const { TaskStatuses: Statuses } = TaskSupervisor;
 
+const messages = new Map();
+
 // Handle results from transaction actor
 function txSink(state, msg, ctx) {
-	const { tx, txStatus } = msg;
 	const { results, tip } = state;
+	const { tx, txStatus, result, error } = msg;
 
 	const newResults = {};
+	messages.set(msg, msg.i || -1);
+
 	switch (tx.method) {
-		case 'userClaimed': {
-			const { tx, result } = msg;
+		case 'userClaimed':
 			newResults.userIsClaimed = result;
-			//ctx.receivers.reduce({ event: 'check_claim-recv'});
+			console.log('newResults', newResults);
 			break;
-		}
 
-		case 'balanceOf': {
-			const { tx, result } = msg;
+		case 'balanceOf':
 			newResults.userBalance = parseInt(result);
-			//ctx.receivers.reduce({ event: 'check_bal-recv'});
 			break;
-		}
 
-		case 'tip': {
-			const { txStatus, tx, error } = msg;
+		case 'tip':
 			ctx.debug.info(msg, `tip:${tip.id} Got tx status ${txStatus}`);
 			return { ...state, tipTx: { tx, txStatus, error } };
-		}
 
-		default: {
+		default:
 			ctx.debug.warn(msg, `sink:tx: ${tx.method} has no sink action`);
 			return;
-		}
 	}
 
-	return { ...state, results: { ...results, ...newResults } };
+	const n = { ...state, results: { ...results, ...newResults } };
+	console.log('next: ', n);
+	return n;
+	//return { ...state, results: { ...results, ...newResults } };
 }
 
 function effect_checkClaimStatus(state, msg, ctx) {
 	const { tip, a_wokenContract } = state;
+	console.log('effect_checkClaimStatus: state', state);
+	console.log('effect_checkClaimStatus: msg', msg);
+	console.log('message exists? ', messages.get(msg));
 	ctx.debug.d(msg, `Check @${tip.fromHandle} is claimed...`);
 	dispatch(
 		a_wokenContract,
@@ -243,7 +245,13 @@ const patterns = [
 	tipTxFailure,
 	failure,
 ];
-const reducer = subsumeEffects(patterns);
+
+const subsumptionReducer = reducers.subsumeEffects(patterns);
+const reducer = (state, msg, ctx) => {
+	console.log('Reducer ctx.sender', ctx.sender.name);
+	console.log('Reducer msg: ', msg);
+	return subsumptionReducer(state, msg, ctx);
+};
 
 function onCrash(msg, error, ctx) {
 	console.log(`tipper:tip, name: ${ctx.name}`);
@@ -281,7 +289,7 @@ module.exports = {
 			const { tip } = msg;
 			ctx.debug.d(msg, tip_submitted(tip));
 
-			dispatch(ctx.self, { type: 'reduce' }, ctx.self);
+			dispatch(ctx.self, { type: 'reduce' }, ctx.sender);
 			return { ...state, tip };
 			//reducer({ ...state, tip }, msg, ctx);
 		},

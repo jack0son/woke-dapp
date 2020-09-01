@@ -11,7 +11,7 @@ const debug = Logger();
 
 const bootstrap = async () => {
 	//await twitter.initClient();
-	const twitterStub = new TwitterStub(mocks.twitterClient.createMockClient(3));
+	const twitterStub = new TwitterStub(mocks.twitterClient.createMockClient(1));
 	const tipSystem = new TipSystem({
 		...serviceConfig,
 		twitterStub: twitterStub,
