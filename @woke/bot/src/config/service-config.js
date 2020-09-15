@@ -1,4 +1,4 @@
-const envPath = require('@woke/lib').utils.resolveEnvFilePath();
+const envPath = require('@woke/lib/utils').resolveEnvFilePath();
 console.log(`Using envPath ${envPath}`);
 require('dotenv').config({ path: envPath });
 
