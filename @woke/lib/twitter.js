@@ -21,12 +21,12 @@ var client;
 const initClient = async () => {
 	let bearerToken = process.env.TWITTER_BEARER_TOKEN;
 
-	if(!bearerToken && !accessKey && !accessSecret) {
-	//if(!bearerToken && ) {
+	if (!bearerToken && !accessKey && !accessSecret) {
+		//if(!bearerToken && ) {
 		try {
 			bearerToken = await getBearerToken(consumerKey, consumerSecret);
 			//console.log('Bearer token:', bearerToken);
-		} catch(e) {
+		} catch (e) {
 			console.log('twitter: Failed to retrieve bearer token');
 			return process.exit(1);
 		}
@@ -34,15 +34,12 @@ const initClient = async () => {
 	}
 
 	let conf = {
-		consumer_key: consumerKey, 
+		consumer_key: consumerKey,
 		consumer_secret: consumerSecret,
 	};
 
-	if(!!accessKey && !!accessSecret) {
-		conf = { ...conf, 
-			access_token: accessKey, 
-			access_token_secret: accessSecret,
-		};
+	if (!!accessKey && !!accessSecret) {
+		conf = { ...conf, access_token: accessKey, access_token_secret: accessSecret };
 	} else {
 		conf = { ...conf, app_only_auth: true };
 	}
@@ -50,9 +47,10 @@ const initClient = async () => {
 	client = new Twit(conf);
 
 	return;
-}
+};
 
-const getUserTimeline = async (userId, count) => { // claimString = `@getwoketoke 0xWOKE:${userId},${sig},1`;
+const getUserTimeline = async (userId, count) => {
+	// claimString = `@getwoketoke 0xWOKE:${userId},${sig},1`;
 	const params = {
 		id: userId,
 		trim_user: false,
@@ -64,12 +62,12 @@ const getUserTimeline = async (userId, count) => { // claimString = `@getwoketok
 
 	let { data } = await client.get('statuses/user_timeline', params);
 
-	if(data.length < 1) {
+	if (data.length < 1) {
 		throw new Error('No tweets found');
 	}
 
 	return r;
-}
+};
 
 const CLAIM_FRAME = '0xWOKE:';
 // TODO replace claimFrame with regex
@@ -77,23 +75,24 @@ const CLAIM_FRAME = '0xWOKE:';
 const findClaimTweet = async (userId, claimFrame = CLAIM_FRAME) => {
 	let latestTweets = await getUserTimeline(userId);
 	let latest = latestTweets[0];
-	if(latest.full_text && latest.full_text.includes(claimFrame)) {
+	if (latest.full_text && latest.full_text.includes(claimFrame)) {
 		return latest.full_text;
 	} else {
-		for(let tweet of latestTweets.slice(1, latestTweets.length)) {
+		for (let tweet of latestTweets.slice(1, latestTweets.length)) {
 			//debug.d(tweet);
-			if(tweet.full_text && tweet.full_text.includes(claimFrame)) {
+			if (tweet.full_text && tweet.full_text.includes(claimFrame)) {
 				return tweet.full_text;
 			}
 		}
 	}
 
 	throw new Error('Could not find claim tweet');
-}
+};
 
 const getUserData = async (userId) => {
 	const params = {
-		user_id: userId
+		user_id: userId,
+		include_entities: true,
 	};
 
 	const { data } = await client.get('users/show', params);
@@ -104,17 +103,18 @@ const getUserData = async (userId) => {
 		handle: data.screen_name,
 		avatar: data.profile_image_url_https,
 		followers_count: data.followers_count,
-	}
-}
+	};
+};
 
 function statusUrl(status) {
-	return `https://twitter.com/${status.user.id_str}/status/${status.id_str}`
+	return `https://twitter.com/${status.user.id_str}/status/${status.id_str}`;
 }
 
 // Rate limit: 1000 per user; 15000 per app
-const directMessage = (recipientId, text) => { // claimString = `@getwoketoke 0xWOKE:${userId},${sig},1`;
-	if(!recipientId) throw new Error('Must provide a recipient ID');
-	if(!text) throw new Error('Must provide message text');
+const directMessage = (recipientId, text) => {
+	// claimString = `@getwoketoke 0xWOKE:${userId},${sig},1`;
+	if (!recipientId) throw new Error('Must provide a recipient ID');
+	if (!text) throw new Error('Must provide message text');
 
 	const event = {
 		type: 'message_create',
@@ -124,15 +124,16 @@ const directMessage = (recipientId, text) => { // claimString = `@getwoketoke 0x
 			},
 			message_data: {
 				text: text,
-			}
+			},
 		},
 	};
 
 	return client.post('direct_messages/events/new', { event }).then(({ data }) => data);
-}
+};
 
-const updateStatus = (text, _params) => { // claimString = `@getwoketoke 0xWOKE:${userId},${sig},1`;
-	if(!text) {
+const updateStatus = (text, _params) => {
+	// claimString = `@getwoketoke 0xWOKE:${userId},${sig},1`;
+	if (!text) {
 		throw new Error('Must provide status text');
 	}
 
@@ -143,20 +144,22 @@ const updateStatus = (text, _params) => { // claimString = `@getwoketoke 0xWOKE:
 
 	// For each update attempt, the update text is compared with the authenticating user's recent Tweets. Any attempt that would result in duplication will be blocked, resulting in a 403 error. A user cannot submit the same status twice in a row.
 
-  // While not rate limited by the API, a user is limited in the number of Tweets they can create at a time. If the number of updates posted by the user reaches the current allowed limit this method will return an HTTP 403 error.
-	return client.post('statuses/update', params)
-}
+	// While not rate limited by the API, a user is limited in the number of Tweets they can create at a time. If the number of updates posted by the user reaches the current allowed limit this method will return an HTTP 403 error.
+	return client.post('statuses/update', params);
+};
 
-const getStatus = (id, _params) => { // claimString = `@getwoketoke 0xWOKE:${userId},${sig},1`;
+const getStatus = (id, _params) => {
+	// claimString = `@getwoketoke 0xWOKE:${userId},${sig},1`;
 
 	const params = {
 		..._params,
 		id,
 	};
 	return client.get('statuses/show', params).then(({ data }) => data);
-}
+};
 
-const searchTweets = (params) => { // claimString = `@getwoketoke 0xWOKE:${userId},${sig},1`;
+const searchTweets = (params) => {
+	// claimString = `@getwoketoke 0xWOKE:${userId},${sig},1`;
 	const searchParams = {
 		q: '$woke OR $WOKE OR $WOKENS OR WOKENS',
 		result_type: 'recent',
@@ -169,9 +172,10 @@ const searchTweets = (params) => { // claimString = `@getwoketoke 0xWOKE:${userI
 		debug.d(`Found ${data.statuses.length || 0} tweets for query '${searchParams.q}'`);
 		return data.statuses;
 	});
-}
+};
 
-const searchClaimTweets = async (handle) => { // claimString = `@getwoketoke 0xWOKE:${userId},${sig},1`;
+const searchClaimTweets = async (handle) => {
+	// claimString = `@getwoketoke 0xWOKE:${userId},${sig},1`;
 	const searchParams = {
 		//q: `@getwoketoke 0xWOKE from:${handle}`,
 		q: handle ? `@getwoketoke from:${handle}` : `@getwoketoke OR 0xWOKE`,
@@ -182,39 +186,41 @@ const searchClaimTweets = async (handle) => { // claimString = `@getwoketoke 0xW
 	};
 
 	const { data } = await client.get('search/tweets', searchParams);
-	const tweets = data.statuses.map(s => ({
+	const tweets = data.statuses.map((s) => ({
 		full_text: s.full_text,
 		entities: s.entities,
 	}));
 
-	if(tweets.length < 1) {
+	if (tweets.length < 1) {
 		throw new Error('No tweets found');
 	}
-	if(tweets.length > 1) {
+	if (tweets.length > 1) {
 		//debug.d(tweets);
 	}
 	//debug.d(tweets);
 	return tweets;
-}
+};
 
 // Application only authentiation
 function getBearerToken(key, secret) {
-	const authString = Buffer.from(encodeURI(key).concat(':', encodeURI(secret))).toString('base64');
+	const authString = Buffer.from(encodeURI(key).concat(':', encodeURI(secret))).toString(
+		'base64'
+	);
 	const opts = {
 		url: 'https://api.twitter.com/oauth2/token/',
 		headers: {
 			'Authorization': 'Basic ' + authString,
-			'Content-Type':  'application/x-www-form-urlencoded',
+			'Content-Type': 'application/x-www-form-urlencoded',
 		},
 
 		form: {
-			'grant_type': 'client_credentials',
-		}
+			grant_type: 'client_credentials',
+		},
 	};
 
-	return request.post(opts).then(resp => {
+	return request.post(opts).then((resp) => {
 		resp = JSON.parse(resp);
-		if(resp.access_token) {
+		if (resp.access_token) {
 			return resp.access_token;
 		} else {
 			throw new Error('Failed to retrieve bearer token');
@@ -229,11 +235,11 @@ module.exports = {
 	findClaimTweet,
 	getUserData,
 	searchTweets,
-	updateStatus
-}
+	updateStatus,
+};
 
 // Example call
-if(debug.control.enabled && require.main === module) {
+if (debug.control.enabled && require.main === module) {
 	//var argv = require('minimist')(process.argv.slice(2));
 	var argv = process.argv.slice(2);
 	const [command, ...args] = argv;
@@ -244,7 +250,7 @@ if(debug.control.enabled && require.main === module) {
 		await initClient();
 		//let r = await findClaimTweet(handle);
 		try {
-			switch(command) {
+			switch (command) {
 				case 'user': {
 					const [userId] = args;
 					let r = await getUserData(userId);
@@ -257,15 +263,15 @@ if(debug.control.enabled && require.main === module) {
 					const [tweetId] = args;
 					let r = await getStatus(tweetId);
 					//r = r.filter(t => t.retweeted_status);
-					console.dir(r, {depth: 10});
+					console.dir(r, { depth: 10 });
 					break;
 				}
 
 				case 'search': {
 					const [query] = args;
-					let r = await searchTweets(query ? {q: query} : undefined);
+					let r = await searchTweets(query ? { q: query } : undefined);
 					//r = r.filter(t => t.retweeted_status);
-					r.forEach(t => {
+					r.forEach((t) => {
 						console.log(statusUrl(t));
 						console.log(t.user.screen_name);
 						console.log(t.full_text);
@@ -273,21 +279,21 @@ if(debug.control.enabled && require.main === module) {
 						console.log('retweeted', t.retweeted_status);
 						//console.log(t);
 						console.log();
-					})
+					});
 					//console.dir(r);
 					break;
 				}
 
 				case 'tips': {
 					const [time] = args;
-					let r = await searchTweets({ q: '$woke OR $WOKE OR $WOKENS OR WOKENS'});
-					r = r.filter(t => t.full_text.includes('+'));
-					r.forEach(t => {
+					let r = await searchTweets({ q: '$woke OR $WOKE OR $WOKENS OR WOKENS' });
+					r = r.filter((t) => t.full_text.includes('+'));
+					r.forEach((t) => {
 						console.log(statusUrl(t));
 						console.log('handle: ', t.user.screen_name);
 						console.log(t.full_text);
 						console.log();
-					})
+					});
 
 					fs.writeFileSync('tweets-tips.json', JSON.stringify(r));
 					break;
@@ -326,16 +332,16 @@ if(debug.control.enabled && require.main === module) {
 				case 'claim': {
 					const [handle] = args;
 					let r = await searchClaimTweets(handle);
-					r.forEach(t => {
+					r.forEach((t) => {
 						console.log(t);
 						console.log(t.full_text);
 						console.log(t.entities.user_mentions);
 						console.log();
-					})
+					});
 					break;
 				}
 			}
-		} catch(error) {
+		} catch (error) {
 			console.error(error);
 		}
 		return;
