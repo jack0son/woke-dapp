@@ -21,7 +21,9 @@ module.exports.resolveEnvFilePath = () => {
 	}
 
 	return path.resolve(
-		`${envTag && envTag + '.'}${locTag && locTag + '.'}${envTag || locTag ? '' : '.'}env`
+		`${envTag ? envTag + '.' : ''}${locTag ? locTag + '.' : ''}${
+			envTag || locTag ? '' : '.'
+		}env`
 	);
 };
 

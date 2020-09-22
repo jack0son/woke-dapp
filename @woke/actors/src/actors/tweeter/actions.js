@@ -14,48 +14,59 @@ const tipInvalidText = (tip) => {
 	return text;
 };
 
+function isInternalError() {
+	// Not important for now
+}
+
 // Good example of an actor that could just use the Nactor primitive
 async function action_tweet(state, msg, ctx) {
 	const { twitter } = state;
 	const { tip, tweetType } = msg;
 	const { fromId, toId, amount, balance } = tip;
 
-	let tweet;
-	switch (tweetType) {
-		case 'unclaimed-transfer': {
-			tweet = await twitter.postUnclaimedTransfer(fromId, toId, amount, balance);
-			break;
-		}
+	let tweet, text;
+	try {
+		switch (tweetType) {
+			case 'unclaimed-transfer': {
+				tweet = await twitter.postUnclaimedTransfer(fromId, toId, amount, balance);
+				break;
+			}
 
-		case 'tip-confirmed': {
-			tweet = await twitter.postTweetReply(
-				messageTemplates.twitter.tip_success_tweet_text(tip),
-				tip.id
-			);
-			// @TODO Tweet an invite
-			break;
-		}
+			case 'tip-confirmed': {
+				(text = messageTemplates.twitter.tip_success_tweet_text(tip)),
+					(tweet = await twitter.postTweetReply(text, tip.id));
+				// @TODO Tweet an invite
+				break;
+			}
 
-		case 'tip-failed': {
-			tweet = await twitter.postTweetReply(
-				messageTemplates.twitter.tip_failure_message(tip),
-				tip.id
-			);
-			break;
-		}
+			case 'tip-failed': {
+				(text = messageTemplates.twitter.tip_failure_message(tip)),
+					(tweet = await twitter.postTweetReply(text, tip.id));
+				break;
+			}
 
-		case 'tip-invalid': {
-			tweet = await twitter.postTweetReply(tipInvalidText(tip), tip.id);
-			break;
-		}
+			case 'tip-invalid': {
+				text = tipInvalidText(tip);
+				tweet = await twitter.postTweetReply(text, tip.id);
+				break;
+			}
 
-		case 'tip-seen':
-		default:
-			ctx.debug.warn(msg, `Unknown tweet type: ${tweetType}`);
-			return;
+			case 'tip-seen':
+			default:
+				ctx.debug.warn(msg, `Unknown tweet type: ${tweetType}`);
+				return;
+		}
+		dispatch(ctx.sender, { type: msg.type, tweet }, ctx.self);
+		ctx.debug.d(msg, `tweeted '${tweet.text}'`);
+	} catch (error) {
+		if (isInternalError(error)) {
+			throw error;
+		} else {
+			text && ctx.debug.warn(msg, `Unable to tweet text: ${text}`);
+			ctx.debug.error(msg, error);
+			dispatch(ctx.sender, { type: msg.type, error }, ctx.self);
+		}
 	}
-	dispatch(ctx.sender, { type: msg.type, tweet }, ctx.self);
-	ctx.debug.d(msg, `tweeted '${tweet.text}'`);
 }
 
 async function action_sendDirectMessage(state, msg, ctx) {
