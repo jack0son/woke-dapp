@@ -15,7 +15,6 @@
     "mock:tipper": "DEBUG_RECOVERY=true NODE_ENV=development DEBUG=actor*,-*:twitter_monitor*,-*:_tip-*:info node src/services/mock-tipper.js",
     "mock:tipper:verbose": "DEBUG_RECOVERY=true NODE_ENV=development DEBUG=actor* node src/services/mock-tipper.js",
     "mock:tipper:goerli": "ETH_ENV=goerli NODE_ENV=development DEBUG=* node src/services/mock-tipper.js",
-    "blank": "",
     "notifier": "DEBUG=* node src/services/notifier.js",
     "notifier:development": "PERSIST=true DEBUG=* NODE_ENV=development node src/services/notifier.js",
     "notifier:transient": "PERSIST=false DEBUG=* NODE_ENV=development node src/services/notifier.js",

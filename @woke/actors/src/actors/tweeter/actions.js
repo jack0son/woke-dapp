@@ -33,15 +33,15 @@ async function action_tweet(state, msg, ctx) {
 			}
 
 			case 'tip-confirmed': {
-				(text = messageTemplates.twitter.tip_success_tweet_text(tip)),
-					(tweet = await twitter.postTweetReply(text, tip.id));
+				text = messageTemplates.twitter.tip_success_tweet_text(tip);
+				tweet = await twitter.postTweetReply(text, tip.id);
 				// @TODO Tweet an invite
 				break;
 			}
 
 			case 'tip-failed': {
-				(text = messageTemplates.twitter.tip_failure_message(tip)),
-					(tweet = await twitter.postTweetReply(text, tip.id));
+				text = messageTemplates.twitter.tip_failure_message(tip);
+				tweet = await twitter.postTweetReply(text, tip.id);
 				break;
 			}
 
@@ -59,13 +59,9 @@ async function action_tweet(state, msg, ctx) {
 		dispatch(ctx.sender, { type: msg.type, tweet }, ctx.self);
 		ctx.debug.d(msg, `tweeted '${tweet.text}'`);
 	} catch (error) {
-		if (isInternalError(error)) {
-			throw error;
-		} else {
-			text && ctx.debug.warn(msg, `Unable to tweet text: ${text}`);
-			ctx.debug.error(msg, error);
-			dispatch(ctx.sender, { type: msg.type, error }, ctx.self);
-		}
+		ctx.debug.error(msg, error);
+		text && ctx.debug.warn(msg, `Unable to tweet text: ${text}`);
+		throw error;
 	}
 }
 
