@@ -16,7 +16,7 @@ function TwitterClient() {
 }
 
 const defaults = {
-	monitoring: true,
+	faultMonitoring: true,
 	persist: false,
 	pollingInterval: 5 * 1000,
 	notify: true,
@@ -24,6 +24,7 @@ const defaults = {
 
 class TipSystem {
 	constructor(opts) {
+		// @TODO fix up this trash
 		const {
 			contractSystem,
 			twitterStub,
@@ -31,16 +32,16 @@ class TipSystem {
 			pollingInterval,
 			notify,
 			networkList,
-			monitoring,
+			faultMonitoring,
 		} = { ...defaults, ...opts };
 		this.persist = persist ? true : false;
 		this.config = {
 			TWITTER_POLLING_INTERVAL: pollingInterval || 100 * 1000,
 			networkList,
-			monitoring,
+			faultMonitoring,
 		};
-		this.twitterClient = TwitterClient();
-		this.twitterStub = opts.twitterStub || new TwitterStub(this.twitterClient);
+		this.twitterClient = opts.twitterClient || TwitterClient();
+		this.twitterStub = new TwitterStub(this.twitterClient);
 
 		if (this.persist) {
 			debug.d(`Using persistence...`);
@@ -52,10 +53,12 @@ class TipSystem {
 		this.director = this.persist ? bootstrap(this.persistenceEngine) : bootstrap();
 		const director = this.director;
 
-		if (!!this.config.monitoring) {
-			// Initialise monitor using own actor system and twitter client
-			this.monitor = useMonitor({ twitterClient: this.twitterClient, director });
-		}
+		// Initialise monitor using own actor system and twitter client
+		this.monitor = useMonitor({
+			twitterClient: this.twitterClient,
+			director,
+			enabled: this.config.faultMonitoring,
+		});
 
 		// Actors
 		this.contractSystem =

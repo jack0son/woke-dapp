@@ -2,16 +2,15 @@ const {
 	ActorSystem: { dispatch, query },
 } = require('@woke/wact');
 
-function action_notify(msg, ctx, state) {
+function action_notify(state, msg, ctx) {
 	const { a_channel } = state;
 	const { error, self, prefixString } = msg;
 
 	const text = `${new Date().toISOString()}:${
 		prefixString ? prefixString : ''
 	} ${error}\n${error.stack}`;
-	console.log(`Sending system monitoring data...`);
-	ctx.debug.d(msg, `${ctx.name} sending monitoring data`);
-	dispatch(a_channel, { type: 'post_private', text }, ctx.self);
+	ctx.debug.d(msg, `${ctx.name} sending monitoring data...`);
+	dispatch(a_channel, { type: 'post_owner', text }, ctx.self);
 }
 
 function makeOnCrash() {
@@ -27,8 +26,7 @@ function makeOnCrash() {
 const DEFAULT_TIMEOUT = 10000;
 
 function Monitor({ a_channel }) {
-	if (!a_channel)
-		throw new Error('Monitor must have an output channel defined');
+	if (!a_channel) throw new Error('Monitor must have an output channel defined');
 
 	return {
 		properties: {

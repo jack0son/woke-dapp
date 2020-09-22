@@ -1,16 +1,15 @@
 const serviceConfig = require('../config/service-config');
-const { Logger, twitter, TwitterStub } = require('@woke/lib');
+const { Logger, twitter } = require('@woke/lib');
 const TipSystem = require('../systems/tip-system');
 const debug = Logger();
 
 // @TODO parse polling interval
 const bootstrap = async () => {
 	await twitter.initClient();
-	twitterStub = new TwitterStub(twitter);
 
 	const tipSystem = new TipSystem({
 		notify: true,
-		twitterStub,
+		twitterClient: twitter,
 		pollingInterval: 5 * 1000,
 		...serviceConfig,
 	});

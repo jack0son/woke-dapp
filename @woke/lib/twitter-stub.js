@@ -8,9 +8,8 @@ const debug = Logger('twitter_stub');
 
 class TwitterStub {
 	constructor(_client, _credentials) {
-		const self = this;
-		self.client = _client;
-		//self.client = new _Client(_credentials);
+		this.client = _client;
+		//this.client = new _Client(_credentials);
 	}
 
 	async ready() {

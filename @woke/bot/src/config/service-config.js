@@ -7,7 +7,10 @@ const {
 	config: { networkList },
 } = require('@woke/web3-nact');
 
+const { PERSIST, FAULT_MONITORING } = process.env;
+
 module.exports = {
 	networkList,
-	persist: utils.parse_bool(process.env.PERSIST),
+	persist: utils.parse_bool(PERSIST),
+	faultMonitoring: utils.parse_bool(FAULT_MONITORING),
 };
