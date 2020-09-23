@@ -26,7 +26,6 @@ const doNothing = () => {};
 // TODO add missing config defaults
 const defaults = { enabled: false };
 function useMonitor(_conf) {
-	console.log('monConf', _conf);
 	const conf = { ...defaults, ..._conf };
 	const monitor = Monitor.getInstance(conf);
 

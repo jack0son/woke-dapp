@@ -1,7 +1,6 @@
 const useMonitor = require('./use-monitor');
 
 function useNotifyOnCrash(conf) {
-	console.log('USE NOTIFY IS GETTING THE MONITOR HERE');
 	const monitor = useMonitor(conf);
 
 	return (msg, error, ctx) => {

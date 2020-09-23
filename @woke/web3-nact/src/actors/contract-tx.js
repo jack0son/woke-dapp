@@ -39,8 +39,13 @@ async function action_call(state, msg, ctx) {
 }
 
 function getSendMethod(state, msg, ctx) {
+	console.dir(msg, { depth: 0 });
+	console.dir(state, { depth: 0 });
+	const { tx, web3Instance, nonce } = msg;
+	console.dir(web3Instance, { depth: 0 });
 	const contract = initContract(web3Instance, state.contractInterface);
 	const sendMethod = contract.methods[tx.method](...tx.args).send;
+	return sendMethod;
 }
 
 // @fix TODO: temporary work around
@@ -48,10 +53,8 @@ function getSendMethod(state, msg, ctx) {
 //	inside an async action without await
 // @notice this action hands if it is made async
 function action_send(state, msg, ctx) {
-	const { tx, web3Instance, nonce } = msg;
-
 	return TxActor.actions.action_send(
-		{ ...state, sendMethod: getSendMethod(state, msg, ctx) },
+		{ ...state, getSendMethod: getSendMethod },
 		msg,
 		ctx
 	);

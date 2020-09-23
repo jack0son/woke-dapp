@@ -117,7 +117,7 @@ function effect_handleUserBalance(state, msg, ctx) {
 			ctx.self
 		);
 
-		tip.status = Statueses.pending;
+		tip.status = Statuses.pending;
 		nextStage = 'SENDING-TIP';
 	} else if (!userBalance || userBalance == NaN) {
 		// Oh yes, this happens sometimes!
@@ -199,7 +199,11 @@ function effect_handleFailure(state, msg, ctx) {
 }
 
 const init = Pattern(
-	({ tip, results }) => !!tip && results.userIsClaimed === undefined,
+	(state) => {
+		console.log('init:state', state);
+		return !!state.tip && state.results.userIsClaimed === undefined;
+	},
+	//({ tip, results }) => !!tip && results.userIsClaimed === undefined,
 	effect_checkClaimStatus
 );
 
@@ -277,6 +281,8 @@ module.exports = {
 			const { a_wokenContract } = state;
 			const { tip } = msg;
 			ctx.debug.d(msg, tip_submitted(tip));
+
+			console.log(state);
 
 			dispatch(ctx.self, { type: 'reduce' }, ctx.sender);
 			return { ...state, tip };
