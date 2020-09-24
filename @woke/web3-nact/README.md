@@ -50,3 +50,8 @@ Address pool / nonce management
 - Transaction Replacement
 
 * Transactions treated as indempotent by default
+
+## Contracts
+
+Contract interface will appear similar to a web3 contract, but under-the-hood
+method calls will send messages to the web3 coordinator service.

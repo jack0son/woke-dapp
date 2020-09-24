@@ -121,7 +121,7 @@ function handleTransactionError(msg, error, ctx) {
 
 async function action_send(state, msg, ctx) {
 	const { maxAttempts } = state;
-	const { failedNonce } = msg;
+	const { failedNonce, sinks } = msg;
 
 	if (msg.transactionSpec && msg.tx) {
 		throw new Error('Should not receive new transaction specification with tx state');
@@ -165,7 +165,9 @@ async function action_send(state, msg, ctx) {
 	}
 
 	ctx.debug.info(msg, `Send from ${account}`);
-	tx.opts = { ...transactionSpec, from: account };
+	const { method, ...spec } = transactionSpec;
+	if (method) tx.method = method;
+	tx.opts = { ...spec, from: account };
 	tx.nonce = nonce;
 
 	dispatch(
@@ -178,6 +180,7 @@ async function action_send(state, msg, ctx) {
 
 	return {
 		...state,
+		sinks,
 		error: null,
 		transactionSpec,
 		tx,

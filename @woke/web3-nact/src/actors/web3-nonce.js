@@ -1,4 +1,5 @@
 const { dispatch, block, query } = require('@woke/wact').ActorSystem;
+const { useNotifyOnCrash } = require('@woke/actors');
 
 // Keep track of the nonce
 const nonceActor = {
@@ -10,6 +11,7 @@ const nonceActor = {
 			// Address pool, should use map
 			nonceRepo: {}, // address => nonce
 		},
+		onCrash: useNotifyOnCrash(),
 	},
 
 	actions: {

@@ -75,14 +75,18 @@ const contractActor = {
 		},
 
 		send: async (state, msg, ctx) => {
-			const { method, args, opts } = msg;
+			const { method, args, opts, sinks } = msg;
 
 			if (!Array.isArray(args)) {
 				throw new Error(`Send expects parameter args to be Array`);
 			}
 
 			const a_tx = spawn_tx(state, ctx); // parent is me
-			dispatch(a_tx, { type: 'send', tx: { method, args, opts } }, ctx.sender);
+			dispatch(
+				a_tx,
+				{ type: 'send', transactionSpec: { method, args, opts }, sinks },
+				ctx.sender
+			);
 		},
 
 		call: async (state, msg, ctx) => {

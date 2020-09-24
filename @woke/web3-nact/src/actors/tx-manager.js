@@ -5,6 +5,7 @@ const {
 const { start_actor, dispatch, block } = ActorSystem;
 //const { useNotifyOnCrash } = require('@woke/actors');
 
+const { useNotifyOnCrash } = require('@woke/actors');
 const { initContract } = require('@woke/lib').web3Tools.utils;
 
 const Web3Tx = require('./web3-tx');
@@ -29,6 +30,7 @@ const TxManager = ({ a_web3, a_nonce }) => ({
 			a_nonce,
 			a_web3,
 		},
+		onCrash: useNotifyOnCrash(),
 	},
 	actions: {
 		send: action_send,

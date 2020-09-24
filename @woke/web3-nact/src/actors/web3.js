@@ -1,6 +1,7 @@
 const {
 	ActorSystem: { dispatch },
 } = require('@woke/wact');
+const { useNotifyOnCrash } = require('@woke/actors');
 const { web3Tools } = require('@woke/lib');
 const { ProviderError } = require('../lib/errors');
 
@@ -26,7 +27,9 @@ function Web3Actor(
 ) {
 	const { monitor, retryDelay, networkList } = { ...defaultOpts, ...opts };
 
+	const notify = useNotifyOnCrash();
 	function onCrash(msg, error, ctx) {
+		notify(msg, error, ctx);
 		switch (msg.type) {
 			case 'instantiate': {
 				if (error instanceof ProviderError) {

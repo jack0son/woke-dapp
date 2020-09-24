@@ -14,10 +14,15 @@ const {
 
 const { TaskStatuses: Statuses } = TaskSupervisor;
 
+const exists = (prop) => prop !== undefined && prop !== null;
+
 // Handle results from transaction actor
 function sink_tx(state, msg, ctx) {
 	const { results, tip } = state;
 	const { tx, txStatus, result, error } = msg;
+
+	// Throw if contract calls fail
+	if (error && tx.method !== 'tip') throw error;
 
 	const newResults = {};
 	switch (tx.method) {
@@ -34,8 +39,7 @@ function sink_tx(state, msg, ctx) {
 			return { ...state, tipTx: { tx, txStatus, error } };
 
 		default:
-			ctx.debug.warn(msg, `sink:tx: ${tx.method} has no sink action`);
-			return;
+			throw new Error(`sink:tx: ${tx.method} has no sink action`);
 	}
 
 	return { ...state, results: { ...results, ...newResults } };
@@ -54,6 +58,7 @@ function effect_checkClaimStatus(state, msg, ctx) {
 }
 
 function effect_handleClaimStatus(state, msg, ctx) {
+	ctx.debug.d(msg, `Got claim status...`);
 	const {
 		results: { userIsClaimed },
 		tip,
@@ -66,9 +71,9 @@ function effect_handleClaimStatus(state, msg, ctx) {
 		return ctx.stop;
 	} else if (userIsClaimed === true) {
 		//tip.status = 'UNSETTLED';
-		nextStage = 'CALLING-CHECK-BALANCE';
 
-		return effect_checkUserBalance(state, msg, ctx);
+		ctx.debug.d(msg, `Calling check balance ...`);
+		return checkUserBalance(state, msg, ctx);
 	} else if (!userIsClaimed) {
 		// Oh yes, this happens sometimes!
 		throw new Error(`User unclaimed is ${userIsClaimed}`);
@@ -77,14 +82,13 @@ function effect_handleClaimStatus(state, msg, ctx) {
 	return state;
 }
 
-function effect_checkUserBalance(state, msg, ctx) {
+function checkUserBalance(state, msg, ctx) {
 	const { tip, a_wokenContract } = state;
 	dispatch(
 		a_wokenContract,
 		{ type: 'call', method: 'balanceOf', args: [tip.fromId], sinks: [ctx.self] },
 		ctx.self
 	);
-
 	return state;
 }
 
@@ -95,7 +99,7 @@ function effect_handleUserBalance(state, msg, ctx) {
 		a_wokenContract,
 	} = state;
 	let nextStage;
-	ctx.debug.info(msg, `userBalance: ${userBalance}`);
+	ctx.debug.d(msg, `@${tip.fromHandle}'s balance: ${userBalance}`);
 	if (userBalance == 0) {
 		tip.status = Statuses.invalid;
 		tip.reason = 'broke';
@@ -104,6 +108,7 @@ function effect_handleUserBalance(state, msg, ctx) {
 		ctx.receivers.update_tip(tip);
 		nextStage = 'invalid';
 	} else if (userBalance > 0) {
+		ctx.debug.d(msg, `Sending tip from @${tip.fromHandle} ...`);
 		dispatch(
 			a_wokenContract,
 			{
@@ -116,7 +121,6 @@ function effect_handleUserBalance(state, msg, ctx) {
 		);
 
 		tip.status = Statuses.pending;
-		nextStage = 'SENDING-TIP';
 	} else if (!userBalance || userBalance == NaN) {
 		// Oh yes, this happens sometimes!
 		throw new Error(`Result from userBalance call ${userBalance}`);
@@ -197,22 +201,22 @@ function effect_handleFailure(state, msg, ctx) {
 }
 
 const init = Pattern(
-	(state) => {
-		//console.log('init:state', state);
-		return !!state.tip && state.results.userIsClaimed === undefined;
-	},
-	//({ tip, results }) => !!tip && results.userIsClaimed === undefined,
+	//(state) => {
+	//	//console.log('init:state', state);
+	//	return !!state.tip && state.results.userIsClaimed === undefined;
+	//},
+	({ tip, results }) => !!tip && !exists(results.userIsClaimed),
 	effect_checkClaimStatus
 );
 
 const gotClaimStatus = Pattern(
 	({ tip, results }) =>
-		!!tip && results.userIsClaimed !== undefined && !results.userBalance,
+		!!tip && exists(results.userIsClaimed) && !exists(results.userBalance),
 	effect_handleClaimStatus
 );
 
 const gotUserBalance = Pattern(
-	({ tip, results, tipTx }) => !!tip && !!results.userBalance && !tipTx,
+	({ tip, results, tipTx }) => !!tip && exists(results.userBalance) && !tipTx,
 	effect_handleUserBalance
 );
 

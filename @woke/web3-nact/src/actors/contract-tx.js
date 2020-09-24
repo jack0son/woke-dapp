@@ -38,26 +38,22 @@ async function action_call(state, msg, ctx) {
 	return ctx.stop;
 }
 
-function getSendMethod(state, msg, ctx) {
-	console.dir(msg, { depth: 0 });
-	console.dir(state, { depth: 0 });
-	const { tx, web3Instance, nonce } = msg;
-	console.dir(web3Instance, { depth: 0 });
-	const contract = initContract(web3Instance, state.contractInterface);
-	const sendMethod = contract.methods[tx.method](...tx.args).send;
-	return sendMethod;
-}
+//const contract = initContract(web3Instance, contractInterface);
+//return contract.methods[transactionSpec.method](...transactionSpec.args).send;
+const getSendMethod = ({ tx, transactionSpec, contractInterface }, { web3Instance }) =>
+	initContract(web3Instance, contractInterface).methods[transactionSpec.method](
+		...transactionSpec.args
+	).send;
 
 // @fix TODO: temporary work around
 //	-- errors from web3 promi-event don't get caught by the actor when called
 //	inside an async action without await
 // @notice this action hands if it is made async
-function action_send(state, msg, ctx) {
-	return TxActor.actions.action_send(
-		{ ...state, getSendMethod: getSendMethod },
-		msg,
-		ctx
-	);
+function action_send(state, _msg, ctx) {
+	const { method, args, opts, ...msg } = _msg;
+	const transactionSpec = { method, args, ...opts };
+
+	return TxActor.actions.action_send(state, { transactionSpec, ...msg }, ctx);
 }
 
 const definition = {
@@ -71,7 +67,7 @@ const definition = {
 
 	actions: {
 		action_call,
-		action_send,
+		//action_send,
 	},
 };
 
