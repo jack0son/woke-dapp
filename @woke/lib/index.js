@@ -7,6 +7,7 @@ const utils = require('./utils');
 const emojis = require('./emojis');
 const mocks = require('./mocks');
 const messageTemplates = require('./message-templates');
+const merge = require('./merge');
 
 module.exports = {
 	web3Tools,
@@ -15,7 +16,8 @@ module.exports = {
 	twitter,
 	TwitterStub,
 	utils,
+	merge,
 	mocks,
 	emojis,
 	messageTemplates,
-}
+};

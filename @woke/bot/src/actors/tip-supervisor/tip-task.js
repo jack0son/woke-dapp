@@ -15,7 +15,7 @@ const {
 const { TaskStatuses: Statuses } = TaskSupervisor;
 
 // Handle results from transaction actor
-function txSink(state, msg, ctx) {
+function sink_tx(state, msg, ctx) {
 	const { results, tip } = state;
 	const { tx, txStatus, result, error } = msg;
 
@@ -62,8 +62,6 @@ function effect_handleClaimStatus(state, msg, ctx) {
 	if (userIsClaimed === false) {
 		tip.status = Statuses.invalid;
 		tip.reason = 'unclaimed';
-		//entry.status = statusEnum.INVALID;
-		//entry.error = 'unclaimed sender'
 		ctx.receivers.update_tip(tip);
 		return ctx.stop;
 	} else if (userIsClaimed === true) {
@@ -200,7 +198,7 @@ function effect_handleFailure(state, msg, ctx) {
 
 const init = Pattern(
 	(state) => {
-		console.log('init:state', state);
+		//console.log('init:state', state);
 		return !!state.tip && state.results.userIsClaimed === undefined;
 	},
 	//({ tip, results }) => !!tip && results.userIsClaimed === undefined,
@@ -268,7 +266,7 @@ module.exports = {
 		initialState: {
 			results: {},
 			sinkHandlers: {
-				tx: txSink,
+				tx: sink_tx,
 			},
 		},
 
@@ -282,7 +280,7 @@ module.exports = {
 			const { tip } = msg;
 			ctx.debug.d(msg, tip_submitted(tip));
 
-			console.log(state);
+			//console.log(state);
 
 			dispatch(ctx.self, { type: 'reduce' }, ctx.sender);
 			return { ...state, tip };
