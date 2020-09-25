@@ -18,9 +18,8 @@ function isInternalError() {
 	// Not important for now
 }
 
-// Good example of an actor that could just use the Nactor primitive
 async function action_tweet(state, msg, ctx) {
-	const { twitter } = state;
+	const { twitterDomain: td } = state;
 	const { tip, tweetType } = msg;
 	const { fromId, toId, amount, balance } = tip;
 
@@ -28,26 +27,26 @@ async function action_tweet(state, msg, ctx) {
 	try {
 		switch (tweetType) {
 			case 'unclaimed-transfer': {
-				tweet = await twitter.postUnclaimedTransfer(fromId, toId, amount, balance);
+				tweet = await td.postUnclaimedTransfer(fromId, toId, amount, balance);
 				break;
 			}
 
 			case 'tip-confirmed': {
-				text = messageTemplates.twitter.tip_success_tweet_text(tip);
-				tweet = await twitter.postTweetReply(text, tip.id);
+				text = messageTemplates.td.tip_success_tweet_text(tip);
+				tweet = await td.postTweetReply(text, tip.id);
 				// @TODO Tweet an invite
 				break;
 			}
 
 			case 'tip-failed': {
-				text = messageTemplates.twitter.tip_failure_message(tip);
-				tweet = await twitter.postTweetReply(text, tip.id);
+				text = messageTemplates.td.tip_failure_message(tip);
+				tweet = await td.postTweetReply(text, tip.id);
 				break;
 			}
 
 			case 'tip-invalid': {
 				text = tipInvalidText(tip);
-				tweet = await twitter.postTweetReply(text, tip.id);
+				tweet = await td.postTweetReply(text, tip.id);
 				break;
 			}
 
@@ -66,9 +65,9 @@ async function action_tweet(state, msg, ctx) {
 }
 
 async function action_sendDirectMessage(state, msg, ctx) {
-	const { twitter } = state;
+	const { twitterDomain: td } = state;
 	const { recipientId, text } = msg;
-	const result = await twitter.postDirectMessage(recipientId, text);
+	const result = await td.postDirectMessage(recipientId, text);
 
 	dispatch(ctx.sender, { type: msg.type, result }, ctx.self);
 }

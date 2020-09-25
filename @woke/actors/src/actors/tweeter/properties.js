@@ -53,10 +53,10 @@ function onCrash(msg, error, ctx) {
 	}
 }
 
-function Properties(twitterStub) {
+function Properties(twitterDomain) {
 	return {
 		initialState: {
-			twitter: twitterStub,
+			twitterDomain,
 		},
 		onCrash,
 	};

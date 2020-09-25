@@ -1,6 +1,7 @@
 const { labelActions } = require('./action');
 const { merge } = require('./lib/utils');
 
+// Create an actor defintion
 function MakeDefinition(Actions, Properties) {
 	function Definition(actionArgs, propertyArgs = [], ...properties) {
 		return {
@@ -31,9 +32,6 @@ function compose(definition, _actions, _properties, opts = {}) {
 		...definition.properties,
 		receivers,
 	});
-
-	// console.log(Receivers({}));
-	// console.log(receivers);
 
 	return Object.assign(definition, { actions, properties });
 }

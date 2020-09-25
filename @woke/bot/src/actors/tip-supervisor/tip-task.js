@@ -58,7 +58,6 @@ function effect_checkClaimStatus(state, msg, ctx) {
 }
 
 function effect_handleClaimStatus(state, msg, ctx) {
-	ctx.debug.d(msg, `Got claim status...`);
 	const {
 		results: { userIsClaimed },
 		tip,
@@ -70,12 +69,8 @@ function effect_handleClaimStatus(state, msg, ctx) {
 		ctx.receivers.update_tip(tip);
 		return ctx.stop;
 	} else if (userIsClaimed === true) {
-		//tip.status = 'UNSETTLED';
-
-		ctx.debug.d(msg, `Calling check balance ...`);
 		return checkUserBalance(state, msg, ctx);
 	} else if (!userIsClaimed) {
-		// Oh yes, this happens sometimes!
 		throw new Error(`User unclaimed is ${userIsClaimed}`);
 	}
 

@@ -18,6 +18,11 @@ var client;
 // Reponse obeject is no longer just the response data
 // Twit response object: { data, resp }
 
+// API response handlers
+const handlers = {
+	dataOnly: ({ data }) => data,
+}
+
 const initClient = async () => {
 	let bearerToken = process.env.TWITTER_BEARER_TOKEN;
 
@@ -49,7 +54,7 @@ const initClient = async () => {
 	return;
 };
 
-const getUserTimeline = async (userId, count) => {
+const getUserTimeline = (userId, count) => {
 	// claimString = `@getwoketoke 0xWOKE:${userId},${sig},1`;
 	const params = {
 		id: userId,
@@ -60,13 +65,16 @@ const getUserTimeline = async (userId, count) => {
 		count: 10,
 	};
 
-	let { data } = await client.get('statuses/user_timeline', params);
-
-	if (data.length < 1) {
-		throw new Error('No tweets found');
-	}
-
-	return r;
+	return client.get('statuses/user_timeline', params)
+		.then(({data}) => {
+			if(data.lenth < 1) throw new Error('No tweets found');
+			return data;
+		});
+	//let { data } = await client.get('statuses/user_timeline', params);
+	// if (data.length < 1) {
+	// 	throw new Error('No tweets found');
+	// }
+	// return r;
 };
 
 const CLAIM_FRAME = '0xWOKE:';
@@ -89,21 +97,19 @@ const findClaimTweet = async (userId, claimFrame = CLAIM_FRAME) => {
 	throw new Error('Could not find claim tweet');
 };
 
-const getUserData = async (userId) => {
+const getUserData = (userId) => {
 	const params = {
 		user_id: userId,
 		include_entities: true,
 	};
 
-	const { data } = await client.get('users/show', params);
-
-	return {
-		...data,
+	client.get('users/show', params)
+		.then(({ data }) => ({...data, 
 		name: data.name,
 		handle: data.screen_name,
 		avatar: data.profile_image_url_https,
 		followers_count: data.followers_count,
-	};
+		}));
 };
 
 function statusUrl(status) {
@@ -128,7 +134,7 @@ const directMessage = (recipientId, text) => {
 		},
 	};
 
-	return client.post('direct_messages/events/new', { event }).then(({ data }) => data);
+	return client.post('direct_messages/events/new', { event }).then(handlers.dataOnly);
 };
 
 const updateStatus = (text, _params) => {
@@ -145,7 +151,7 @@ const updateStatus = (text, _params) => {
 	// For each update attempt, the update text is compared with the authenticating user's recent Tweets. Any attempt that would result in duplication will be blocked, resulting in a 403 error. A user cannot submit the same status twice in a row.
 
 	// While not rate limited by the API, a user is limited in the number of Tweets they can create at a time. If the number of updates posted by the user reaches the current allowed limit this method will return an HTTP 403 error.
-	return client.post('statuses/update', params);
+	return client.post('statuses/update', params).then(handlers.dataOnly);
 };
 
 const getStatus = (id, _params) => {
@@ -155,7 +161,7 @@ const getStatus = (id, _params) => {
 		..._params,
 		id,
 	};
-	return client.get('statuses/show', params).then(({ data }) => data);
+	return client.get('statuses/show', params).then(handlers.dataOnly);
 };
 
 const searchTweets = (params) => {
