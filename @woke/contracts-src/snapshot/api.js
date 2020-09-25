@@ -9,3 +9,8 @@ function API(accounts, contractInstances, config) {
 
 	function transfer(from, to) {}
 }
+const buildIndex = (list, map, keyProp = 'id') =>
+	list.reduce((map, item) => {
+		map.set(item[keyProp], item);
+		return map;
+	}, map);

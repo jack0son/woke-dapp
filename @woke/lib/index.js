@@ -4,10 +4,11 @@ const protocol = require('./protocol');
 const twitter = require('./twitter');
 const TwitterStub = require('./twitter-stub');
 const utils = require('./utils');
-const emojis = require('./emojis');
-const mocks = require('./mocks');
-const messageTemplates = require('./message-templates');
 const merge = require('./merge');
+const configure = require('./configure');
+const mocks = require('./mocks');
+const emojis = require('./emojis');
+const messageTemplates = require('./message-templates');
 
 module.exports = {
 	web3Tools,
@@ -17,6 +18,7 @@ module.exports = {
 	TwitterStub,
 	utils,
 	merge,
+	configure,
 	mocks,
 	emojis,
 	messageTemplates,
