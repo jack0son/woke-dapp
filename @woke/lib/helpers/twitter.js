@@ -1,5 +1,5 @@
 const { TWITTER_ENV, TWITTER_MENTIONS } = process.env;
-const { parseBool } = require('../utils');
+const { parse_bool } = require('../utils');
 
 const defaults = {
 	disableMentions: false,
@@ -8,18 +8,17 @@ const defaults = {
 // @TODO decide on a conf ffs
 let opts = defaults;
 switch (TWITTER_ENV) {
+	case 'fake':
 	case 'production':
-	case 'live':
 		opts.disableMentions = false;
 		break;
-	case 'muffled':
 	case 'development':
 		opts.disableMentions = true;
 		break;
 	default:
 }
 
-if (TWITTER_MENTIONS) opts.disableMentions = parseBool(TWITTER_MENTIONS);
+if (TWITTER_MENTIONS) opts.disableMentions = parse_bool(TWITTER_MENTIONS);
 
 const PREFIX = '🤐';
 const mention = (screenName) => `@${opts.disableMentions ? PREFIX : ''}${screenName}`;

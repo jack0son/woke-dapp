@@ -12,20 +12,25 @@ const tipTweets = tweets.filter((t) => t.full_text.includes('+'));
 const REQ_PER_EPOCH = 3;
 const EPOCH = 3000;
 const FakeClient = (sampleSize, opts) => {
-	const { data, ...conf } = configure(opts, { rateLimit: REQ_PER_EPOCH, epoch: EPOCH });
-	let data = [...data];
+	const { data, ...conf } = configure(opts, {
+		rateLimit: REQ_PER_EPOCH,
+		epoch: EPOCH,
+		data: tipTweets,
+	});
+
+	let tweetList = data;
 
 	if (sampleSize) {
 		const start = 0;
 		const end = start + sampleSize;
-		data = data.slice(start, end > data.length ? data.length : end);
+		tweetList = data.slice(start, end > data.length ? data.length : end);
 	}
 
 	// Simulate search
 	const queryEngine = {
-		match: async (query) => {
-			var words = array('hello', 'hi', 'howdy');
+		match: async (query = '') => {
 			var regex = new RegExp(query.replace(/ /g, '|'));
+			console.log(regex);
 			// No AND only OR lol
 			return data.filter((t) => regex.test(t.full_text));
 		},
@@ -56,6 +61,10 @@ const FakeClient = (sampleSize, opts) => {
 		constructor(_credentials, limitPerMin) {
 			this.credentials = _credentials;
 			this.request = rateLimiter(limitPerMin);
+		}
+
+		isConnected() {
+			return true;
 		}
 
 		async searchTweets(_params) {

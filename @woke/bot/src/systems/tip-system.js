@@ -5,43 +5,50 @@ const {
 	tweeter: { Tweeter },
 } = require('@woke/actors');
 const { ContractSystem } = require('@woke/web3-nact');
-const { TwitterStub, Logger, mocks } = require('@woke/lib');
+const { TwitterDomain, twitter, Logger, configure } = require('@woke/lib');
 const { TipSupervisor, TwitterMonitor } = require('../actors');
+const { TwitterEnvironment } = require('../config/twitter-config');
 
-const twitterMock = mocks.twitterClient;
 const debug = Logger('sys_tip');
 
-function TwitterClient() {
-	return twitterMock.createMockClient(3);
-}
+const chooseTwitterClient = (twitterEnv) => {
+	switch (twitterEnv) {
+		case 'fake':
+			return twitter.fake.FakeClient(1, {});
+		case 'development':
+		case 'staging':
+			return twitter.client;
+	}
+};
 
 const defaults = {
 	faultMonitoring: true,
 	persist: false,
 	pollingInterval: 5 * 1000,
-	notify: true,
+	notificationTweets: true,
 };
 
 class TipSystem {
 	constructor(opts) {
-		// @TODO fix up this trash
 		const {
 			contractSystem,
-			twitterStub,
 			persist,
 			pollingInterval,
-			notify,
+			notificationTweets,
 			networkList,
 			faultMonitoring,
-		} = { ...defaults, ...opts };
+			twitterEnv,
+			...conf
+		} = configure(opts, defaults);
+
 		this.persist = persist ? true : false;
 		this.config = {
 			TWITTER_POLLING_INTERVAL: pollingInterval || 100 * 1000,
 			networkList,
 			faultMonitoring,
 		};
-		this.twitterClient = opts.twitterClient || TwitterClient();
-		this.twitterStub = new TwitterStub(this.twitterClient);
+		this.twitterClient = TwitterEnvironment(twitterEnv).client;
+		this.twitterDomain = new TwitterDomain(this.twitterClient);
 
 		if (this.persist) {
 			debug.d(`Using persistence...`);
@@ -68,8 +75,8 @@ class TipSystem {
 				networkList: this.config.networkList,
 			});
 
-		if (notify) {
-			this.a_tweeter = director.start_actor('tweeter', Tweeter(this.twitterStub));
+		if (notificationTweets) {
+			this.a_tweeter = director.start_actor('tweeter', Tweeter(this.twitterDomain));
 		}
 
 		this.a_tipManager = director[this.persist ? 'start_persistent' : 'start_actor'](
@@ -79,7 +86,7 @@ class TipSystem {
 
 		this.a_tMon = director.start_actor(
 			'twitter_monitor',
-			TwitterMonitor(this.twitterStub),
+			TwitterMonitor(this.twitterDomain),
 			{}
 		);
 		this.a_polling = director.start_actor('polling_service', actors.Polling);
@@ -90,6 +97,8 @@ class TipSystem {
 
 	async start() {
 		const self = this;
+
+		await self.twitterDomain.init();
 
 		if (self.persist) {
 			try {
@@ -143,7 +152,7 @@ if (debug.control.enabled && require.main === module) {
 	const [persist, ...args] = argv;
 
 	(async () => {
-		const twitterStub = new TwitterStub(TwitterClient());
+		const twitterDomain = new TwitterDomain(TwitterClient());
 		const tipSystem = new TipSystem(undefined, { persist: false });
 		tipSystem.start();
 	})();

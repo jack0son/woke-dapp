@@ -49,7 +49,7 @@ const exists = (obj) => obj !== undefined && obj !== null;
 
 const isList = (list) => list && exists(list.length);
 const isEmptyList = (list) => isList(list) && list.length === 0;
-const notEmpty = (list) => exists(list) && !!str.length;
+const notEmpty = (list) => exists(list) && !!list.length;
 
 module.exports = {
 	generateIndex,

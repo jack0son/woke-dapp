@@ -207,7 +207,7 @@ function getBearerToken(key, secret) {
 	});
 }
 
-const isConnected = () => !!client;
+const isConnected = () => client !== undefined && client !== null;
 
 module.exports = {
 	init,

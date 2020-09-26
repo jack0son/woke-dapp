@@ -7,6 +7,7 @@
   "author": "Jackson Virgo",
   "license": "ISC",
   "dependencies": {
+    "@woke/jack0son": "0.1.0",
     "debug": ">=4.1",
     "deepmerge": "^4.2.2",
     "dotenv": "^8.2.0",
