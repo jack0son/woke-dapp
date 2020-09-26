@@ -13,7 +13,6 @@
     "is-plain-object": "^5.0.0",
     "request-promise-native": "^1.0.8",
     "twit": "^2.2.11",
-    "twitter": "^1.7.1",
     "web3": "^1.2.11"
   },
   "scripts": {

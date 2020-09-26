@@ -1,0 +1,17 @@
+{
+  "name": "@woke/jack0son",
+  "version": "0.1.0",
+  "description": "My utilities",
+  "private": true,
+  "main": "jack0son.js",
+  "scripts": {
+    "test": "./node_modules/.bin/mocha ./test/test*.js",
+    "test:debug": "DEBUG=oracle:* ./node_modules/.bin/mocha"
+  },
+  "author": "Jackson Virgo",
+  "license": "ISC",
+  "dependencies": {
+  },
+  "devDependencies": {
+  }
+}

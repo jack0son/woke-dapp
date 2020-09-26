@@ -1,18 +1,12 @@
-const Twitter = require('twitter');
 const Twit = require('twit');
-const fs = require('fs');
-var request = require('request-promise-native');
-
+const request = require('request-promise-native');
 const debug = require('./debug')('twitter');
 
 require('dotenv').config();
 const consumerKey = process.env.TWITTER_CONSUMER_KEY;
 const consumerSecret = process.env.TWITTER_CONSUMER_SECRET;
-
 const accessKey = process.env.TWITTER_ACCESS_KEY;
 const accessSecret = process.env.TWITTER_ACCESS_SECRET;
-
-var client;
 
 // @NB Swapping twitter client lib to twit
 // Reponse obeject is no longer just the response data
@@ -21,9 +15,11 @@ var client;
 // API response handlers
 const handlers = {
 	dataOnly: ({ data }) => data,
-}
+};
 
-const initClient = async () => {
+var client;
+
+const init = async () => {
 	let bearerToken = process.env.TWITTER_BEARER_TOKEN;
 
 	if (!bearerToken && !accessKey && !accessSecret) {
@@ -50,8 +46,6 @@ const initClient = async () => {
 	}
 
 	client = new Twit(conf);
-
-	return;
 };
 
 const getUserTimeline = (userId, count) => {
@@ -65,11 +59,10 @@ const getUserTimeline = (userId, count) => {
 		count: 10,
 	};
 
-	return client.get('statuses/user_timeline', params)
-		.then(({data}) => {
-			if(data.lenth < 1) throw new Error('No tweets found');
-			return data;
-		});
+	return client.get('statuses/user_timeline', params).then(({ data }) => {
+		if (data.lenth < 1) throw new Error('No tweets found');
+		return data;
+	});
 	//let { data } = await client.get('statuses/user_timeline', params);
 	// if (data.length < 1) {
 	// 	throw new Error('No tweets found');
@@ -103,13 +96,13 @@ const getUserData = (userId) => {
 		include_entities: true,
 	};
 
-	client.get('users/show', params)
-		.then(({ data }) => ({...data, 
+	client.get('users/show', params).then(({ data }) => ({
+		...data,
 		name: data.name,
 		handle: data.screen_name,
 		avatar: data.profile_image_url_https,
 		followers_count: data.followers_count,
-		}));
+	}));
 };
 
 function statusUrl(status) {
@@ -234,8 +227,12 @@ function getBearerToken(key, secret) {
 	});
 }
 
+const isConnected = () => !!client;
+
 module.exports = {
 	initClient,
+	init: initClient, // @todo compatibility
+	isConnected,
 	directMessage,
 	searchClaimTweets,
 	findClaimTweet,
@@ -245,111 +242,3 @@ module.exports = {
 };
 
 // Example call
-if (debug.control.enabled && require.main === module) {
-	//var argv = require('minimist')(process.argv.slice(2));
-	var argv = process.argv.slice(2);
-	const [command, ...args] = argv;
-	debug.d(`Command: ${command}`);
-	debug.d(`Args: ${args}`);
-
-	(async () => {
-		await initClient();
-		//let r = await findClaimTweet(handle);
-		try {
-			switch (command) {
-				case 'user': {
-					const [userId] = args;
-					let r = await getUserData(userId);
-					//debug.d(`Found tweet: ${r}`);
-					console.dir(r);
-					break;
-				}
-
-				case 'get': {
-					const [tweetId] = args;
-					let r = await getStatus(tweetId);
-					//r = r.filter(t => t.retweeted_status);
-					console.dir(r, { depth: 10 });
-					break;
-				}
-
-				case 'search': {
-					const [query] = args;
-					let r = await searchTweets(query ? { q: query } : undefined);
-					//r = r.filter(t => t.retweeted_status);
-					r.forEach((t) => {
-						console.log(statusUrl(t));
-						console.log(t.user.screen_name);
-						console.log(t.full_text);
-						console.log(t.entities.user_mentions);
-						console.log('retweeted', t.retweeted_status);
-						//console.log(t);
-						console.log();
-					});
-					//console.dir(r);
-					break;
-				}
-
-				case 'tips': {
-					const [time] = args;
-					let r = await searchTweets({ q: '$woke OR $WOKE OR $WOKENS OR WOKENS' });
-					r = r.filter((t) => t.full_text.includes('+'));
-					r.forEach((t) => {
-						console.log(statusUrl(t));
-						console.log('handle: ', t.user.screen_name);
-						console.log(t.full_text);
-						console.log();
-					});
-
-					fs.writeFileSync('tweets-tips.json', JSON.stringify(r));
-					break;
-				}
-
-				case 'status': {
-					const [text] = args;
-					const defaultText = 'test tweet';
-
-					let r = await updateStatus(text ? text : defaultText);
-					console.log(r);
-					break;
-				}
-
-				case 'dm': {
-					const [recipient, text] = args;
-					const defaultText = 'test dm';
-
-					let r = await directMessage(recipient, text ? text : defaultText);
-					console.log(r);
-					break;
-				}
-
-				case 'tweet': {
-					const [text] = args;
-					const defaultText = 'cheep cheep';
-
-					let r = await updateStatus(text || defaultText);
-					console.log(r);
-					break;
-				}
-
-				default: {
-				}
-
-				case 'claim': {
-					const [handle] = args;
-					let r = await searchClaimTweets(handle);
-					r.forEach((t) => {
-						console.log(t);
-						console.log(t.full_text);
-						console.log(t.entities.user_mentions);
-						console.log();
-					});
-					break;
-				}
-			}
-		} catch (error) {
-			console.error(error);
-		}
-		return;
-	})();
-}

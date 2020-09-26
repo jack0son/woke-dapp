@@ -1,7 +1,10 @@
-const appUrl = 'https://getwoke.me';
-const emojis = require('./emojis');
-const Logger = require('./debug');
+const j0 = require('../jack0son');
+const emojis = require('../emojis');
+const Logger = require('../debug');
 const debug = Logger('twitter_stub');
+const { notRetweet } = require('../helpers/twitter');
+
+const appUrl = 'https://getwoke.me';
 
 // Errors:
 // [ { code: 220, message: 'Your credentials do not allow access to this resource.' } ]
@@ -131,7 +134,7 @@ class TwitterStub {
 					notRetweet(t) &&
 					t.full_text.includes('+') && // @TODO replace with regex
 					//t.in_reply_to_user_id_str != null  &&
-					nonEmptyArray(t.entities.user_mentions)
+					j0.notEmpty(t.entities.user_mentions)
 			)
 			.filter((t) => {
 				const matches = t.full_text.match(amountRegex);
@@ -143,15 +146,6 @@ class TwitterStub {
 				return false;
 			});
 	}
-}
-
-function notRetweet(tweet) {
-	const rt = tweet.retweeted_status;
-	return rt == undefined || rt == null || rt == false;
-}
-
-function nonEmptyArray(arr) {
-	return arr && arr.length && arr.length > 0;
 }
 
 module.exports = TwitterStub;
