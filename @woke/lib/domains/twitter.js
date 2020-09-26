@@ -1,22 +1,46 @@
 const j0 = require('../jack0son');
 const emojis = require('../emojis');
-const Logger = require('../debug');
-const debug = Logger('twitter_stub');
+const TwitClient = require('./client');
 const { notRetweet } = require('../helpers/twitter');
+const Logger = require('../debug');
+const debug = Logger('domain:twitter');
 
 const appUrl = 'https://getwoke.me';
+const CLAIM_FRAME = '0xWOKE:';
+
+const filterTipTweets = (tweets) => {
+	const amountRegex = /\+(\d+)\s*\$/;
+	return tweets
+		.filter(
+			(t) =>
+				notRetweet(t) &&
+				t.full_text.includes('+') && // @TODO replace with regex
+				//t.in_reply_to_user_id_str != null  &&
+				j0.notEmpty(t.entities.user_mentions)
+		)
+		.filter((t) => {
+			const matches = t.full_text.match(amountRegex);
+			const amount = matches && matches[1] ? parseInt(matches[1]) : false;
+			if (amount && amount !== NaN && amount > 0) {
+				t.tip_amount = amount;
+				return true;
+			}
+			return false;
+		});
+};
 
 // Errors:
 // [ { code: 220, message: 'Your credentials do not allow access to this resource.' } ]
 
-class TwitterStub {
-	constructor(_client, _credentials) {
-		this.client = _client;
-		//this.client = new _Client(_credentials);
+// Interactions with the twitter API bundled into useful functions
+class TwitterDomain {
+	constructor(client, opts) {
+		this.client = client && !credentials ? client : TwitClient;
+		if (!!credentials) this.client.init(credentials);
 	}
 
 	async ready() {
-		return true; //this.client.hasCredentials();
+		return this.client.isConnected();
 	}
 
 	async findClaimTweet(userId) {
@@ -92,7 +116,7 @@ class TwitterStub {
 		}
 	}
 
-	// Best practice
+	// Best practice (from the twitter docs)
 	// -- Limit your searches to 10 keywords and operators.
 	// --
 	// Optional. Specifies what type of search results you would prefer to receive. The current default is "mixed." Valid values include:
@@ -102,6 +126,8 @@ class TwitterStub {
 	//
 	async findTips() {
 		const { client } = this;
+		// @NB if @mention starts the tweet text, in_reply_to_user_id_str will not be
+		// null
 
 		const params = {
 			query: '$woke OR $wokens OR $WOKE OR $WOKENS OR WOKENS',
@@ -113,7 +139,7 @@ class TwitterStub {
 
 		try {
 			const tweets = await client.searchTweets(params);
-			return this.filterTipTweets(tweets);
+			return filterTipTweets(tweets);
 		} catch (error) {
 			// Squash the error
 			//error: {"error":"Sorry, your query is too complex. Please reduce complexity and try again."}.
@@ -123,29 +149,24 @@ class TwitterStub {
 
 		return [];
 	}
-
-	// @NB if @mention starts the tweet text, in_reply_to_user_id_str will not be
-	// null
-	filterTipTweets(tweets) {
-		const amountRegex = /\+(\d+)\s*\$/;
-		return tweets
-			.filter(
-				(t) =>
-					notRetweet(t) &&
-					t.full_text.includes('+') && // @TODO replace with regex
-					//t.in_reply_to_user_id_str != null  &&
-					j0.notEmpty(t.entities.user_mentions)
-			)
-			.filter((t) => {
-				const matches = t.full_text.match(amountRegex);
-				const amount = matches && matches[1] ? parseInt(matches[1]) : false;
-				if (amount && amount !== NaN && amount > 0) {
-					t.tip_amount = amount;
-					return true;
+	// TODO replace claimFrame with regex
+	// @param claimFrame: Text common to each claim string
+	async findClaimTweetFromTimeline(userId, claimFrame = CLAIM_FRAME) {
+		let latestTweets = await this.getUserTimeline(userId);
+		let latest = latestTweets[0];
+		if (latest.full_text && latest.full_text.includes(claimFrame)) {
+			return latest.full_text;
+		} else {
+			for (let tweet of latestTweets.slice(1, latestTweets.length)) {
+				//debug.d(tweet);
+				if (tweet.full_text && tweet.full_text.includes(claimFrame)) {
+					return tweet.full_text;
 				}
-				return false;
-			});
+			}
+		}
+
+		throw new Error('Could not find claim tweet');
 	}
 }
 
-module.exports = TwitterStub;
+module.exports = TwitterDomain;

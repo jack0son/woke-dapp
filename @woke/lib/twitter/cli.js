@@ -1,5 +1,5 @@
 // Quickly grab twitter data form the command line
-const debug = require('../debug')('twitter');
+const debug = require('../debug')('twitter:cli');
 const fs = require('fs');
 const client = require('./client');
 
@@ -11,12 +11,13 @@ if (debug.control.enabled && require.main === module) {
 	debug.d(`Args: ${args}`);
 
 	(async () => {
-		await init();
+		await client.init();
 		//let r = await findClaimTweet(handle);
 		try {
 			switch (command) {
 				case 'user': {
 					const [userId] = args;
+					console.log(userId);
 					let r = await client.getUserData(userId);
 					//debug.d(`Found tweet: ${r}`);
 					console.dir(r);

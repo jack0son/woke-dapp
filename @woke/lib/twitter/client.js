@@ -1,6 +1,6 @@
 const Twit = require('twit');
 const request = require('request-promise-native');
-const debug = require('./debug')('twitter');
+const debug = require('../debug')('twitter:client');
 
 require('dotenv').config();
 const consumerKey = process.env.TWITTER_CONSUMER_KEY;
@@ -70,33 +70,13 @@ const getUserTimeline = (userId, count) => {
 	// return r;
 };
 
-const CLAIM_FRAME = '0xWOKE:';
-// TODO replace claimFrame with regex
-// @param claimFrame: Text common to each claim string
-const findClaimTweet = async (userId, claimFrame = CLAIM_FRAME) => {
-	let latestTweets = await getUserTimeline(userId);
-	let latest = latestTweets[0];
-	if (latest.full_text && latest.full_text.includes(claimFrame)) {
-		return latest.full_text;
-	} else {
-		for (let tweet of latestTweets.slice(1, latestTweets.length)) {
-			//debug.d(tweet);
-			if (tweet.full_text && tweet.full_text.includes(claimFrame)) {
-				return tweet.full_text;
-			}
-		}
-	}
-
-	throw new Error('Could not find claim tweet');
-};
-
 const getUserData = (userId) => {
 	const params = {
 		user_id: userId,
 		include_entities: true,
 	};
 
-	client.get('users/show', params).then(({ data }) => ({
+	return client.get('users/show', params).then(({ data }) => ({
 		...data,
 		name: data.name,
 		handle: data.screen_name,
@@ -230,12 +210,11 @@ function getBearerToken(key, secret) {
 const isConnected = () => !!client;
 
 module.exports = {
-	initClient,
-	init: initClient, // @todo compatibility
+	init,
+	initClient: init, // @todo compatibility
 	isConnected,
 	directMessage,
 	searchClaimTweets,
-	findClaimTweet,
 	getUserData,
 	searchTweets,
 	updateStatus,

@@ -44,7 +44,9 @@ const reduceToIndex = (obj, fn) => generateIndex(Object.keys(obj), fn);
 // 		return acc;
 // 	}, Object.create(null));
 
+// Useful for primitive types that return truthey / falsey values
 const exists = (obj) => obj !== undefined && obj !== null;
+
 const isList = (list) => list && exists(list.length);
 const isEmptyList = (list) => isList(list) && list.length === 0;
 const notEmpty = (list) => exists(list) && !!str.length;

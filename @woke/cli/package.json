@@ -6,7 +6,7 @@
   "main": "index.js",
   "scripts": {
     "start": "DEBUG=* node index.js",
-    "twitter": "DEBUG=twitter* node ../lib/twitter.js",
+    "twitter": "DEBUG=twitter* node ../lib/twitter/cli.js",
     "cli": "node --trace-warnings index.js",
     "cli:verbose": "DEBUG=* node index.js"
   },

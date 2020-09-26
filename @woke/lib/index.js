@@ -1,6 +1,6 @@
 const web3Tools = require('./web3-tools');
 const Logger = require('./debug');
-const protocol = require('./protocol');
+const protocol = require('./woke/protocol');
 const twitter = require('./twitter');
 const TwitterStub = require('./twitter-stub');
 const utils = require('./utils');
