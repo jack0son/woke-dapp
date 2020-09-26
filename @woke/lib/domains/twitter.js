@@ -1,6 +1,6 @@
 const j0 = require('../jack0son');
 const emojis = require('../emojis');
-const TwitClient = require('./client');
+const twitClient = require('./client');
 const { notRetweet } = require('../helpers/twitter');
 const Logger = require('../debug');
 const debug = Logger('domain:twitter');
@@ -35,7 +35,7 @@ const filterTipTweets = (tweets) => {
 // Interactions with the twitter API bundled into useful functions
 class TwitterDomain {
 	constructor(client, opts) {
-		this.client = client && !credentials ? client : TwitClient;
+		this.client = client && !credentials ? client : twitClient;
 		if (!!credentials) this.client.init(credentials);
 	}
 
