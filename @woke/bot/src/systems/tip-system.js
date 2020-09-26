@@ -6,10 +6,13 @@ const {
 } = require('@woke/actors');
 const { ContractSystem } = require('@woke/web3-nact');
 const { TwitterDomain, twitter, Logger, configure } = require('@woke/lib');
+const { configureLogger } = require('../config/logger-config');
 const { TipSupervisor, TwitterMonitor } = require('../actors');
 const { TwitterEnvironment } = require('../config/twitter-config');
 
 const debug = Logger('sys_tip');
+const LOGGER_STRING = 'actor*,-*:twitter_monitor*,-*:_tip-*:info';
+const VERBOSE_LOGGER_STRING = 'actor*,-*:twitter_monitor*,-*:_tip-*:info';
 
 const chooseTwitterClient = (twitterEnv) => {
 	switch (twitterEnv) {
@@ -38,8 +41,11 @@ class TipSystem {
 			networkList,
 			faultMonitoring,
 			twitterEnv,
+			verbose,
 			...conf
 		} = configure(opts, defaults);
+
+		if (verbose) configureLogger({ enableString: VERBOSE_LOGGER_STRING });
 
 		this.persist = persist ? true : false;
 		this.config = {
@@ -145,15 +151,3 @@ function spawn_tweet_forwarder(parent, a_tipManager) {
 }
 
 module.exports = TipSystem;
-
-// Mock tip system
-if (debug.control.enabled && require.main === module) {
-	var argv = process.argv.slice(2);
-	const [persist, ...args] = argv;
-
-	(async () => {
-		const twitterDomain = new TwitterDomain(TwitterClient());
-		const tipSystem = new TipSystem(undefined, { persist: false });
-		tipSystem.start();
-	})();
-}

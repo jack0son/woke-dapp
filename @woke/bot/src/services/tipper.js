@@ -1,5 +1,4 @@
 const serviceConfig = require('../config/service-config');
-const { Logger } = require('@woke/lib');
 const TipSystem = require('../systems/tip-system');
 
 // @TODO parse polling interval
