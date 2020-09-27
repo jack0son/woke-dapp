@@ -1,6 +1,8 @@
 const serviceConfig = require('../config/service-config');
 const TipSystem = require('../systems/tip-system');
 
+console.log(serviceConfig);
+
 // @TODO parse polling interval
 const bootstrap = async () => {
 	const tipSystem = new TipSystem({

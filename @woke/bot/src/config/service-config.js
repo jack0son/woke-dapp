@@ -5,6 +5,7 @@ const {
 const envPath = resolveEnvFilePath();
 console.log(`Using envPath ${envPath}`);
 require('dotenv').config({ path: envPath });
+
 const commandLineArgs = require('../lib/cli');
 
 const { PERSIST, FAULT_MONITORING, TWITTER_ENV, TWITTER_MENTIONS, VERBOSE } = process.env;

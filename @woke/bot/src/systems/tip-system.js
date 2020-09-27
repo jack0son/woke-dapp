@@ -6,7 +6,7 @@ const {
 } = require('@woke/actors');
 const { ContractSystem } = require('@woke/web3-nact');
 const { TwitterDomain, twitter, Logger, configure } = require('@woke/lib');
-const { configureLogger } = require('../config/logger-config');
+const configureLogger = require('../config/logger-config');
 const { TipSupervisor, TwitterMonitor } = require('../actors');
 const { TwitterEnvironment } = require('../config/twitter-config');
 
