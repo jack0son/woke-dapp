@@ -1,13 +1,12 @@
 const Twit = require('twit');
 const request = require('request-promise-native');
-const debug = require('../debug')('twitter:client');
+const debug = require('@woke/lib').Logger('twitter:client');
 const conf = {
 	consumerKey: process.env.TWITTER_CONSUMER_KEY,
 	consumerSecret: process.env.TWITTER_CONSUMER_SECRET,
 	accessKey: process.env.TWITTER_ACCESS_KEY,
 	accessSecret: process.env.TWITTER_ACCESS_SECRET,
 };
-console.log('twitter', conf);
 
 require('dotenv').config();
 
@@ -29,7 +28,6 @@ const init = async () => {
 		accessKey: process.env.TWITTER_ACCESS_KEY,
 		accessSecret: process.env.TWITTER_ACCESS_SECRET,
 	};
-	console.log('twitter', conf);
 	let bearerToken = process.env.TWITTER_BEARER_TOKEN;
 
 	if (!bearerToken && !accessKey && !accessSecret) {
@@ -50,7 +48,11 @@ const init = async () => {
 	};
 
 	if (!!conf.accessKey && !!conf.accessSecret) {
-		creds = { ...creds, access_token: accessKey, access_token_secret: accessSecret };
+		creds = {
+			...creds,
+			access_token: conf.accessKey,
+			access_token_secret: conf.accessSecret,
+		};
 	} else {
 		creds = { ...creds, app_only_auth: true };
 	}

@@ -51,7 +51,6 @@ class TipSystem {
 			faultMonitoring: conf.faultMonitoring,
 		};
 		this.twitterClient = TwitterClient(conf.twitterClient).client;
-		console.log(TwitterClient(conf.twitterClient).client);
 		this.twitterDomain = new TwitterDomain(this.twitterClient);
 
 		if (this.persist) {

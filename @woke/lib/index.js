@@ -6,7 +6,6 @@ const emojis = require('./emojis');
 const messageTemplates = require('./message-templates');
 
 const protocol = require('./woke/protocol');
-const twitter = require('./twitter');
 const TwitterDomain = require('./domains/twitter');
 const web3Tools = require('./web3-tools');
 
@@ -14,7 +13,6 @@ module.exports = {
 	web3Tools,
 	Logger,
 	protocol,
-	twitter,
 	TwitterDomain,
 	utils,
 	merge,

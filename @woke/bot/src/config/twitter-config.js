@@ -1,4 +1,4 @@
-const { twitter } = require('@woke/lib');
+const twitter = require('@woke/twitter');
 
 const chooseTwitterClient = (env) => {
 	switch (env) {

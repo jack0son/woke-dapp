@@ -2,15 +2,11 @@ const {
 	utils: { resolveEnvFilePath, parse_bool },
 	configure,
 } = require('@woke/lib');
-
-const j0 = require('@woke/jack0son');
-const diff = j0.propsDiffGen(process.env);
 // const envPath = resolveEnvFilePath();
 // require('dotenv').config({ path: envPath });
 //console.log(`Using envPath ${envPath}`);
 
 require('dotenv').config();
-console.log('new env props:', diff());
 const secrets = require('@woke/secrets');
 
 const envVars = [
@@ -26,7 +22,6 @@ const envVars = [
 
 // Any env vars we can get at the CLI
 const commandLineArgs = require('../lib/cli')(envVars.map((v) => v.slice(1)));
-console.log('new env props:', diff());
 
 const envOptions = envVars.reduce((opts, [varName, key, parser]) => {
 	const opt = process.env[varName];
@@ -45,7 +40,7 @@ const conf = {
 secrets('twitter', conf.twitterApp || 'oracle-bot');
 secrets('ethereum', conf.ethEnv || 'ganache');
 secrets('infura');
-console.log(secrets.get());
+//console.log(secrets.get());
 
 // Config meets the following requirements
 // 1. Able to toggle conf in docker compose file

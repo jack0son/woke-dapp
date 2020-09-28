@@ -5,9 +5,9 @@ const defaultEnable = 'actor*,sys_*';
 
 function configureLogger({ enableString, disable }) {
 	if (disable) {
-		logger.control.disable();
+		logger.control.debug.disable();
 	} else {
-		logger.control.enable(enableString || defaultEnable);
+		logger.control.debug.enable(enableString || defaultEnable);
 	}
 
 	logger = null;

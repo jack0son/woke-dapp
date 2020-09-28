@@ -1,5 +1,5 @@
 // Quickly grab twitter data form the command line
-const debug = require('../debug')('twitter:cli');
+const debug = require('@woke/lib').Logger('twitter:cli');
 const fs = require('fs');
 const client = require('./client');
 

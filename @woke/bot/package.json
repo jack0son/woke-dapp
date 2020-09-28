@@ -8,7 +8,7 @@
     "test": "./node_modules/.bin/mocha ./test/test*.js",
     "test:debug": "DEBUG=oracle:* ./node_modules/.bin/mocha",
     "tipper": "NODE_ENV=production node src/services/tipper.js",
-    "tipper:dev": "NODE_ENV=development node src/services/tipper.js --persist=false --twitterApp=oracle-bot --twitterClient=dev --verbose",
+    "tipper:dev": "NODE_ENV=development node src/services/tipper.js --persist=false --twitterApp=oracle-bot --twitterClient=dev --verbose=true",
     "tipper:fake": "NODE_ENV=development node src/services/tipper.js --persist=false --twitterClient=fake --verbose",
     "tipper:dev:muffled": "NODE_ENV=development node src/services/tipper.js --persist=false --twitterApp=oracle-bot --muffled",
     "tipper:goerli": "NODE_ENV=development node src/services/tipper.js --persist=true --twitterApp=oracle-bot",
@@ -32,6 +32,7 @@
     "@woke/web3-nact": "0.1.0",
     "@woke/contracts": "0.4.0",
     "@woke/lib": "0.4.0",
+    "@woke/twitter": "0.1.0",
     "@woke/actors": "0.1.0",
     "@woke/secrets": "0.1.0",
     "dotenv": "^8.2.0"

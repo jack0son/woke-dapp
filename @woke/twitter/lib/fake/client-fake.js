@@ -1,4 +1,4 @@
-const configure = require('../../configure');
+const { configure } = require('@woke/lib');
 const tweets = require('./data/tweets-tips.json');
 
 // @TODO tests are meaninless without expanding this dataset

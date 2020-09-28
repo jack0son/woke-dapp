@@ -45,7 +45,8 @@ const propsAddedGen = (obj_a) => {
 	};
 };
 
-const propsDiffGen = (obj_a) => {
+const propsDiffGen = (_a) => {
+	let obj_a = _a;
 	let a = Object.keys(obj_a);
 	return (obj_b) => {
 		const b = Object.keys(obj_b || obj_a);
