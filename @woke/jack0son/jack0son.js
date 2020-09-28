@@ -1,3 +1,58 @@
+// a cotains b
+const l = console.log;
+const contains = (a, b) => {
+	// fast for large N
+	const A = new Set(a);
+	return b.every((e) => A.has(e));
+};
+
+const sameElements = (a, b) => contains(a, b) && contains(b, a);
+
+// Elements of array_b not in set_A
+const setMinusArr = (A, b) =>
+	b.reduce((arr, e) => {
+		if (!A.has(e)) arr.push(e);
+		return arr;
+	}, []);
+
+const arrMinusSet = (a, B) =>
+	a.reduce((arr, e) => {
+		if (!A.has()) arr.push(e);
+		return arr;
+	}, []);
+
+const BminusA = (a, b) => setMinusArr(new Set(a), b);
+
+const symmetricDiff = (a, b) => {
+	return BminusA(b, a).concat(BminusA(a, b));
+};
+
+const propsRemovedGen = () => [];
+
+const propsAddedGen = (obj_a) => {
+	let _a = obj_a;
+	let a = Object.keys(_a);
+	const A = new Set(a); // could keep set in memory for continuous diff
+
+	return () => {
+		const b = Object.keys(_a);
+		// items in new list not in old list
+		let diff = setMinusArr(A, b);
+		if (diff.length > 0) {
+			diff.forEach((e) => A.add(e));
+		}
+		return diff;
+	};
+};
+
+const propsDiffGen = (obj_a) => {
+	let a = Object.keys(obj_a);
+	return (obj_b) => {
+		const b = Object.keys(obj_b || obj_a);
+		return symmetricDiff(a, b);
+	};
+};
+
 const buildListIndex = (list, keyProp = 'id') =>
 	list.reduce((idx, item) => {
 		idx[item[keyProp]], item;
@@ -75,4 +130,9 @@ module.exports = {
 	isList,
 	isEmptyList,
 	notEmpty,
+	symmetricDiff,
+	sameElements,
+	contains,
+	propsDiffGen,
+	propsAddedGen,
 };
