@@ -112,6 +112,10 @@ const reduceToIndex = (obj, fn) => generateIndex(Object.keys(obj), fn);
 
 // Useful for primitive types that return truthey / falsey values
 const exists = (obj) => obj !== undefined && obj !== null;
+const deleteEmptyKeys = (obj) =>
+	Object.keys(obj).forEach((k) => {
+		!exists(obj[k]) && delete obj[k];
+	});
 
 const isList = (list) => list && exists(list.length);
 const isEmptyList = (list) => isList(list) && list.length === 0;
@@ -135,4 +139,5 @@ module.exports = {
 	contains,
 	propsDiffGen,
 	propsAddedGen,
+	deleteEmptyKeys,
 };

@@ -31,10 +31,14 @@ module.exports.parse_bool = (str) => {
 	switch (str) {
 		case 't':
 		case 'T':
+		case 'yes':
+		case 'y':
 		case 'true':
 			return true;
 		case 'f':
 		case 'F':
+		case 'no':
+		case 'n':
 		case 'false':
 		default:
 			return false;
