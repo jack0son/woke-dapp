@@ -3,18 +3,18 @@ const { twitter } = require('@woke/lib');
 const chooseTwitterClient = (env) => {
 	switch (env) {
 		case 'fake':
-			console.log('Using fake twitter client');
 			return twitter.fake.FakeClient(1, {});
+		case 'dev':
 		case 'development':
-		case 'staging':
+		case 'production':
 		default:
 			return twitter.client;
 	}
 };
 
-const TwitterEnvironment = (env) => ({
-	client: chooseTwitterClient(env),
-	name: env,
+const TwitterClient = (type) => ({
+	client: chooseTwitterClient(type),
+	name: type,
 });
 
-module.exports = { TwitterEnvironment };
+module.exports = { TwitterClient };

@@ -8,7 +8,7 @@ const { ContractSystem } = require('@woke/web3-nact');
 const { TwitterDomain, twitter, Logger, configure } = require('@woke/lib');
 const configureLogger = require('../config/logger-config');
 const { TipSupervisor, TwitterMonitor } = require('../actors');
-const { TwitterEnvironment } = require('../config/twitter-config');
+const { TwitterClient } = require('../config/twitter-config');
 
 const debug = Logger('sys_tip');
 const LOGGER_STRING = 'actor*,-*:twitter_monitor*,-*:_tip-*:info';
@@ -29,31 +29,29 @@ const defaults = {
 	persist: false,
 	pollingInterval: 5 * 1000,
 	notificationTweets: true,
+	// contractSystem,
+	// persist,
+	// pollingInterval,
+	// notificationTweets,
+	// networkList,
+	// faultMonitoring,
+	// twitterClient: tiwt,
+	// verbose,
 };
 
 class TipSystem {
 	constructor(opts) {
-		const {
-			contractSystem,
-			persist,
-			pollingInterval,
-			notificationTweets,
-			networkList,
-			faultMonitoring,
-			twitterEnv,
-			verbose,
-			...conf
-		} = configure(opts, defaults);
+		const conf = configure(opts, defaults);
+		if (conf.verbose) configureLogger({ enableString: VERBOSE_LOGGER_STRING });
 
-		if (verbose) configureLogger({ enableString: VERBOSE_LOGGER_STRING });
-
-		this.persist = persist ? true : false;
+		this.persist = conf.persist ? true : false;
 		this.config = {
-			TWITTER_POLLING_INTERVAL: pollingInterval || 100 * 1000,
-			networkList,
-			faultMonitoring,
+			TWITTER_POLLING_INTERVAL: conf.pollingInterval || 100 * 1000,
+			networkList: conf.networkList,
+			faultMonitoring: conf.faultMonitoring,
 		};
-		this.twitterClient = TwitterEnvironment(twitterEnv).client;
+		this.twitterClient = TwitterClient(conf.twitterClient).client;
+		console.log(TwitterClient(conf.twitterClient).client);
 		this.twitterDomain = new TwitterDomain(this.twitterClient);
 
 		if (this.persist) {
@@ -75,13 +73,13 @@ class TipSystem {
 
 		// Actors
 		this.contractSystem =
-			contractSystem ||
+			conf.contractSystem ||
 			ContractSystem(director, ['UserRegistry'], {
 				persist: this.persist,
 				networkList: this.config.networkList,
 			});
 
-		if (notificationTweets) {
+		if (conf.notificationTweets) {
 			this.a_tweeter = director.start_actor('tweeter', Tweeter(this.twitterDomain));
 		}
 

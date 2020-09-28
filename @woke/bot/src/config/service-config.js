@@ -2,30 +2,37 @@ const {
 	utils: { resolveEnvFilePath, parse_bool },
 	configure,
 } = require('@woke/lib');
-const envPath = resolveEnvFilePath();
+
+const j0 = require('@woke/jack0son');
+const diff = j0.propsDiffGen(process.env);
+// const envPath = resolveEnvFilePath();
+// require('dotenv').config({ path: envPath });
+//console.log(`Using envPath ${envPath}`);
+
+require('dotenv').config();
+console.log('new env props:', diff());
 const secrets = require('@woke/secrets');
 
-console.log(`Using envPath ${envPath}`);
-require('dotenv').config({ path: envPath });
+const envVars = [
+	['PERSIST', 'persist', parse_bool],
+	['FAULT_MONITORING', 'faultMonitoring', parse_bool],
+	['TWITTER_MENTIONS', 'muffled'],
+	['VERBOSE', 'verbose', parse_bool],
+	['TWITTER_ENV', 'twitterEnv'],
+	['TWITTER_APP', 'twitterApp'],
+	['TWITTER_CLIENT', 'twitterClient'],
+	['ETH_ENV', 'ethEnv'],
+];
 
-const commandLineArgs = require('../lib/cli');
+// Any env vars we can get at the CLI
+const commandLineArgs = require('../lib/cli')(envVars.map((v) => v.slice(1)));
+console.log('new env props:', diff());
 
-const {
-	PERSIST,
-	FAULT_MONITORING,
-	TWITTER_ENV,
-	TWITTER_MENTIONS,
-	VERBOSE,
-	TWITTER_APP,
-} = process.env;
-const environmentOptions = {
-	persist: parse_bool(PERSIST),
-	faultMonitoring: parse_bool(FAULT_MONITORING),
-	twitterEnv: TWITTER_ENV,
-	verbose: parse_bool(VERBOSE),
-	muffled: parse_bool(TWITTER_MENTIONS),
-	twitterApp: TWITTER_APP,
-};
+const envOptions = envVars.reduce((opts, [varName, key, parser]) => {
+	const opt = process.env[varName];
+	opts[key] = parser ? parser(opt) : opt;
+	return opts;
+}, Object.create(null));
 
 const {
 	config: { networkList },
@@ -33,13 +40,15 @@ const {
 
 const conf = {
 	networkList,
-	...configure(commandLineArgs, environmentOptions),
+	...configure(commandLineArgs, envOptions),
 };
 secrets('twitter', conf.twitterApp || 'oracle-bot');
+secrets('ethereum', conf.ethEnv || 'ganache');
+secrets('infura');
+console.log(secrets.get());
 
 // Config meets the following requirements
 // 1. Able to toggle conf in docker compose file
 // 2. Able to switch between different key sets
-// 3. Able to
-
+// 3. Prioritise CLI options over environment options
 module.exports = conf;

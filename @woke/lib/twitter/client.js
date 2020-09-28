@@ -1,12 +1,15 @@
 const Twit = require('twit');
 const request = require('request-promise-native');
 const debug = require('../debug')('twitter:client');
+const conf = {
+	consumerKey: process.env.TWITTER_CONSUMER_KEY,
+	consumerSecret: process.env.TWITTER_CONSUMER_SECRET,
+	accessKey: process.env.TWITTER_ACCESS_KEY,
+	accessSecret: process.env.TWITTER_ACCESS_SECRET,
+};
+console.log('twitter', conf);
 
 require('dotenv').config();
-const consumerKey = process.env.TWITTER_CONSUMER_KEY;
-const consumerSecret = process.env.TWITTER_CONSUMER_SECRET;
-const accessKey = process.env.TWITTER_ACCESS_KEY;
-const accessSecret = process.env.TWITTER_ACCESS_SECRET;
 
 // @NB Swapping twitter client lib to twit
 // Reponse obeject is no longer just the response data
@@ -20,6 +23,13 @@ const handlers = {
 var client;
 
 const init = async () => {
+	const conf = {
+		consumerKey: process.env.TWITTER_CONSUMER_KEY,
+		consumerSecret: process.env.TWITTER_CONSUMER_SECRET,
+		accessKey: process.env.TWITTER_ACCESS_KEY,
+		accessSecret: process.env.TWITTER_ACCESS_SECRET,
+	};
+	console.log('twitter', conf);
 	let bearerToken = process.env.TWITTER_BEARER_TOKEN;
 
 	if (!bearerToken && !accessKey && !accessSecret) {
@@ -34,18 +44,18 @@ const init = async () => {
 		debug.d(bearerToken);
 	}
 
-	let conf = {
-		consumer_key: consumerKey,
-		consumer_secret: consumerSecret,
+	let creds = {
+		consumer_key: conf.consumerKey,
+		consumer_secret: conf.consumerSecret,
 	};
 
-	if (!!accessKey && !!accessSecret) {
-		conf = { ...conf, access_token: accessKey, access_token_secret: accessSecret };
+	if (!!conf.accessKey && !!conf.accessSecret) {
+		creds = { ...creds, access_token: accessKey, access_token_secret: accessSecret };
 	} else {
-		conf = { ...conf, app_only_auth: true };
+		creds = { ...creds, app_only_auth: true };
 	}
 
-	client = new Twit(conf);
+	client = new Twit(creds);
 };
 
 const getUserTimeline = (userId, count) => {

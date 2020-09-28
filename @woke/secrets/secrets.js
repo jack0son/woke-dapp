@@ -5,6 +5,7 @@ const dotenv = require('dotenv');
 const defaultOptions = {
 	secretsPath: 'secrets',
 	prefix: 'secrets',
+	postfix: 'secrets',
 };
 
 const configure = (opts, defaults) => ({ ...defaults, ...opts });
