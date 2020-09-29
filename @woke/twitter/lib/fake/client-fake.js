@@ -8,6 +8,8 @@ const { Status } = require('./data/tweet');
 const dummyUsers = require('./data/users');
 //tweets = tweets.slice(1,2);
 
+const log = (...args) => console.log('TWITTER_FAKE', ...args);
+
 const tipTweets = tweets.filter((t) => t.full_text.includes('+'));
 // @param return a subset of the sample tweet data
 const REQ_PER_EPOCH = 3;
@@ -21,7 +23,7 @@ const FakeClient = (sampleSize = 2, opts) => {
 
 	let tweetList = data;
 
-	if (sampleSize) {
+	if (sampleSize !== undefined) {
 		const start = 0;
 		const end = start + sampleSize;
 		tweetList = data.slice(start, end > data.length ? data.length : end);
@@ -31,7 +33,6 @@ const FakeClient = (sampleSize = 2, opts) => {
 	const queryEngine = {
 		match: async (query = '') => {
 			var regex = new RegExp(query.replace(/ /g, '|'));
-			console.log(regex);
 			// No AND only OR lol
 			return tweetList.filter((t) => regex.test(t.full_text));
 		},
@@ -94,7 +95,7 @@ const FakeClient = (sampleSize = 2, opts) => {
 
 		async updateStatus(text, params) {
 			return this.request(dummyStatus).then((r) => {
-				console.log(`TWITTER_MOCK:updateStatus: ${text}`);
+				log(`updateStatus: ${text}`);
 				return { data: r };
 			});
 		}

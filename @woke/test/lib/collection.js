@@ -1,13 +1,12 @@
 const configure = require('@woke/lib/configure');
-const j0 = require('./jack0son');
+const j0 = require('@woke/jack0son');
 
 let i = 0;
 class UserCollection {
 	constructor(userList, opts) {
-		if (!userList || userList.length === undefined)
-			throw new Error('Must provide user list');
+		if (!j0.notEmpty(userList)) throw new Error('Must provide user list');
 		const conf = configure(opts, { keyProp: 'id' });
-		this.name = conf.name || `user_collecky-${++i.toString().padStart(3, 0)}`;
+		this.label = conf.label || `user_collecky-${(++i).toString().padStart(3, 0)}`;
 		this.keyProp = conf.keyProp;
 
 		this.userList = userList;
@@ -27,7 +26,7 @@ class UserCollection {
 	}
 
 	log() {
-		return console.log(`${this.name}:`, ...arguments);
+		return console.log(`${this.label}:`, ...arguments);
 	}
 
 	get(key) {
@@ -58,4 +57,4 @@ class UserCollection {
 }
 
 //module.exports = UserCollection;
-module.exports = (list, name) => new UserCollection(list, { name });
+module.exports = (list, label) => new UserCollection(list, { label });

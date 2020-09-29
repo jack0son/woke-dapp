@@ -1,5 +1,5 @@
 const { Logger, twitter } = require('@woke/lib');
-const bindApi = require('./api');
+const bindApi = require('@woke/api');
 const { twitterUsers, fetchUserHandles } = require('./twitter');
 const utils = require('./utils');
 const artifacts = require('@woke/contracts')[

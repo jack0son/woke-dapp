@@ -1,10 +1,14 @@
-const { nonEmptyString, getEvents } = require('../utils');
+const {
+	web3Tools: {
+		utils: { getEvents },
+	},
+} = require('@woke/lib');
 
 module.exports = (userRegistry) => {
 	const getUsers = async (userId) => {
 		let opts = { fromBlock: 0 };
 		let events = await userRegistry.getPastEvents('Claimed', opts);
-		if (nonEmptyString(userId)) {
+		if (userId && userId.length && userId.length > 0) {
 			events = events.filter((e) => e.returnValues.userId == userId);
 		}
 
@@ -13,9 +17,7 @@ module.exports = (userRegistry) => {
 			for (e of events) {
 				users.push({
 					...e.returnValues,
-					balance: await userRegistry.methods
-						.balanceOf(e.returnValues.userId)
-						.call(),
+					balance: await userRegistry.methods.balanceOf(e.returnValues.userId).call(),
 				});
 			}
 			return users;
@@ -32,10 +34,7 @@ module.exports = (userRegistry) => {
 		return userRegistry.methods.balanceOf(userRegistry._address).call(opts);
 	};
 
-	const getClaimedEvents = (userRegistry) => async (
-		_claimerAddress,
-		_claimerId
-	) => {
+	const getClaimedEvents = (userRegistry) => async (_claimerAddress, _claimerId) => {
 		/*
 	let opts = {
 		fromBlock: 0,
@@ -66,8 +65,7 @@ module.exports = (userRegistry) => {
 
 		let events = await userRegistry.getPastEvents('Tx', opts);
 
-		if (_fromId)
-			events = events.filter((e) => e.returnValues.fromId == _fromId);
+		if (_fromId) events = events.filter((e) => e.returnValues.fromId == _fromId);
 
 		if (_toId) events = events.filter((e) => e.returnValues.toId == _toId);
 

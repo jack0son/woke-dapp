@@ -1,4 +1,8 @@
-const { nonEmptyString, getEvents } = require('../utils');
+const {
+	web3Tools: {
+		utils: { getEvents },
+	},
+} = require('@woke/lib');
 
 module.exports = (oracle) => {
 	const getTweetText = async (_userId, _opts) => {

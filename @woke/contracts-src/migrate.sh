@@ -38,7 +38,7 @@ cp $BUILD_DIR/{TwitterOracleMock,WokeToken,UserRegistry}.json "../$APP_DEST"
 echo "Adding contracts to lib package $PKG_DEST ..."
 cp $BUILD_DIR/{TwitterOracleMock,WokeToken,UserRegistry}.json "../$PKG_DEST"
 
-CLONE=true
+CLONE=false
 PACKAGES_PATH="$HOME/Repositories/jgitgud/woke-dapp/@woke"
 if $CLONE; then
 	echo "Cloning artifacts into $PACKAGES_PATH ..."

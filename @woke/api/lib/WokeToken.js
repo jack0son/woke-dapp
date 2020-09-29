@@ -1,4 +1,8 @@
-const { getEvents } = require('../utils');
+const {
+	web3Tools: {
+		utils: { getEvents },
+	},
+} = require('@woke/lib');
 
 module.exports = (wokeToken) => {
 	const getTokenSupply = (_opts) => {

@@ -196,6 +196,25 @@ const valueString = (web3Utils) => {
 const abridgeAddress = (a, l = 8) =>
 	`${a.slice(0, 2 + l)}...${a.slice(a.length - l, a.length)}`;
 
+const getEvents = (contractInstance) => async (eventName, filter) => {
+	let opts = {
+		fromBlock: 0,
+	};
+	const events = await contractInstance.getPastEvents(eventName, opts);
+	return filter
+		? events.filter((e) => {
+				let match = true;
+				for (prop of Object.keys(filter)) {
+					if (e.returnValues[prop] !== filter[prop]) {
+						match = false;
+						break;
+					}
+				}
+				return match;
+		  })
+		: events;
+};
+
 module.exports = {
 	waitForEvent,
 	waitForEventWeb3,
@@ -205,4 +224,5 @@ module.exports = {
 	initContract,
 	valueString,
 	abridgeAddress,
+	getEvents,
 };

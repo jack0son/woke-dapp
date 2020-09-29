@@ -5,8 +5,8 @@
   "private": true,
   "main": "index.js",
   "scripts": {
-    "test": "./node_modules/.bin/mocha ./test/test*.js",
-    "test:debug": "DEBUG=oracle:* ./node_modules/.bin/mocha",
+    "test": "./node_modules/.bin/mocha",
+    "test:debug": "DEBUG=*,-mocha:* ./node_modules/.bin/mocha",
     "tipper": "NODE_ENV=production node src/services/tipper.js",
     "tipper:dev": "NODE_ENV=development node src/services/tipper.js --persist=false --twitterApp=oracle-bot --twitterEnv=dev --verbose=true",
     "tipper:fake": "NODE_ENV=development node src/services/tipper.js --persist=false --twitterEnv=fake --verbose=true",
@@ -35,6 +35,7 @@
     "@woke/twitter": "0.1.0",
     "@woke/actors": "0.1.0",
     "@woke/secrets": "0.1.0",
+    "@woke/test": "0.1.0",
     "dotenv": "^8.2.0"
   },
   "devDependencies": {

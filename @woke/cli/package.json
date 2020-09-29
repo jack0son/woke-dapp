@@ -14,6 +14,7 @@
   "license": "ISC",
   "dependencies": {
     "@woke/contracts": "0.4.0",
+    "@woke/api": "0.1.0",
     "@woke/lib": "0.4.0"
   },
   "devDependencies": {

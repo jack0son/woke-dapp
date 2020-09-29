@@ -25,7 +25,7 @@ const chooseTwitterClient = (twitterEnv) => {
 };
 
 const defaults = {
-	faultMonitoring: true,
+	faultMonitoring: false,
 	persist: false,
 	pollingInterval: 5 * 1000,
 	notificationTweets: true,
@@ -103,7 +103,7 @@ class TipSystem {
 	}
 
 	setTweeter(a_tweeter) {
-		return block(self.a_tipSupervisor, { type: 'setTweeter', a_tweeter });
+		return block(this.a_tipSupervisor, { type: 'setTweeter', a_tweeter });
 	}
 
 	async start() {
