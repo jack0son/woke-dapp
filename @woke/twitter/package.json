@@ -1,0 +1,20 @@
+{
+  "name": "@woke/twitter",
+  "version": "0.1.0",
+  "description": "Node twitter wrapper",
+  "private": true,
+  "main": "lib/index.js",
+  "scripts": {
+    "test": "./node_modules/.bin/mocha ./test/test*.js"
+  },
+  "author": "jack0son",
+  "license": "ISC",
+  "dependencies": {
+    "@woke/lib": "0.4.0",
+    "twit": "^2.2.11",
+    "dotenv": "^8.2.0",
+    "request-promise-native": "^1.0.8"
+  },
+  "devDependencies": {
+  }
+}

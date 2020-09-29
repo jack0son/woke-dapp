@@ -1,14 +1,13 @@
 const Twit = require('twit');
 const request = require('request-promise-native');
 const debug = require('@woke/lib').Logger('twitter:client');
-const conf = {
+
+const loadEnvConf = () => ({
 	consumerKey: process.env.TWITTER_CONSUMER_KEY,
 	consumerSecret: process.env.TWITTER_CONSUMER_SECRET,
 	accessKey: process.env.TWITTER_ACCESS_KEY,
 	accessSecret: process.env.TWITTER_ACCESS_SECRET,
-};
-
-require('dotenv').config();
+});
 
 // @NB Swapping twitter client lib to twit
 // Reponse obeject is no longer just the response data
@@ -22,12 +21,7 @@ const handlers = {
 var client;
 
 const init = async () => {
-	const conf = {
-		consumerKey: process.env.TWITTER_CONSUMER_KEY,
-		consumerSecret: process.env.TWITTER_CONSUMER_SECRET,
-		accessKey: process.env.TWITTER_ACCESS_KEY,
-		accessSecret: process.env.TWITTER_ACCESS_SECRET,
-	};
+	const conf = loadEnvConf();
 	let bearerToken = process.env.TWITTER_BEARER_TOKEN;
 
 	if (!bearerToken && !accessKey && !accessSecret) {

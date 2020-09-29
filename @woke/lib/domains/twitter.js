@@ -35,8 +35,8 @@ const filterTipTweets = (tweets) => {
 // Interactions with the twitter API bundled into useful functions
 class TwitterDomain {
 	constructor(client, credentials) {
-		//this.client = client && !credentials ? client : twitClient;
-		this.client = client;
+		this.client = client && !credentials ? client : require('@woke/twitter').client;
+		//this.client = client;
 		if (!this.client)
 			console.warn('WARNING: twitter domain does not have twitter client');
 		if (!!credentials) this.client.init(credentials);
