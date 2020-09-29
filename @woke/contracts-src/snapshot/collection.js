@@ -10,16 +10,20 @@ class UserCollection {
 		this.name = conf.name || `user_collecky-${++i.toString().padStart(3, 0)}`;
 		this.keyProp = conf.keyProp;
 
-		this.list = userList;
+		this.userList = userList;
 		this.build();
 	}
 
+	list() {
+		return [...this.userList];
+	}
+
 	build() {
-		this.map = j0.buildMap(this.list, this.keyProp);
+		this.map = j0.buildMap(this.userList, this.keyProp);
 	}
 
 	buildAddressMap() {
-		this.addressMap = j0.buildMap(this.list, 'address');
+		this.addressMap = j0.buildMap(this.userList, 'address');
 	}
 
 	log() {
@@ -35,19 +39,21 @@ class UserCollection {
 	}
 
 	assignAddresses(addressList) {
-		const diff = this.list.length - addressList.length;
+		const diff = this.userList.length - addressList.length;
 		if (diff > 0) this.log(`${diff} users will not get addresses`);
 		let address;
-		for (i in this.list) {
+		for (i in this.userList) {
 			address = addressList[i];
 			if (!address) break;
-			this.list[i].address = address;
+			this.userList[i].address = address;
 		}
 		this.buildAddressMap();
 	}
 
 	validate() {
-		return this.list.filter((user) => user != this.map[user[this.keyProp]]).length == 0;
+		return (
+			this.userList.filter((user) => user != this.map[user[this.keyProp]]).length == 0
+		);
 	}
 }
 

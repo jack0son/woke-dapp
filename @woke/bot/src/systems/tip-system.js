@@ -1,5 +1,5 @@
 const { ActorSystem, PersistenceEngine, actors } = require('@woke/wact');
-const { bootstrap, dispatch, spawnStateless } = ActorSystem;
+const { bootstrap, dispatch, spawnStateless, block } = ActorSystem;
 const {
 	useMonitor,
 	tweeter: { Tweeter },
@@ -50,7 +50,7 @@ class TipSystem {
 			networkList: conf.networkList,
 			faultMonitoring: conf.faultMonitoring,
 		};
-		this.twitterClient = TwitterClient(conf.twitterClient).client;
+		this.twitterClient = conf.twitterClient || TwitterClient(conf.twitterEnv).client;
 		this.twitterDomain = new TwitterDomain(this.twitterClient);
 
 		if (this.persist) {
@@ -82,7 +82,7 @@ class TipSystem {
 			this.a_tweeter = director.start_actor('tweeter', Tweeter(this.twitterDomain));
 		}
 
-		this.a_tipManager = director[this.persist ? 'start_persistent' : 'start_actor'](
+		this.a_tipSupervisor = director[this.persist ? 'start_persistent' : 'start_actor'](
 			'tip-supervisor', // name
 			TipSupervisor(this.contractSystem.UserRegistry, this.a_tweeter)
 		);
@@ -95,7 +95,15 @@ class TipSystem {
 		this.a_polling = director.start_actor('polling_service', actors.Polling);
 
 		// Forward twitter monitor messages to tipper
-		this.a_tweetForwarder = spawn_tweet_forwarder(this.a_polling, this.a_tipManager);
+		this.a_tweetForwarder = spawn_tweet_forwarder(this.a_polling, this.a_tipSupervisor);
+	}
+
+	getDirector() {
+		return this.director;
+	}
+
+	setTweeter(a_tweeter) {
+		return block(self.a_tipSupervisor, { type: 'setTweeter', a_tweeter });
 	}
 
 	async start() {
@@ -111,7 +119,7 @@ class TipSystem {
 			}
 		}
 
-		dispatch(self.a_tipManager, { type: 'restart' });
+		dispatch(self.a_tipSupervisor, { type: 'restart' });
 
 		// Poll twitter API for new tips
 		dispatch(
@@ -131,12 +139,12 @@ class TipSystem {
 }
 
 // Forward tips to the tipper
-function spawn_tweet_forwarder(parent, a_tipManager) {
+function spawn_tweet_forwarder(parent, a_tipSupervisor) {
 	return spawnStateless(parent, (msg, ctx) => {
 		switch (msg.type) {
 			case 'new_tips': {
 				const { tips } = msg;
-				tips.forEach((tip) => dispatch(a_tipManager, { type: 'submit', task: tip }));
+				tips.forEach((tip) => dispatch(a_tipSupervisor, { type: 'submit', task: tip }));
 				break;
 			}
 

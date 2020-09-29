@@ -1,5 +1,6 @@
 const { configure } = require('@woke/lib');
 const tweets = require('./data/tweets-tips.json');
+const { Status } = require('./data/tweet');
 
 // @TODO tests are meaninless without expanding this dataset
 // This should contain a sample of tweets that match the different search
@@ -11,7 +12,7 @@ const tipTweets = tweets.filter((t) => t.full_text.includes('+'));
 // @param return a subset of the sample tweet data
 const REQ_PER_EPOCH = 3;
 const EPOCH = 3000;
-const FakeClient = (sampleSize, opts) => {
+const FakeClient = (sampleSize = 2, opts) => {
 	const { data, ...conf } = configure(opts, {
 		rateLimit: REQ_PER_EPOCH,
 		epoch: EPOCH,
@@ -32,7 +33,7 @@ const FakeClient = (sampleSize, opts) => {
 			var regex = new RegExp(query.replace(/ /g, '|'));
 			console.log(regex);
 			// No AND only OR lol
-			return data.filter((t) => regex.test(t.full_text));
+			return tweetList.filter((t) => regex.test(t.full_text));
 		},
 	};
 
@@ -65,6 +66,21 @@ const FakeClient = (sampleSize, opts) => {
 
 		isConnected() {
 			return true;
+		}
+
+		async updateStatus(text, _params) {
+			const { user, mention } = _params;
+			if (!text) {
+				throw new Error('Must provide status text');
+			}
+
+			if (!user) throw new Error('Must provide user');
+			if (mention && !text.includes('@'))
+				throw new Error('Status with mention must contain @ symbol');
+
+			const tweet = Status(user, text, mention);
+			tweetList.push(tweet);
+			return tweet;
 		}
 
 		async searchTweets(_params) {

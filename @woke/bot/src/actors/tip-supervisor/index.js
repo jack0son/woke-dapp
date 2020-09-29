@@ -15,6 +15,19 @@ function spawn_tip_task(_parent, a_wokenContract, tip) {
 	});
 }
 
+function action_setTweeter(state, { a_tweeter }, ctx) {
+	const reply = (r) => dispatch(ctx.sender, r, ctx.self);
+
+	if (!a_tweeter) {
+		dispatch();
+		ctx.debug.warn(`Ignoring attempt to set new tweeter (${a_tweeter})`);
+		reply(false);
+		return;
+	}
+	reply(true);
+	return { ...state, a_tweeter };
+}
+
 function TipSupervisor(a_wokenContract, a_tweeter, opts) {
 	const earliestId = (opts && opts.earliestId) || 0;
 	const start_task = ({ state, msg, ctx }) => (task) => {
@@ -81,7 +94,7 @@ function TipSupervisor(a_wokenContract, a_tweeter, opts) {
 
 	return adapt(
 		{
-			actions: {},
+			actions: { action_setTweeter },
 			properties: {
 				persistenceKey: 'tip-supervisor', // only ever 1, static key OK
 				onCrash: useNotifyOnCrash(),

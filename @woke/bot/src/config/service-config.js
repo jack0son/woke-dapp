@@ -16,7 +16,7 @@ const envVars = [
 	['VERBOSE', 'verbose', parse_bool],
 	['TWITTER_ENV', 'twitterEnv'],
 	['TWITTER_APP', 'twitterApp'],
-	['TWITTER_CLIENT', 'twitterClient'],
+	['TWITTER_ENV', 'twitterEnv'], // fake client or real client
 	['ETH_ENV', 'ethEnv'],
 ];
 

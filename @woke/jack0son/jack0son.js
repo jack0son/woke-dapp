@@ -60,12 +60,6 @@ const buildListIndex = (list, keyProp = 'id') =>
 		return idx;
 	}, Object.create(null));
 
-const generateIndex = (list, fn) =>
-	list.reduce((acc, item) => {
-		fn(acc, item);
-		return acc;
-	}, Object.create(null));
-
 // Take each entry in a list and map its value to the result of a function
 // applied to its value
 const memoIndex = (list, fn) =>
@@ -93,6 +87,12 @@ const buildReducedMap = (map, list, reducer) => {
 const ReducedMap = (list, reducer) => buildReducedMap(new Map(), list, reducer);
 
 const buildMap = (list, keyProp) => rebuildMap(new Map(), list, keyProp);
+
+const generateIndex = (list, fn) =>
+	list.reduce((acc, item) => {
+		fn(acc, item);
+		return acc;
+	}, Object.create(null));
 
 /**
  * Create an index from an object using a generator function to mutate the index
