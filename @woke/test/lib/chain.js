@@ -41,6 +41,7 @@ class ChainDomain {
 		});
 		this.accounts = await this.instance.web3.eth.getAccounts();
 		this.freeAccounts = [...this.accounts];
+		return this;
 	}
 
 	allocateAccounts(numToAlloacte) {

@@ -34,12 +34,11 @@
     "truffle-flattener": "^1.4.2"
   },
   "scripts": {
-    "migrate:development": "./node_modules/.bin/truffle migrate --network client --reset",
-    "migrate:ropsten": "./node_modules/.bin/truffle migrate --network ropsten --reset",
-    "migrate:rinkeby": "./node_modules/.bin/truffle migrate --network rinkeby --reset",
-    "migrate:goerli": "./node_modules/.bin/truffle migrate --network goerli --reset",
-    "migrate:production": "ETH_ENV=production ./node_modules/.bin/truffle migrate --network geth-goerli --reset",
-    "migrate": "ETH_ENV=development ./node_modules/.bin/truffle migrate --network rinkeby",
+    "migrate:development": "./node_modules/.bin/truffle migrate --network client",
+    "migrate:ropsten": "./node_modules/.bin/truffle migrate --network ropsten",
+    "migrate:rinkeby": "./node_modules/.bin/truffle migrate --network rinkeby",
+    "migrate:goerli": "./node_modules/.bin/truffle migrate --network goerli",
+    "migrate:production": "ETH_ENV=production ./node_modules/.bin/truffle migrate --network geth-goerli",
     "bridge": "npx ethereum-bridge -a 9 -H 127.0.0.1 -p 9545 --dev",
     "ganache:dev": "ganache-cli -i 12 -a 100 -p 8545 --gasLimit 8000000 --gasPrice 20000000000 -m 'nerve marine frozen use brave brief nasty then acid remain stereo riot'",
     "ganache:test": "ganache-cli -i 10 -a 300 -p 9545 --gasLimit 8000000 --gasPrice 20000000000 -m 'nerve marine frozen use brave brief nasty then acid remain stereo riot'",

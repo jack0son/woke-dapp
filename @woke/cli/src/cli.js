@@ -1,4 +1,6 @@
-const { Logger, twitter } = require('@woke/lib');
+require('dotenv').config();
+const { Logger } = require('@woke/lib');
+const twitter = require('@woke/twitter').client;
 const bindApi = require('@woke/api');
 const { twitterUsers, fetchUserHandles } = require('./twitter');
 const utils = require('./utils');

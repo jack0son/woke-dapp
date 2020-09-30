@@ -102,7 +102,6 @@ function logWhyAlive() {
 }
 
 module.exports = {
-	getEvents,
 	checkConnection,
 	initWeb3,
 	initContract,

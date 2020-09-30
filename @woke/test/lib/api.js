@@ -7,6 +7,10 @@ function API(accounts, web3Instance, contractInstances, contractApi) {
 	function deployContracts() {}
 
 	async function claimUser(user) {
+		//console.log(Object.keys(contracts.UserRegistry.methods));
+		////console.dir(contracts.UserRegistry.methods.claimUser);
+		//let tx = await contracts.UserRegistry.methods.claimUser(user.id);
+		////console.log(tx);
 		let r = await contracts.UserRegistry.methods.claimUser(user.id).send({
 			from: user.address,
 		});

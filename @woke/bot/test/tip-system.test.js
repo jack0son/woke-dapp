@@ -58,11 +58,6 @@ const MockTweeter = (director) => (callbacks, expectedTypes) =>
 		{}
 	);
 
-const wasDispatched = (deferred, expectedTip) => (tip) => {
-	//expect(tip).to.deep.equal(expectedTip);
-	deffered.resolve();
-};
-
 const ExpectMutation = async (apiCall, [args], initial, final) => {
 	const prev = await apiCall(...args);
 	initial(prev);
@@ -99,9 +94,14 @@ const callbacks = {
 const CallbackMock = (deferredCallback) => {
 	const deferred = new Deferral();
 	return {
-		callback: callback(deferred),
+		callback: deferredCallback(deferred),
 		deferred,
 	};
+};
+
+const wasDispatched = (deferred) => (expectedTip) => {
+	//expect(tip).to.deep.equal(expectedTip);
+	deffered.resolve();
 };
 
 const userIndex = tweetsToUserIndex(tipTweets);
@@ -122,8 +122,8 @@ context('tip-system', function () {
 		// Initialise test bed
 		chainDomain = ChainDomain();
 		await chainDomain.init();
-		users.assignAddresses(await chainDomain.allocateAccounts(3));
 		wokeDomain = await WokeDomain(chainDomain);
+		users.assignAddresses(await chainDomain.allocateAccounts(4));
 	});
 
 	beforeEach(async function () {
@@ -148,17 +148,26 @@ context('tip-system', function () {
 	describe('claimedUser', function () {
 		it('tip an unclaimed user', async function () {
 			// Setup notifier callbacks
+			const tipSeen = CallbackMock(wasDispatched);
+			const tipConfirmed = CallbackMock(wasDispatched);
 
 			const callbacks = {
-				'tip-seen': wasDispatched(),
-				'tip-confirmed': () => {},
-				'tip-invalid': () => {},
-				'tip-failed': () => {},
+				'tip-seen': tipSeen.callback,
+				'tip-confirmed': tipConfirmed.callback,
+				'tip-invalid': () => {
+					throw new Error('Tip should not be invalid');
+				},
+				'tip-failed': () => {
+					throw new Error('Tip should not fail');
+				},
 			};
 
 			const tipTweet = tipTweets[0];
 			const [fromUser, toUser] = users.list();
+			//console.log(wokeDomain);
+			fromUser.id = '123';
 			console.log(wokeDomain);
+			console.log('getUsers', await wokeDomain.contractApi.UserRegistry.getUsers());
 			await wokeDomain.api.claimUser(fromUser);
 			const amount = 2;
 
@@ -174,10 +183,10 @@ context('tip-system', function () {
 			await twitterClient.updateStatus(tipText, { user: fromUser, mention: toUser });
 			//const effectCallbacks =
 
-			await Promise.all(effectDefferals);
+			await Promise.all([tipSeen, tipConfirmed].map((c) => c.deferred.promise));
 			await Promise.all(mutations.map((m) => m.expect()));
 		});
-
+		/*
 		it('tip a claimed user', async function () {
 			const tipTweet = tipTweets[0];
 			const [fromUser, toUser] = users.list();
@@ -190,5 +199,6 @@ context('tip-system', function () {
 		it('reject unclaimed user tip', function () {});
 
 		it('reject broke user tip', function () {});
+		*/
 	});
 });

@@ -24,10 +24,10 @@ const init = async () => {
 	const conf = loadEnvConf();
 	let bearerToken = process.env.TWITTER_BEARER_TOKEN;
 
-	if (!bearerToken && !accessKey && !accessSecret) {
+	if (!bearerToken && !conf.accessKey && !conf.accessSecret) {
 		//if(!bearerToken && ) {
 		try {
-			bearerToken = await getBearerToken(consumerKey, consumerSecret);
+			bearerToken = await getBearerToken(conf.consumerKey, conf.consumerSecret);
 			//console.log('Bearer token:', bearerToken);
 		} catch (e) {
 			console.log('twitter: Failed to retrieve bearer token');

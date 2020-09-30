@@ -15,6 +15,7 @@ if [ "$2" == "reset" ]; then
 	ARGS="--reset"
 fi
 
+
 WORK_DIR=$(pwd)
 BASE_DIR=${WORK_DIR##*/}
 if [[ "$BASE_DIR" != "contracts-src" ]]; then
@@ -23,8 +24,7 @@ if [[ "$BASE_DIR" != "contracts-src" ]]; then
 fi
 
 # @TODO exit if fail
-echo $ARGS
-npm run migrate:$CONTRACT_ENV $ARGS
+npm run migrate:$CONTRACT_ENV -- $ARGS
 
 BUILD_DIR="./build/contracts/artifacts"
 APP_DEST="app/src/contracts/$CONTRACT_ENV"
@@ -39,7 +39,7 @@ echo "Adding contracts to lib package $PKG_DEST ..."
 cp $BUILD_DIR/{TwitterOracleMock,WokeToken,UserRegistry}.json "../$PKG_DEST"
 
 CLONE=false
-PACKAGES_PATH="$HOME/Repositories/jgitgud/woke-dapp/@woke"
+PACKAGES_PATH="$HOME/Repositories/jack0son/tmp/woke-dapp/@woke"
 if $CLONE; then
 	echo "Cloning artifacts into $PACKAGES_PATH ..."
 	cp $BUILD_DIR/{TwitterOracleMock,WokeToken,UserRegistry}.json "$PACKAGES_PATH/$PKG_DEST"
