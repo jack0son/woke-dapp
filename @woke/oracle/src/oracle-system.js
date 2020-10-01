@@ -1,4 +1,4 @@
-const { Logger, twitter, TwitterStub } = require('@woke/lib');
+const { Logger, twitter, TwitterDomain } = require('@woke/lib');
 const { ActorSystem, PersistenceEngine } = require('@woke/wact');
 const { useMonitor } = require('@woke/actors');
 const { ContractSystem } = require('@woke/web3-nact');
@@ -39,7 +39,7 @@ class OracleSystem {
 		};
 
 		this.twitterClient = twitterClient || TwitterClient();
-		this.twitterStub = new TwitterStub(this.twitterClient);
+		this.twitterStub = new TwitterDomain(this.twitterClient);
 
 		// Persistence
 		if (this.persist) {
@@ -109,7 +109,7 @@ if (debug.control.enabled && require.main === module) {
 	const [persist, ...args] = argv;
 
 	(async () => {
-		const twitterStub = new TwitterStub(twitterMock.createMockClient(5));
+		const twitterStub = new TwitterDomain(twitterMock.createMockClient(5));
 		const oracleSystem = new OracleSystem(undefined, { persist: false, twitterStub });
 		oracleSystem.start();
 	})();

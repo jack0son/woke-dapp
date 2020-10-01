@@ -1,7 +1,4 @@
-const {
-	actors: { SinkAdapter },
-	ActorSystem,
-} = require('@woke/wact');
+const { ActorSystem, adapters } = require('@woke/wact');
 const { useNotifyOnCrash } = require('@woke/actors');
 const Query = require('./query');
 const { dispatch, start_actor } = ActorSystem;
@@ -20,7 +17,7 @@ function spawn_job(_parent, job, a_contract_TwitterOracle, a_twitterAgent) {
 	});
 }
 
-function settle_job({ msg, ctx, state }) {
+function settle_job({ state, msg, ctx }) {
 	return (job) => {
 		const a_job = spawn_job(
 			ctx.self,
@@ -35,7 +32,7 @@ function settle_job({ msg, ctx, state }) {
 	};
 }
 
-async function action_updateQuery(msg, ctx, state) {
+async function action_updateQuery(state, msg, ctx) {
 	const { jobRepo } = state;
 	const { job, error } = msg;
 
@@ -91,14 +88,14 @@ const isUnresolvedQuery = (query) =>
 	query.status === 'settled' || query.status === 'pending';
 
 // Find any unresolved queries and resume processing them
-function action_resumeQueries(msg, ctx, state) {
+function action_resumeQueries(state, msg, ctx) {
 	const { jobRepo } = state;
 	const unresolvedQueries = Object.keys(jobRepo).filter(isUnresolvedQuery);
 	ctx.debug.d(msg, `Settling ${unresolvedQueries.length} unresolved queries...`);
 	unresolvedQueries.forEach(ctx.receivers.settle_job);
 }
 
-function action_handleIncomingQuery(msg, ctx, state) {
+function action_handleIncomingQuery(state, msg, ctx) {
 	const { query } = msg;
 	const { jobRepo } = state;
 
@@ -150,7 +147,7 @@ function action_handleIncomingQuery(msg, ctx, state) {
 }
 
 // ----- Sink handlers
-function handleContractResponse(msg, ctx, state) {
+function handleContractResponse(state, msg, ctx) {
 	switch (msg.action) {
 		case 'subscribe_log': {
 			const { a_sub } = msg;
@@ -167,7 +164,7 @@ function handleContractResponse(msg, ctx, state) {
 	}
 }
 
-function action_handleQuerySubscription(msg, ctx, state) {
+function action_handleQuerySubscription(state, msg, ctx) {
 	const { eventName } = msg;
 	switch (eventName) {
 		case 'FindTweetLodged': {
@@ -203,15 +200,12 @@ module.exports = {
 			a_contract_TwitterOracle: null,
 		},
 
-		receivers: (bundle) => ({
-			settle_job: settle_job(bundle),
-			//sink: sink(bundle),
-		}),
+		receivers: [settle_job],
 	},
 
 	actions: {
-		...SinkAdapter(),
-		init: (msg, ctx, state) => {
+		...adapters.SinkReduce(),
+		init: (state, msg, ctx) => {
 			const { a_contract_TwitterOracle, subscriptionWatchdogInterval } = state;
 
 			// Rely on subscription to submit logs from block 0
@@ -228,14 +222,14 @@ module.exports = {
 				ctx.self
 			);
 
-			return action_resumeQueries(msg, ctx, state);
+			return action_resumeQueries(state, msg, ctx);
 		},
 
 		query: action_handleIncomingQuery,
 		a_sub: action_handleQuerySubscription,
 		update_job: action_updateQuery,
 
-		stop: (msg, ctx, state) => {
+		stop: (state, msg, ctx) => {
 			// @TODO call stop
 			// Stop subscription
 		},

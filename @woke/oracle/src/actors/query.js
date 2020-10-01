@@ -1,9 +1,4 @@
-const {
-	ActorSystem,
-	receivers,
-	reducers,
-	actors: { SinkAdapter },
-} = require('@woke/wact');
+const { ActorSystem, receivers, reducers, adapters } = require('@woke/wact');
 const { dispatch } = ActorSystem;
 const { subsumeEffects, Pattern } = reducers;
 const { tweetToProofString } = require('../lib/proof-protcol');
@@ -187,7 +182,7 @@ module.exports = {
 		}),
 	},
 	actions: {
-		...SinkAdapter(reducer),
+		...adapters.SinkReduce(reducer),
 		start: reducer,
 	},
 };

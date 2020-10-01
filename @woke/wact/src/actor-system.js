@@ -36,6 +36,14 @@ const DEFAULT_ACTION_KEY = 'default_action';
 const bind_receivers = (receivers) => (state, msg, ctx) =>
 	receivers && receivers({ state, msg, ctx });
 
+const validateReceivers = (receivers) => {
+	if (typeof receivers !== 'array') {
+		throw new Error(`Property 'receivers' must be an array`);
+		console.log(receivers);
+	}
+	return true;
+};
+
 /**
  * Spawn a stateful actor
  *
@@ -48,6 +56,9 @@ const bind_receivers = (receivers) => (state, msg, ctx) =>
  * @return {Actor} Actor instance
  */
 const spawn_actor = (_parent, _name, _actionsMap, _initialState, _properties) => {
+	if (_name == 'oracle') {
+		console.log(_properties);
+	}
 	const { Receivers, receivers, initialState, ...properties } = _properties; // never reference actor definition
 	const _receivers = bind_receivers(receivers ? buildReceiversHOF(receivers) : Receivers);
 	const action = route_action(_actionsMap);
@@ -85,6 +96,7 @@ const spawn_persistent = (_parent, _name, _actionsMap, _initialState, _propertie
 	if (!_properties || !_properties.persistenceKey) {
 		throw new Error(`Persistent actor must define 'persistenceKey' property`);
 	}
+
 	const {
 		persistenceKey,
 		Receivers,

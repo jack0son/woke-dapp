@@ -4,12 +4,12 @@ const {
 	receivers,
 } = require('@woke/wact');
 
-function TwitterAgent(twitterStub) {
+function TwitterAgent(twitterDomain) {
 	return {
 		properties: {
 			initialState: {
 				kind: 'twitterAgent',
-				twitter: twitterStub,
+				twitter: twitterDomain,
 			},
 
 			// Receivers are bound the message bundle and attached to the context
@@ -54,7 +54,6 @@ function TwitterAgent(twitterStub) {
 			get_user_data: (msg, ctx, state) => {
 				const { twitter } = state;
 				const { userId } = msg;
-				validateTwitterStub(twitter);
 
 				twitter
 					.getUser(userId)
@@ -69,7 +68,7 @@ function TwitterAgent(twitterStub) {
 	};
 }
 
-function validateTwitterStub(stub) {
+function validateTwitterDomain(stub) {
 	if (!stub) throw new Error('No stub provided');
 	if (!stub.ready()) throw new Error('Twitter stub not initialised');
 }

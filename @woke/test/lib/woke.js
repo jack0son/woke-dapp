@@ -11,7 +11,7 @@ class WokeDomain {
 
 	async init() {
 		// Take the frist 4 accounts (default accounts used to migrate contracts)
-		const accounts = await this.chainDomain.allocateAccounts(4);
+		const accounts = this.chainDomain.allocateAccounts(4);
 		this.contractApi.Oracle = contractApi.TwitterOracle(
 			this.chainDomain.contracts.Oracle
 		);

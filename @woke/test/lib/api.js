@@ -4,6 +4,10 @@ function API(accounts, web3Instance, contractInstances, contractApi) {
 	const contracts = contractInstances;
 	const instance = web3Instance;
 
+	if (accounts.length < 4) throw new Error('Woke API requires at least 4 accounts');
+	const [defaultAccount, owner, oraclize_cb, tipAgent, ...otherAccounts] = accounts;
+	const claimArgs = (u) => [u.address, u.id, u.followers];
+
 	function deployContracts() {}
 
 	async function claimUser(user) {
@@ -15,13 +19,12 @@ function API(accounts, web3Instance, contractInstances, contractApi) {
 			from: user.address,
 		});
 
+		console.log(r);
 		let bn = r.receipt.blockNumber;
 		let queryId = r.logs[r.logs.length - 1].args.queryId;
 		logger.v('Claim queryId: ', queryId);
 		const claimString = await genClaimString(...claimArgs(user));
-		await TO.methods
-			.__callback(queryId, claimString, '0x0')
-			.send({ from: accounts.oraclize_cb });
+		await TO.methods.__callback(queryId, claimString, '0x0').send({ from: oraclize_cb });
 		logger.name('claimUser()', `Sending _fulfillClaim( ${user.id} ) ...`);
 		r = await contracts.UserRegistry.methods._fulfillClaim(user.id).send({
 			from: user.address,

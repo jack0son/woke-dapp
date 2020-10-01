@@ -4,7 +4,7 @@ const j0 = require('@woke/jack0son');
 let i = 0;
 class UserCollection {
 	constructor(userList, opts) {
-		if (!j0.notEmpty(userList)) throw new Error('Must provide user list');
+		if (!Array.isArray(userList)) throw new Error('User list must be an Array');
 		const conf = configure(opts, { keyProp: 'id' });
 		this.label = conf.label || `user_collecky-${(++i).toString().padStart(3, 0)}`;
 		this.keyProp = conf.keyProp;
