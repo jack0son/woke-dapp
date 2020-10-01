@@ -180,10 +180,11 @@ const _uInt32ToHexString = (uInt32) =>
 		'hex'
 	);
 
-const initContract = (web3Instance, interface) =>
+const initContract = (web3Instance, interface, options) =>
 	new web3Instance.web3.eth.Contract(
 		interface.abi,
-		interface.networks[web3Instance.network.id].address
+		interface.networks[web3Instance.network.id].address,
+		{ data: options.includeData ? interface.deployedBytecode : undefined }
 	);
 
 const valueString = (web3Utils) => {

@@ -1,32 +1,33 @@
-const AppApi = require('./api');
+const AppApi = require('../api');
 const contractApi = require('@woke/api');
-const ChainDomain = require('./chain');
+const ContractDomain = require('./contract');
 
 // High level application domain
 class WokeDomain {
-	constructor(chainDomain) {
-		this.chainDomain = chainDomain;
+	constructor(contractDomain) {
+		this.contractDomain = contractDomain;
 		this.contractApi = Object.create(null);
 	}
 
 	async init() {
 		// Take the frist 4 accounts (default accounts used to migrate contracts)
-		const accounts = this.chainDomain.allocateAccounts(4);
+		const accounts = this.contractDomain.allocateAccounts(4);
 		this.contractApi.Oracle = contractApi.TwitterOracle(
-			this.chainDomain.contracts.Oracle
+			this.contractDomain.contracts.Oracle
 		);
 		this.contractApi.UserRegistry = contractApi.UserRegistry(
-			this.chainDomain.contracts.UserRegistry
+			this.contractDomain.contracts.UserRegistry
 		);
 		this.contractApi.WokeToken = contractApi.WokeToken(
-			this.chainDomain.contracts.WokeToken
+			this.contractDomain.contracts.WokeToken
 		);
 
 		this.api = AppApi(
 			accounts,
-			this.chainDomain.instance,
-			this.chainDomain.contracts,
-			this.contractApi
+			this.contractDomain.instance,
+			this.contractDomain.contracts,
+			this.contractApi,
+			this.contractDomain.sendOpts
 		);
 	}
 
@@ -36,8 +37,8 @@ class WokeDomain {
 	}
 }
 
-module.exports = async (chainDomain) => {
-	const wd = new WokeDomain(chainDomain);
+module.exports = async (contractDomain) => {
+	const wd = new WokeDomain(contractDomain);
 	await wd.init();
 	return wd;
 };

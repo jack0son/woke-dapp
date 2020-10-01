@@ -1,6 +1,8 @@
 const { Logger, protocol } = require('@woke/lib');
+const logger = Logger('woke:api');
 
-function API(accounts, web3Instance, contractInstances, contractApi) {
+// THE API IS NOT GETTING REFS TO NEW CONTRACTS
+function API(accounts, web3Instance, contractInstances, contractApi, sendOpts) {
 	const contracts = contractInstances;
 	const instance = web3Instance;
 
@@ -10,31 +12,51 @@ function API(accounts, web3Instance, contractInstances, contractApi) {
 
 	function deployContracts() {}
 
-	async function claimUser(user) {
-		//console.log(Object.keys(contracts.UserRegistry.methods));
-		////console.dir(contracts.UserRegistry.methods.claimUser);
-		//let tx = await contracts.UserRegistry.methods.claimUser(user.id);
-		////console.log(tx);
+	async function sendUserClaim(user) {
 		let r = await contracts.UserRegistry.methods.claimUser(user.id).send({
+			...sendOpts,
 			from: user.address,
 		});
-
-		console.log(r);
-		let bn = r.receipt.blockNumber;
-		let queryId = r.logs[r.logs.length - 1].args.queryId;
+		let queryId = r.events.Lodged.returnValues.queryId;
 		logger.v('Claim queryId: ', queryId);
+		return { queryId, r };
+	}
+
+	async function sendOracleResponse(user, queryId) {
 		const claimString = await genClaimString(...claimArgs(user));
-		await TO.methods.__callback(queryId, claimString, '0x0').send({ from: oraclize_cb });
+		const r = await contracts.Oracle.methods
+			.__callback(queryId, claimString, '0x0')
+			.send({ ...sendOpts, from: oraclize_cb });
 		logger.name('claimUser()', `Sending _fulfillClaim( ${user.id} ) ...`);
-		r = await contracts.UserRegistry.methods._fulfillClaim(user.id).send({
+
+		return { claimString, r };
+	}
+
+	function fulfillClaim(user) {
+		return contracts.UserRegistry.methods._fulfillClaim(user.id).send({
+			...sendOpts,
 			from: user.address,
 		});
+	}
+
+	async function claimUser(user) {
+		// 1. Submit claim user
+		const {
+			queryId,
+			r: { blockNumber },
+		} = await sendUserClaim(user);
+		const claimString = await sendOracleResponse(user, queryId);
+		const r = await fulfillClaim(user);
+
 		logger.name(
 			'claimUser()',
 			`_fulfillClaim(): ${r.receipt.gasUsed} gas used, cumulative: ${r.receipt.cumulativeGasUsed}`
 		);
 		let claimed = (
-			await contracts.UserRegistry.getPastEvents('Claimed', { from: bn, to: 'latest' })
+			await contracts.UserRegistry.getPastEvents('Claimed', {
+				from: blockNumber,
+				to: 'latest',
+			})
 		)[0].args;
 		logger.name(
 			'claimUser()',
