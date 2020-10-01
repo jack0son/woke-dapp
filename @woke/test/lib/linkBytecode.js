@@ -1,14 +1,12 @@
 // Replace library placeholders with library contract addresses
 function linkBytecode(truffleArtifact, networkId) {
 	const links = truffleArtifact.networks[networkId].links;
-	console.log(links);
 	const inBytecode = truffleArtifact.bytecode;
 	let outBytecode = inBytecode.slice(0);
 
 	// 40 character placeholders - addresses without 0x prefix
 	//		__Helpers_______________________________
 	//		__Distribution__________________________
-	const placeholderRegex = /__\a+_+/g;
 
 	Object.keys(links).forEach((library) => {
 		const address = links[library].slice(2);

@@ -45,6 +45,12 @@ class ContractDomain {
 		this.init();
 	}
 
+	logAddresses() {
+		Object.entries(this.contracts).forEach(([name, contract]) => {
+			console.log(name.padEnd(16) + ' ', contract.options.address);
+		});
+	}
+
 	async init() {
 		const { instance, configList, contracts } = this;
 		configList.forEach((c) => {
@@ -100,6 +106,7 @@ class ContractDomain {
 				value: 5000000000000000,
 				...sendOpts,
 			});
+			console.log('New Oracle address:', contracts.Oracle.options.address);
 		}
 
 		const userRegistryContructorArguments = ({
@@ -118,6 +125,7 @@ class ContractDomain {
 				contracts.UserRegistry.options.address
 			);
 			console.log(`Deploying UserRegistry...`);
+			console.log('using oracle address', contracts.Oracle.options.address);
 			const args = userRegistryContructorArguments({
 				wokeTokenAddress: contracts.WokeToken.options.address,
 				lnpdfAddress: contracts.LNPDF.options.address,
@@ -125,7 +133,6 @@ class ContractDomain {
 				ownerAccount: adminAccounts.owner,
 				maxTributors: 256,
 			});
-			console.log('UR args:', args);
 
 			contracts.UserRegistry = await contracts.UserRegistry.deploy({
 				data: linkBytecode(configs.UserRegistry.artifact, instance.network.id),

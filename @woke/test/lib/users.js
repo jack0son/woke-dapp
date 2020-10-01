@@ -3,8 +3,8 @@ const j0 = require('@woke/jack0son');
 
 const lists = {
 	dummy: [
-		{ id: 123345, handle: 'wokenet1' },
-		{ id: 123346, handle: 'wokenet2' },
+		{ id: '123345', handle: 'wokenet1', followers_count: 5 },
+		{ id: '123346', handle: 'wokenet2', followers_count: 3 },
 	],
 	real: ['list of real twitter users'],
 	test: [],

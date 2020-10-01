@@ -23,9 +23,9 @@ class WokeDomain {
 		);
 
 		this.api = AppApi(
-			accounts,
+			this.contractDomain.adminAccounts,
 			this.contractDomain.instance,
-			this.contractDomain.contracts,
+			() => this.contractDomain.contracts,
 			this.contractApi,
 			this.contractDomain.sendOpts
 		);

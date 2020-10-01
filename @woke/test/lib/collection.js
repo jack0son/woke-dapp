@@ -9,7 +9,14 @@ class UserCollection {
 		this.label = conf.label || `user_collecky-${(++i).toString().padStart(3, 0)}`;
 		this.keyProp = conf.keyProp;
 
-		this.userList = userList;
+		// Disgusting...
+		this.userList = userList.filter((u) => {
+			if (!j0.exists(u.id)) return false;
+			// If integers arguments to string parameters will be parsed by smart contract methods as an empty string
+			if (typeof u.id !== 'string') u.id = u.id.toString();
+			return true;
+		});
+
 		this.build();
 	}
 
@@ -50,9 +57,7 @@ class UserCollection {
 	}
 
 	validate() {
-		return (
-			this.userList.filter((user) => user != this.map[user[this.keyProp]]).length == 0
-		);
+		return this.userList.every((user) => user === this.map[user[this.keyProp]]);
 	}
 }
 
