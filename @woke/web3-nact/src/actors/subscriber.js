@@ -3,8 +3,9 @@ const {
 	actors: { Polling },
 } = require('@woke/wact');
 const {
-	utils: { initContract, makeLogEventSubscription },
+	utils: { makeLogEventSubscription },
 	init,
+	methods: { makeContractInstanceFromConfig },
 } = require('@woke/lib').web3Tools;
 const { dispatch, block, start_actor } = ActorSystem;
 const { blockTime } = init.network;
@@ -21,7 +22,7 @@ const subscriptionActor = {
 			filter: (e) => e,
 			subscription: null,
 			subscribers: [],
-			contractInterface: null,
+			contractConfig: null,
 			latestBlock: 0,
 		},
 
@@ -47,7 +48,7 @@ const subscriptionActor = {
 
 	actions: {
 		subscribe: async (state, msg, ctx) => {
-			const { contractInterface, eventName, ...rest } = state;
+			const { contractConfig, eventName, ...rest } = state;
 			if (state.subscription) {
 				await state.subscription.stop();
 			}
@@ -55,7 +56,12 @@ const subscriptionActor = {
 			// Always get a fresh contract instance
 			const { web3Instance } = await block(state.a_web3, { type: 'get' });
 			const blockTime = web3Instance.network.blockTime;
-			const contract = initContract(web3Instance, contractInterface);
+			console.log('contractConfig has: ', Object.keys(contractConfig));
+			console.log(
+				'artifact?',
+				contractConfig.artifact && contractConfig.artifact.contractName
+			);
+			const contract = makeContractInstanceFromConfig(web3Instance)(contractConfig);
 
 			const callback = (error, log) => {
 				// Seperate subcription init from handling into distinict messages
@@ -73,6 +79,7 @@ const subscriptionActor = {
 				}
 			);
 
+			console.log('state.subscribers', state.subscribers);
 			subscription.start();
 			ctx.debug.info(
 				msg,

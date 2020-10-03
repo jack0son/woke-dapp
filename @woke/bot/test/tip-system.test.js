@@ -7,7 +7,7 @@ const should = chai.should();
 const expect = chai.expect();
 
 const TipSystem = require('../src/systems/tip-system');
-const { ChainDomain, WokeDomain, Collection } = require('@woke/test');
+const { ContractDomain, WokeDomain, Collection } = require('@woke/test');
 
 const {
 	tweeter: { Tweeter },
@@ -58,12 +58,12 @@ const MockTweeter = (director) => (callbacks, expectedTypes) =>
 		{}
 	);
 
-const ExpectMutation = async (apiCall, [args], initial, final) => {
-	const prev = await apiCall(...args);
+const ExpectMutation = async (apiCall, initial, final) => {
+	const prev = await apiCall();
 	initial(prev);
 
 	const expect = async () => {
-		const next = await apiCall(...args);
+		const next = await apiCall();
 		final(prev, next);
 	};
 
@@ -71,13 +71,17 @@ const ExpectMutation = async (apiCall, [args], initial, final) => {
 };
 
 let xpt = {};
-xpt.gt = (v, a) => v.should.be.above(a);
-xpt.nonZero = (v) => gt(v, 0);
+xpt.gt = (v, a) => expect(v).to.be.above(a);
+xpt.nonZero = (v) => xpt.gt(v, 0);
 xpt.changeBy = (amount) => (a, b) => expect(b - a).to.equal(amount);
 
 const AppStateExpectations = (wokeDomain) => {
 	const balanceChangeBy = (user, amount) =>
-		ExpectMutation(wokeDomain.api.getUserBalance, [user], xpt.nonZero, changeBy(amount));
+		ExpectMutation(
+			() => wokeDomain.api.getUserBalance(user).call,
+			xpt.nonZero,
+			xpt.changeBy(amount)
+		);
 
 	return {
 		balanceChangeBy,
@@ -116,18 +120,24 @@ const makeTipText = (to, amount) =>
 // 2. unit: stateful contracts redeployed between tests (@TODO);
 
 context('tip-system', function () {
-	let wokeDomain, chainDomain, tipSystem, director, mockTweeter, wokeDomainExpectations;
+	let wokeDomain,
+		contractDomain,
+		tipSystem,
+		director,
+		mockTweeter,
+		wokeDomainExpectations;
 
 	before(async function () {
 		// Initialise test bed
-		chainDomain = ChainDomain();
-		await chainDomain.init();
-		wokeDomain = await WokeDomain(chainDomain);
-		users.assignAddresses(await chainDomain.allocateAccounts(4));
+		contractDomain = ContractDomain();
+		await contractDomain.init();
+		wokeDomain = await WokeDomain(contractDomain);
+		users.assignAddresses(await contractDomain.allocateAccounts(4));
 	});
 
 	beforeEach(async function () {
-		//chainDomain.reset();
+		//contractDomain.reset();
+		await contractDomain.redeploy();
 		twitterClient = twitter.fake.FakeClient(0);
 		tipSystem = new TipSystem({
 			faultMonitoring: false,

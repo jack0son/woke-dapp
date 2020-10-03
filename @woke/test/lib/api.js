@@ -8,17 +8,25 @@ function API(adminAccounts, web3Instance, getContracts, contractApi, sendOpts) {
 
 	const claimArgs = (u) => [u.address, u.id, u.followers_count];
 
-	async function sendUserClaim(user) {
-		let r = await contracts()
+	function getUserBalance(user) {
+		return contracts().UserRegistry.methods.balanceOf(e.returnValues.userId).call();
+	}
+
+	function userIsClaimed(user) {
+		return contracts().UserRegistry.methods.isClaimed(user.id).call();
+	}
+
+	async function sendClaimUser(user) {
+		let receipt = await contracts()
 			.UserRegistry.methods.claimUser(user.id)
 			.send({
 				...sendOpts,
 				from: user.address,
 			});
-		let queryId = r.events.Lodged.returnValues.queryId;
+		let queryId = receipt.events.Lodged.returnValues.queryId;
 		//console.log(r.events.Lodged);
 		logger.v('Claim queryId: ', queryId);
-		return { queryId, r };
+		return { queryId, receipt };
 	}
 
 	async function sendOracleResponse(user, queryId) {
@@ -30,7 +38,7 @@ function API(adminAccounts, web3Instance, getContracts, contractApi, sendOpts) {
 		return { claimString, r };
 	}
 
-	function fulfillClaim(user) {
+	function sendFulfillClaim(user) {
 		logger.name('claimUser()', `Sending _fulfillClaim( ${user.id} ) ...`);
 		return contracts()
 			.UserRegistry.methods._fulfillClaim(user.id)
@@ -40,15 +48,15 @@ function API(adminAccounts, web3Instance, getContracts, contractApi, sendOpts) {
 			});
 	}
 
-	async function claimUser(user) {
+	async function completeClaimUser(user) {
 		// 1. Submit claim user
 		const {
 			queryId,
 			r: { blockNumber },
-		} = await sendUserClaim(user);
+		} = await sendClaimUser(user);
 		logger.name('claimUser()', `Sending __callback( ${queryId} ) ...`);
 		const claimString = await sendOracleResponse(user, queryId);
-		const r = await fulfillClaim(user);
+		const r = await sendFulfillClaim(user);
 
 		logger.name(
 			'claimUser()',
@@ -83,7 +91,13 @@ function API(adminAccounts, web3Instance, getContracts, contractApi, sendOpts) {
 		return str;
 	}
 
-	return { claimUser, genClaimString };
+	return {
+		sendClaimUser,
+		completeClaimUser,
+		genClaimString,
+		getUserBalance,
+		userIsClaimed,
+	};
 }
 
 module.exports = API;

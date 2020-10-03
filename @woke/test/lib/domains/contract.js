@@ -1,5 +1,6 @@
-const { web3Tools } = require('@woke/lib');
-const linkBytecode = require('../linkBytecode');
+const { web3Tools, Logger } = require('@woke/lib');
+const linkBytecode = require('../link-bytecode.js');
+const debug = Logger('test:contract');
 
 const isDeployed = (contract) => !!contract.options.adress;
 
@@ -30,6 +31,10 @@ class ContractConfig {
 class ContractDomain {
 	constructor(contractConfigList, sendOpts) {
 		this.configList = contractConfigList;
+		if (process.env.ETH_ENV !== 'development')
+			console.warn(
+				`WARNING: ETH_ENV should be development. ETH_ENV == ${process.env.ETH_ENV}`
+			);
 		this.instance = web3Tools.init.instantiate();
 		this.contracts = {};
 		this.configs = {};
@@ -41,8 +46,6 @@ class ContractDomain {
 			gasPrice,
 			...sendOpts,
 		};
-
-		this.init();
 	}
 
 	logAddresses() {
@@ -54,6 +57,7 @@ class ContractDomain {
 	async init() {
 		const { instance, configList, contracts } = this;
 		configList.forEach((c) => {
+			debug.name(c.name, 'Loading truffle artifact...');
 			contracts[c.name] = web3Tools.utils.initContract(instance, c.artifact, {
 				includeData: true,
 			});
@@ -61,6 +65,7 @@ class ContractDomain {
 		});
 		this.accounts = await this.instance.web3.eth.getAccounts();
 		this.freeAccounts = [...this.accounts];
+
 		this.allocateAdminAccounts();
 		return this;
 	}

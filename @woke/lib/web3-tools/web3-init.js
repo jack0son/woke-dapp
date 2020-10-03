@@ -1,5 +1,7 @@
 const Web3 = require('web3');
 const config = require('./web3-config');
+const configure = require('../configure');
+const instanceMethods = require('./instance-methods');
 const defaultNetwork =
 	config.web3.networks[process.env.ETH_ENV || process.env.NODE_ENV || 'development'];
 
@@ -55,17 +57,19 @@ function selectPrivKey() {
 
 let privKey = selectPrivKey();
 
+const defaults = {
+	handleRevert: true,
+	attachInstanceMethods: true,
+};
+
 function instantiate(networkName, opts) {
-	const defaults = {
-		handleRevert: true,
-	};
-	const { handleRevert } = { ...defaults, ...opts };
+	const conf = configure(opts, defaults);
 
 	const network = (!!networkName && config.web3.networks[networkName]) || defaultNetwork;
 
 	const rpcUrl = config.createRpcUrl(network);
 	const web3 = new Web3(rpcUrl);
-	web3.eth.handleRevert = handleRevert;
+	web3.eth.handleRevert = conf.handleRevert;
 
 	let wallet = null;
 	if (!privKey) {
@@ -77,14 +81,23 @@ function instantiate(networkName, opts) {
 		web3.eth.defaultCommon = network.defaultCommon;
 	}
 
-	// Web3Instance
-	return {
+	const web3Instance = {
 		web3,
 		network,
 		account: wallet ? wallet.address : null,
 		rpcUrl,
 		//accounts: web3.eth.accounts,
 	};
+
+	const methods = conf.instanceMethods
+		? Object.keys(methods).reduce((m, key) => {
+				m[key] = methods[key](web3Instance);
+				return m;
+		  }, {})
+		: {};
+
+	Object.assign(web3Instance, methods);
+	return web3Instance;
 }
 
 module.exports = { instantiate, network: defaultNetwork };

@@ -190,7 +190,7 @@ async function action_send(state, msg, ctx) {
 // Only called internally
 function action_publish(state, msg, ctx) {
 	const { sendOpts, getSendMethod, transactionSpec, tx } = state;
-	const { web3Instance, nonce } = msg;
+	const { web3Instance, nonce } = msg; // receive a fresh web3 instance from action_send
 
 	if (!web3Instance)
 		throw new Error(`web3:tx:action:publish: Message must contain web3Instance`);
@@ -233,6 +233,7 @@ function action_publish(state, msg, ctx) {
 	}
 
 	ctx.reduce = reduce({ ctx });
+	// @TODO replace with buildTxObject
 	getSendMethod(
 		state,
 		msg,

@@ -187,6 +187,11 @@ const initContract = (web3Instance, interface, options) =>
 		{ data: options.includeData ? interface.deployedBytecode : undefined }
 	);
 
+const cloneContract = (web3Instance, web3Contract) =>
+	new web3Instance.web3.eth.Contract(web3Contract.jsonInterface, options.address, {
+		data: options.includeData ? web3Contract.options.data : undefined,
+	});
+
 const valueString = (web3Utils) => {
 	//const BN = web3Utils.BN;
 	const toEth = (wei) => web3Utils.fromWei(wei, 'ether');

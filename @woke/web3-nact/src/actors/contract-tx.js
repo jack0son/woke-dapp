@@ -3,7 +3,9 @@ const {
 	compose,
 	ActorSystem: { block },
 } = require('@woke/wact');
-const { initContract } = require('@woke/lib').web3Tools.utils;
+const {
+	web3Tools: { methods },
+} = require('@woke/lib/');
 const { ParamError, TransactionError, OnChainError } = require('../lib/errors');
 
 const TxActor = require('./tx');
@@ -21,7 +23,7 @@ let i = 0;
 async function action_call(state, msg, ctx) {
 	const { tx } = msg;
 	const { method, args } = tx;
-	const { callOpts, a_web3, contractInterface } = state;
+	const { callOpts, a_web3, contractInterface, contractInstance } = state;
 
 	tx.type = 'call';
 	const { web3Instance } = await block(a_web3, { type: 'get' });
@@ -30,7 +32,12 @@ async function action_call(state, msg, ctx) {
 		...tx.opts,
 	};
 
-	const contract = initContract(web3Instance, contractInterface);
+	// Contract instance should use web3 actor's instance
+	const contract = makeContractInstance(
+		web3Instance,
+		contractInstance,
+		contractInterface
+	);
 	const result = await contract.methods[method](...tx.args).call(opts);
 
 	//dispatch(ctx.sender, { type: 'tx', tx, result }, ctx.parent);
@@ -38,12 +45,14 @@ async function action_call(state, msg, ctx) {
 	return ctx.stop;
 }
 
-//const contract = initContract(web3Instance, contractInterface);
-//return contract.methods[transactionSpec.method](...transactionSpec.args).send;
-const getSendMethod = ({ tx, transactionSpec, contractInterface }, { web3Instance }) =>
-	initContract(web3Instance, contractInterface).methods[transactionSpec.method](
-		...transactionSpec.args
-	).send;
+// Build web3 tx object from the tx actor state
+const getSendMethod = (
+	{ tx, transactionSpec, contractInterface, contract },
+	{ web3Instance }
+) =>
+	makeContractInstance(web3Instance)(contractInstance, contractInterface).methods[
+		transactionSpec.method
+	](...transactionSpec.args).send;
 
 // @fix TODO: temporary work around
 //	-- errors from web3 promi-event don't get caught by the actor when called
@@ -71,11 +80,16 @@ const definition = {
 	},
 };
 
-function ContractTx(a_web3, a_nonce, contractInterface) {
+function ContractTx(a_web3, a_nonce, contractConfig) {
+	// Contract instance has precedence
+	const initialState = contractConfig.instance
+		? { contractInstance: contractConfig.instance }
+		: { contractInterface: contractConfig.interface };
+
 	return adapt(
 		definition,
 		compose(
-			{ properties: { initialState: { contractInterface } } },
+			{ properties: { initialState } },
 			TxActor.actions,
 			TxActor.Properties(a_web3, a_nonce, getSendMethod)
 		)

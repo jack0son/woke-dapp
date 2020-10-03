@@ -3,7 +3,8 @@ const {
 	receivers: { sink },
 } = require('@woke/wact');
 const { start_actor, dispatch, block } = ActorSystem;
-const { initContract } = require('@woke/lib').web3Tools.utils;
+const { configure } = require('@woke/lib');
+const { makeContractInstance } = require('../lib/contract');
 
 const { ContractTx } = require('./contract-tx');
 const subscriberDefn = require('./subscriber');
@@ -12,7 +13,7 @@ let tx_idx = 0;
 function spawn_tx(state, ctx) {
 	return start_actor(ctx.self)(
 		`_tx-${tx_idx++}`,
-		ContractTx(state.a_web3, state.a_nonce, state.contractInterface),
+		ContractTx(state.a_web3, state.a_nonce, state.contractConfig),
 		{
 			sinks: [ctx.sender], // forward the sender to this tx
 			// a_web3: state.a_web3,
@@ -23,20 +24,42 @@ function spawn_tx(state, ctx) {
 }
 
 let sub_idx = 0;
-const spawn_sub = (state, msg, ctx) => {
-	return start_actor(ctx.self)(
-		`_sub-${sub_idx++}-${state.contractInterface.contractName}-${msg.eventName}`,
-		subscriberDefn,
-		{
-			watchdogInterval: msg.resubscribeInterval,
-			watchdog: true,
-			eventName: msg.eventName,
-			filter: msg.filter,
-			contractInterface: msg.contractInterface,
-			subscribers: msg.subscribers, // forward the sender to this tx
-			a_web3: state.a_web3,
-		}
-	);
+
+const subscriptionDefaults = {
+	resubscribe: true,
+	resubscribeInterval: undefined,
+	filter: (e) => e,
+};
+const spawn_subscription = ({ state, msg, ctx }) => {
+	//return (parent, web3Actor, contractName, eventName, contractConfig, ) => {
+	return (eventName, filter, opts) => {
+		subscriptionDefaults.subscribers = [ctx.sender];
+		const { name, contractConfig, a_web3 } = state;
+
+		// @TODO configure options should set arrayMerge to concatenate
+		const conf = configure(opts, subscriptionDefaults);
+		console.log('conf', conf);
+		console.log(conf.subscribers);
+		// @TODO Configure should concat arrays
+
+		// Member lookups should happen inside returned function otherwise they are
+		// called on every message
+		console.log(ctx.self);
+		return start_actor(ctx.self)(
+			`_sub-${sub_idx++}-${name}-${msg.eventName}`,
+			subscriberDefn,
+			{
+				contractName: name,
+				contractConfig,
+				a_web3,
+				watchdogInterval: conf.resubscribeInterval,
+				watchdog: conf.resubscribe,
+				eventName: eventName,
+				filter: filter,
+				subscribers: conf.subscribers, // forward the sender to this tx
+			}
+		);
+	};
 };
 
 const contractActor = {
@@ -44,14 +67,15 @@ const contractActor = {
 		initialState: {
 			a_web3: undefined,
 			a_nonce: undefined,
-			contractInterface: undefined,
+			contractConfig: undefined,
 			logSubscriptions: [],
 			kind: 'a_contract',
+			name: 'CONTRACT_NAME',
 			//contract,
 			//web3Instance,
 		},
 
-		receivers: [sink],
+		receivers: [sink, spawn_subscription],
 		Receivers: (bundle) => ({
 			sink: sink(bundle),
 		}),
@@ -109,18 +133,11 @@ const contractActor = {
 		subscribe_log: async (state, msg, ctx) => {
 			const { eventName, filter, subscribers, opts, resubscribeInterval } = msg;
 			const { logSubscriptions, contractInterface } = state;
-			const a_sub = spawn_sub(
-				state,
-				{
-					eventName,
-					contractInterface,
-					filter,
-					resubscribeInterval,
-					subscribers: [ctx.sender],
-				},
-				ctx
-			);
 
+			const subscriptionOpts = { resubscribeInterval, ...opts };
+			if (subscribers) subscriptionOpts.subscribers = subscribers;
+
+			const a_sub = ctx.receivers.spawn_subscription(eventName, filter, subscriptionOpts);
 			ctx.receivers.sink({ a_sub });
 			//dispatch(ctx.sender, { type: 'a_contract', kind: 'contract', action: 'new_sub', a_sub}, ctx.self);
 

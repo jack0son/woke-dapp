@@ -1,4 +1,4 @@
-const { Logger, twitter, TwitterDomain } = require('@woke/lib');
+const { Logger, twitter, TwitterDomain, configure } = require('@woke/lib');
 const { ActorSystem, PersistenceEngine } = require('@woke/wact');
 const { useMonitor } = require('@woke/actors');
 const { ContractSystem } = require('@woke/web3-nact');
@@ -28,7 +28,9 @@ class OracleSystem {
 			persistenceConfig,
 			networkList,
 			monitoring,
-		} = { ...defaults, ...opts };
+			oracleContractInstance,
+		} = configure(opts, defaults);
+
 		this.persist = !!persist;
 		this.config = {
 			QUERY_RETRY_INTERVAL: retryInterval || 15000 * 3,
@@ -59,10 +61,14 @@ class OracleSystem {
 			this.monitor = useMonitor({ twitterClient: this.twitterClient, director });
 		}
 
+		const contractInstances = oracleContractInstance
+			? { TwitterOracleMock: oracleContractInstance }
+			: {};
+
 		// Actors
 		this.contractSystem =
 			contractSystem ||
-			ContractSystem(director, ['TwitterOracleMock'], {
+			ContractSystem(director, ['TwitterOracleMock'], contractInstances, {
 				persist: this.persist,
 				networkList: this.config.networkList,
 				maxAttempts: 2,

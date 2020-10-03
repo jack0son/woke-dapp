@@ -7,6 +7,6 @@ const { isPlainObject } = require('is-plain-object');
 // https://www.npmjs.com/package/deepmerge
 const merge = (x, y, opts) =>
 	// If an element at the same key is present for both x and y, the value from y will appear in the result.
-	deepMerge(x || {}, y || {}, { ...opts, isMergeableObject: isPlainObject });
+	deepMerge(x || {}, y || {}, { isMergeableObject: isPlainObject, ...opts });
 
 module.exports = merge;
