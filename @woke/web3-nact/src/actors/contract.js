@@ -38,13 +38,10 @@ const spawn_subscription = ({ state, msg, ctx }) => {
 
 		// @TODO configure options should set arrayMerge to concatenate
 		const conf = configure(opts, subscriptionDefaults);
-		console.log('conf', conf);
-		console.log(conf.subscribers);
 		// @TODO Configure should concat arrays
 
 		// Member lookups should happen inside returned function otherwise they are
 		// called on every message
-		console.log(ctx.self);
 		return start_actor(ctx.self)(
 			`_sub-${sub_idx++}-${name}-${msg.eventName}`,
 			subscriberDefn,

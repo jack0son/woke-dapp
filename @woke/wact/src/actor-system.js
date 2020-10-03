@@ -56,9 +56,6 @@ const validateReceivers = (receivers) => {
  * @return {Actor} Actor instance
  */
 const spawn_actor = (_parent, _name, _actionsMap, _initialState, _properties) => {
-	if (_name == 'oracle') {
-		console.log(_properties);
-	}
 	const { Receivers, receivers, initialState, ...properties } = _properties; // never reference actor definition
 	const _receivers = bind_receivers(receivers ? buildReceiversHOF(receivers) : Receivers);
 	const action = route_action(_actionsMap);

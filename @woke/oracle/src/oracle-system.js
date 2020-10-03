@@ -3,15 +3,15 @@ const { ActorSystem, PersistenceEngine } = require('@woke/wact');
 const { useMonitor } = require('@woke/actors');
 const { ContractSystem } = require('@woke/web3-nact');
 
-const TwitterAgent = require('./actors/twitter-agent');
-const twitterMock = require('../test/mocks/twitter-stub.mock');
-const Oracle = require('./actors/oracle');
-
+const { TwitterClient } = require('../config/twitter-config');
 const debug = Logger('sys_oracle');
 
-function TwitterClient() {
-	return twitterMock.createMockClient(3);
-}
+// const TwitterAgent = require('./actors/twitter-agent');
+// const twitterMock = require('../test/mocks/twitter-stub.mock');
+// const Oracle = require('./actors/oracle');
+// function TwitterClient() {
+// 	return twitterMock.createMockClient(3);
+// }
 
 class OracleSystem {
 	constructor(opts) {
@@ -40,8 +40,8 @@ class OracleSystem {
 			monitoring,
 		};
 
-		this.twitterClient = twitterClient || TwitterClient();
-		this.twitterStub = new TwitterDomain(this.twitterClient);
+		this.twitterClient = conf.twitterClient || TwitterClient(conf.twitterEnv).client;
+		this.twitterDomain = new TwitterDomain(this.twitterClient);
 
 		// Persistence
 		if (this.persist) {

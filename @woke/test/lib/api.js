@@ -13,7 +13,7 @@ function API(adminAccounts, web3Instance, getContracts, contractApi, sendOpts) {
 	}
 
 	function userIsClaimed(user) {
-		return contracts().UserRegistry.methods.isClaimed(user.id).call();
+		return contracts().UserRegistry.methods.userClaimed(user.id).call();
 	}
 
 	async function sendClaimUser(user) {

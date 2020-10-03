@@ -79,7 +79,6 @@ const subscriptionActor = {
 				}
 			);
 
-			console.log('state.subscribers', state.subscribers);
 			subscription.start();
 			ctx.debug.info(
 				msg,
@@ -92,7 +91,7 @@ const subscriptionActor = {
 		},
 
 		start: (state, msg, ctx) => {
-			const { contractInterface, eventName, watchdog, watchdogInterval } = state;
+			const { watchdog, watchdogInterval } = state;
 			const { resubscribeInterval } = msg;
 			const period =
 				resubscribeInterval || watchdogInterval || blockTime || DEFAULT_WATCHDOG_INTERVAL;
@@ -116,7 +115,7 @@ const subscriptionActor = {
 		},
 
 		handle: (state, msg, ctx) => {
-			const { eventName, contractInterface, subscribers, filter } = state;
+			const { eventName, contractName, subscribers, filter } = state;
 			const { error, log } = msg;
 
 			if (error) {
@@ -135,7 +134,7 @@ const subscriptionActor = {
 						a_subscriber,
 						{
 							type: 'a_sub',
-							contractName: contractInterface.contractName,
+							contractName,
 							eventName,
 							log,
 						},

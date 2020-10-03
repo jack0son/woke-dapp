@@ -19,7 +19,10 @@ const FakeClient = (sampleSize = 2, opts) => {
 		rateLimit: REQ_PER_EPOCH,
 		epoch: EPOCH,
 		data: tipTweets,
+		users: {},
 	});
+
+	const users = [...dummyUsers, ...conf.users];
 
 	let tweetList = data;
 
@@ -89,8 +92,8 @@ const FakeClient = (sampleSize = 2, opts) => {
 		}
 
 		async getUserData(userId) {
-			const user = dummyUsers[userId];
-			return this.request(user ? user : dummyUsers['0']);
+			const user = users[userId];
+			return this.request(user ? user : users['0']);
 		}
 
 		async updateStatus(text, params) {

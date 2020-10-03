@@ -25,7 +25,7 @@ class UserCollection {
 	}
 
 	build() {
-		this.map = j0.buildMap(this.userList, this.keyProp);
+		this.map = j0.buildListIndex(this.userList, this.keyProp);
 	}
 
 	buildAddressMap() {
@@ -37,7 +37,12 @@ class UserCollection {
 	}
 
 	get(key) {
-		return this.map.get(key);
+		//return this.map.get(key);
+		return this.map[key];
+	}
+
+	getMap() {
+		return { ...this.map };
 	}
 
 	byAddress(address) {
