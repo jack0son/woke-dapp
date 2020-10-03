@@ -30,7 +30,7 @@ function API(adminAccounts, web3Instance, getContracts, contractApi, sendOpts) {
 	}
 
 	async function sendOracleResponse(user, queryId) {
-		const claimString = await genClaimString(...claimArgs(user));
+		const claimString = await buildClaimString(...claimArgs(user));
 		const r = await contracts()
 			.Oracle.methods.__callback(queryId, claimString, '0x0')
 			.send({ ...sendOpts, from: adminAccounts.oraclize_cb });
@@ -79,7 +79,11 @@ function API(adminAccounts, web3Instance, getContracts, contractApi, sendOpts) {
 
 	function transfer(from, to) {}
 
-	async function genClaimString(signatory, userId, followersCount, app = 'twitter') {
+	function userClaimString(user) {
+		return buildClaimString(...claimArgs(user));
+	}
+
+	async function buildClaimString(signatory, userId, followersCount, app = 'twitter') {
 		//logger.v('Gen claim for: ', signatory, userId, followersCount);
 		let str = await protocol.genClaimString(instance.web3)(
 			signatory,
@@ -94,9 +98,11 @@ function API(adminAccounts, web3Instance, getContracts, contractApi, sendOpts) {
 	return {
 		sendClaimUser,
 		completeClaimUser,
-		genClaimString,
+		buildClaimString,
 		getUserBalance,
 		userIsClaimed,
+		buildClaimString,
+		userClaimString,
 	};
 }
 

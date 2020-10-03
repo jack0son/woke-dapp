@@ -2,7 +2,10 @@ const { Logger } = require('@woke/lib');
 const {
 	ActorSystem: { dispatch },
 	receivers,
+	supervision,
 } = require('@woke/wact');
+
+const retry = supervision.exponentialRetry(100, 5);
 
 function TwitterAgent(twitterDomain) {
 	return {

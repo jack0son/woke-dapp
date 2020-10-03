@@ -9,6 +9,9 @@ const {
 const { ParamError, TransactionError, OnChainError } = require('../lib/errors');
 
 const TxActor = require('./tx');
+const {
+	makeContractInstanceFromConfig,
+} = require('@woke/lib/web3-tools/instance-methods');
 
 // TODO add contract tx actions to directory
 const onCrash = (msg, error, ctx) => {
@@ -47,12 +50,12 @@ async function action_call(state, msg, ctx) {
 
 // Build web3 tx object from the tx actor state
 const getSendMethod = (
-	{ tx, transactionSpec, contractInterface, contract },
+	{ tx, transactionSpec, contractConfig, contract },
 	{ web3Instance }
 ) =>
-	makeContractInstance(web3Instance)(contractInstance, contractInterface).methods[
-		transactionSpec.method
-	](...transactionSpec.args).send;
+	methods
+		.makeContractInstanceFromConfig(web3Instance)(contractConfig)
+		.methods[transactionSpec.method](...transactionSpec.args).send;
 
 // @fix TODO: temporary work around
 //	-- errors from web3 promi-event don't get caught by the actor when called
@@ -82,14 +85,11 @@ const definition = {
 
 function ContractTx(a_web3, a_nonce, contractConfig) {
 	// Contract instance has precedence
-	const initialState = contractConfig.instance
-		? { contractInstance: contractConfig.instance }
-		: { contractInterface: contractConfig.interface };
 
 	return adapt(
 		definition,
 		compose(
-			{ properties: { initialState } },
+			{ properties: { initialState: { contractConfig } } },
 			TxActor.actions,
 			TxActor.Properties(a_web3, a_nonce, getSendMethod)
 		)

@@ -22,7 +22,7 @@ const FakeClient = (sampleSize = 2, opts) => {
 		users: {},
 	});
 
-	const users = [...dummyUsers, ...conf.users];
+	const users = { ...dummyUsers, ...conf.users };
 
 	let tweetList = data;
 
@@ -84,7 +84,10 @@ const FakeClient = (sampleSize = 2, opts) => {
 
 			const tweet = Status(user, text, mention);
 			tweetList.push(tweet);
-			return tweet;
+			return this.request(tweet).then((r) => {
+				log(`updateStatus: ${text}`);
+				return { data: r };
+			});
 		}
 
 		async searchTweets(_params) {
@@ -96,12 +99,12 @@ const FakeClient = (sampleSize = 2, opts) => {
 			return this.request(user ? user : users['0']);
 		}
 
-		async updateStatus(text, params) {
-			return this.request(dummyStatus).then((r) => {
-				log(`updateStatus: ${text}`);
-				return { data: r };
-			});
-		}
+		// async updateStatus(text, params) {
+		// 	return this.request(dummyStatus).then((r) => {
+		// 		log(`updateStatus: ${text}`);
+		// 		return { data: r };
+		// 	});
+		// }
 	}
 
 	return new FakeClient();

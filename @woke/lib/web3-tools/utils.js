@@ -9,7 +9,9 @@ const waitForEvent = (_event, _from = 0, _to = 'latest') =>
 const waitForEventWeb3 = (_contract, _event, _from = 0, _to = 'latest') =>
 	//event: {fromBlock: _from, toBlock: _to}, (err, event) =>
 	new Promise((resolve, reject) =>
-		_contract.once(_event, {}, (err, event) => (err ? reject(err) : resolve(event)))
+		_contract.once(_event, { fromBlock: _from, toBlock: _to }, (err, event) =>
+			err ? reject(err) : resolve(event)
+		)
 	);
 
 const makeLogEventSubscription = (web3) => (contract, eventName, handleFunc, opts) => {

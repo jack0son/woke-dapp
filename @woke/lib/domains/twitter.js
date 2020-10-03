@@ -60,7 +60,18 @@ class TwitterDomain {
 			throw new Error(`User ${userId} not found`);
 		}
 
-		let tweets = await client.searchClaimTweets(userData.handle);
+		const searchParams = {
+			q: userData.handle
+				? `@getwoketoke from:${userData.handle}`
+				: `@getwoketoke OR 0xWOKE`,
+			result_type: 'recent',
+			include_entities: true,
+			tweet_mode: 'extended',
+			count: 100,
+		};
+
+		//let tweets = await client.searchClaimTweets(userData.handle);
+		let tweets = await client.searchTweets(searchParams);
 		if (tweets.length < 1) {
 			throw new Error('No claim tweet found');
 		}

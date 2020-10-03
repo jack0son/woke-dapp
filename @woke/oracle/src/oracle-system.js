@@ -2,16 +2,13 @@ const { Logger, twitter, TwitterDomain, configure } = require('@woke/lib');
 const { ActorSystem, PersistenceEngine } = require('@woke/wact');
 const { useMonitor } = require('@woke/actors');
 const { ContractSystem } = require('@woke/web3-nact');
+const { TwitterClient } = require('@woke/lib/config/twitter-config');
 
-const { TwitterClient } = require('../config/twitter-config');
+// Actors
+const TwitterAgent = require('./actors/twitter-agent');
+const Oracle = require('./actors/oracle');
+
 const debug = Logger('sys_oracle');
-
-// const TwitterAgent = require('./actors/twitter-agent');
-// const twitterMock = require('../test/mocks/twitter-stub.mock');
-// const Oracle = require('./actors/oracle');
-// function TwitterClient() {
-// 	return twitterMock.createMockClient(3);
-// }
 
 class OracleSystem {
 	constructor(opts) {
@@ -29,6 +26,7 @@ class OracleSystem {
 			networkList,
 			monitoring,
 			oracleContractInstance,
+			twitterEnv,
 		} = configure(opts, defaults);
 
 		this.persist = !!persist;
@@ -40,7 +38,7 @@ class OracleSystem {
 			monitoring,
 		};
 
-		this.twitterClient = conf.twitterClient || TwitterClient(conf.twitterEnv).client;
+		this.twitterClient = twitterClient || TwitterClient(twitterEnv).client;
 		this.twitterDomain = new TwitterDomain(this.twitterClient);
 
 		// Persistence
@@ -76,7 +74,7 @@ class OracleSystem {
 
 		this.a_twitterAgent = director.start_actor(
 			'twitterAgent',
-			TwitterAgent(this.twitterStub)
+			TwitterAgent(this.twitterDomain)
 		);
 
 		this.a_oracle = director[this.persist ? 'start_persistent' : 'start_actor'](
@@ -115,8 +113,8 @@ if (debug.control.enabled && require.main === module) {
 	const [persist, ...args] = argv;
 
 	(async () => {
-		const twitterStub = new TwitterDomain(twitterMock.createMockClient(5));
-		const oracleSystem = new OracleSystem(undefined, { persist: false, twitterStub });
+		const twitterDomain = new TwitterDomain(twitterMock.createMockClient(5));
+		const oracleSystem = new OracleSystem(undefined, { persist: false, twitterDomain });
 		oracleSystem.start();
 	})();
 }

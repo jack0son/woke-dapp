@@ -1,10 +1,11 @@
 require('../../lib/debug/apply-line-numbers')(console)(['log', 'warn'], {
 	prepend: true,
 });
-// console.keys = (arg) => console.log(Object.keys(arg));
+console.keys = (arg) => console.log(Object.keys(arg));
 
 const { ContractDomain, WokeDomain, Collection, userCollections } = require('@woke/test');
-const { Logger, protocol, web3Tools, twitter } = require('@woke/lib');
+const { Logger, protocol, web3Tools } = require('@woke/lib');
+const twitter = require('@woke/twitter');
 const { ContractSystem } = require('@woke/web3-nact');
 const OracleSystem = require('../src/oracle-system');
 
@@ -22,6 +23,8 @@ const initTestBed = async (users) => {
 
 const twitterClient = twitter.fake.FakeClient(0, { users: users.getMap() });
 
+function postClaimTweet() {}
+
 context('oracle-system', function () {
 	let testBed, oracleSystem, director, c_oracle;
 	before(async function () {
@@ -38,6 +41,7 @@ context('oracle-system', function () {
 		// console.log(r);
 		await testBed.contractDomain.redeploy();
 		oracleSystem = new OracleSystem({
+			twitterClient,
 			oracleContractInstance: testBed.contractDomain.contracts.Oracle,
 		});
 		director = oracleSystem.director;
@@ -48,17 +52,24 @@ context('oracle-system', function () {
 	});
 
 	it('should fulfill a valid user claim', async function () {
+		this.timeout(2000);
 		const [user] = users.list();
-		await oracleSystem.start();
+		const claimString = await testBed.wokeDomain.api.userClaimString(user);
+		twitterClient.updateStatus(claimString, { user });
+
+		console.log('+++++++++++++++++ SENDING CLAIM');
 		const wasClaimed = await testBed.wokeDomain.api.userIsClaimed(user);
+		await oracleSystem.start();
 		const { queryId, receipt } = await testBed.wokeDomain.api.sendClaimUser(user);
 
-		const isClaimed = await testBed.wokeDomain.api.userIsClaimed(user);
+		console.log('+++++++++++++++++ WAITING');
 		await web3Tools.utils.waitForEventWeb3(
 			testBed.contractDomain.contracts.UserRegistry,
 			'Claimed',
 			receipt.blockNumber
 		);
+		const isClaimed = await testBed.wokeDomain.api.userIsClaimed(user);
+
 		console.log(`wasClaimed:${wasClaimed}, isClaimed:${isClaimed}`);
 	});
 });

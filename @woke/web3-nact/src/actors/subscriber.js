@@ -56,11 +56,6 @@ const subscriptionActor = {
 			// Always get a fresh contract instance
 			const { web3Instance } = await block(state.a_web3, { type: 'get' });
 			const blockTime = web3Instance.network.blockTime;
-			console.log('contractConfig has: ', Object.keys(contractConfig));
-			console.log(
-				'artifact?',
-				contractConfig.artifact && contractConfig.artifact.contractName
-			);
 			const contract = makeContractInstanceFromConfig(web3Instance)(contractConfig);
 
 			const callback = (error, log) => {
@@ -69,7 +64,7 @@ const subscriptionActor = {
 			};
 
 			const latestBlock = state.latestBlock ? state.latestBlock : 0;
-			console.log('Subscribe with latestBlock', latestBlock);
+			// console.log('Subscribe with latestBlock', latestBlock);
 			const subscription = makeLogEventSubscription(web3Instance.web3)(
 				contract,
 				eventName,
