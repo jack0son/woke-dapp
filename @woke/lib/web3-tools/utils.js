@@ -6,13 +6,13 @@ const waitForEvent = (_event, _from = 0, _to = 'latest') =>
 		)
 	);
 
-const waitForEventWeb3 = (_contract, _event, _from = 0, _to = 'latest') =>
+const waitForNextEvent = (_contract) => (_event, _from = 0, _to = 'latest') =>
 	//event: {fromBlock: _from, toBlock: _to}, (err, event) =>
-	new Promise((resolve, reject) =>
-		_contract.once(_event, { fromBlock: _from, toBlock: _to }, (err, event) =>
-			err ? reject(err) : resolve(event)
-		)
-	);
+	new Promise((resolve, reject) => {
+		_contract.once(_event, { fromBlock: _from, toBlock: _to }, (err, event) => {
+			err ? reject(err) : resolve(event);
+		});
+	});
 
 const makeLogEventSubscription = (web3) => (contract, eventName, handleFunc, opts) => {
 	let subscription = null;
@@ -182,18 +182,6 @@ const _uInt32ToHexString = (uInt32) =>
 		'hex'
 	);
 
-const initContract = (web3Instance, interface, options) =>
-	new web3Instance.web3.eth.Contract(
-		interface.abi,
-		interface.networks[web3Instance.network.id].address,
-		{ data: options.includeData ? interface.deployedBytecode : undefined }
-	);
-
-const cloneContract = (web3Instance, web3Contract) =>
-	new web3Instance.web3.eth.Contract(web3Contract.jsonInterface, options.address, {
-		data: options.includeData ? web3Contract.options.data : undefined,
-	});
-
 const valueString = (web3Utils) => {
 	//const BN = web3Utils.BN;
 	const toEth = (wei) => web3Utils.fromWei(wei, 'ether');
@@ -225,11 +213,10 @@ const getEvents = (contractInstance) => async (eventName, filter) => {
 
 module.exports = {
 	waitForEvent,
-	waitForEventWeb3,
+	waitForNextEvent,
 	makeLogEventSubscription,
 	safePriceEstimate,
 	uInt32ToHexString,
-	initContract,
 	valueString,
 	abridgeAddress,
 	getEvents,

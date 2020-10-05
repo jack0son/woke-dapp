@@ -1,5 +1,4 @@
 const { web3Tools, Logger } = require('@woke/lib');
-const linkBytecode = require('../link-bytecode.js');
 const debug = Logger('test:contract');
 
 const isDeployed = (contract) => !!contract.options.adress;
@@ -15,6 +14,30 @@ const deployContract = (contract, artifact, args, opts) =>
 function deployUserRegistry(contractInstance, oracleAddress, maxSupply, sendOpts) {
 	console.log(`Deploying UserRegistry...`);
 	return deployContract(contractInstance, [oracleAddress, maxSupply], sendOpts);
+}
+
+function updateArtifact(path, networks) {
+	const artifact = JSON.parse(path);
+	const update = (network) => {
+		const { networkId, instance, address } = n;
+		if (!n.networkId) throw new Error('Must provide network ID');
+		if (instance) {
+			// Store instance
+		} else {
+			// Store options granularly
+			if (address) {
+				artifact.networks[networkId].address = address;
+			}
+		}
+
+		fs.writeFileSync(path, JSON.stringify(artifact));
+	};
+
+	if (!Array.isArray(networks)) {
+		update(networks);
+	} else {
+		networks.forEach(update);
+	}
 }
 
 class ContractConfig {
@@ -58,9 +81,12 @@ class ContractDomain {
 		const { instance, configList, contracts } = this;
 		configList.forEach((c) => {
 			debug.name(c.name, 'Loading truffle artifact...');
-			contracts[c.name] = web3Tools.utils.initContract(instance, c.artifact, {
-				includeData: true,
-			});
+			contracts[c.name] = web3Tools.methods.makeContractInstanceFromArtifact(instance)(
+				c.artifact,
+				{
+					includeData: true,
+				}
+			);
 			this.configs[c.name] = c;
 		});
 		this.accounts = await this.instance.web3.eth.getAccounts();
@@ -92,26 +118,33 @@ class ContractDomain {
 		return accounts;
 	}
 
-	async redeploy(contractNames = ['UserRegistry', 'Oracle']) {
+	async redeploy(contractNames = ['UserRegistry', 'Oracle'], opts = {}) {
+		const { updateArtifacts } = opts;
+
 		// woke token
-		const { contracts, configs, sendOpts, adminAccounts, instance } = this;
+		const { configs, sendOpts, adminAccounts, instance } = this;
 		contractNames.forEach((name) => {
-			if (!contracts[name]) throw new Error(`Contract '${name}' in not initialised`);
+			if (!this.contracts[name]) throw new Error(`Contract '${name}' in not initialised`);
 		});
 
 		// Must redeploy in this order
 		if (contractNames.includes('Oracle')) {
-			console.log('Current Oracle address:', contracts.Oracle.options.address);
+			console.log('Current Oracle address:', this.contracts.Oracle.options.address);
 			console.log(`Deploying Oracle...`);
 			const bytecode = configs.Oracle.artifact.bytecode;
-			contracts.Oracle = await contracts.Oracle.deploy({
+			this.contracts.Oracle = await this.contracts.Oracle.deploy({
 				data: bytecode,
 				arguments: [this.adminAccounts.oraclize_cb],
 			}).send({
 				value: 5000000000000000,
 				...sendOpts,
 			});
-			console.log('New Oracle address:', contracts.Oracle.options.address);
+			console.log('New Oracle address:', this.contracts.Oracle.options.address);
+			updateArtifacts &&
+				updateArtifact(this.configs.Oracle.path, {
+					networkId: this.instance.network.id,
+					adddress: this.contracts.Oracle.options.address,
+				});
 		}
 
 		const userRegistryContructorArguments = ({
@@ -123,32 +156,40 @@ class ContractDomain {
 		}) => [wokeTokenAddress, lnpdfAddress, oracleAddress, ownerAccount, maxTributors];
 
 		if (contractNames.includes('UserRegistry')) {
-			const originalAddress = contracts.UserRegistry.options.address.slice(0);
+			const originalAddress = this.contracts.UserRegistry.options.address.slice(0);
 
 			console.log(
 				'Current UserRegistry address:',
-				contracts.UserRegistry.options.address
+				this.contracts.UserRegistry.options.address
 			);
 			console.log(`Deploying UserRegistry...`);
-			console.log('using oracle address', contracts.Oracle.options.address);
+			console.log('using oracle address', this.contracts.Oracle.options.address);
 			const args = userRegistryContructorArguments({
-				wokeTokenAddress: contracts.WokeToken.options.address,
-				lnpdfAddress: contracts.LNPDF.options.address,
-				oracleAddress: contracts.Oracle.options.address,
+				wokeTokenAddress: this.contracts.WokeToken.options.address,
+				lnpdfAddress: this.contracts.LNPDF.options.address,
+				oracleAddress: this.contracts.Oracle.options.address,
 				ownerAccount: adminAccounts.owner,
 				maxTributors: 256,
 			});
 
-			contracts.UserRegistry = await contracts.UserRegistry.deploy({
-				data: linkBytecode(configs.UserRegistry.artifact, instance.network.id),
+			this.contracts.UserRegistry = await this.contracts.UserRegistry.deploy({
+				data: web3Tools.linkBytecode(configs.UserRegistry.artifact, instance.network.id),
 				arguments: args,
 			}).send(sendOpts);
 
 			// Update the user registry address in the token contract
-			await contracts.WokeToken.methods
-				.setUserRegistry(contracts.UserRegistry.options.address)
+			await this.contracts.WokeToken.methods
+				.setUserRegistry(this.contracts.UserRegistry.options.address)
 				.send(sendOpts);
-			console.log('New UserRegistry address:', contracts.UserRegistry.options.address);
+			console.log(
+				'New UserRegistry address:',
+				this.contracts.UserRegistry.options.address
+			);
+			updateArtifacts &&
+				updateArtifact(this.configs.UserRegistry.path, {
+					networkId: this.instance.network.id,
+					adddress: this.contracts.UserRegistry.options.address,
+				});
 		}
 	}
 
@@ -160,18 +201,22 @@ const configs = [
 	{
 		name: 'UserRegistry',
 		artifact: require('../../../contracts-src/build/contracts/artifacts/UserRegistry.json'),
+		path: '../../../contracts-src/build/contracts/artifacts/UserRegistry.json',
 	},
 	{
 		name: 'WokeToken',
 		artifact: require('../../../contracts-src/build/contracts/artifacts/WokeToken.json'),
+		path: '../../../contracts-src/build/contracts/artifacts/WokeToken.json',
 	},
 	{
 		name: 'Oracle',
 		artifact: require('../../../contracts-src/build/contracts/artifacts/TwitterOracleMock.json'),
+		path: '../../../contracts-src/build/contracts/artifacts/TwitterOracleMock.json',
 	},
 	{
 		name: 'LNPDF',
 		artifact: require('../../../contracts-src/build/contracts/artifacts/LogNormalPDF.json'),
+		path: '../../../contracts-src/build/contracts/artifacts/LogNormalPDF.json',
 	},
 ];
 

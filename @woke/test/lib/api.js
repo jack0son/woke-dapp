@@ -1,5 +1,6 @@
 const { Logger, protocol } = require('@woke/lib');
 const logger = Logger('woke:api');
+const fs = require('fs');
 
 // THE API IS NOT GETTING REFS TO NEW CONTRACTS
 function API(adminAccounts, web3Instance, getContracts, contractApi, sendOpts) {
@@ -30,7 +31,7 @@ function API(adminAccounts, web3Instance, getContracts, contractApi, sendOpts) {
 	}
 
 	async function sendOracleResponse(user, queryId) {
-		const claimString = await buildClaimString(...claimArgs(user));
+		const claimString = await buildOracleClaimString(...claimArgs(user));
 		const r = await contracts()
 			.Oracle.methods.__callback(queryId, claimString, '0x0')
 			.send({ ...sendOpts, from: adminAccounts.oraclize_cb });
@@ -52,7 +53,7 @@ function API(adminAccounts, web3Instance, getContracts, contractApi, sendOpts) {
 		// 1. Submit claim user
 		const {
 			queryId,
-			r: { blockNumber },
+			receipt: { blockNumber },
 		} = await sendClaimUser(user);
 		logger.name('claimUser()', `Sending __callback( ${queryId} ) ...`);
 		const claimString = await sendOracleResponse(user, queryId);
@@ -80,12 +81,34 @@ function API(adminAccounts, web3Instance, getContracts, contractApi, sendOpts) {
 	function transfer(from, to) {}
 
 	function userClaimString(user) {
-		return buildClaimString(...claimArgs(user));
+		return buildUserClaimString(...claimArgs(user));
 	}
 
-	async function buildClaimString(signatory, userId, followersCount, app = 'twitter') {
+	async function buildOracleClaimString(
+		signatory,
+		userId,
+		followersCount,
+		app = 'twitter'
+	) {
 		//logger.v('Gen claim for: ', signatory, userId, followersCount);
-		let str = await protocol.genClaimString(instance.web3)(
+		let str = await protocol.buildOracleClaimString(instance.web3)(
+			signatory,
+			userId,
+			followersCount,
+			app
+		);
+		//logger.v(`Oracle claim string: ${str}`);
+		return str;
+	}
+
+	async function buildUserClaimString(
+		signatory,
+		userId,
+		followersCount,
+		app = 'twitter'
+	) {
+		//logger.v('Gen claim for: ', signatory, userId, followersCount);
+		let str = await protocol.buildUserClaimString(instance.web3)(
 			signatory,
 			userId,
 			followersCount,
@@ -97,12 +120,14 @@ function API(adminAccounts, web3Instance, getContracts, contractApi, sendOpts) {
 
 	return {
 		sendClaimUser,
+		sendOracleResponse,
+		sendFulfillClaim,
 		completeClaimUser,
-		buildClaimString,
 		getUserBalance,
 		userIsClaimed,
-		buildClaimString,
 		userClaimString,
+		buildUserClaimString,
+		buildOracleClaimString,
 	};
 }
 

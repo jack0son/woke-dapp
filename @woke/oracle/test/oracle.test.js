@@ -26,12 +26,15 @@ const twitterClient = twitter.fake.FakeClient(0, { users: users.getMap() });
 function postClaimTweet() {}
 
 context('oracle-system', function () {
-	let testBed, oracleSystem, director, c_oracle;
+	let wokeDomain, contractDomain, oracleSystem, director, c_oracle;
 	before(async function () {
-		testBed = await initTestBed(users);
+		const testBed = await initTestBed(users);
+		wokeDomain = testBed.wokeDomain;
+		contractDomain = testBed.contractDomain;
 	});
 
 	beforeEach(async function () {
+		this.timeout(50000);
 		// @TODO @IMPORTANT
 		// The contract system is not going to work with these tests as it will load
 		// the addresses from the json file
@@ -39,10 +42,11 @@ context('oracle-system', function () {
 		//		-- or load from web3 contract object?
 
 		// console.log(r);
-		await testBed.contractDomain.redeploy();
+		await contractDomain.redeploy();
+		contractDomain.logAddresses();
 		oracleSystem = new OracleSystem({
 			twitterClient,
-			oracleContractInstance: testBed.contractDomain.contracts.Oracle,
+			oracleContractInstance: contractDomain.contracts.Oracle,
 		});
 		director = oracleSystem.director;
 	});
@@ -52,24 +56,54 @@ context('oracle-system', function () {
 	});
 
 	it('should fulfill a valid user claim', async function () {
-		this.timeout(2000);
+		this.timeout(50000);
+		// let emitter = contractDomain.contracts.UserRegistry.events
+		// 	.Lodged({ fromBlock: 0, filter: {} })
+		// 	.on('data', function (event) {
+		// 		console.log('emitter', event); // same results as the optional callback above
+		// 	});
+
 		const [user] = users.list();
-		const claimString = await testBed.wokeDomain.api.userClaimString(user);
+		//await wokeDomain.api.completeClaimUser(user);
+		const claimString = await wokeDomain.api.userClaimString(user);
 		twitterClient.updateStatus(claimString, { user });
+		const wasClaimed = await wokeDomain.api.userIsClaimed(user);
 
-		console.log('+++++++++++++++++ SENDING CLAIM');
-		const wasClaimed = await testBed.wokeDomain.api.userIsClaimed(user);
+		// 1. Start the oracle
 		await oracleSystem.start();
-		const { queryId, receipt } = await testBed.wokeDomain.api.sendClaimUser(user);
-
-		console.log('+++++++++++++++++ WAITING');
-		await web3Tools.utils.waitForEventWeb3(
-			testBed.contractDomain.contracts.UserRegistry,
-			'Claimed',
+		// 2. Submit claim request
+		let { queryId, receipt } = await wokeDomain.api.sendClaimUser(user);
+		let ts = await web3Tools.utils.waitForNextEvent(contractDomain.contracts.Oracle)(
+			'TweetStored',
 			receipt.blockNumber
 		);
-		const isClaimed = await testBed.wokeDomain.api.userIsClaimed(user);
+		console.log('GOT TS EVENT', ts);
+
+		receipt = await wokeDomain.api.sendFulfillClaim(user);
+		const isClaimed = await wokeDomain.api.userIsClaimed(user);
+		// await web3Tools.utils.waitForNextEvent(contractDomain.contracts.UserRegistry)(
+		// 	'Claimed',
+		// 	receipt.blockNumber
+		// );
 
 		console.log(`wasClaimed:${wasClaimed}, isClaimed:${isClaimed}`);
 	});
+
+	if (
+		('',
+		async function () {
+			const subscription = web3Tools.utils.makeLogEventSubscription(
+				contractDomain.instance.web3
+			)(
+				contractDomain.contracts.UserRegistry,
+				'Claimed',
+				(err, event) => {
+					console.log(err);
+					console.log('sub', event);
+				},
+				{ fromBlock: 0, filter: {} }
+			);
+			subscription.start();
+		})
+	);
 });

@@ -61,16 +61,14 @@ function submitQueryTx(state, msg, ctx) {
 	const { job, a_contract_TwitterOracle, tweet, userData } = state;
 
 	const proofString = tweetToProofString(tweet, userData);
-	dispatch(
-		a_contract_TwitterOracle,
-		{
-			type: 'send',
-			method: '__callback',
-			args: [job.queryId, proofString, '0x0'],
-			sinks: [ctx.self],
-		},
-		ctx.self
-	);
+	const m = {
+		type: 'send',
+		method: '__callback',
+		args: [job.queryId, proofString, '0x0'],
+		sinks: [ctx.self],
+	};
+	console.log('send tx msg', m);
+	dispatch(a_contract_TwitterOracle, m, ctx.self);
 
 	return { ...state, txSent: true };
 }

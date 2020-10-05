@@ -68,7 +68,7 @@ function instantiate(networkName, opts) {
 	const network = (!!networkName && config.web3.networks[networkName]) || defaultNetwork;
 
 	const rpcUrl = config.createRpcUrl(network);
-	const web3 = new Web3(rpcUrl);
+	const web3 = new Web3(rpcUrl, { transactionConfirmationBlocks: 1 });
 	web3.eth.handleRevert = conf.handleRevert;
 
 	let wallet = null;
