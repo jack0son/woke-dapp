@@ -19,7 +19,7 @@ const exists = (prop) => prop !== undefined && prop !== null;
 // Handle results from transaction actor
 function sink_tx(state, msg, ctx) {
 	const { results, tip } = state;
-	const { tx, txStatus, result, error } = msg;
+	const { tx, status, result, error } = msg;
 
 	// Throw if contract calls fail
 	if (error && tx.method !== 'tip') throw error;
@@ -35,8 +35,8 @@ function sink_tx(state, msg, ctx) {
 			break;
 
 		case 'tip':
-			ctx.debug.info(msg, `tip:${tip.id} Got tx status ${txStatus}`);
-			return { ...state, tipTx: { tx, txStatus, error } };
+			ctx.debug.info(msg, `tip:${tip.id} Got tx status ${status}`);
+			return { ...state, tipTx: { tx, status, error } };
 
 		default:
 			throw new Error(`sink:tx: ${tx.method} has no sink action`);
@@ -130,7 +130,7 @@ function effect_handleUserBalance(state, msg, ctx) {
 
 function effect_handleTipSuccess(state, msg, ctx) {
 	const {
-		tipTx: { tx, txStatus, error },
+		tipTx: { tx, status, error },
 		tip,
 	} = state;
 	const receipt = tx.receipt;
@@ -170,7 +170,7 @@ function effect_handleTipSuccess(state, msg, ctx) {
 
 function effect_handleTipFailure(state, msg, ctx) {
 	const {
-		tipTx: { txStatus, tx, error },
+		tipTx: { status, tx, error },
 		tip,
 	} = state;
 	// For the moment, if web3 fails, the tip just fails
@@ -216,12 +216,12 @@ const gotUserBalance = Pattern(
 );
 
 const tipTxSuccess = Pattern(
-	({ tipTx }) => !!tipTx && tipTx.txStatus == 'success',
+	({ tipTx }) => !!tipTx && tipTx.status == 'success',
 	effect_handleTipSuccess
 );
 
 const tipTxFailure = Pattern(
-	({ tipTx }) => !!tipTx && tipTx.txStatus == 'error',
+	({ tipTx }) => !!tipTx && tipTx.status == 'error',
 	effect_handleTipFailure
 );
 

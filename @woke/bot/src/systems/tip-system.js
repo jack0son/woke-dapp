@@ -29,6 +29,7 @@ const defaults = {
 	persist: false,
 	pollingInterval: 5 * 1000,
 	notificationTweets: true,
+	contractInstances: {},
 	// contractSystem,
 	// persist,
 	// pollingInterval,
@@ -70,14 +71,10 @@ class TipSystem {
 			enabled: this.config.faultMonitoring,
 		});
 
-		const contractInstances = conf.userRegistryContractInstance
-			? { UserRegistry: userRegistryContractInstance }
-			: {};
-
 		// Actors
 		this.contractSystem =
 			conf.contractSystem ||
-			ContractSystem(director, ['UserRegistry'], contractInstances, {
+			ContractSystem(director, ['UserRegistry'], conf.contractInstances, {
 				persist: this.persist,
 				networkList: this.config.networkList,
 			});

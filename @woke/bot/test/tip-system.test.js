@@ -16,9 +16,19 @@ const {
 } = require('@woke/actors');
 const { Logger, Deferral } = require('@woke/lib');
 const { makeUserCollectionFromTweets } = require('./helpers');
+const logger = Logger('test').d;
 
 const tipTweets = twitter.fake.data.tipTweets;
 const users = makeUserCollectionFromTweets(tipTweets);
+
+const logUsers = (users) =>
+	logger(
+		users.map(({ id, screen_name, followers_count }) => ({
+			id,
+			screen_name,
+			followers_count,
+		}))
+	);
 
 // Catch job statuses from the tip supervisor instead of posting tweets
 const MockTweeter = (director) => (callbacks) =>
@@ -52,7 +62,7 @@ const ExpectMutation = async (apiCall, initialXpt, diffXpt) => {
 
 	const expect = async () => {
 		const next = await apiCall();
-		diffXpt(prev, next);
+		return diffXpt(prev, next);
 	};
 
 	return expect;
@@ -83,26 +93,24 @@ const AppStateExpectations = (ctx) => {
 	};
 };
 
-const CallbackMock = (deferredCallback) => {
+const CallbackMock = (deferredCallback, msg) => {
 	const deferred = new Deferral();
 	return {
-		callback: deferredCallback(deferred),
+		callback: deferredCallback(deferred, msg),
 		deferred,
 	};
 };
 
-const wasDispatched = (deferred) => (expectedTip) => {
-	// expectedTip: passed by mockTweeter target function
-
+// @param expectedTip: passed by mockTweeter target function
+const wasDispatched = (deferred, msg) => (expectedTip) => {
+	logger(msg);
 	//expect(tip).to.deep.equal(expectedTip);
+	logger(expectedTip);
 	deferred.resolve();
 };
 
 const wasNotDispatched = (deferred) => (expectedTip) => {
-	// expectedTip: passed by mockTweeter target function
-
-	//expect(tip).to.deep.equal(expectedTip);
-	deferred.resolve();
+	deferred.reject();
 };
 
 const makeTipText = (to, amount) =>
@@ -117,8 +125,9 @@ context('tip-system', function () {
 	let wokeDomain, contractDomain, tipSystem, director, mockTweeter;
 
 	// Assert failure from inside a catch block (e.g. nact actor's handle function)
-	const expectNotCalled = (msg) =>
-		function () {
+	const expectNotCalled = (msg, callback) =>
+		function (...args) {
+			callback(...args);
 			this.test.callback(new Error(msg));
 		};
 
@@ -136,6 +145,7 @@ context('tip-system', function () {
 
 		twitterClient = twitter.fake.FakeClient(0);
 		tipSystem = new TipSystem({
+			contractInstances: { UserRegistry: contractDomain.contracts.UserRegistry },
 			faultMonitoring: false,
 			twitterClient,
 		});
@@ -152,14 +162,15 @@ context('tip-system', function () {
 		it('tip an unclaimed user', async function () {
 			this.timeout(50000);
 			// Setup notifier callbacks
-			const tipSeen = CallbackMock(wasDispatched);
-			const tipConfirmed = CallbackMock(wasDispatched);
+			const tipSeen = CallbackMock(wasDispatched, 'tip was seen');
+			const tipConfirmed = CallbackMock(wasDispatched, 'tip was confirmed');
 
+			const getReason = (tip) => logger('Reason', tip.reason);
 			const callbacks = {
 				'tip-seen': tipSeen.callback,
 				'tip-confirmed': tipConfirmed.callback,
-				'tip-invalid': expectNotCalled('Tip should not be invalid').bind(this),
-				'tip-failed': expectNotCalled('Tip should not fail').bind(this),
+				'tip-invalid': expectNotCalled('Tip should not be invalid', getReason).bind(this),
+				'tip-failed': expectNotCalled('Tip should not fail', getReason).bind(this),
 			};
 
 			mockTweeter = MockTweeter(director)(callbacks);
@@ -169,28 +180,29 @@ context('tip-system', function () {
 			const tipTweet = tipTweets[0];
 			const [fromUser, toUser] = users.list();
 			await wokeDomain.api.completeClaimUser(fromUser);
-			console.log('fromBal', await wokeDomain.api.getUserBalance(fromUser));
-
 			const amount = 2;
 
-			// Expect user balances to change
+			// 1. Remember user's initial on-chain state
 			const mutations = [
 				await expectMutation.balanceChangeBy(fromUser, amount * -1),
 				await expectMutation.balanceChangeBy(toUser, amount, xpt.notNegative),
 			];
 
+			// 2. Post the tip to twitter
 			const tipText = makeTipText(toUser, 2);
-			console.log('tipText', tipText);
-			// Now send the tip
 			await twitterClient.updateStatus(tipText, { user: fromUser, mention: toUser });
-			//const effectCallbacks =
 
-			await Promise.all([tipSeen, tipConfirmed].map((c) => c.deferred.promise));
-			await Promise.all(mutations.map((m) => m.expect()));
+			// 3. Confirm tweet notifications were sent
+			const cbs = [tipSeen, tipConfirmed].map((c) => c.deferred.promise);
+			logger(cbs);
+			logger(mutations);
+			await Promise.all(mutations);
+			await Promise.all(cbs);
 
 			// Resolve deferred promises
-			//expectNotFulfilled()
+			//expectNotFulfilled() - should use a sinnon spy / mock
 		});
+
 		/*
 		it('tip a claimed user', async function () {
 			const tipTweet = tipTweets[0];
