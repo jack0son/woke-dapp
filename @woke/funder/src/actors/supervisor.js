@@ -7,50 +7,55 @@ const web3Utils = require('web3-utils');
 const assert = require('assert');
 const { useNotifyOnCrash } = require('@woke/actors');
 const { configure } = require('@woke/lib');
-const JobActor = require('./job');
+const TaskActor = require('./task');
 const { dispatch, start_actor } = ActorSystem;
 const { TaskStatuses: Statuses } = TaskSupervisor;
 
-const isValidFundingJob = (job) => !!job.userId && !!job.address && !!job.fundAmount;
+const isValidFundingTask = (task) => !!task.userId && !!task.address;
 
-const Job = (userId, address, fundAmount) => ({ userId, address, fundAmount });
+// const Task = (userId, address, fundAmount) => ({ userId, address, fundAmount });
 
-const jobToString = (job) =>
-	`userId: ${job.userId.padStart(20)}, amount: ${web3Utils
-		.fromWei(job.fundAmount, 'eth')
-		.padStart(5)}, address: ${job.address}`;
+const taskToString = (task) =>
+	`userId: ${task.userId}, amount: ${web3Utils.fromWei(
+		task.fundAmount.toString(),
+		'ether'
+	)}, address: ${task.address}`;
+// const taskToString = (task) =>
+// 	`userId: ${task.userId.padStart(20)}, amount: ${web3Utils
+// 		.fromWei(task.fundAmount.toString(), 'ether')
+// 		.padStart(5)}, address: ${task.address}`;
 
-const defaultOpts = { fundAmount: web3Utils.toWei(0.4, 'eth') };
+const defaultOpts = { fundAmount: web3Utils.toWei('0.4', 'ether') };
 function FundingSupervisor(a_txManager, userRegistryAddress, opts) {
 	const conf = configure(opts, defaultOpts);
 
-	function spawn_funding_job(_parent, job) {
-		return start_actor(_parent)(`_job-${job.userId}`, JobActor, {
-			job,
+	function spawn_funding_task(_parent, task) {
+		return start_actor(_parent)(`_task-${task.userId}`, TaskActor, {
+			task,
 			a_txManager,
 		});
 	}
 
-	const getId = (job) => {
+	const getId = (task) => {
 		assert(typeof userRegistryAddress === 'string');
-		assert(typeof job.id === 'string');
-		return web3Utils.sha3(job.userId + userRegistryAddress);
+		assert(typeof task.userId === 'string');
+		return web3Utils.sha3(task.userId + userRegistryAddress);
 	};
 
-	// Start a funding job
+	// Start a funding task
 	const start_task = ({ state, msg, ctx }) => (task) => {
-		const a_task = spawn_funding_job(ctx.self, task);
+		const a_task = spawn_funding_task(ctx.self, task);
 		//start_actor(ctx.self)(task.taskId, makeTask(task, ctx.self), {});
 		dispatch(a_task, { type: 'start', tip: task }, ctx.self);
 		ctx.debug.d(msg, `Started task: ${task.taskId}`);
 	};
 
-	const isValidTask = isValidFundingJob;
+	const isValidTask = isValidFundingTask;
 
-	const debugJobProblem = (debug) => ({ error, reason }) => {
+	const debugTaskProblem = (debug) => ({ error, reason }) => {
 		debug(
-			`${status ? status.toString() : 'Problem'} funding job`,
-			jobToString(job),
+			`${status ? status.toString() : 'Problem'} funding task`,
+			taskToString(task),
 			'\n',
 			reason ? `reason: ${reason} ` : '',
 			error ? `error: ${error}` : ''
@@ -58,26 +63,26 @@ function FundingSupervisor(a_txManager, userRegistryAddress, opts) {
 	};
 
 	const problemEffect = (status) => (_, msg, { debug }) =>
-		debugJobProblem((...args) => debug(msg, ...args))(job, status);
+		debugTaskProblem((...args) => debug(msg, ...args))(task, status);
 
 	const effects = {
 		[Statuses.ready]: (state, msg, ctx) => {
-			const { address, userId } = msg;
+			const { fundAmount } = state;
+			const { task } = msg;
 			if (!fundAmount) {
 				throw new Error(`Funder must define a fundAmount`);
 			}
-			const job = Job(userId, address, fundAmount);
-			ctx.receivers.start_task(job);
+			task.fundAmount = fundAmount;
+			ctx.receivers.start_task(task);
 			return state;
 		},
 		[Statuses.done]: (state, msg, ctx) => {
-			console.log(msg);
-			const { job } = msg;
-			ctx.debug.d(msg, `Completed funding job: ${jobToString(job)}`);
-			conf.doneCallback && conf.doneCallback(job);
+			const { task } = msg;
+			ctx.debug.d(msg, `Completed funding task: ${taskToString(task)}`);
+			conf.onFundingComplete && conf.onFundingComplete(task);
 		},
 		[Statuses.invalid]: problemEffect(Statuses.invalid),
-		[Statuses.failed]: problemEffect(statuses.failed),
+		[Statuses.failed]: problemEffect(Statuses.failed),
 	};
 
 	return adapt(
@@ -95,7 +100,7 @@ function FundingSupervisor(a_txManager, userRegistryAddress, opts) {
 			},
 		},
 		// [actionArgs, propertyArgs]
-		TaskSupervisor.Definition([getId, isValidTask, { effects, ignoreTask }])
+		TaskSupervisor.Definition([getId, isValidTask, { effects }])
 	);
 }
 

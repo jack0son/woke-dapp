@@ -9,12 +9,12 @@ const { dispatch } = ActorSystem;
 const { subsumeEffects, Pattern } = reducers;
 const { TaskStatuses: Statuses } = TaskSupervisor;
 
-function handleFailure(msg, ctx, state) {
+function handleFailure(state, msg, ctx) {
 	const { error } = state;
 	if (error) {
 		// Catch error in on crash, schedule new attempt
 		//if(error.message.includes('not found') || error.message.includes('No tweets found')) {
-		//	ctx.receivers.update_job({ status: 'failed' }, error);
+		//	ctx.receivers.update_task({ status: 'failed' }, error);
 		//	return ctx.stop;
 		//}
 		throw error;
@@ -22,9 +22,9 @@ function handleFailure(msg, ctx, state) {
 	return state;
 }
 
-function submitFundTx(msg, ctx, state) {
+function submitFundTx(state, msg, ctx) {
 	const {
-		job: { address, fundAmount },
+		task: { address, fundAmount },
 		a_txManager,
 	} = state;
 	if (!fundAmount || fundAmount <= 0) {
@@ -32,7 +32,7 @@ function submitFundTx(msg, ctx, state) {
 	}
 	ctx.debug.d(msg, `Submitting funding transaction to ${address}`);
 
-	ctx.receivers.update_job({ status: Statuses.pending });
+	ctx.receivers.update_task({ status: Statuses.pending });
 
 	dispatch(
 		a_txManager,
@@ -62,7 +62,7 @@ Tx manager reply:
 */
 
 // Add tx data to state
-function handleFundTx(msg, ctx, state) {
+function handleFundTx(state, msg, ctx) {
 	const { action, error, tx, status } = msg;
 
 	if (action === 'send') {
@@ -73,25 +73,25 @@ function handleFundTx(msg, ctx, state) {
 
 // Problem with this pattern is that sink messages will not be commited to state
 
-function handleFundFailure(msg, ctx, state) {
+function handleFundFailure(state, msg, ctx) {
 	ctx.debug.d(msg, `Fund failed`);
 	const {
-		job: { userId },
+		task: { userId },
 		txResponse,
 	} = state;
 	throw txResponse.error;
-	//	ctx.receivers.update_job({ status: 'failed' }, txResponse.error);
+	//	ctx.receivers.update_task({ status: 'failed' }, txResponse.error);
 	return ctx.stop;
 }
 
-function complete(msg, ctx, state) {
+function complete(state, msg, ctx) {
 	const {
-		job: { address, userId },
+		task: { address, userId },
 		txReply,
 	} = state;
-	// @TODO check correct jobId
+	// @TODO check correct taskId
 	ctx.debug.d(msg, `Funding complete`);
-	ctx.receivers.update_job({ status: Statuses.done, txHash: txReply.txHash });
+	ctx.receivers.update_task({ status: Statuses.done, txHash: txReply.txHash });
 
 	return ctx.stop;
 }
@@ -103,7 +103,10 @@ const failed = Pattern(
 	handleFailure
 );
 
-const jobComplete = Pattern(({ txReply }) => !!txReply && !!txReply.tx.receipt, complete);
+const taskComplete = Pattern(
+	({ txReply }) => !!txReply && !!txReply.tx.receipt,
+	complete
+);
 
 const txFailed = Pattern(
 	//(state) => { console.log(state); },
@@ -111,30 +114,30 @@ const txFailed = Pattern(
 	handleFundFailure
 );
 
-const patterns = [start, failed, jobComplete, txFailed];
+const patterns = [start, failed, taskComplete, txFailed];
 const reducer = subsumeEffects(patterns);
 
 function onCrash(msg, error, ctx) {
-	console.log(`Job ${ctx.name} crash`);
+	console.log(`Task ${ctx.name} crash`);
 	error.actorName = ctx.name;
 	return ctx.escalate;
 }
 
-const update_job = ({ state, msg, ctx }) => (job, error) => {
+const update_task = ({ state, msg, ctx }) => (task, error) => {
 	const {
-		job: { userId, address },
+		task: { userId, address },
 	} = state;
 	dispatch(
 		ctx.parent,
 		{
 			type: 'update',
-			job: { ...job, userId, address, error }, // keep spawned identifiers
+			task: { ...task, userId, address, error }, // keep spawned identifiers
 		},
 		ctx.self
 	);
 };
 
-//function FundJob(a_twitterAgent, a_contract_TwitterOracle) {
+//function FundTask(a_twitterAgent, a_contract_TwitterOracle) {
 module.exports = {
 	properties: {
 		onCrash,
@@ -143,11 +146,11 @@ module.exports = {
 			sinkHandlers: {
 				tx: handleFundTx,
 			},
-			kind: 'fundJob',
+			kind: 'fundTask',
 			txSent: false,
 		},
 
-		receivers: [receivers.sink, update_job],
+		receivers: [receivers.sink, update_task],
 	},
 	actions: {
 		...adapters.SinkReduce(reducer),

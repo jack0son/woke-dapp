@@ -120,8 +120,8 @@ function handleTransactionError(msg, error, ctx) {
 }
 
 async function action_send(state, msg, ctx) {
-	const { maxAttempts } = state;
-	const { failedNonce, sinks } = msg;
+	const { maxAttempts, sinks } = state;
+	const { failedNonce } = msg;
 
 	if (msg.transactionSpec && msg.tx) {
 		throw new Error('Should not receive new transaction specification with tx state');

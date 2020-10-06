@@ -7,7 +7,7 @@ function useNotifyOnCrash(conf) {
 		let actorName = ctx.name;
 		if (!!error.actorName) actorName = error.actorName;
 		const prefixString = `Parent-${ctx.name} crash: actor<${actorName}>, action<${
-			!!msg ? msg.type : 'none'
+			!!msg ? msg.type.toString() : 'none'
 		}>`;
 		console.log('notifyOnCrash: ', prefixString);
 		console.log(error);

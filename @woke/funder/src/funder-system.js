@@ -68,7 +68,10 @@ class FunderSystem {
 
 		this.a_funder = director[this.persist ? 'start_persistent' : 'start_actor'](
 			'supervisor',
-			FundingSupervisor(this.a_txManager, '0x0', { fundAmount }),
+			FundingSupervisor(this.a_txManager, '0x0', {
+				fundAmount: this.fundAmount,
+				onFundingComplete: conf.onFundingComplete,
+			}),
 			{}
 		);
 	}
@@ -86,7 +89,15 @@ class FunderSystem {
 		//ActorSystem.query(self.a_funder, { type: 'fund',  address, userId } , self.config.queryTimeout)
 		//.then(reply => reply)
 		//.catch(console.log);
-		ActorSystem.dispatch(self.a_funder, { type: 'fund', address, userId });
+		ActorSystem.dispatch(self.a_funder, {
+			type: 'submit',
+			task: { address, userId, fundAmount: self.fundAmount },
+		});
+	}
+
+	restartTasks() {
+		const self = this;
+		ActorSystem.dispatch(self.a_funder, { type: 'restart' });
 	}
 
 	async start() {
@@ -102,7 +113,7 @@ class FunderSystem {
 			}
 		}
 
-		ActorSystem.dispatch(self.a_funder, { type: 'init' });
+		self.restartTasks();
 
 		console.log(`Started funder system.`);
 		console.log(
