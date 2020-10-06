@@ -1,5 +1,6 @@
 const { Logger, protocol } = require('@woke/lib');
 const logger = Logger('woke:api');
+const assert = require('assert');
 const fs = require('fs');
 
 // THE API IS NOT GETTING REFS TO NEW CONTRACTS
@@ -9,8 +10,25 @@ function API(adminAccounts, web3Instance, getContracts, contractApi, sendOpts) {
 
 	const claimArgs = (u) => [u.address, u.id, u.followers_count];
 
-	function getUserBalance(user) {
-		return contracts().UserRegistry.methods.balanceOf(user.id).call();
+	function getUnclaimedBalance(user) {
+		return contracts()
+			.UserRegistry.methods.unclaimedBalanceOf(user.id)
+			.call()
+			.then(Number);
+	}
+
+	function getBalance(user) {
+		return contracts().UserRegistry.methods.balanceOf(user.id).call().then(Number);
+	}
+
+	async function getUserBalance(user) {
+		const balance = await getBalance(user);
+		const unclaimedBalance = await getUnclaimedBalance(user);
+		if (balance > 0)
+			assert(unclaimedBalance == 0, 'claimed user should not have unclaimed tokens');
+		if (unclaimedBalance > 0)
+			assert(balance == 0, 'unclaimed user should not have claimed tokens');
+		return balance + unclaimedBalance;
 	}
 
 	function userIsClaimed(user) {

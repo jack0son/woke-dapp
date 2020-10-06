@@ -130,7 +130,7 @@ class ContractDomain {
 		// Must redeploy in this order
 		if (contractNames.includes('Oracle')) {
 			//console.log('Current Oracle address:', this.contracts.Oracle.options.address);
-			// console.log(`Deploying Oracle...`);
+			debug.d(`Deploying Oracle...`);
 			const bytecode = configs.Oracle.artifact.bytecode;
 			this.contracts.Oracle = await this.contracts.Oracle.deploy({
 				data: bytecode,
@@ -162,7 +162,7 @@ class ContractDomain {
 			// 	'Current UserRegistry address:',
 			// 	this.contracts.UserRegistry.options.address
 			// );
-			// console.log(`Deploying UserRegistry...`);
+			debug.d(`Deploying UserRegistry...`);
 			const args = userRegistryContructorArguments({
 				wokeTokenAddress: this.contracts.WokeToken.options.address,
 				lnpdfAddress: this.contracts.LNPDF.options.address,

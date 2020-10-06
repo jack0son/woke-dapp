@@ -56,12 +56,13 @@ const callbacks = {
 	'tip-failed': () => {},
 };
 
-const ExpectMutation = async (apiCall, initialXpt, diffXpt) => {
+const ExpectMutation = async (apiCall, initialXpt, diffXpt, msg = '') => {
 	const prev = await apiCall();
 	initialXpt(prev);
 
 	const expect = async () => {
 		const next = await apiCall();
+		msg && logger('Expect', msg);
 		return diffXpt(prev, next);
 	};
 
@@ -81,11 +82,12 @@ xpt.changeBy = (amount) => (a, b) => expect(b - a).to.equal(amount);
 // @param ctx: Whatever state domain's mutations need to be checked
 const AppStateExpectations = (ctx) => {
 	const { wokeDomain } = ctx;
-	const balanceChangeBy = (user, amount, initialXpt = xpt.nonZero) =>
+	const balanceChangeBy = (user, amount, msg = '', initialXpt = xpt.nonZero) =>
 		ExpectMutation(
-			() => wokeDomain.api.getUserBalance(user).then(Number),
+			() => wokeDomain.api.getUserBalance(user),
 			initialXpt, // initial state
-			xpt.changeBy(amount) // state diff
+			xpt.changeBy(amount), // state diff
+			msg
 		);
 
 	return {
@@ -93,6 +95,7 @@ const AppStateExpectations = (ctx) => {
 	};
 };
 
+// Twitter mock callbacks
 const CallbackMock = (deferredCallback, msg) => {
 	const deferred = new Deferral();
 	return {
@@ -143,11 +146,12 @@ context('tip-system', function () {
 		//contractDomain.reset();
 		await contractDomain.redeploy();
 
-		twitterClient = twitter.fake.FakeClient(0);
+		twitterClient = twitter.fake.FakeClient(0, { rateLimit: 100 });
 		tipSystem = new TipSystem({
 			contractInstances: { UserRegistry: contractDomain.contracts.UserRegistry },
 			faultMonitoring: false,
 			twitterClient,
+			pollingInterval: 100,
 		});
 		director = tipSystem.getDirector();
 
@@ -184,8 +188,17 @@ context('tip-system', function () {
 
 			// 1. Remember user's initial on-chain state
 			const mutations = [
-				await expectMutation.balanceChangeBy(fromUser, amount * -1),
-				await expectMutation.balanceChangeBy(toUser, amount, xpt.notNegative),
+				await expectMutation.balanceChangeBy(
+					fromUser,
+					amount * -1,
+					'sender balance decrease'
+				),
+				await expectMutation.balanceChangeBy(
+					toUser,
+					amount,
+					'recipient balance increase',
+					xpt.notNegative
+				),
 			];
 
 			// 2. Post the tip to twitter
@@ -193,18 +206,16 @@ context('tip-system', function () {
 			await twitterClient.updateStatus(tipText, { user: fromUser, mention: toUser });
 
 			// 3. Confirm tweet notifications were sent
-			const cbs = [tipSeen, tipConfirmed].map((c) => c.deferred.promise);
-			logger(cbs);
-			logger(mutations);
-			await Promise.all(mutations);
-			await Promise.all(cbs);
+			await Promise.all([tipSeen, tipConfirmed].map((c) => c.deferred.promise));
 
-			// Resolve deferred promises
-			//expectNotFulfilled() - should use a sinnon spy / mock
+			// 4. Confirm tokens were transferred
+			await Promise.all(mutations.map((m) => m()));
 		});
 
 		/*
 		it('tip a claimed user', async function () {
+			// Resolve deferred promises
+			//expectNotFulfilled() - should use a sinnon spy / mock
 			const tipTweet = tipTweets[0];
 			const [fromUser, toUser] = users.list();
 			await wokeDomain.api.claimUser(fromUser);
