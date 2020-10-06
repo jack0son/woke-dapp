@@ -1,3 +1,4 @@
+const j0 = require('@woke/jack0son');
 const { web3Tools, Logger } = require('@woke/lib');
 const debug = Logger('test:contract');
 
@@ -52,13 +53,18 @@ class ContractConfig {
 }
 
 class ContractDomain {
-	constructor(contractConfigList, sendOpts) {
+	constructor(contractConfigList, opts = {}) {
+		const { sendOpts, network } = opts;
 		this.configList = contractConfigList;
 		if (process.env.ETH_ENV !== 'development')
 			console.warn(
 				`WARNING: ETH_ENV should be development. ETH_ENV == ${process.env.ETH_ENV}`
 			);
-		this.instance = web3Tools.init.instantiate();
+
+		const _network = j0.exists(network)
+			? (network == 'none' && undefined) || network // if none specified allow env to determine
+			: 'development'; // by default use development
+		this.instance = web3Tools.init.instantiate(_network);
 		this.contracts = {};
 		this.configs = {};
 

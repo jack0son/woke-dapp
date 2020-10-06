@@ -4,7 +4,7 @@ const Collection = require('./collection.js');
 const userCollections = require('./users');
 
 const initTestBed = async (users) => {
-	contractDomain = await ContractDomain().init();
+	contractDomain = await ContractDomain().init('development');
 	wokeDomain = await WokeDomain(contractDomain);
 	users.assignAddresses(contractDomain.allocateAccounts(users.length));
 	return {
