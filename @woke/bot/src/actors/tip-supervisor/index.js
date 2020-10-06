@@ -105,6 +105,7 @@ function TipSupervisor(a_wokenContract, a_tweeter, opts) {
 				},
 			},
 		},
+		// [actionArgs, propertyArgs]
 		TaskSupervisor.Definition([getId, isValidTask, { effects, ignoreTask }])
 	);
 }

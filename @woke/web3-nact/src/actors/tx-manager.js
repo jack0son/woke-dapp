@@ -24,6 +24,11 @@ function action_send(state, msg, ctx) {
 	dispatch(a_tx, _msg, ctx.sender);
 }
 
+function action_getCore(state, msg, ctx) {
+	const { a_web3, a_nonce } = state;
+	dispatch(ctx.sender, { a_web3, a_nonce }, ctx.self);
+}
+
 const TxManager = ({ a_web3, a_nonce }) => ({
 	properties: {
 		initialState: {
@@ -34,6 +39,7 @@ const TxManager = ({ a_web3, a_nonce }) => ({
 	},
 	actions: {
 		send: action_send,
+		get_core: action_getCore,
 	},
 });
 

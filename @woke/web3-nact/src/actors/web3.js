@@ -195,6 +195,16 @@ function Web3Actor(
 		return { ...state, queue: [...queue, ctx.sender] };
 	}
 
+	async function action_networkInfo(state, msg, ctx) {
+		const { web3Instance } = state;
+		if (!web3Instance) {
+			dispatch(ctx.sender, { error: 'Network information not available' }, ctx.self);
+			return;
+		}
+
+		dispatch(ctx.sender, { network: { ...web3Instance.network } }, ctx.self);
+	}
+
 	// Provide a web3 instance to other actors
 	// When the connection fails, re-instantiate
 	return {
@@ -218,6 +228,7 @@ function Web3Actor(
 			get: action_get,
 			wait: action_wait,
 			instantiate: action_instantiate,
+			networkInfo: action_networkInfo,
 		},
 	};
 }
