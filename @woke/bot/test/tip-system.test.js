@@ -1,46 +1,27 @@
-const j0 = require('@woke/jack0son');
+require('../../lib/debug/apply-line-numbers')(console)(['log', 'warn'], {
+	prepend: true,
+});
 const twitter = require('@woke/twitter');
 const chai = require('chai');
-const chaiAsPromised = require('chai-as-promised');
-chai.use(chaiAsPromised);
+chai.use(require('chai-as-promised'));
+const expect = chai.expect;
 const should = chai.should();
-const expect = chai.expect();
+const assert = chai.assert;
 
 const TipSystem = require('../src/systems/tip-system');
-const { ContractDomain, WokeDomain, Collection } = require('@woke/test');
+const { initTestBed, ContractDomain, WokeDomain, Collection } = require('@woke/test');
 
 const {
 	tweeter: { Tweeter },
 } = require('@woke/actors');
-const Deferral = require('@woke/wact/src/lib/deferral');
+const { Logger, Deferral } = require('@woke/lib');
+const { makeUserCollectionFromTweets } = require('./helpers');
 
 const tipTweets = twitter.fake.data.tipTweets;
-
-const extractRecipient = (tweet) => ({
-	id: tweet.entities.user_mentions[0].id_str,
-	handle: tweet.entities.user_mentions[0].screen_name,
-});
-
-const extractUser = (idx) => (user) => {
-	let u = {
-		...user,
-		id: user.id_str,
-	};
-	idx[u.id] = u;
-	return u;
-};
-
-// Extract user objects from our tweets pulled from twitter
-const tweetsToUserIndex = (tweets) =>
-	tweets.reduce((users, tweet) => {
-		if (j0.notEmpty(tweet.entities.user_mentions))
-			tweet.entities.user_mentions.forEach(extractUser(users));
-		if (!users[tweet.user.id_str]) extractUser(users)(tweet.user);
-		return users;
-	}, Object.create(null));
+const users = makeUserCollectionFromTweets(tipTweets);
 
 // Catch job statuses from the tip supervisor instead of posting tweets
-const MockTweeter = (director) => (callbacks, expectedTypes) =>
+const MockTweeter = (director) => (callbacks) =>
 	director.start_actor(
 		'mock-tweeter',
 		{
@@ -58,41 +39,48 @@ const MockTweeter = (director) => (callbacks, expectedTypes) =>
 		{}
 	);
 
-const ExpectMutation = async (apiCall, initial, final) => {
-	const prev = await apiCall();
-	initial(prev);
-
-	const expect = async () => {
-		const next = await apiCall();
-		final(prev, next);
-	};
-
-	return expect;
-};
-
-let xpt = {};
-xpt.gt = (v, a) => expect(v).to.be.above(a);
-xpt.nonZero = (v) => xpt.gt(v, 0);
-xpt.changeBy = (amount) => (a, b) => expect(b - a).to.equal(amount);
-
-const AppStateExpectations = (wokeDomain) => {
-	const balanceChangeBy = (user, amount) =>
-		ExpectMutation(
-			() => wokeDomain.api.getUserBalance(user).call,
-			xpt.nonZero,
-			xpt.changeBy(amount)
-		);
-
-	return {
-		balanceChangeBy,
-	};
-};
-
 const callbacks = {
 	'tip-seen': () => {},
 	'tip-confirmed': () => {},
 	'tip-invalid': () => {},
 	'tip-failed': () => {},
+};
+
+const ExpectMutation = async (apiCall, initialXpt, diffXpt) => {
+	const prev = await apiCall();
+	initialXpt(prev);
+
+	const expect = async () => {
+		const next = await apiCall();
+		diffXpt(prev, next);
+	};
+
+	return expect;
+};
+
+// Expectations
+// initial: (a) => assertion
+// diff: (a,b) => assertion
+let xpt = {};
+xpt.gt = (v, a) => expect(v).to.be.above(a);
+xpt.notNegative = (v) => expect(v).to.not.be.lt(0); // lol so wrong
+xpt.nonZero = (v) => xpt.gt(v, 0);
+xpt.changeBy = (amount) => (a, b) => expect(b - a).to.equal(amount);
+
+// A bit of fun generalising expected state changes
+// @param ctx: Whatever state domain's mutations need to be checked
+const AppStateExpectations = (ctx) => {
+	const { wokeDomain } = ctx;
+	const balanceChangeBy = (user, amount, initialXpt = xpt.nonZero) =>
+		ExpectMutation(
+			() => wokeDomain.api.getUserBalance(user).then(Number),
+			initialXpt, // initial state
+			xpt.changeBy(amount) // state diff
+		);
+
+	return {
+		balanceChangeBy,
+	};
 };
 
 const CallbackMock = (deferredCallback) => {
@@ -104,12 +92,18 @@ const CallbackMock = (deferredCallback) => {
 };
 
 const wasDispatched = (deferred) => (expectedTip) => {
+	// expectedTip: passed by mockTweeter target function
+
 	//expect(tip).to.deep.equal(expectedTip);
-	deffered.resolve();
+	deferred.resolve();
 };
 
-const userIndex = tweetsToUserIndex(tipTweets);
-const users = Collection(Object.values(userIndex));
+const wasNotDispatched = (deferred) => (expectedTip) => {
+	// expectedTip: passed by mockTweeter target function
+
+	//expect(tip).to.deep.equal(expectedTip);
+	deferred.resolve();
+};
 
 const makeTipText = (to, amount) =>
 	`@${to.screen_name} Have these wokens +${amount} $WOKE`;
@@ -120,35 +114,34 @@ const makeTipText = (to, amount) =>
 // 2. unit: stateful contracts redeployed between tests (@TODO);
 
 context('tip-system', function () {
-	let wokeDomain,
-		contractDomain,
-		tipSystem,
-		director,
-		mockTweeter,
-		wokeDomainExpectations;
+	let wokeDomain, contractDomain, tipSystem, director, mockTweeter;
+
+	// Assert failure from inside a catch block (e.g. nact actor's handle function)
+	const expectNotCalled = (msg) =>
+		function () {
+			this.test.callback(new Error(msg));
+		};
 
 	before(async function () {
 		// Initialise test bed
-		contractDomain = ContractDomain();
-		await contractDomain.init();
-		wokeDomain = await WokeDomain(contractDomain);
-		users.assignAddresses(await contractDomain.allocateAccounts(4));
+		const testBed = await initTestBed(users);
+		wokeDomain = testBed.wokeDomain;
+		contractDomain = testBed.contractDomain;
 	});
 
 	beforeEach(async function () {
+		this.timeout(50000);
 		//contractDomain.reset();
 		await contractDomain.redeploy();
+
 		twitterClient = twitter.fake.FakeClient(0);
 		tipSystem = new TipSystem({
 			faultMonitoring: false,
 			twitterClient,
 		});
 		director = tipSystem.getDirector();
-		mockTweeter = MockTweeter(director);
-		await tipSystem.setTweeter(mockTweeter);
-		await tipSystem.start();
 
-		expectMutation = AppStateExpectations(wokeDomain);
+		expectMutation = AppStateExpectations({ wokeDomain });
 	});
 
 	afterEach(function () {
@@ -157,6 +150,7 @@ context('tip-system', function () {
 
 	describe('claimedUser', function () {
 		it('tip an unclaimed user', async function () {
+			this.timeout(50000);
 			// Setup notifier callbacks
 			const tipSeen = CallbackMock(wasDispatched);
 			const tipConfirmed = CallbackMock(wasDispatched);
@@ -164,27 +158,25 @@ context('tip-system', function () {
 			const callbacks = {
 				'tip-seen': tipSeen.callback,
 				'tip-confirmed': tipConfirmed.callback,
-				'tip-invalid': () => {
-					throw new Error('Tip should not be invalid');
-				},
-				'tip-failed': () => {
-					throw new Error('Tip should not fail');
-				},
+				'tip-invalid': expectNotCalled('Tip should not be invalid').bind(this),
+				'tip-failed': expectNotCalled('Tip should not fail').bind(this),
 			};
+
+			mockTweeter = MockTweeter(director)(callbacks);
+			await tipSystem.setTweeter(mockTweeter);
+			await tipSystem.start();
 
 			const tipTweet = tipTweets[0];
 			const [fromUser, toUser] = users.list();
-			//console.log(wokeDomain);
-			fromUser.id = '123';
-			console.log(wokeDomain);
-			console.log('getUsers', await wokeDomain.contractApi.UserRegistry.getUsers());
-			await wokeDomain.api.claimUser(fromUser);
+			await wokeDomain.api.completeClaimUser(fromUser);
+			console.log('fromBal', await wokeDomain.api.getUserBalance(fromUser));
+
 			const amount = 2;
 
 			// Expect user balances to change
 			const mutations = [
 				await expectMutation.balanceChangeBy(fromUser, amount * -1),
-				await expectMutation.balanceChangeBy(toUser, amount),
+				await expectMutation.balanceChangeBy(toUser, amount, xpt.notNegative),
 			];
 
 			const tipText = makeTipText(toUser, 2);
@@ -195,6 +187,9 @@ context('tip-system', function () {
 
 			await Promise.all([tipSeen, tipConfirmed].map((c) => c.deferred.promise));
 			await Promise.all(mutations.map((m) => m.expect()));
+
+			// Resolve deferred promises
+			//expectNotFulfilled()
 		});
 		/*
 		it('tip a claimed user', async function () {

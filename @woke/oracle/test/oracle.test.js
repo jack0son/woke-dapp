@@ -2,8 +2,18 @@ require('../../lib/debug/apply-line-numbers')(console)(['log', 'warn'], {
 	prepend: true,
 });
 console.keys = (arg) => console.log(Object.keys(arg));
+const chai = require('chai');
+const chaiAsPromised = require('chai-as-promised');
+chai.use(chaiAsPromised);
+const expect = chai.expect;
 
-const { ContractDomain, WokeDomain, Collection, userCollections } = require('@woke/test');
+const {
+	initTestBed,
+	ContractDomain,
+	WokeDomain,
+	Collection,
+	userCollections,
+} = require('@woke/test');
 const { Logger, protocol, web3Tools } = require('@woke/lib');
 const twitter = require('@woke/twitter');
 const { ContractSystem } = require('@woke/web3-nact');
@@ -11,17 +21,7 @@ const OracleSystem = require('../src/oracle-system');
 
 const users = userCollections.dummy;
 
-const initTestBed = async (users) => {
-	contractDomain = await ContractDomain().init();
-	wokeDomain = await WokeDomain(contractDomain);
-	users.assignAddresses(contractDomain.allocateAccounts(users.length));
-	return {
-		contractDomain,
-		wokeDomain,
-	};
-};
-
-const twitterClient = twitter.fake.FakeClient(0, { users: users.getMap() });
+const twitterClient = twitter.fake.FakeClient(0, { users: users.getDictionary() });
 
 function postClaimTweet() {}
 
@@ -35,15 +35,7 @@ context('oracle-system', function () {
 
 	beforeEach(async function () {
 		this.timeout(50000);
-		// @TODO @IMPORTANT
-		// The contract system is not going to work with these tests as it will load
-		// the addresses from the json file
-		//		-- add option to choose address
-		//		-- or load from web3 contract object?
-
-		// console.log(r);
 		await contractDomain.redeploy();
-		contractDomain.logAddresses();
 		oracleSystem = new OracleSystem({
 			twitterClient,
 			oracleContractInstance: contractDomain.contracts.Oracle,
@@ -52,46 +44,47 @@ context('oracle-system', function () {
 	});
 
 	afterEach(function () {
-		//director.stop();
+		director.stop();
 	});
 
 	it('should fulfill a valid user claim', async function () {
 		this.timeout(50000);
+
+		const [user] = users.list();
+		const claimString = await wokeDomain.api.userClaimString(user);
+		twitterClient.updateStatus(claimString, { user });
+		await expect(wokeDomain.api.userIsClaimed(user)).to.eventually.equal(
+			false,
+			'user is already claimed'
+		);
+
+		// 1. Start the oracle
+		await oracleSystem.start();
+
+		// 2. Submit claim request
+		let { queryId, receipt } = await wokeDomain.api.sendClaimUser(user);
+		const tweetStored = await web3Tools.utils.waitForNextEvent(
+			contractDomain.contracts.Oracle
+		)('TweetStored', receipt.blockNumber);
+		expect(tweetStored.returnValues.queryId).to.equal(queryId);
+		expect(tweetStored.returnValues.statusId).to.equal(user.id);
+
+		receipt = await wokeDomain.api.sendFulfillClaim(user);
+		await expect(wokeDomain.api.userIsClaimed(user)).to.eventually.equal(
+			true,
+			'user was not claimed'
+		);
+	});
+
+	/*
+	it(
+		('',
+		async function () {
 		// let emitter = contractDomain.contracts.UserRegistry.events
 		// 	.Lodged({ fromBlock: 0, filter: {} })
 		// 	.on('data', function (event) {
 		// 		console.log('emitter', event); // same results as the optional callback above
 		// 	});
-
-		const [user] = users.list();
-		//await wokeDomain.api.completeClaimUser(user);
-		const claimString = await wokeDomain.api.userClaimString(user);
-		twitterClient.updateStatus(claimString, { user });
-		const wasClaimed = await wokeDomain.api.userIsClaimed(user);
-
-		// 1. Start the oracle
-		await oracleSystem.start();
-		// 2. Submit claim request
-		let { queryId, receipt } = await wokeDomain.api.sendClaimUser(user);
-		let ts = await web3Tools.utils.waitForNextEvent(contractDomain.contracts.Oracle)(
-			'TweetStored',
-			receipt.blockNumber
-		);
-		console.log('GOT TS EVENT', ts);
-
-		receipt = await wokeDomain.api.sendFulfillClaim(user);
-		const isClaimed = await wokeDomain.api.userIsClaimed(user);
-		// await web3Tools.utils.waitForNextEvent(contractDomain.contracts.UserRegistry)(
-		// 	'Claimed',
-		// 	receipt.blockNumber
-		// );
-
-		console.log(`wasClaimed:${wasClaimed}, isClaimed:${isClaimed}`);
-	});
-
-	if (
-		('',
-		async function () {
 			const subscription = web3Tools.utils.makeLogEventSubscription(
 				contractDomain.instance.web3
 			)(
@@ -106,4 +99,5 @@ context('oracle-system', function () {
 			subscription.start();
 		})
 	);
+	*/
 });

@@ -6,10 +6,10 @@ const waitForEvent = (_event, _from = 0, _to = 'latest') =>
 		)
 	);
 
-const waitForNextEvent = (_contract) => (_event, _from = 0, _to = 'latest') =>
+const waitForNextEvent = (_contract) => (_event, _from = 0, opts) =>
 	//event: {fromBlock: _from, toBlock: _to}, (err, event) =>
 	new Promise((resolve, reject) => {
-		_contract.once(_event, { fromBlock: _from, toBlock: _to }, (err, event) => {
+		_contract.once(_event, { fromBlock: _from, ...opts }, (err, event) => {
 			err ? reject(err) : resolve(event);
 		});
 	});

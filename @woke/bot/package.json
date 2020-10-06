@@ -5,8 +5,8 @@
   "private": true,
   "main": "index.js",
   "scripts": {
-    "test": "./node_modules/.bin/mocha",
-    "test:debug": "DEBUG=*,-mocha:* ./node_modules/.bin/mocha",
+    "test": "./node_modules/.bin/mocha test/*.test.js",
+    "test:debug": "DEBUG=*,-mocha:*,-*:info ./node_modules/.bin/mocha test/*.test.js",
     "tipper": "NODE_ENV=production node src/services/tipper.js",
     "tipper:dev": "NODE_ENV=development node src/services/tipper.js --persist=false --twitterApp=oracle-bot --twitterEnv=dev --verbose=true",
     "tipper:fake": "NODE_ENV=development node src/services/tipper.js --persist=false --twitterEnv=fake --verbose=true",

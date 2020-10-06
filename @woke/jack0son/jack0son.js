@@ -56,7 +56,7 @@ const propsDiffGen = (_a) => {
 
 const buildListIndex = (list, keyProp = 'id') =>
 	list.reduce((idx, item) => {
-		idx[item[keyProp]], item;
+		idx[item[keyProp]] = item;
 		return idx;
 	}, Object.create(null));
 

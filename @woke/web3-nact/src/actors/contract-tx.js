@@ -26,7 +26,7 @@ let i = 0;
 async function action_call(state, msg, ctx) {
 	const { tx } = msg;
 	const { method, args } = tx;
-	const { callOpts, a_web3, contractInterface, contractInstance } = state;
+	const { callOpts, a_web3, contractConfig } = state;
 
 	tx.type = 'call';
 	const { web3Instance } = await block(a_web3, { type: 'get' });
@@ -36,11 +36,7 @@ async function action_call(state, msg, ctx) {
 	};
 
 	// Contract instance should use web3 actor's instance
-	const contract = makeContractInstance(
-		web3Instance,
-		contractInstance,
-		contractInterface
-	);
+	const contract = makeContractInstanceFromConfig(web3Instance)(contractConfig);
 	const result = await contract.methods[method](...tx.args).call(opts);
 
 	//dispatch(ctx.sender, { type: 'tx', tx, result }, ctx.parent);

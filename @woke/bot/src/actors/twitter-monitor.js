@@ -13,13 +13,13 @@ const debug = (msg, args) => Logger().name(`TMON`, `${msg.type}>> ` + args);
 
 // @returns tip
 
-const TwitterMonitor = (twitterStub) => {
+const TwitterMonitor = (twitterDomain) => {
 	const retry = exponentialRetry(3);
 
 	return {
 		properties: {
 			initialState: {
-				twitter: twitterStub,
+				twitter: twitterDomain,
 				seenTips: {},
 
 				// @TODO Tweet finality
@@ -63,7 +63,7 @@ const TwitterMonitor = (twitterStub) => {
 				validateTwitterStub(twitter);
 				//isActor(a_processor, 'a_processor');
 
-				ctx.debug.info(msg, 'Finding tip tweets...');
+				ctx.debug.d(msg, 'Finding tip tweets...');
 				return twitter
 					.findTips()
 					.then((tipTweets) => {

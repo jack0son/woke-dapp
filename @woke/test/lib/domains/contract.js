@@ -129,8 +129,8 @@ class ContractDomain {
 
 		// Must redeploy in this order
 		if (contractNames.includes('Oracle')) {
-			console.log('Current Oracle address:', this.contracts.Oracle.options.address);
-			console.log(`Deploying Oracle...`);
+			//console.log('Current Oracle address:', this.contracts.Oracle.options.address);
+			// console.log(`Deploying Oracle...`);
 			const bytecode = configs.Oracle.artifact.bytecode;
 			this.contracts.Oracle = await this.contracts.Oracle.deploy({
 				data: bytecode,
@@ -139,7 +139,7 @@ class ContractDomain {
 				value: 5000000000000000,
 				...sendOpts,
 			});
-			console.log('New Oracle address:', this.contracts.Oracle.options.address);
+			// console.log('New Oracle address:', this.contracts.Oracle.options.address);
 			updateArtifacts &&
 				updateArtifact(this.configs.Oracle.path, {
 					networkId: this.instance.network.id,
@@ -158,12 +158,11 @@ class ContractDomain {
 		if (contractNames.includes('UserRegistry')) {
 			const originalAddress = this.contracts.UserRegistry.options.address.slice(0);
 
-			console.log(
-				'Current UserRegistry address:',
-				this.contracts.UserRegistry.options.address
-			);
-			console.log(`Deploying UserRegistry...`);
-			console.log('using oracle address', this.contracts.Oracle.options.address);
+			// console.log(
+			// 	'Current UserRegistry address:',
+			// 	this.contracts.UserRegistry.options.address
+			// );
+			// console.log(`Deploying UserRegistry...`);
 			const args = userRegistryContructorArguments({
 				wokeTokenAddress: this.contracts.WokeToken.options.address,
 				lnpdfAddress: this.contracts.LNPDF.options.address,
@@ -181,10 +180,7 @@ class ContractDomain {
 			await this.contracts.WokeToken.methods
 				.setUserRegistry(this.contracts.UserRegistry.options.address)
 				.send(sendOpts);
-			console.log(
-				'New UserRegistry address:',
-				this.contracts.UserRegistry.options.address
-			);
+			// console.log('New UserRegistry address:', this.contracts.UserRegistry.options.address);
 			updateArtifacts &&
 				updateArtifact(this.configs.UserRegistry.path, {
 					networkId: this.instance.network.id,

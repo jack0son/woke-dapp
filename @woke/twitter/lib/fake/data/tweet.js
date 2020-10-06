@@ -3,6 +3,19 @@ let i = 0;
 
 const Status = (user, text, mention) => {
 	let id = i + baseId;
+	const user_mentions = mention
+		? [
+				{
+					screen_name: mention.screen_name,
+					name: mention.name,
+					id: mention.id,
+					id_str: mention.id_str,
+					indices: [0, 10],
+					...mention,
+				},
+		  ]
+		: [];
+
 	return {
 		created_at: Date.now().toString(),
 		id: id,
@@ -10,19 +23,7 @@ const Status = (user, text, mention) => {
 		text: text,
 		full_text: text,
 		truncated: false,
-		entities: { hashtags: [], symbols: [], user_mentions: [], urls: [] },
-		user_mentions: mention
-			? [
-					{
-						screen_name: mention.screen_name,
-						name: mention.name,
-						id: mention.id,
-						id_str: mention.id_str,
-						indices: [0, 10],
-						...mention,
-					},
-			  ]
-			: [],
+		entities: { hashtags: [], symbols: [], user_mentions, urls: [] },
 		source: '<a href="https://getwoke.me" rel="nofollow">WokeNetwork - Bot</a>',
 		in_reply_to_status_id: null,
 		in_reply_to_status_id_str: null,

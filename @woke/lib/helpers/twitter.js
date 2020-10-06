@@ -25,7 +25,7 @@ const mention = (screenName) => `@${opts.disableMentions ? PREFIX : ''}${screenN
 
 function notRetweet(tweet) {
 	const rt = tweet.retweeted_status;
-	return rt == undefined || rt == null || rt == false;
+	return tweet.retweeted === false || rt == undefined || rt == null || rt == false;
 }
 
 module.exports = { mention, notRetweet };

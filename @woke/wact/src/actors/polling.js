@@ -1,6 +1,6 @@
 const { dispatch, query } = require('nact');
 const { Logger } = require('@woke/lib');
-const debug = (msg, args) => Logger('polling').name(`info:`, `${msg.type}>> ` + args);
+const debug = (msg, args) => Logger('polling').name(`info`, `${msg.type}>> ` + args);
 
 // Cron-like behaviour
 const pollingActor = {

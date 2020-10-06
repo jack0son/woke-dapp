@@ -10,7 +10,7 @@ function API(adminAccounts, web3Instance, getContracts, contractApi, sendOpts) {
 	const claimArgs = (u) => [u.address, u.id, u.followers_count];
 
 	function getUserBalance(user) {
-		return contracts().UserRegistry.methods.balanceOf(e.returnValues.userId).call();
+		return contracts().UserRegistry.methods.balanceOf(user.id).call();
 	}
 
 	function userIsClaimed(user) {
@@ -18,6 +18,7 @@ function API(adminAccounts, web3Instance, getContracts, contractApi, sendOpts) {
 	}
 
 	async function sendClaimUser(user) {
+		logger.name('claimUser()', `Sending uid: ${user.id}`);
 		let receipt = await contracts()
 			.UserRegistry.methods.claimUser(user.id)
 			.send({
@@ -26,7 +27,7 @@ function API(adminAccounts, web3Instance, getContracts, contractApi, sendOpts) {
 			});
 		let queryId = receipt.events.Lodged.returnValues.queryId;
 		//console.log(r.events.Lodged);
-		logger.v('Claim queryId: ', queryId);
+		logger.name('claimUser()', 'queryId: ', queryId);
 		return { queryId, receipt };
 	}
 
@@ -40,7 +41,7 @@ function API(adminAccounts, web3Instance, getContracts, contractApi, sendOpts) {
 	}
 
 	function sendFulfillClaim(user) {
-		logger.name('claimUser()', `Sending _fulfillClaim( ${user.id} ) ...`);
+		logger.name('_fulfillClaim()', `Sending( ${user.id} ) ...`);
 		return contracts()
 			.UserRegistry.methods._fulfillClaim(user.id)
 			.send({
@@ -55,12 +56,12 @@ function API(adminAccounts, web3Instance, getContracts, contractApi, sendOpts) {
 			queryId,
 			receipt: { blockNumber },
 		} = await sendClaimUser(user);
-		logger.name('claimUser()', `Sending __callback( ${queryId} ) ...`);
+		logger.name('completeClaim()', `Sending __callback( ${queryId} ) ...`);
 		const claimString = await sendOracleResponse(user, queryId);
 		const r = await sendFulfillClaim(user);
 
 		logger.name(
-			'claimUser()',
+			'completeClaim()',
 			`_fulfillClaim(): ${r.gasUsed} gas used, cumulative: ${r.cumulativeGasUsed}`
 		);
 		let claimed = (
@@ -70,7 +71,7 @@ function API(adminAccounts, web3Instance, getContracts, contractApi, sendOpts) {
 			})
 		)[0].returnValues;
 		logger.name(
-			'claimUser()',
+			'completeClaim()',
 			`Claimed: ${claimed.amount} WOKE, Bonus: ${claimed.bonus} WOKE`
 		);
 		return { claimed, receipt: r.receipt };

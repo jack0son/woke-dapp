@@ -25,7 +25,7 @@ class UserCollection {
 	}
 
 	build() {
-		this.map = j0.buildListIndex(this.userList, this.keyProp);
+		this.dict = j0.buildListIndex(this.userList, this.keyProp);
 	}
 
 	buildAddressMap() {
@@ -38,11 +38,11 @@ class UserCollection {
 
 	get(key) {
 		//return this.map.get(key);
-		return this.map[key];
+		return this.dict[key];
 	}
 
-	getMap() {
-		return { ...this.map };
+	getDictionary() {
+		return { ...this.dict };
 	}
 
 	byAddress(address) {
@@ -61,8 +61,8 @@ class UserCollection {
 		this.buildAddressMap();
 	}
 
-	validate() {
-		return this.userList.every((user) => user === this.map[user[this.keyProp]]);
+	validateDictionary() {
+		return this.userList.every((user) => user === this.dict[user[this.keyProp]]);
 	}
 }
 

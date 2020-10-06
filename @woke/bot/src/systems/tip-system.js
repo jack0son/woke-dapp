@@ -9,7 +9,6 @@ const { TwitterDomain, twitter, Logger, configure } = require('@woke/lib');
 const { TwitterClient } = require('@woke/lib/config/twitter-config');
 const configureLogger = require('../config/logger-config');
 const { TipSupervisor, TwitterMonitor } = require('../actors');
-const { TwitterClient } = require('../config/twitter-config');
 
 const debug = Logger('sys_tip');
 const LOGGER_STRING = 'actor*,-*:twitter_monitor*,-*:_tip-*:info';
@@ -71,10 +70,14 @@ class TipSystem {
 			enabled: this.config.faultMonitoring,
 		});
 
+		const contractInstances = conf.userRegistryContractInstance
+			? { UserRegistry: userRegistryContractInstance }
+			: {};
+
 		// Actors
 		this.contractSystem =
 			conf.contractSystem ||
-			ContractSystem(director, ['UserRegistry'], {
+			ContractSystem(director, ['UserRegistry'], contractInstances, {
 				persist: this.persist,
 				networkList: this.config.networkList,
 			});

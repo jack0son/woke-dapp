@@ -122,7 +122,6 @@ const subscriptionActor = {
 				console.log(`Prev BN: ${state.latestBlock}, Log BN: ${log.blockNumber}`);
 				const latestBlock =
 					log.blockNumber > state.latestBlock ? log.blockNumber : state.latestBlock;
-				console.log(`New latestBlock: ${latestBlock}`);
 
 				subscribers.forEach((a_subscriber) => {
 					dispatch(

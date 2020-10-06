@@ -1,14 +1,13 @@
-const { configure } = require('@woke/lib');
+const { configure, Logger } = require('@woke/lib');
 const tweets = require('./data/tweets-tips.json');
 const { Status } = require('./data/tweet');
+const debug = Logger('twitter:fake');
 
 // @TODO tests are meaninless without expanding this dataset
 // This should contain a sample of tweets that match the different search
 // criteria being used
 const dummyUsers = require('./data/users');
 //tweets = tweets.slice(1,2);
-
-const log = (...args) => console.log('TWITTER_FAKE', ...args);
 
 const tipTweets = tweets.filter((t) => t.full_text.includes('+'));
 // @param return a subset of the sample tweet data
@@ -85,7 +84,7 @@ const FakeClient = (sampleSize = 2, opts) => {
 			const tweet = Status(user, text, mention);
 			tweetList.push(tweet);
 			return this.request(tweet).then((r) => {
-				log(`updateStatus: ${text}`);
+				debug.d(`updateStatus: ${text}`);
 				return { data: r };
 			});
 		}
@@ -106,7 +105,6 @@ const FakeClient = (sampleSize = 2, opts) => {
 		// 	});
 		// }
 	}
-
 	return new FakeClient();
 };
 
