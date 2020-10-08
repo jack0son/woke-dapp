@@ -1,6 +1,6 @@
 const { Logger, twitter, TwitterDomain, configure } = require('@woke/lib');
 const { ActorSystem } = require('@woke/wact');
-const { Service } = require('@woke/service');
+const { Service, extensions } = require('@woke/service');
 const { ContractSystem } = require('@woke/web3-nact');
 
 // Actors
@@ -18,13 +18,14 @@ const defaults = {
 class OracleSystem extends Service {
 	constructor(opts) {
 		super(opts, defaults, [
-			contractSytstemExtension(ContractSystem)(
+			extensions.contractSystem(ContractSystem)(
 				['TwitterOracleMock'],
 				opts.contractInstances,
 				{ maxAttempts: 2 }
 			),
-			twitterDomainExtension,
+			extensions.twitterDomain,
 		]);
+		const director = this.director;
 
 		// Actors
 		this.a_twitterAgent = director.start_actor(
