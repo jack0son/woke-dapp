@@ -42,7 +42,7 @@ context('funder-system', function () {
 			deferred.resolve(job);
 		};
 
-		fundingSystem = new FunderSystem(undefined, {
+		fundingSystem = new FunderSystem({
 			fundAmount: amount,
 			persist: false,
 			sendFaultLogs: false,

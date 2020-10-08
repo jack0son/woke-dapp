@@ -26,6 +26,7 @@
     "@woke/actors": "0.1.0",
     "@woke/lib": "0.4.0",
     "@woke/wact": "0.1.0",
+    "@woke/service": "0.1.0",
     "@woke/test": "0.1.0",
     "dotenv": "^8.2.0"
   },

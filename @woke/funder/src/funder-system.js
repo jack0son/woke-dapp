@@ -1,14 +1,11 @@
 const { Logger, web3Tools, configure } = require('@woke/lib');
-const { useMonitor } = require('@woke/actors');
-const { ActorSystem, PersistenceEngine } = require('@woke/wact');
+const { ActorSystem } = require('@woke/wact');
+const { Service } = require('@woke/service');
 const { TxSystem } = require('@woke/web3-nact');
+const web3Utils = require('web3-utils');
 const FundingSupervisor = require('./actors/supervisor');
 
-const web3Utils = require('web3-utils');
-//const DEFAULT_WEI = web3Utils.toWei('0.08', 'ether');
 const DEFAULT_WEI = web3Utils.toWei('0.2', 'ether');
-
-const debug = Logger('sys_funder');
 
 function directorIsStarted(director) {
 	// @TODO refer to nact source
@@ -21,57 +18,26 @@ function isEthAddress(address) {
 }
 
 const defaults = {
+	name: 'sys_funder',
 	sendFaultLogs: false,
 	fundAmount: DEFAULT_WEI,
 	retryInterval: 150000,
 	queryTimeout: 60000,
 };
 
-class FunderSystem {
-	constructor(a_txManager, opts) {
-		// CLEAN THIS CONFIG MESS WTF WHY SO MUCH REPEATING???
-
-		const conf = configure(opts, defaults);
-		const {
-			persist,
-			retryInterval,
-			persistenceConfig,
-			networkList,
-			queryTimeout,
-			fundAmount,
-			sendFaultLogs,
-		} = conf;
-		this.persist = !!persist;
-
-		this.fundAmount = fundAmount;
-
-		// Persistence
-		if (this.persist) {
-			debug.d(`Using persistence...`);
-			this.persistenceEngine = PersistenceEngine(conf.persistenceConfig);
-		} else {
-			console.warn(`Persistence not enabled.`);
-		}
-
-		this.director = ActorSystem.bootstrap(
-			this.persist ? this.persistenceEngine : undefined
-		);
+class FunderSystem extends Service {
+	constructor(opts) {
+		super(opts, defaults, []);
 		const director = this.director;
 
-		if (!!conf.sendFaultLogs) {
-			// Initialise monitor using own actor system and twitter client
-			this.monitor = useMonitor({ director });
-		}
-
 		// Actors
-		this.a_txManager = a_txManager || TxSystem(director, { networkList, persist });
-
+		const { persist, networkList, fundAmount, onFundingComplete } = this.config;
+		this.fundAmount = fundAmount;
+		this.a_txManager =
+			this.config.a_txManager || TxSystem(director, { networkList, persist });
 		this.a_funder = director[this.persist ? 'start_persistent' : 'start_actor'](
 			'supervisor',
-			FundingSupervisor(this.a_txManager, '0x0', {
-				fundAmount: this.fundAmount,
-				onFundingComplete: conf.onFundingComplete,
-			}),
+			FundingSupervisor(this.a_txManager, '0x0', { fundAmount, onFundingComplete }),
 			{}
 		);
 	}
@@ -103,21 +69,11 @@ class FunderSystem {
 	async start() {
 		const self = this;
 
-		if (self.persist) {
-			debug.d(`persistence: Connecting ...`);
-			try {
-				await self.persistenceEngine.db.then((db) => db.connect());
-				debug.d(`persistence: Connected to persistence repository.`);
-			} catch (error) {
-				throw error;
-			}
-		}
-
 		self.restartTasks();
 
 		console.log(`Started funder system.`);
 		console.log(
-			`Fund each user with ${web3Tools.utils.valueString(web3Utils)(self.fundAmount)}`
+			`Funding each user with ${web3Tools.utils.valueString(web3Utils)(self.fundAmount)}`
 		);
 	}
 }

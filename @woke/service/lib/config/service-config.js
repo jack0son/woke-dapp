@@ -31,9 +31,9 @@ const envOptions = envVars.reduce((opts, [varName, key, parser]) => {
 
 const conf = configure(commandLineArgs, envOptions);
 
-secrets('twitter', conf.twitterApp || 'oracle-bot');
-secrets('ethereum', conf.ethEnv || 'ganache');
-secrets('infura');
+// secrets('twitter', conf.twitterApp || 'oracle-bot');
+// secrets('ethereum', conf.ethEnv || 'ganache');
+// secrets('infura');
 //console.log(secrets.get());
 
 // Config meets the following requirements

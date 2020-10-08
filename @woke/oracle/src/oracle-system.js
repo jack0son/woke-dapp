@@ -10,6 +10,7 @@ const Oracle = require('./actors/oracle');
 const debug = Logger('sys_oracle');
 
 const defaults = {
+	name: 'sys_oralce',
 	maxProviderConnectionAttempts: 'dunce',
 	retryInterval: 15000 * 3,
 	subscriptionWatchdogInterval: 15000 * 10,
