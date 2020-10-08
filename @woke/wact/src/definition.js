@@ -40,7 +40,8 @@ function compose(definition, _actions, _properties, opts = {}) {
 		receivers,
 	});
 
-	return Object.assign(definition, { actions, properties });
+	return { ...definition, actions, properties };
+	//return Object.assign(definition, { actions, properties });
 }
 
 module.exports = { MakeDefinition, adapt, compose };

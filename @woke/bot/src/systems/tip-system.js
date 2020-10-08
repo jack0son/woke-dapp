@@ -1,7 +1,7 @@
-const { ActorSystem, PersistenceEngine, actors } = require('@woke/wact');
-const { bootstrap, dispatch, spawnStateless, block } = ActorSystem;
+const { ActorSystem, actors } = require('@woke/wact');
+const { Service } = require('@woke/service');
+const { dispatch, spawnStateless, block } = ActorSystem;
 const {
-	useMonitor,
 	tweeter: { Tweeter },
 } = require('@woke/actors');
 const { ContractSystem } = require('@woke/web3-nact');
@@ -10,7 +10,6 @@ const { TwitterClient } = require('@woke/lib/config/twitter-config');
 const configureLogger = require('../config/logger-config');
 const { TipSupervisor, TwitterMonitor } = require('../actors');
 
-const debug = Logger('sys_tip');
 const LOGGER_STRING = 'actor*,-*:twitter_monitor*,-*:_tip-*:info';
 const VERBOSE_LOGGER_STRING = 'actor*,-*:twitter_monitor*,-*:_tip-*:info';
 
@@ -25,9 +24,10 @@ const chooseTwitterClient = (twitterEnv) => {
 };
 
 const defaults = {
+	name: 'sys_tip',
 	faultMonitoring: false,
 	persist: false,
-	pollingInterval: 5 * 1000,
+	pollingInterval: 100 * 1000,
 	notificationTweets: true,
 	contractInstances: {},
 	// contractSystem,
@@ -40,48 +40,28 @@ const defaults = {
 	// verbose,
 };
 
-class TipSystem {
-	constructor(opts) {
-		const conf = configure(opts, defaults);
-		if (conf.verbose) configureLogger({ enableString: VERBOSE_LOGGER_STRING });
-
-		this.persist = conf.persist ? true : false;
-		this.config = {
-			TWITTER_POLLING_INTERVAL: conf.pollingInterval || 100 * 1000,
+const contractSytstemExtension = (conf) => (system) => {
+	system.contractSystem =
+		conf.contractSystem ||
+		ContractSystem(system.director, ['UserRegistry'], conf.contractInstances, {
+			persist: system.persist,
 			networkList: conf.networkList,
-			faultMonitoring: conf.faultMonitoring,
-		};
-		this.twitterClient = conf.twitterClient || TwitterClient(conf.twitterEnv).client;
-		this.twitterDomain = new TwitterDomain(this.twitterClient);
+		});
+};
 
-		const directorArgs = conf.directorOptions ? [conf.directorOptions] : [];
-		if (this.persist) {
-			debug.d(`Using persistence...`);
-			this.persistenceEngine = PersistenceEngine();
-			directorArgs.push(this.persistenceEngine);
-		} else {
-			debug.warn(`Persistence not enabled.`);
-		}
+const twitterDomainExtension = (conf) => (system) => {
+	system.twitterClient = conf.twitterClient || TwitterClient(conf.twitterEnv).client;
+	system.twitterDomain = new TwitterDomain(system.twitterClient);
+	system.initializers.push(() => system.twitterDomain.init());
+};
 
-		this.director = conf.director || bootstrap(...directorArgs);
+class TipSystem extends Service {
+	constructor(opts) {
+		super(opts, defaults, [contractSytstemExtension, twitterDomainExtension]);
 		const director = this.director;
 
-		// Initialise monitor using own actor system and twitter client
-		this.monitor = useMonitor({
-			twitterClient: this.twitterClient,
-			director,
-			enabled: this.config.faultMonitoring,
-		});
-
 		// Actors
-		this.contractSystem =
-			conf.contractSystem ||
-			ContractSystem(director, ['UserRegistry'], conf.contractInstances, {
-				persist: this.persist,
-				networkList: this.config.networkList,
-			});
-
-		if (conf.notificationTweets) {
+		if (this.config.notificationTweets) {
 			this.a_tweeter = director.start_actor('tweeter', Tweeter(this.twitterDomain));
 		}
 
@@ -112,15 +92,7 @@ class TipSystem {
 	async start() {
 		const self = this;
 
-		await self.twitterDomain.init();
-
-		if (self.persist) {
-			try {
-				await self.persistenceEngine.db.then((db) => db.connect());
-			} catch (error) {
-				throw error;
-			}
-		}
+		await self.init();
 
 		dispatch(self.a_tipSupervisor, { type: 'restart' });
 
@@ -131,7 +103,7 @@ class TipSystem {
 				type: 'poll',
 				target: self.a_tMon,
 				action: 'find_tips',
-				period: self.config.TWITTER_POLLING_INTERVAL,
+				period: self.config.pollingInterval,
 				msg: { a_polling: self.a_polling },
 			},
 			self.a_tweetForwarder
