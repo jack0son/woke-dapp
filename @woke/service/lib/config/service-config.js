@@ -21,7 +21,7 @@ const envVars = [
 ];
 
 // Any env vars we can get at the CLI
-const commandLineArgs = require('../lib/cli')(envVars.map((v) => v.slice(1)));
+const commandLineArgs = require('../cli')(envVars.map((v) => v.slice(1)));
 
 const envOptions = envVars.reduce((opts, [varName, key, parser]) => {
 	const opt = process.env[varName];
@@ -29,14 +29,8 @@ const envOptions = envVars.reduce((opts, [varName, key, parser]) => {
 	return opts;
 }, Object.create(null));
 
-const {
-	config: { networkList },
-} = require('@woke/web3-nact');
+const conf = configure(commandLineArgs, envOptions);
 
-const conf = {
-	networkList,
-	...configure(commandLineArgs, envOptions),
-};
 secrets('twitter', conf.twitterApp || 'oracle-bot');
 secrets('ethereum', conf.ethEnv || 'ganache');
 secrets('infura');

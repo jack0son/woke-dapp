@@ -38,7 +38,7 @@ context('oracle-system', function () {
 		await contractDomain.redeploy();
 		oracleSystem = new OracleSystem({
 			twitterClient,
-			oracleContractInstance: contractDomain.contracts.Oracle,
+			contractInstances: { TwitterOracleMock: contractDomain.contracts.Oracle },
 		});
 		director = oracleSystem.director;
 	});

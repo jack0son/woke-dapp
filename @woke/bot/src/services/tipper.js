@@ -1,6 +1,8 @@
 const serviceConfig = require('../config/service-config');
+const web3Config = require('@woke/web3-nact').config;
 const TipSystem = require('../systems/tip-system');
 
+serviceConfig.networkList = web3Config.networkList;
 console.log('config', serviceConfig);
 
 // @TODO parse polling interval

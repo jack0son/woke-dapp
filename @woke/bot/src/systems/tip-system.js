@@ -1,13 +1,11 @@
 const { ActorSystem, actors } = require('@woke/wact');
-const { Service } = require('@woke/service');
+const { Service, extensions } = require('@woke/service');
+const { ContractSystem } = require('@woke/web3-nact');
 const { dispatch, spawnStateless, block } = ActorSystem;
 const {
 	tweeter: { Tweeter },
 } = require('@woke/actors');
-const { ContractSystem } = require('@woke/web3-nact');
-const { TwitterDomain, twitter, Logger, configure } = require('@woke/lib');
-const { TwitterClient } = require('@woke/lib/config/twitter-config');
-const configureLogger = require('../config/logger-config');
+const { twitter } = require('@woke/lib');
 const { TipSupervisor, TwitterMonitor } = require('../actors');
 
 const LOGGER_STRING = 'actor*,-*:twitter_monitor*,-*:_tip-*:info';
@@ -40,24 +38,12 @@ const defaults = {
 	// verbose,
 };
 
-const contractSytstemExtension = (conf) => (system) => {
-	system.contractSystem =
-		conf.contractSystem ||
-		ContractSystem(system.director, ['UserRegistry'], conf.contractInstances, {
-			persist: system.persist,
-			networkList: conf.networkList,
-		});
-};
-
-const twitterDomainExtension = (conf) => (system) => {
-	system.twitterClient = conf.twitterClient || TwitterClient(conf.twitterEnv).client;
-	system.twitterDomain = new TwitterDomain(system.twitterClient);
-	system.initializers.push(() => system.twitterDomain.init());
-};
-
 class TipSystem extends Service {
 	constructor(opts) {
-		super(opts, defaults, [contractSytstemExtension, twitterDomainExtension]);
+		super(opts, defaults, [
+			extensions.contractSystem(ContractSystem)(['UserRegistry'], opts.contractInstances),
+			extensions.twitterDomain,
+		]);
 		const director = this.director;
 
 		// Actors
@@ -81,17 +67,12 @@ class TipSystem extends Service {
 		this.a_tweetForwarder = spawn_tweet_forwarder(this.a_polling, this.a_tipSupervisor);
 	}
 
-	getDirector() {
-		return this.director;
-	}
-
 	setTweeter(a_tweeter) {
 		return block(this.a_tipSupervisor, { type: 'setTweeter', a_tweeter });
 	}
 
 	async start() {
 		const self = this;
-
 		await self.init();
 
 		dispatch(self.a_tipSupervisor, { type: 'restart' });

@@ -1,8 +1,7 @@
 const { Logger, twitter, TwitterDomain, configure } = require('@woke/lib');
-const { ActorSystem, PersistenceEngine } = require('@woke/wact');
-const { useMonitor } = require('@woke/actors');
+const { ActorSystem } = require('@woke/wact');
+const { Service } = require('@woke/service');
 const { ContractSystem } = require('@woke/web3-nact');
-const { TwitterClient } = require('@woke/lib/config/twitter-config');
 
 // Actors
 const TwitterAgent = require('./actors/twitter-agent');
@@ -10,68 +9,24 @@ const Oracle = require('./actors/oracle');
 
 const debug = Logger('sys_oracle');
 
-class OracleSystem {
+const defaults = {
+	maxProviderConnectionAttempts: 'dunce',
+	retryInterval: 15000 * 3,
+	subscriptionWatchdogInterval: 15000 * 10,
+};
+
+class OracleSystem extends Service {
 	constructor(opts) {
-		const defaults = {
-			monitoring: true,
-		};
-
-		const {
-			contractSystem,
-			twitterClient,
-			persist,
-			retryInterval,
-			subscriptionWatchdogInterval,
-			persistenceConfig,
-			networkList,
-			monitoring,
-			oracleContractInstance,
-			twitterEnv,
-		} = configure(opts, defaults);
-
-		this.persist = !!persist;
-		this.config = {
-			QUERY_RETRY_INTERVAL: retryInterval || 15000 * 3,
-			SUBSCRIPTION_WATCHDOG_INTERVAL: subscriptionWatchdogInterval || 15000 * 10,
-			persistenceConfig,
-			networkList,
-			monitoring,
-		};
-
-		this.twitterClient = twitterClient || TwitterClient(twitterEnv).client;
-		this.twitterDomain = new TwitterDomain(this.twitterClient);
-
-		// Persistence
-		if (this.persist) {
-			debug.d(`Using persistence...`);
-			this.persistenceEngine = PersistenceEngine(this.config.persistenceConfig);
-		} else {
-			debug.warn(`Persistence not enabled.`);
-		}
-
-		this.director = ActorSystem.bootstrap(
-			this.persist ? this.persistenceEngine : undefined
-		);
-		const director = this.director;
-
-		if (!!this.config.monitoring) {
-			// Initialise monitor using own actor system and twitter client
-			this.monitor = useMonitor({ twitterClient: this.twitterClient, director });
-		}
-
-		const contractInstances = oracleContractInstance
-			? { TwitterOracleMock: oracleContractInstance }
-			: {};
+		super(opts, defaults, [
+			contractSytstemExtension(ContractSystem)(
+				['TwitterOracleMock'],
+				opts.contractInstances,
+				{ maxAttempts: 2 }
+			),
+			twitterDomainExtension,
+		]);
 
 		// Actors
-		this.contractSystem =
-			contractSystem ||
-			ContractSystem(director, ['TwitterOracleMock'], contractInstances, {
-				persist: this.persist,
-				networkList: this.config.networkList,
-				maxAttempts: 2,
-			});
-
 		this.a_twitterAgent = director.start_actor(
 			'twitterAgent',
 			TwitterAgent(this.twitterDomain)
@@ -83,22 +38,14 @@ class OracleSystem {
 			{
 				a_contract_TwitterOracle: this.contractSystem.TwitterOracleMock,
 				a_twitterAgent: this.a_twitterAgent,
-				subscriptionWatchdogInterval: this.config.SUBSCRIPTION_WATCHDOG_INTERVAL,
+				subscriptionWatchdogInterval: this.config.subscriptionWatchdogInterval,
 			}
 		);
 	}
 
 	async start() {
 		const self = this;
-
-		if (self.persist) {
-			try {
-				await self.persistenceEngine.db.then((db) => db.connect());
-				debug.d(`Connected to persistence repository.`);
-			} catch (error) {
-				throw error;
-			}
-		}
+		await self.init();
 
 		ActorSystem.dispatch(self.a_oracle, { type: 'init' });
 		console.log(`Started oracle system.`);
@@ -106,15 +53,3 @@ class OracleSystem {
 }
 
 module.exports = OracleSystem;
-
-// Mock tip system
-if (debug.control.enabled && require.main === module) {
-	var argv = process.argv.slice(2);
-	const [persist, ...args] = argv;
-
-	(async () => {
-		const twitterDomain = new TwitterDomain(twitterMock.createMockClient(5));
-		const oracleSystem = new OracleSystem(undefined, { persist: false, twitterDomain });
-		oracleSystem.start();
-	})();
-}
