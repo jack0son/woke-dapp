@@ -12,7 +12,9 @@ function CoreSystem(director, opts) {
 	const { maxAttempts, retryDelay, networkList } = { ...defaults, ...opts };
 
 	// @TODO supervision actor that decides what to do when web3 fatally crashes
-	console.log(`No web3 actor provided, initialising my own...`);
+	console.log(
+		`No web3 actor provided, initialising my own... on system:${director.system.name}`
+	);
 	const a_web3 = director.start_actor(
 		'web3',
 		Web3(undefined, maxAttempts, {
@@ -21,7 +23,9 @@ function CoreSystem(director, opts) {
 		})
 	);
 
-	console.log(`No nonce actor provided, initialising my own...`);
+	console.log(
+		`No nonce actor provided, initialising my own... on system:${director.system.name}`
+	);
 	let a_nonce;
 	if (opts && opts.persist) {
 		a_nonce = director.start_persistent('nonce', Nonce, { a_web3 });

@@ -14,12 +14,7 @@ function spawn_tx(state, ctx) {
 	return start_actor(ctx.self)(
 		`_tx-${tx_idx++}`,
 		ContractTx(state.a_web3, state.a_nonce, state.contractConfig),
-		{
-			sinks: [ctx.sender], // forward the sender to this tx
-			// a_web3: state.a_web3,
-			// a_nonce: state.a_nonce,
-			// contractInterface: state.contractInterface,
-		}
+		{ sinks: [ctx.sender] }
 	);
 }
 
@@ -73,9 +68,6 @@ const contractActor = {
 		},
 
 		receivers: [sink, spawn_subscription],
-		Receivers: (bundle) => ({
-			sink: sink(bundle),
-		}),
 
 		onCrash: {
 			// Crash reasons

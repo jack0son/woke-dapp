@@ -221,10 +221,10 @@ const start_persistent = (_persistentSystem) => (_name, _definition, _initialSta
  * @param {PersistenceEngine} _persistenceEngine - Persistence engine
  * @return {Director} Nact actor system with bound methods
  */
-function bootstrap(_persistenceEngine) {
+function bootstrap(opts = {}, _persistenceEngine) {
 	const system = _persistenceEngine
-		? start(configurePersistence(_persistenceEngine))
-		: start();
+		? start(opts, configurePersistence(_persistenceEngine))
+		: start(opts);
 	return {
 		start_actor: start_actor(system),
 		start_persistent: _persistenceEngine && start_persistent(system),

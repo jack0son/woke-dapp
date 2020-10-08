@@ -70,8 +70,7 @@ const ExpectMutation = async (apiCall, initialXpt, diffXpt, msg = '') => {
 };
 
 // Expectations
-// initial: (a) => assertion
-// diff: (a,b) => assertion
+// initial: (a) => assertion // diff: (a,b) => assertion
 let xpt = {};
 xpt.gt = (v, a) => expect(v).to.be.above(a);
 xpt.notNegative = (v) => expect(v).to.not.be.lt(0); // lol so wrong
@@ -126,6 +125,7 @@ const makeTipText = (to, amount) =>
 
 context('tip-system', function () {
 	let wokeDomain, contractDomain, tipSystem, director, mockTweeter;
+	let i = 0;
 
 	// Assert failure from inside a catch block (e.g. nact actor's handle function)
 	const expectNotCalled = (msg, callback) =>
@@ -139,12 +139,12 @@ context('tip-system', function () {
 		const testBed = await initTestBed(users);
 		wokeDomain = testBed.wokeDomain;
 		contractDomain = testBed.contractDomain;
+		await contractDomain.redeploy();
 	});
 
 	beforeEach(async function () {
 		this.timeout(50000);
 		//contractDomain.reset();
-		await contractDomain.redeploy();
 
 		twitterClient = twitter.fake.FakeClient(0, { rateLimit: 100 });
 		tipSystem = new TipSystem({
@@ -152,6 +152,7 @@ context('tip-system', function () {
 			faultMonitoring: false,
 			twitterClient,
 			pollingInterval: 100,
+			directorOptions: { name: `director-${(i++).toString().padStart(3, '0')}` },
 		});
 		director = tipSystem.getDirector();
 
@@ -162,12 +163,11 @@ context('tip-system', function () {
 		director.stop();
 	});
 
-	describe('claimedUser', function () {
-		it('tip an unclaimed user', async function () {
-			this.timeout(50000);
-			// Setup notifier callbacks
+	function validTip() {
+		return async (fromUser, toUser, amount = 2) => {
 			const tipSeen = CallbackMock(wasDispatched, 'tip was seen');
 			const tipConfirmed = CallbackMock(wasDispatched, 'tip was confirmed');
+			director = tipSystem.getDirector();
 
 			const getReason = (tip) => logger('Reason', tip.reason);
 			const callbacks = {
@@ -180,11 +180,6 @@ context('tip-system', function () {
 			mockTweeter = MockTweeter(director)(callbacks);
 			await tipSystem.setTweeter(mockTweeter);
 			await tipSystem.start();
-
-			const tipTweet = tipTweets[0];
-			const [fromUser, toUser] = users.list();
-			await wokeDomain.api.completeClaimUser(fromUser);
-			const amount = 2;
 
 			// 1. Remember user's initial on-chain state
 			const mutations = [
@@ -210,18 +205,27 @@ context('tip-system', function () {
 
 			// 4. Confirm tokens were transferred
 			await Promise.all(mutations.map((m) => m()));
+		};
+	}
+
+	describe('claimedUser', function () {
+		it('tip an unclaimed user', async function () {
+			this.timeout(50000);
+			const [fromUser, toUser] = users.list();
+			await wokeDomain.api.completeClaimUser(fromUser);
+			await validTip()(fromUser, toUser);
+			// Setup notifier callbacks
 		});
 
-		/*
 		it('tip a claimed user', async function () {
 			// Resolve deferred promises
 			//expectNotFulfilled() - should use a sinnon spy / mock
-			const tipTweet = tipTweets[0];
 			const [fromUser, toUser] = users.list();
-			await wokeDomain.api.claimUser(fromUser);
-			await wokeDomain.api.claimUser(toUser);
+			await wokeDomain.api.completeClaimUser(toUser);
+			await validTip()(fromUser, toUser);
 		});
 
+		/*
 		it('reject an invalid tip', function () {});
 
 		it('reject unclaimed user tip', function () {});

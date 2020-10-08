@@ -54,14 +54,16 @@ class TipSystem {
 		this.twitterClient = conf.twitterClient || TwitterClient(conf.twitterEnv).client;
 		this.twitterDomain = new TwitterDomain(this.twitterClient);
 
+		const directorArgs = conf.directorOptions ? [conf.directorOptions] : [];
 		if (this.persist) {
 			debug.d(`Using persistence...`);
 			this.persistenceEngine = PersistenceEngine();
+			directorArgs.push(this.persistenceEngine);
 		} else {
 			debug.warn(`Persistence not enabled.`);
 		}
 
-		this.director = this.persist ? bootstrap(this.persistenceEngine) : bootstrap();
+		this.director = conf.director || bootstrap(...directorArgs);
 		const director = this.director;
 
 		// Initialise monitor using own actor system and twitter client

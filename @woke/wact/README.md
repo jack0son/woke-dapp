@@ -108,6 +108,9 @@ to the `adapt()` or `compose()` methods to a new definition.
 Constructing actor definitions using simple bags of properties simplifies
 inheritance and code reuse between actors.
 
+@NB Note that these methods are not currently pure so they may mutate passed
+actor definitions leading to inscrutable state sharing issues.
+
 `wact.adapt()`
 
 `wact.compose()`

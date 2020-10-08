@@ -29,6 +29,10 @@ async function action_call(state, msg, ctx) {
 	const { callOpts, a_web3, contractConfig } = state;
 
 	tx.type = 'call';
+
+	if (ctx.self.system.name !== a_web3.system.name)
+		throw new Error('Contract actor is running on a different system to the web3 actor');
+
 	const { web3Instance } = await block(a_web3, { type: 'get' });
 	const opts = {
 		...callOpts,
@@ -64,7 +68,7 @@ function action_send(state, _msg, ctx) {
 	return TxActor.actions.action_send(state, { transactionSpec, ...msg }, ctx);
 }
 
-const definition = {
+const definition = () => ({
 	properties: {
 		onCrash,
 		initialState: {
@@ -77,13 +81,11 @@ const definition = {
 		action_call,
 		//action_send,
 	},
-};
+});
 
 function ContractTx(a_web3, a_nonce, contractConfig) {
-	// Contract instance has precedence
-
 	return adapt(
-		definition,
+		definition(),
 		compose(
 			{ properties: { initialState: { contractConfig } } },
 			TxActor.actions,

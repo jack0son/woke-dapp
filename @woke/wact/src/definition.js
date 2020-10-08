@@ -15,11 +15,18 @@ function MakeDefinition(Actions, Properties) {
 	return Definition;
 }
 
-const adapt = (definition, { actions, properties }) =>
-	compose(definition, actions, properties);
+const adapt = (definition, { actions, properties }, opts) =>
+	compose(definition, actions, properties, opts);
 
+// @TODO make sure definition is deep cloned first
+// Some actor defintions are getting mutated between tests causing actor
+// references with stopped directors to hang around
 function compose(definition, _actions, _properties, opts = {}) {
-	const { labeling } = opts;
+	const { labeling, debug } = opts;
+
+	const dir = (o) => debug && console.dir(o, { depth: 1 });
+	const log = (...args) => debug && console.log(...args);
+
 	const receivers = [
 		...((definition.properties && definition.properties.receivers) || []),
 		...((_properties && _properties.receivers) || []),
@@ -27,7 +34,7 @@ function compose(definition, _actions, _properties, opts = {}) {
 
 	const actions = labelActions(merge(_actions, definition.actions), labeling);
 
-	// Values from definition take precedence
+	// Values from definition take precedence (merge(x, y) => overwrite x)
 	const properties = merge(_properties, {
 		...definition.properties,
 		receivers,
