@@ -5,7 +5,7 @@ const {
 	adapters,
 	actors: { TaskSupervisor },
 } = require('@woke/wact');
-const { dispatch } = ActorSystem;
+const { dispatch, stop } = ActorSystem;
 const { subsumeEffects, Pattern } = reducers;
 const { TaskStatuses: Statuses } = TaskSupervisor;
 
@@ -81,7 +81,7 @@ function handleFundFailure(state, msg, ctx) {
 	} = state;
 	throw txResponse.error;
 	//	ctx.receivers.update_task({ status: 'failed' }, txResponse.error);
-	return ctx.stop;
+	// return ctx.stop;
 }
 
 function complete(state, msg, ctx) {
@@ -93,7 +93,7 @@ function complete(state, msg, ctx) {
 	ctx.debug.d(msg, `Funding complete`);
 	ctx.receivers.update_task({ status: Statuses.done, txHash: txReply.txHash });
 
-	return ctx.stop;
+	stop(ctx.self);
 }
 
 const start = Pattern(({ txReply, txSent }) => !txReply && !txSent, submitFundTx);

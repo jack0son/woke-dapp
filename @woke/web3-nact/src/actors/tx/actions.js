@@ -189,7 +189,7 @@ async function action_send(state, msg, ctx) {
 
 // Only called internally
 function action_publish(state, msg, ctx) {
-	const { sendOpts, getSendMethod, transactionSpec, tx } = state;
+	const { sendOpts, getSendMethod, transactionSpec, tx, reportConfirmations } = state;
 	const { web3Instance, nonce } = msg; // receive a fresh web3 instance from action_send
 
 	if (!web3Instance)
@@ -244,7 +244,7 @@ function action_publish(state, msg, ctx) {
 			ctx.reduce({ hash });
 		})
 		.on('confirmation', (confirmationNumber, receipt, latestBlockHash) => {
-			ctx.reduce({ confirmationNumber });
+			!!reportConfirmations && ctx.reduce({ confirmationNumber });
 		})
 		.on('receipt', (receipt) => {
 			ctx.reduce({ receipt, error: null });
@@ -304,7 +304,11 @@ function action_reduceTxEvent(state, msg, ctx) {
 
 	// @TODO config which events are received
 	const nextState = { ...state, tx: { ...tx, error } };
-	return action_notifySinks(nextState, { type: 'reduce', thenStop: !!error }, ctx);
+	return action_notifySinks(
+		nextState,
+		{ type: 'reduce', thenStop: !!error, original: msg },
+		ctx
+	);
 }
 
 // Receivers
@@ -315,20 +319,13 @@ function reduce({ ctx }) {
 	};
 }
 
-// Allows onCrash to notify
+// Allows onCrash to notify sinks (needs access to actor state)
 function action_notifySinks(state, msg, ctx) {
 	const { error, thenStop } = msg;
 
 	if (error) state.error = error;
 	notifySinks({ state, msg, ctx })(error, { thenStop });
 	return state;
-
-	//const { status, error, thenStop } = msg;
-	//const tx = { ...state.tx, status: status || state.tx.status, error };
-	//state.tx = tx;
-	// notifySinks({ state, msg, ctx })(status, error, {
-	// 	thenStop,
-	// });
 }
 
 // Fill sinks

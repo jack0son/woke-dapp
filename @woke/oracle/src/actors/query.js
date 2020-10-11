@@ -1,5 +1,5 @@
 const { ActorSystem, receivers, reducers, adapters } = require('@woke/wact');
-const { dispatch } = ActorSystem;
+const { dispatch, stop } = ActorSystem;
 const { subsumeEffects, Pattern } = reducers;
 const { tweetToProofString } = require('../lib/proof-protcol');
 
@@ -91,7 +91,7 @@ function handleQueryFailure(state, msg, ctx) {
 		txResponse,
 	} = state;
 	ctx.receivers.update_job({ status: 'failed' }, txResponse.error);
-	return ctx.stop;
+	stop(ctx.self);
 }
 
 function complete(state, msg, ctx) {
@@ -107,7 +107,7 @@ function complete(state, msg, ctx) {
 		txHash: responseTx.txHash,
 	});
 
-	return ctx.stop;
+	stop(ctx.self);
 }
 
 function haveTwitterData(state) {
