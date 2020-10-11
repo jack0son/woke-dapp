@@ -32,7 +32,8 @@ class Service {
 			this.debug.d(`Using persistence...`);
 			this.persistenceEngine = PersistenceEngine(this.config.persistenceConfig);
 			directorArgs.push(this.persistenceEngine);
-			this.initializers.push(this.connectPersistence);
+			const _this = this;
+			this.initializers.push(() => _this.connectPersistence);
 		} else {
 			this.debug.d(`Persistence not enabled.`);
 		}
@@ -55,9 +56,10 @@ class Service {
 	}
 
 	async connectPersistence() {
-		if (self.persistent) {
+		const _this = this;
+		if (_this.persistent) {
 			try {
-				await self.persistenceEngine.db.then((db) => db.connect());
+				await _this.persistenceEngine.db.then((db) => db.connect());
 			} catch (error) {
 				throw error;
 			}

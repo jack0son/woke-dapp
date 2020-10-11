@@ -9,6 +9,7 @@ const argv = parseArgs(process.argv.slice(2), {
 	default: {},
 });
 
+// e.g. [myBoolOption, parseBoolFunc]
 function extractCliArgs(argsToParse) {
 	const conf = argsToParse.reduce((conf, [key, parser]) => {
 		const opt = argv[key];

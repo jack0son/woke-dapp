@@ -1,4 +1,4 @@
-const { Logger, configure } = require('@woke/lib');
+const { configure } = require('@woke/lib');
 const { loadSecrets, serviceConf } = require('@woke/service');
 const FunderSystem = require('./funder-system');
 const opts = require('./config');

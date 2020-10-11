@@ -34,12 +34,14 @@ module.exports.parse_bool = (str) => {
 		case 'yes':
 		case 'y':
 		case 'true':
+		case true:
 			return true;
 		case 'f':
 		case 'F':
 		case 'no':
 		case 'n':
 		case 'false':
+		case false:
 		default:
 			return false;
 	}

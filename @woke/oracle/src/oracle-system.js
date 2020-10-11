@@ -46,10 +46,10 @@ class OracleSystem extends Service {
 	}
 
 	async start() {
-		const self = this;
-		await self.init();
+		const _this = this;
+		await _this.init();
 
-		ActorSystem.dispatch(self.a_oracle, { type: 'init' });
+		ActorSystem.dispatch(_this.a_oracle, { type: 'init' });
 		console.log(`Started oracle system.`);
 	}
 }

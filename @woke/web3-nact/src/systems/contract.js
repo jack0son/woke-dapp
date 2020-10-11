@@ -5,7 +5,7 @@ const { loadArtifactByName } = require('../lib/contract');
 const defaultContractOpts = { contractNames: [], contractConfigs: [] };
 const contractConfig = { name: 'example', instance: 'web3 contract instance' };
 
-function ContractsSystem(director, contractNames, contractInstances, coreOpts) {
+function ContractsSystem(director, contractNames, contractInstances = {}, coreOpts) {
 	const coreActors = CoreSystem(director, coreOpts);
 
 	return contractNames.reduce((contractActors, name) => {

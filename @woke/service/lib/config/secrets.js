@@ -1,7 +1,6 @@
 const secrets = require('@woke/secrets');
 
 const loadSecrets = (_list, conf = {}) => {
-	console.log(conf);
 	const dict = {
 		twitter: ['twitter', conf.twitterApp || 'oracle-bot'],
 		ethereum: ['ethereum', conf.ethEnv || 'ganache'],
