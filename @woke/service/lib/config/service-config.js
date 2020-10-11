@@ -37,7 +37,9 @@ const conf = configure(commandLineArgs, envOptions);
 //console.log(secrets.get());
 
 // Config meets the following requirements
-// 1. Able to toggle conf in docker compose file
-// 2. Able to switch between different key sets
-// 3. Prioritise CLI options over environment options
+// 1. [x] Able to toggle conf in docker compose file
+// 2. [x] Able to switch between different key sets
+// 3. [x] Prioritise CLI options over environment options
+// 4. [ ] Should map the conf options back on to process.env
+//				(so that modules relying on dotenv have access)
 module.exports = conf;
