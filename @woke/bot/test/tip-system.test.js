@@ -135,6 +135,7 @@ context('tip-system', function () {
 		};
 
 	before(async function () {
+		this.timeout(5000);
 		// Initialise test bed
 		const testBed = await initTestBed(users);
 		wokeDomain = testBed.wokeDomain;
@@ -143,7 +144,7 @@ context('tip-system', function () {
 	});
 
 	beforeEach(async function () {
-		this.timeout(50000);
+		this.timeout(5000);
 		//contractDomain.reset();
 
 		twitterClient = twitter.fake.FakeClient(0, { rateLimit: 100 });
@@ -210,7 +211,7 @@ context('tip-system', function () {
 
 	describe('claimedUser', function () {
 		it('tip an unclaimed user', async function () {
-			this.timeout(50000);
+			this.timeout(5000);
 			const [fromUser, toUser] = users.list();
 			await wokeDomain.api.completeClaimUser(fromUser);
 			await validTip()(fromUser, toUser);
@@ -218,8 +219,10 @@ context('tip-system', function () {
 		});
 
 		it('tip a claimed user', async function () {
+			this.timeout(5000);
+
 			// Resolve deferred promises
-			//expectNotFulfilled() - should use a sinnon spy / mock
+			// expectNotFulfilled() - should use a sinnon spy / mock
 			const [fromUser, toUser] = users.list();
 			await wokeDomain.api.completeClaimUser(toUser);
 			await validTip()(fromUser, toUser);

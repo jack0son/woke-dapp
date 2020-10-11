@@ -60,7 +60,7 @@ const TwitterMonitor = (twitterDomain) => {
 					//a_processor,
 				} = msg;
 
-				validateTwitterStub(twitter);
+				validateTwitterDomain(twitter);
 				//isActor(a_processor, 'a_processor');
 
 				ctx.debug.d(msg, 'Finding tip tweets...');
@@ -74,7 +74,7 @@ const TwitterMonitor = (twitterDomain) => {
 						}
 
 						// @TODO sorting through tweets for valid tips belongs in the twitter
-						// stub
+						// domain
 
 						const newTips = tipTweets
 							.filter((tweet) => {
@@ -151,12 +151,12 @@ const TwitterMonitor = (twitterDomain) => {
 	};
 };
 
-function validateTwitterStub(stub) {
-	if (!stub) {
-		throw new Error('No stub provided');
+function validateTwitterDomain(domain) {
+	if (!domain) {
+		throw new Error('No domain provided');
 	}
-	if (!stub.ready()) {
-		throw new Error('Twitter stub not initialised');
+	if (!domain.ready()) {
+		throw new Error('Twitter domain not initialised');
 	}
 }
 

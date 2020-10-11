@@ -20,14 +20,14 @@ function isInternalError() {
 
 async function action_tweet(state, msg, ctx) {
 	const { twitterDomain: td } = state;
-	const { tip, tweetType } = msg;
-	const { fromId, toId, amount, balance } = tip;
+	const { tip, tweetType, recipientBalance } = msg;
+	const { fromId, toId, amount } = tip;
 
 	let tweet, text;
 	try {
 		switch (tweetType) {
 			case 'unclaimed-transfer': {
-				tweet = await td.postUnclaimedTransfer(fromId, toId, amount, balance);
+				tweet = await td.postUnclaimedTransfer(fromId, toId, amount, recipientBalance);
 				break;
 			}
 
