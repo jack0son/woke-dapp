@@ -1,5 +1,6 @@
 const Service = require('./service');
 const extensions = require('./extensions.js');
-const buildConfiguration = require('./config/service-config.js');
+const serviceConf = require('./config/service-config.js');
+const loadSecrets = require('./config/secrets');
 
-module.exports = { Service, extensions, buildConfiguration };
+module.exports = { Service, extensions, serviceConf, loadSecrets };

@@ -1,9 +1,10 @@
-const { Logger } = require('@woke/lib');
-const { loadSecrets } = require('@woke/service');
+const { Logger, configure } = require('@woke/lib');
+const { loadSecrets, serviceConf } = require('@woke/service');
 const FunderSystem = require('./funder-system');
-const conf = require('./config');
+const opts = require('./config');
+const conf = configure(opts, serviceConf);
 
-loadSecrets(['infura', 'ethereum']);
+loadSecrets(['infura', 'ethereum'], conf);
 
 // @TODO parse polling interval
 module.exports = () => new FunderSystem(conf);

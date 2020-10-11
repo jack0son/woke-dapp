@@ -1,4 +1,4 @@
-const { ActorSystem } = require('@woke/wact');
+const { ActorSystem, PersistenceEngine } = require('@woke/wact');
 const { Logger, configure } = require('@woke/lib');
 const configureLogger = require('./config/logger-config');
 const { useMonitor } = require('@woke/actors');
@@ -27,10 +27,10 @@ class Service {
 		this.persistent = !!conf.persist;
 		this.initializers = []; // promises to be run by this.init
 
-		const directorArgs = conf.directorOptions ? [conf.directorOptions] : [];
+		const directorArgs = conf.directorOptions ? [conf.directorOptions] : [{}];
 		if (this.persistent) {
 			this.debug.d(`Using persistence...`);
-			this.persistenceEngine = PersistenceEngine();
+			this.persistenceEngine = PersistenceEngine(this.config.persistenceConfig);
 			directorArgs.push(this.persistenceEngine);
 			this.initializers.push(this.connectPersistence);
 		} else {
