@@ -351,6 +351,10 @@ context('TaskSupervisor', function () {
 			state.should.not.be.null;
 		});
 
+		it('should allow effects to return a promise', async function () {
+			this.skip();
+		});
+
 		it('should have actor context as "this"', async function () {
 			const deferred = new Deferral();
 

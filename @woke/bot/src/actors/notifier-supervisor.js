@@ -4,8 +4,9 @@ const {
 	adapters,
 	actors: { TaskSupervisor },
 } = require('@woke/wact');
-const { dispatch, spawnStateless, stop } = ActorSystem;
+const { dispatch, spawnStateless, stop, block } = ActorSystem;
 const { useNotifyOnCrash } = require('@woke/actors');
+const { action_setTweeter } = require('./actions');
 const { TaskStatuses: Statuses } = TaskSupervisor;
 
 let idx = 0;
@@ -43,18 +44,20 @@ const spawn_tweet_promise = (task, _ctx) => {
 };
 
 async function effect_unclaimedTx(state, msg, ctx) {
+	const { task } = msg;
+	const { a_contract_UserRegistry, a_tweeter } = state;
 	let balance;
 	try {
 		// Contract version incompatible (missing unclaimedBalance method)
-		const balanceCall = await query(
+		const balanceCall = await block(
 			a_contract_UserRegistry,
 			{
 				type: 'call',
 				method: 'unclaimedBalanceOf',
-				args: [entry.toId],
+				args: [task.event.toId],
 				sinks: [],
-			},
-			5 * 1000
+			}
+			// 5 * 1000
 		);
 		balance = balanceCall.result;
 	} catch (error) {
@@ -62,29 +65,31 @@ async function effect_unclaimedTx(state, msg, ctx) {
 		throw error;
 	}
 
-	const a_promise = spawn_tweet_promise(log, ctx);
+	const a_promise = spawn_tweet_promise(task, ctx);
 	dispatch(
 		a_tweeter,
 		{
 			type: 'tweet',
 			tweetType: 'unclaimed-transfer',
 			tip: {
-				toId: entry.toId,
-				fromId: entry.fromId,
-				amount: entry.amount,
+				toId: task.event.toId,
+				fromId: task.event.fromId,
+				amount: task.event.amount,
 			},
 			recipientBalance: balance,
 		},
 		a_promise
 	);
+
+	return state;
 }
 
 function handleQuerySubscription(state, msg, ctx) {
-	const { eventName } = msg;
+	const { eventName, log } = msg;
 	switch (eventName) {
 		case 'Tx': {
 			// Event update from subscription
-			dispatch(ctx.self, { type: 'submit', task: { ...msg } }, ctx.self);
+			dispatch(ctx.self, { type: 'submit', task: log }, ctx.self);
 			break;
 		}
 
@@ -97,8 +102,6 @@ function handleQuerySubscription(state, msg, ctx) {
 function handleContractResponse(state, msg, ctx) {
 	const { a_sub } = msg;
 	// Once subscription received from contract, start the subscription
-	if (a_sub) {
-	}
 	switch (msg.action) {
 		case 'subscribe_log': {
 			const { a_sub } = msg;
@@ -115,11 +118,6 @@ function handleContractResponse(state, msg, ctx) {
 	}
 }
 
-const getTaskIdFromLog = (log) => {
-	console.log(log);
-	return log.id;
-};
-
 function action_subscribeToTransfers(state, msg, ctx) {
 	const { a_contract_UserRegistry } = state;
 
@@ -134,6 +132,7 @@ function action_subscribeToTransfers(state, msg, ctx) {
 			eventName: 'Tx',
 			opts: { fromBlock: 0 },
 			filter: (e) => e.claimed == false,
+			// filter: (e) => e.claimed == false,
 		},
 		ctx.self
 	);
@@ -141,7 +140,7 @@ function action_subscribeToTransfers(state, msg, ctx) {
 
 function NotifierSupervisor(a_contract_UserRegistry, a_tweeter, opts) {
 	const earliestId = (opts && opts.earliestId) || 0;
-	const getId = getTaskIdFromLog;
+	const getId = (log) => log.transactionHash;
 
 	const ignoreTask = (tip) =>
 		earliestId && tip.id < earliestId
@@ -152,8 +151,8 @@ function NotifierSupervisor(a_contract_UserRegistry, a_tweeter, opts) {
 
 	const effects = {
 		[Statuses.ready]: effect_unclaimedTx,
-		[Statuses.done]: ({ doneCallback }) => {
-			doneCallback && doneCallback();
+		[Statuses.done]: ({ onTaskComplete }, { task }) => {
+			onTaskComplete && onTaskComplete(task);
 		},
 		//[Statuses.invalid]: notify(Statuses.invalid),
 		[Statuses.failed]: () => {},
@@ -162,8 +161,9 @@ function NotifierSupervisor(a_contract_UserRegistry, a_tweeter, opts) {
 	return adapt(
 		{
 			actions: {
-				start_subscription: action_subscribeToTransfers,
 				...adapters.SinkReduce(),
+				action_subscribeToTransfers,
+				action_setTweeter,
 			},
 			properties: {
 				persistenceKey: 'notifier-supervisor', // only ever 1, static key OK
@@ -172,7 +172,7 @@ function NotifierSupervisor(a_contract_UserRegistry, a_tweeter, opts) {
 					a_contract_UserRegistry,
 					a_tweeter,
 					sinkHandlers: {
-						subscribe_log: handleQuerySubscription,
+						subscription: handleQuerySubscription,
 						a_contract: handleContractResponse,
 					},
 				},

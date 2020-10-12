@@ -119,10 +119,9 @@ function Actions(
 
 		// Task actors should not reference the taskRepo
 		const msg = { task: { ...task } }; // use a copy of the task
-		const nextState =
-			!ctx.recovering && isEffect(effect)
-				? reducer.call(ctx, effect.call(ctx, state, msg, ctx))
-				: reducer.call(ctx, state, msg, ctx);
+		const nextState = await (!ctx.recovering && isEffect(effect)
+			? reducer.call(ctx, effect.call(ctx, state, msg, ctx))
+			: reducer.call(ctx, state, msg, ctx));
 
 		// @TODO supervisor could ensure state is preserved by adding taskRepo etc in
 		// to nextState object
@@ -130,6 +129,7 @@ function Actions(
 		if (isVoidState(nextState)) {
 			return state;
 		} else if (!isValidState(nextState)) {
+			ctx.debug.warn(msg, `Damaged state contents: `, Object.keys(nextState));
 			// @TODO Should check reducer returned state as well. For now assume reducer is correct
 			throw new EffectError(
 				task,

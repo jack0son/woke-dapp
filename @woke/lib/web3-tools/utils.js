@@ -74,7 +74,8 @@ const makeLogEventSubscription = (web3) => (contract, eventName, handleFunc, opt
 // If sufficient funds, use comfortable buffer for gas limit, and set a high
 // price.
 // @param method: web3Contract[method]
-const safePriceEstimate = (web3) => async (contract, method, args, txOpts) => {
+const safeGasEstimate = (web3) => async (txObject, txOpts) => {
+	const debug = () => {};
 	const toEth = (wei) => web3.utils.fromWei(wei, 'ether');
 	const valStr = (wei, delim = ', ') => `${toEth(wei)} ETH${delim}${wei.toString()} wei`;
 	const BN = web3.utils.BN;
@@ -85,22 +86,22 @@ const safePriceEstimate = (web3) => async (contract, method, args, txOpts) => {
 	try {
 		// Fetch network gas price
 		const medianPrice = await web3.eth.getGasPrice();
-		console.log(`Median price: ${valStr(medianPrice)}`);
+		debug(`Median price: ${valStr(medianPrice)}`);
 
 		// Determine transaction cost
-		let estimate = await contract.methods[method](...args).estimateGas({
+		let estimate = await txObject.estimateGas({
 			from: txOpts.from,
 		});
-		//console.log(`Gas estimate: ${estimate}`);
+		//debug(`Gas estimate: ${estimate}`);
 		let cost = gasPrice.mul(new BN(estimate));
-		//console.log(`Cost estimate: ${valStr(cost)}`);
+		//debug(`Cost estimate: ${valStr(cost)}`);
 
-		console.log('Sender', txOpts.from);
+		debug('Sender', txOpts.from);
 		let balance = new BN(await web3.eth.getBalance(txOpts.from));
-		console.log(`Sender balance: ${valStr(balance)}`);
+		debug(`Sender balance: ${valStr(balance)}`);
 
 		const logOpts = ({ limit, price, cost }) => {
-			console.log(
+			debug(
 				`\tGas:\t${limit.toString()}\n\tPrice:\t${valStr(price, '\t')}\n\tCost:\t${valStr(
 					cost,
 					'\t'
@@ -138,28 +139,29 @@ const safePriceEstimate = (web3) => async (contract, method, args, txOpts) => {
 		// Decide on gas price and limit
 		let tolerance = 0.05;
 		const min = calcTxOpts(1 + tolerance, 0.8);
-		console.log('Min opts:');
+		debug('Min opts:');
 		logOpts(min);
 
 		let speedMultiplier = 2;
 		const max = calcTxOpts(speedMultiplier, speedMultiplier);
-		console.log('Max opts:');
+		debug('Max opts:');
 		logOpts(max);
 
 		let opts;
 		if (max.cost.lt(balance)) {
-			console.log(`Using speed factored median price`);
+			debug(`Using speed factored median price`);
 			opts = max;
 		} else if (min.cost.lte(balance)) {
-			console.log(`Using minimised cost`);
+			debug(`Using minimised cost`);
 			opts = min;
 		} else {
-			console.log('Error: cannot afford tx at median gas cost');
+			debug('Error: cannot afford tx at median gas cost');
 			throw new Error('cannot afford tx at median gas cost');
 		}
 		logOpts(opts);
-		console.log(``);
-		return opts;
+		debug(``);
+		// return opts;
+		return { gas: opts.limit, gasPrice: opts.price, cost: opts.cost };
 	} catch (error) {
 		throw error;
 		// What errors can we expect here?
@@ -215,7 +217,7 @@ module.exports = {
 	waitForEvent,
 	waitForNextEvent,
 	makeLogEventSubscription,
-	safePriceEstimate,
+	safeGasEstimate,
 	uInt32ToHexString,
 	valueString,
 	abridgeAddress,

@@ -64,7 +64,6 @@ const subscriptionActor = {
 			};
 
 			const latestBlock = state.latestBlock ? state.latestBlock : 0;
-			// console.log('Subscribe with latestBlock', latestBlock);
 			const subscription = makeLogEventSubscription(web3Instance.web3)(
 				contract,
 				eventName,
@@ -127,7 +126,9 @@ const subscriptionActor = {
 					dispatch(
 						a_subscriber,
 						{
-							type: 'a_sub',
+							type: 'sink',
+							kind: 'subscription',
+							action: 'subscribe_log',
 							contractName,
 							eventName,
 							log,

@@ -1,6 +1,8 @@
 require('../../lib/debug/apply-line-numbers')(console)(['log', 'warn'], {
 	prepend: true,
 });
+// require('../../lib/debug/suppress')(console, ['log']);
+
 const twitter = require('@woke/twitter');
 const chai = require('chai');
 chai.use(require('chai-as-promised'));
@@ -10,6 +12,7 @@ const assert = chai.assert;
 
 const TipSystem = require('../src/systems/tip-system');
 const { initTestBed, ContractDomain, WokeDomain, Collection } = require('@woke/test');
+const { MockTweeter, CallbackMock, wasDispatched } = require('./mocks');
 
 const {
 	tweeter: { Tweeter },
@@ -29,32 +32,6 @@ const logUsers = (users) =>
 			followers_count,
 		}))
 	);
-
-// Catch job statuses from the tip supervisor instead of posting tweets
-const MockTweeter = (director) => (callbacks) =>
-	director.start_actor(
-		'mock-tweeter',
-		{
-			actions: {
-				tweet: (state, msg, ctx) => {
-					//const msgExample = { type: 'tweet', tweetType: 'tip-seen', tip: {} };
-					const { tweetType, tip } = msg;
-					if (!tip) throw new Error('No tip provided by tip supervisor');
-					if (!tweetType) throw new Error('No tweetType provided by tip supervisor');
-					callbacks[tweetType] && callbacks[tweetType](tip);
-				},
-			},
-			properties: {},
-		},
-		{}
-	);
-
-const callbacks = {
-	'tip-seen': () => {},
-	'tip-confirmed': () => {},
-	'tip-invalid': () => {},
-	'tip-failed': () => {},
-};
 
 const ExpectMutation = async (apiCall, initialXpt, diffXpt, msg = '') => {
 	const prev = await apiCall();
@@ -92,27 +69,6 @@ const AppStateExpectations = (ctx) => {
 	return {
 		balanceChangeBy,
 	};
-};
-
-// Twitter mock callbacks
-const CallbackMock = (deferredCallback, msg) => {
-	const deferred = new Deferral();
-	return {
-		callback: deferredCallback(deferred, msg),
-		deferred,
-	};
-};
-
-// @param expectedTip: passed by mockTweeter target function
-const wasDispatched = (deferred, msg) => (expectedTip) => {
-	logger(msg);
-	//expect(tip).to.deep.equal(expectedTip);
-	logger(expectedTip);
-	deferred.resolve();
-};
-
-const wasNotDispatched = (deferred) => (expectedTip) => {
-	deferred.reject();
 };
 
 const makeTipText = (to, amount) =>

@@ -7,25 +7,13 @@ const tipTaskDefn = require('./tip-task');
 const { useNotifyOnCrash } = require('@woke/actors');
 const { dispatch, start_actor } = ActorSystem;
 const { TaskStatuses: Statuses } = TaskSupervisor;
+const { action_setTweeter } = require('../actions');
 
 function spawn_tip_task(_parent, a_wokenContract, tip) {
 	return start_actor(_parent)(`_tip-${tip.taskId}`, tipTaskDefn, {
 		a_wokenContract,
 		tip,
 	});
-}
-
-function action_setTweeter(state, { a_tweeter }, ctx) {
-	const reply = (r) => dispatch(ctx.sender, r, ctx.self);
-
-	if (!a_tweeter) {
-		dispatch();
-		ctx.debug.warn(`Ignoring attempt to set new tweeter (${a_tweeter})`);
-		reply(false);
-		return;
-	}
-	reply(true);
-	return { ...state, a_tweeter };
 }
 
 function TipSupervisor(a_wokenContract, a_tweeter, opts) {

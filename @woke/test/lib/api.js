@@ -1,4 +1,4 @@
-const { Logger, protocol } = require('@woke/lib');
+const { Logger, protocol, web3Tools } = require('@woke/lib');
 const logger = Logger('woke:api');
 const assert = require('assert');
 const fs = require('fs');
@@ -9,6 +9,12 @@ function API(adminAccounts, web3Instance, getContracts, contractApi, sendOpts) {
 	const instance = web3Instance;
 
 	const claimArgs = (u) => [u.address, u.id, u.followers_count];
+	const estimateGas = web3Tools.utils.safeGasEstimate(instance.web3);
+
+	async function sendEstimated(txObject, txOpts) {
+		const opts = await estimateGas(txObject, txOpts);
+		return txObject.send({ ...txOpts, ...opts });
+	}
 
 	function getUnclaimedBalance(user) {
 		return contracts()
@@ -97,7 +103,26 @@ function API(adminAccounts, web3Instance, getContracts, contractApi, sendOpts) {
 
 	function assign() {}
 
-	function transfer(from, to) {}
+	function transferClaimed(from, to, amount) {
+		return contracts()
+			.UserRegistry.methods.transferClaimed(to.id, amount)
+			.send({ from: from.address });
+	}
+
+	function transferUnclaimed(from, to, amount) {
+		return sendEstimated(
+			contracts().UserRegistry.methods.transferUnclaimed(to.id, amount),
+			{ from: from.address }
+		);
+		// .send({ from: from.address });
+	}
+
+	async function transfer(from, to, amount) {
+		const args = [from, to, amount];
+		return (await userIsClaimed(to))
+			? transferClaimed(...args)
+			: transferUnclaimed(...args);
+	}
 
 	function userClaimString(user) {
 		return buildUserClaimString(...claimArgs(user));
@@ -138,6 +163,7 @@ function API(adminAccounts, web3Instance, getContracts, contractApi, sendOpts) {
 	}
 
 	return {
+		sendEstimated,
 		sendClaimUser,
 		sendOracleResponse,
 		sendFulfillClaim,
@@ -147,6 +173,9 @@ function API(adminAccounts, web3Instance, getContracts, contractApi, sendOpts) {
 		userClaimString,
 		buildUserClaimString,
 		buildOracleClaimString,
+		transfer,
+		transferUnclaimed,
+		transferClaimed,
 	};
 }
 

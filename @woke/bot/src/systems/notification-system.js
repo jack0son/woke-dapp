@@ -26,18 +26,18 @@ class NotificationSystem extends Service {
 		this.a_notifier = director[this.persist ? 'start_persistent' : 'start_actor'](
 			'notifier', // name
 			NotifierSupervisor(this.contractSystem.UserRegistry, this.a_tweeter), // actor definition
-			{}
+			{ onTaskComplete: this.config.onTaskComplete }
 		);
 	}
 
 	setTweeter(a_tweeter) {
-		return block(this.a_tipSupervisor, { type: 'setTweeter', a_tweeter });
+		return block(this.a_notifier, { type: 'setTweeter', a_tweeter });
 	}
 
 	async start() {
 		const self = this;
 
-		dispatch(self.a_notifier, { type: 'start_subscription' });
+		dispatch(self.a_notifier, { type: 'subscribeToTransfers' });
 
 		console.log(`Started transaction notification system.`);
 	}

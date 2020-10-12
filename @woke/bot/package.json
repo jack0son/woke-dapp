@@ -4,8 +4,13 @@
   "description": "Tiny oracle for Twitter API to avoid waiting for Oraclize",
   "private": true,
   "main": "index.js",
+  "mocha": {
+    "path": "test/**/*.test.js",
+    "timeout": 5000
+  },
   "scripts": {
-    "test": "ETH_ENV=development ./node_modules/.bin/mocha test/*.test.js",
+    "test1": "ETH_ENV=development ./node_modules/.bin/mocha test/*.test.js",
+    "test": "ETH_ENV=development ./node_modules/.bin/mocha",
     "test:debug": "DEBUG=*,test:*,-mocha*,-*:info,-*twitter_monitor* ETH_ENV=development ./node_modules/.bin/mocha test/*.test.js",
     "tipper": "NODE_ENV=production node src/services/tipper.js",
     "tipper:dev": "NODE_ENV=development node src/services/tipper.js --persist=false --twitterApp=oracle-bot --twitterEnv=dev --verbose=true",
@@ -42,6 +47,7 @@
     "chai": "^4.2.0",
     "chai-as-promised": "^7.1.1",
     "minimist": "^1.2.0",
-    "mocha": "^6.2.2"
+    "mocha": "^6.2.2",
+    "web3-utils": "^1.3.0"
   }
 }
