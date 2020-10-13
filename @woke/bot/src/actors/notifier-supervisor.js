@@ -15,9 +15,10 @@ const spawn_tweet_promise = (task, _ctx) => {
 	return spawnStateless(
 		notifier,
 		(msg, ctx) => {
+			console.log(msg);
 			const updateStatus = (status, reason = null) => {
 				dispatch(
-					noitifer,
+					notifier,
 					{ type: 'update', task: { ...task, status, reason } },
 					ctx.self
 				);
@@ -25,19 +26,24 @@ const spawn_tweet_promise = (task, _ctx) => {
 			};
 
 			const { type, tweet, error } = msg;
-			if (error) {
-				_ctx.debug.error(msg, `Promise from tweeter: ${error}`);
-				// @TODO fix this error condition
-				updateStatus(Statuses.failed, error);
-			} else if (type == 'tweet') {
-				if (tweet) {
-					updateStatus(Statuses.done);
-				} else {
-					// @TODO fix this error condition
-					updateStatus(Statuses.failed, 'Tweeter did not tweet');
-				}
+			switch (type) {
+				case 'tweet':
+					if (error) {
+						console.log(`Promise from tweeter: ${error}`);
+						_ctx.debug.error(msg, `Promise from tweeter: ${error}`);
+						// @TODO fix this error condition
+						updateStatus(Statuses.failed, error);
+					} else if (tweet) {
+						updateStatus(Statuses.done);
+					} else {
+						// @TODO fix this error condition
+						updateStatus(Statuses.failed, 'Tweeter did not tweet');
+					}
+					stop(ctx.self);
+					break;
+				default:
+					_ctx.debug.warn(msg, `Unexpected message`);
 			}
-			stop(ctx.self);
 		},
 		`tweet_promise-${idx++}`
 	);
@@ -65,12 +71,16 @@ async function effect_unclaimedTx(state, msg, ctx) {
 		throw error;
 	}
 
+	task.status = Statuses.pending;
+	task.balance = balance;
+	dispatch(ctx.self, { type: 'update', task }, ctx.self);
+
 	const a_promise = spawn_tweet_promise(task, ctx);
 	dispatch(
 		a_tweeter,
 		{
 			type: 'tweet',
-			tweetType: 'unclaimed-transfer',
+			tweetType: 'transfer-unclaimed',
 			tip: {
 				toId: task.event.toId,
 				fromId: task.event.fromId,

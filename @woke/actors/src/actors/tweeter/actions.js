@@ -26,7 +26,7 @@ async function action_tweet(state, msg, ctx) {
 	let tweet, text;
 	try {
 		switch (tweetType) {
-			case 'unclaimed-transfer': {
+			case 'transfer-unclaimed': {
 				tweet = await td.postUnclaimedTransfer(fromId, toId, amount, recipientBalance);
 				break;
 			}

@@ -73,6 +73,11 @@ class Service {
 			await fn();
 		}
 	}
+
+	stop(hard) {
+		// @TODO Stop dependent services
+		this.director.stop(); // shouldn't do this
+	}
 }
 
 module.exports = Service;

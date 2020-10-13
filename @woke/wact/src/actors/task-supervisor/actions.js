@@ -20,7 +20,7 @@ function Task(taskId, task) {
 
 const RESTART_ON = [Statuses.init, Statuses.ready, Statuses.pending];
 
-// Instead of merging every state update by effects
+// Instead of merging every state update by effects, perform this check
 const isValidState = ({ taskRepo, tasksByStatus }) => !!taskRepo && !!tasksByStatus;
 
 // @TODO new task function should be primary parameter

@@ -13,6 +13,8 @@ const MockTweeter = (director) => (callbacks) =>
 					if (!tip) throw new Error('No tip provided by tip supervisor');
 					if (!tweetType) throw new Error('No tweetType provided by tip supervisor');
 					callbacks[tweetType] && callbacks[tweetType](tip);
+					const tweet = { full_text: 'dummy tweet' };
+					director.dispatch(ctx.sender, { type: msg.type, tweet }, ctx.self);
 				},
 			},
 			properties: {},

@@ -229,6 +229,7 @@ function bootstrap(opts = {}, _persistenceEngine) {
 		start_actor: start_actor(system),
 		start_persistent: _persistenceEngine && start_persistent(system),
 		stop: () => stop(system),
+		dispatch,
 		system,
 	};
 }
