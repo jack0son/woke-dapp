@@ -17,7 +17,9 @@ fi
 
 
 WORK_DIR=$(pwd)
-BASE_DIR=${WORK_DIR##*/}
+BASE_DIR=${WORK_DIR##*/} # get script's directory
+# Alt. $(dirname $(readlink -f $0)
+
 if [[ "$BASE_DIR" != "contracts-src" ]]; then
 	echo "FAILED .. script must be run from @woke/contracts"
 	exit

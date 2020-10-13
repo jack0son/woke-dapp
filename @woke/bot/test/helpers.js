@@ -7,10 +7,7 @@ const extractRecipient = (tweet) => ({
 });
 
 const extractUser = (idx) => (user) => {
-	let u = {
-		...user,
-		id: user.id_str,
-	};
+	let u = { ...user, id: user.id_str };
 	idx[u.id] = u;
 	return u;
 };

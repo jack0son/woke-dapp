@@ -15,7 +15,6 @@ const spawn_tweet_promise = (task, _ctx) => {
 	return spawnStateless(
 		notifier,
 		(msg, ctx) => {
-			console.log(msg);
 			const updateStatus = (status, reason = null) => {
 				dispatch(
 					notifier,
@@ -141,7 +140,7 @@ function action_subscribeToTransfers(state, msg, ctx) {
 			type: 'subscribe_log',
 			eventName: 'Tx',
 			opts: { fromBlock: 0 },
-			filter: (e) => e.claimed == false,
+			filter: (event) => event.claimed === false,
 			// filter: (e) => e.claimed == false,
 		},
 		ctx.self

@@ -82,6 +82,8 @@ context('funder-system', function () {
 		});
 
 		it('claimed to claimed', async function () {
+			// should not notify
+
 			this.skip();
 			// contractDomain.contracts.UserRegistry.events
 			// 	.Tx({ fromBlock: 0 })
