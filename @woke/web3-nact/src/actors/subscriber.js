@@ -3,8 +3,9 @@ const {
 	actors: { Polling },
 } = require('@woke/wact');
 const {
-	utils: { initContract, makeLogEventSubscription },
+	utils: { makeLogEventSubscription },
 	init,
+	methods: { makeContractInstanceFromConfig },
 } = require('@woke/lib').web3Tools;
 const { dispatch, block, start_actor } = ActorSystem;
 const { blockTime } = init.network;
@@ -21,7 +22,7 @@ const subscriptionActor = {
 			filter: (e) => e,
 			subscription: null,
 			subscribers: [],
-			contractInterface: null,
+			contractConfig: null,
 			latestBlock: 0,
 		},
 
@@ -46,8 +47,8 @@ const subscriptionActor = {
 	},
 
 	actions: {
-		subscribe: async (msg, ctx, state) => {
-			const { contractInterface, eventName, ...rest } = state;
+		subscribe: async (state, msg, ctx) => {
+			const { contractConfig, eventName, ...rest } = state;
 			if (state.subscription) {
 				await state.subscription.stop();
 			}
@@ -55,7 +56,7 @@ const subscriptionActor = {
 			// Always get a fresh contract instance
 			const { web3Instance } = await block(state.a_web3, { type: 'get' });
 			const blockTime = web3Instance.network.blockTime;
-			const contract = initContract(web3Instance, contractInterface);
+			const contract = makeContractInstanceFromConfig(web3Instance)(contractConfig);
 
 			const callback = (error, log) => {
 				// Seperate subcription init from handling into distinict messages
@@ -63,7 +64,6 @@ const subscriptionActor = {
 			};
 
 			const latestBlock = state.latestBlock ? state.latestBlock : 0;
-			console.log('Subscribe with latestBlock', latestBlock);
 			const subscription = makeLogEventSubscription(web3Instance.web3)(
 				contract,
 				eventName,
@@ -84,8 +84,8 @@ const subscriptionActor = {
 			return { ...state, subscription, latestBlock };
 		},
 
-		start: (msg, ctx, state) => {
-			const { contractInterface, eventName, watchdog, watchdogInterval } = state;
+		start: (state, msg, ctx) => {
+			const { watchdog, watchdogInterval } = state;
 			const { resubscribeInterval } = msg;
 			const period =
 				resubscribeInterval || watchdogInterval || blockTime || DEFAULT_WATCHDOG_INTERVAL;
@@ -108,8 +108,8 @@ const subscriptionActor = {
 			}
 		},
 
-		handle: (msg, ctx, state) => {
-			const { eventName, contractInterface, subscribers, filter } = state;
+		handle: (state, msg, ctx) => {
+			const { eventName, contractName, subscribers, filter } = state;
 			const { error, log } = msg;
 
 			if (error) {
@@ -121,14 +121,15 @@ const subscriptionActor = {
 				console.log(`Prev BN: ${state.latestBlock}, Log BN: ${log.blockNumber}`);
 				const latestBlock =
 					log.blockNumber > state.latestBlock ? log.blockNumber : state.latestBlock;
-				console.log(`New latestBlock: ${latestBlock}`);
 
 				subscribers.forEach((a_subscriber) => {
 					dispatch(
 						a_subscriber,
 						{
-							type: 'a_sub',
-							contractName: contractInterface.contractName,
+							type: 'sink',
+							kind: 'subscription',
+							action: 'subscribe_log',
+							contractName,
 							eventName,
 							log,
 						},
@@ -140,13 +141,13 @@ const subscriptionActor = {
 			}
 		},
 
-		resubscribe: async (msg, ctx, state) => {
+		resubscribe: async (state, msg, ctx) => {
 			//const { web3Instance } = await block(state.a_web3, { type: 'get' });
 			//const contract = initContract(web3Instance, state.contractInterface);
 			dispatch(ctx.self, { type: 'start' }, ctx.self);
 		},
 
-		stop: (msg, ctx, state) => {
+		stop: (state, msg, ctx) => {
 			const { subscription, a_watchdog } = state;
 			if (a_watchdog) {
 				dispatch(a_watchdog, { type: 'stop' });

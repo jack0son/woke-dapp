@@ -2,21 +2,21 @@ const { Logger } = require('@woke/lib');
 const {
 	ActorSystem: { dispatch },
 	receivers,
+	supervision,
 } = require('@woke/wact');
 
-function TwitterAgent(twitterStub) {
+const retry = supervision.exponentialRetry(100, 5);
+
+function TwitterAgent(twitterDomain) {
 	return {
 		properties: {
 			initialState: {
 				kind: 'twitterAgent',
-				twitter: twitterStub,
+				twitter: twitterDomain,
 			},
 
 			// Receivers are bound the message bundle and attached to the context
-			receivers: (bundle) => ({
-				// Standard response message format
-				sink: receivers.sink(bundle),
-			}),
+			receivers: [receivers.sink],
 
 			onCrash: async (msg, error, ctx) => {
 				const { type, a_polling } = msg;
@@ -37,7 +37,7 @@ function TwitterAgent(twitterStub) {
 		},
 
 		actions: {
-			find_proof_tweet: (msg, ctx, state) => {
+			find_proof_tweet: (state, msg, ctx) => {
 				const { twitter } = state;
 				const { userId } = msg;
 
@@ -51,10 +51,9 @@ function TwitterAgent(twitterStub) {
 					});
 			},
 
-			get_user_data: (msg, ctx, state) => {
+			get_user_data: (state, msg, ctx) => {
 				const { twitter } = state;
 				const { userId } = msg;
-				validateTwitterStub(twitter);
 
 				twitter
 					.getUser(userId)
@@ -69,7 +68,7 @@ function TwitterAgent(twitterStub) {
 	};
 }
 
-function validateTwitterStub(stub) {
+function validateTwitterDomain(stub) {
 	if (!stub) throw new Error('No stub provided');
 	if (!stub.ready()) throw new Error('Twitter stub not initialised');
 }

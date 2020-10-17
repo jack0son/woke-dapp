@@ -1,26 +1,15 @@
-const {
-	persist,
-	persistenceConfig,
-	networkList,
-	subscriptionWatchdogInterval,
-} = require('./config');
-const { Logger, twitter, utils } = require('@woke/lib');
+const { configure } = require('@woke/lib');
+const { loadSecrets, serviceConf } = require('@woke/service');
 const OracleSystem = require('./oracle-system');
-const debug = Logger();
+const opts = require('./config');
+
+const conf = configure(opts, serviceConf);
+
+loadSecrets(['infura', 'ethereum'], conf);
 
 // @TODO parse polling interval
-const bootstrap = async () => {
-	await twitter.initClient();
-
-	const oracleSystem = new OracleSystem({
-		twitterClient: twitter,
-		persist,
-		subscriptionWatchdogInterval,
-		persistenceConfig,
-		networkList,
-		monitoring: true,
-		//retryInterval: 5*1000,
-	});
+const bootstrap = () => {
+	const oracleSystem = new OracleSystem(conf);
 	return oracleSystem.start();
 };
 

@@ -4,24 +4,24 @@
   "description": "Tiny oracle for Twitter API to avoid waiting for Oraclize",
   "private": true,
   "main": "index.js",
+  "mocha": {
+    "path": "test/**/*.test.js",
+    "timeout": 5000
+  },
   "scripts": {
-    "test": "./node_modules/.bin/mocha ./test/test*.js",
-    "test:debug": "DEBUG=oracle:* ./node_modules/.bin/mocha",
-    "tipper:verbose": "DEBUG_RECOVERY=true NODE_ENV=production DEBUG=* node src/services/tipper.js",
-    "tipper": "DEBUG=actor*,sys_*,-*:twitter_monitor*,-*:_tip-*:info node src/services/tipper.js",
+    "test": "ETH_ENV=development ./node_modules/.bin/mocha test/*.test.js",
+    "test:debug": "DEBUG=*,test:*,-mocha*,-*:info,-*twitter_monitor* ETH_ENV=development ./node_modules/.bin/mocha test/*.test.js",
+    "tipper": "NODE_ENV=production node src/services/tipper.js",
+    "tipper:dev": "NODE_ENV=development node src/services/tipper.js --persist=false --twitterApp=oracle-bot --twitterEnv=dev --verbose=true",
+    "tipper:fake": "NODE_ENV=development node src/services/tipper.js --persist=false --twitterEnv=fake --verbose=true",
+    "tipper:muffled": "NODE_ENV=development node src/services/tipper.js --persist=false --twitterApp=oracle-bot --muffled",
+    "tipper:goerli": "NODE_ENV=development node src/services/tipper.js --persist=true --twitterApp=oracle-bot",
     "notifier": "DEBUG=* node src/services/notifier.js",
     "notifier:development": "PERSIST=true DEBUG=* NODE_ENV=development node src/services/notifier.js",
     "notifier:production": "PERSIST=true DEBUG=* NODE_ENV=development node src/services/notifier.js",
-    "notifier:transient": "PERSIST=false DEBUG=* NODE_ENV=development node src/services/notifier.js",
-    "tipper:dev": "NODE_ENV=development DEBUG=actor*,-*:twitter_monitor*,-*:_tip-*:info node src/services/tipper.js",
-    "tipper:dev:verbose": "PERSIST=true DEBUG_RECOVERY=true NODE_ENV=development DEBUG=* node src/services/tipper.js",
-    "tipper:dev:recovery": "PERSIST=true DEBUG_RECOVERY=true NODE_ENV=development DEBUG=* node src/services/tipper.js",
-    "mock:tipper": "DEBUG_RECOVERY=true NODE_ENV=development DEBUG=actor*,-*:twitter_monitor*,-*:_tip-*:info node src/services/mock-tipper.js",
-    "mock:tipper:verbose": "DEBUG_RECOVERY=true NODE_ENV=development DEBUG=actor* node src/services/mock-tipper.js",
-    "mock:tipper:goerli": "ETH_ENV=goerli NODE_ENV=development DEBUG=* node src/services/mock-tipper.js",
-    "mock:notifier": "NODE_ENV=development DEBUG=actor* node src/services/mock-notifier.js",
-    "mock:notifier:goerli": "ETH_ENV=goerli NODE_ENV=development DEBUG=actor* node src/services/mock-notifier.js",
-    "mock:notifier:verbose": "NODE_ENV=development DEBUG=actor*,polling* node src/services/mock-notifier.js",
+    "muffled:notifier": "TWITTER_ENV=fake NODE_ENV=development DEBUG=actor* node src/services/mock-notifier.js",
+    "muffled:notifier:verbose": "TWITTER_ENV=fake NODE_ENV=development node src/services/mock-notifier.js",
+    "muffled:notifier:goerli": "TWITTER_ENV=fake ETH_ENV=goerli NODE_ENV=development DEBUG=actor* node src/services/mock-notifier.js",
     "docker:db": "docker-compose -f ../../bot.docker-compose.local.yml up -d --build bot-db",
     "docker:down": "docker-compose -f ../../bot.docker-compose.local.yml down",
     "docker:reset": "docker-compose -f ../../bot.docker-compose.local.yml down -v",
@@ -33,15 +33,21 @@
   "dependencies": {
     "@woke/wact": "0.1.0",
     "@woke/web3-nact": "0.1.0",
+    "@woke/service": "0.1.0",
     "@woke/contracts": "0.4.0",
     "@woke/lib": "0.4.0",
+    "@woke/twitter": "0.1.0",
     "@woke/actors": "0.1.0",
+    "@woke/secrets": "0.1.0",
     "dotenv": "^8.2.0"
   },
   "devDependencies": {
+    "@woke/jack0son": "0.1.0",
+    "@woke/test": "0.1.0",
     "chai": "^4.2.0",
     "chai-as-promised": "^7.1.1",
     "minimist": "^1.2.0",
-    "mocha": "^6.2.2"
+    "mocha": "^6.2.2",
+    "web3-utils": "^1.3.0"
   }
 }

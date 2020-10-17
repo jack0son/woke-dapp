@@ -1,22 +1,23 @@
 const { Contract } = require('../actors');
 const CoreSystem = require('./core');
-const { loadContract } = require('../lib/utils');
+const { loadArtifactByName } = require('../lib/contract');
 
-function ContractsSystem(director, contractNames, opts) {
-	const { a_web3, a_nonce } = CoreSystem(director, opts);
+const defaultContractOpts = { contractNames: [], contractConfigs: [] };
+const contractConfig = { name: 'example', instance: 'web3 contract instance' };
 
-	// Initialise Woken Contract agent
-	return contractNames.reduce(
-		(a_contracts, name) => ({
-			...a_contracts,
-			[name]: director.start_actor(`a_${name}`, Contract, {
-				a_web3,
-				a_nonce,
-				contractInterface: loadContract(name),
-			}),
-		}),
-		{}
-	);
+function ContractsSystem(director, contractNames, contractInstances = {}, coreOpts) {
+	const coreActors = CoreSystem(director, coreOpts);
+
+	return contractNames.reduce((contractActors, name) => {
+		const initialState = { ...coreActors, name };
+		const instance = contractInstances[name];
+		initialState.contractConfig = instance
+			? { instance }
+			: { artifact: loadArtifactByName(name) };
+
+		contractActors[name] = director.start_actor(`a_${name}`, Contract, initialState);
+		return contractActors;
+	}, {});
 }
 
 module.exports = ContractsSystem;

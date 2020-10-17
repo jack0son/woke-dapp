@@ -149,9 +149,15 @@ module.exports = {
 	createRpcUrl,
 };
 
+const invalidRpcUrl = (url) => url.includes('undefined');
+
 function createRpcUrl(network) {
-	if (!network) {
-		throw new Error('No network provided. Expects: { protocol, host, port }');
-	}
-	return `${network.protocol}://${network.host}${network.port ? ':' + network.port : ''}`;
+	if (!network) throw new Error('No network provided. Expects: { protocol, host, port }');
+
+	const rpcUrl = `${network.protocol}://${network.host}${
+		network.port ? ':' + network.port : ''
+	}`;
+
+	if (invalidRpcUrl(rpcUrl)) throw new Error(`Invalid web3 provider RPC URL ${rpcUrl}`);
+	return rpcUrl;
 }

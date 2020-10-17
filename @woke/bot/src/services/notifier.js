@@ -1,17 +1,13 @@
-const { persist, networkList } = require('../config/service-config');
-const { Logger, twitter, TwitterStub } = require('@woke/lib');
+const { serviceConf } = require('@woke/service');
+const web3Config = require('@woke/web3-nact').config;
 const NotificationSystem = require('../systems/notification-system');
-const debug = Logger();
+
+serviceConf.networkList = web3Config.networkList;
+console.log('config', serviceConf);
 
 const bootstrap = async () => {
-	await twitter.initClient();
-	const twitterStub = new TwitterStub(twitter);
-	const notiSystem = new NotificationSystem(undefined, {
-		persist,
-		twitterStub,
-		networkList,
-	});
+	const notiSystem = new NotificationSystem(serviceConf);
 	return notiSystem.start();
-}
+};
 
 bootstrap().catch(console.log);

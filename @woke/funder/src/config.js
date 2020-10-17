@@ -1,7 +1,9 @@
-require('dotenv').config()
+require('dotenv').config();
 const { utils } = require('@woke/lib');
-const { config: { networkList } } = require('@woke/web3-nact');
-const CONTEXT = process.env.CONTEXT;
+const {
+	config: { networkList },
+} = require('@woke/web3-nact');
+const PERSIST_ENV = process.env.PERSIST_ENV;
 
 const persistenceConfig = {
 	local: {
@@ -17,16 +19,14 @@ const persistenceConfig = {
 		DB: 'woke_dapp',
 		HOST: 'db',
 		PORT: 5432,
-	}
+	},
 };
 
 const retryInterval = process.env.NODE_ENV == 'development' ? 5000 : 150000;
 
 module.exports = {
-	networkList,
 	subscriptionWatchdogInterval: Number(process.env.SUBSCRIPTION_WATCHDOG_INTERVAL),
-	persist: utils.parse_bool(process.env.PERSIST),
-	persistenceConfig: persistenceConfig[process.env.CONTEXT || 'local'],
-	queryTimeout: 60000*5,
-	retryInterval, 
+	persistenceConfig: persistenceConfig[process.env.PERSIST_ENV || 'local'],
+	queryTimeout: 60000 * 5,
+	retryInterval,
 };

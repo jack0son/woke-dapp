@@ -1,13 +1,12 @@
 const assert = require('assert');
+const { bootstrap, dispatch } = require('../src/actor-system');
 const { Polling } = require('../src/actors');
-const { bootstrap } = require('../src/actor-system');
-const { dispatch } = require('nact');
 
 const actorStub = {
 	properties: {},
 	actions: {
-		callback: (msg, ctx, state) => {
-			msg.callback(msg, ctx, state);
+		callback: (state, msg, ctx) => {
+			msg.callback(state, msg, ctx);
 		},
 	},
 };
@@ -65,7 +64,7 @@ context('Polling', function () {
 				const [delay, tolerance] = [10, 2]; // ms
 				let count = 0;
 
-				const callback = (msg, ctx, state) => {
+				const callback = (state, msg, ctx) => {
 					const myCount = ++count;
 					setTimeout(() => {
 						if (myCount <= 3)
@@ -93,7 +92,7 @@ context('Polling', function () {
 				const [delay, tolerance] = [10, 2]; // ms
 				let count = 0;
 
-				const callback = (msg, ctx, state) => {
+				const callback = (state, msg, ctx) => {
 					const myCount = ++count;
 					setTimeout(() => {
 						assert(
@@ -122,7 +121,7 @@ context('Polling', function () {
 				const failAt = 4;
 				let count = 0;
 
-				const callback = (msg, ctx, state) => {
+				const callback = (state, msg, ctx) => {
 					const myCount = ++count;
 					let myDelay = delay;
 					if (myCount < failAt) myDelay *= myCount;

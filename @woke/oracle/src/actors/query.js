@@ -1,14 +1,9 @@
-const {
-	ActorSystem,
-	receivers,
-	reducers,
-	actors: { SinkAdapter },
-} = require('@woke/wact');
-const { dispatch } = ActorSystem;
+const { ActorSystem, receivers, reducers, adapters } = require('@woke/wact');
+const { dispatch, stop } = ActorSystem;
 const { subsumeEffects, Pattern } = reducers;
 const { tweetToProofString } = require('../lib/proof-protcol');
 
-function fetchProofTweet(msg, ctx, state) {
+function fetchProofTweet(state, msg, ctx) {
 	const {
 		a_twitterAgent,
 		job: { userId },
@@ -17,7 +12,7 @@ function fetchProofTweet(msg, ctx, state) {
 	dispatch(a_twitterAgent, { type: 'find_proof_tweet', userId }, ctx.self);
 }
 
-function handleFailure(msg, ctx, state) {
+function handleFailure(state, msg, ctx) {
 	const { error } = state;
 	if (error) {
 		// Catch error in on crash, schedule new attempt
@@ -33,11 +28,11 @@ function handleFailure(msg, ctx, state) {
 	return state;
 }
 
-function handleTwitterResponse(msg, ctx, state) {
+function handleTwitterResponse(state, msg, ctx) {
 	const { action, user, error } = msg;
 	switch (action) {
 		case 'find_proof_tweet': {
-			return handleProofTweet(msg, ctx, state);
+			return handleProofTweet(state, msg, ctx);
 		}
 		default: {
 			ctx.debug.d(msg, `No handler defined for response to ${action}`);
@@ -46,7 +41,7 @@ function handleTwitterResponse(msg, ctx, state) {
 	}
 }
 
-function handleProofTweet(msg, ctx, state) {
+function handleProofTweet(state, msg, ctx) {
 	const { userId, tweet, userData, error } = msg;
 
 	if (error) {
@@ -61,7 +56,7 @@ function handleProofTweet(msg, ctx, state) {
 	return { ...state, tweet, userData };
 }
 
-function submitQueryTx(msg, ctx, state) {
+function submitQueryTx(state, msg, ctx) {
 	ctx.debug.d(msg, 'Submitting query response transaction');
 	const { job, a_contract_TwitterOracle, tweet, userData } = state;
 
@@ -81,14 +76,14 @@ function submitQueryTx(msg, ctx, state) {
 }
 
 // Add tx data to state
-function handleQueryTx(msg, ctx, state) {
+function handleQueryTx(state, msg, ctx) {
 	const { error, tx, status } = msg;
 	if (tx.method == '__callback') {
 		return { ...state, responseTx: { error, tx, status } };
 	}
 }
 
-function handleQueryFailure(msg, ctx, state) {
+function handleQueryFailure(state, msg, ctx) {
 	ctx.debug.d(msg, 'Query failed');
 	const {
 		job: { queryId },
@@ -96,10 +91,10 @@ function handleQueryFailure(msg, ctx, state) {
 		txResponse,
 	} = state;
 	ctx.receivers.update_job({ status: 'failed' }, txResponse.error);
-	return ctx.stop;
+	stop(ctx.self);
 }
 
-function complete(msg, ctx, state) {
+function complete(state, msg, ctx) {
 	const {
 		job: { queryId, userId },
 		responseTx,
@@ -112,7 +107,7 @@ function complete(msg, ctx, state) {
 		txHash: responseTx.txHash,
 	});
 
-	return ctx.stop;
+	stop(ctx.self);
 }
 
 function haveTwitterData(state) {
@@ -155,6 +150,18 @@ function onCrash(msg, error, ctx) {
 	return ctx.escalate;
 }
 
+const update_job = ({ state, msg, ctx }) => (job, error) => {
+	const {
+		job: { queryId },
+		userId,
+	} = state;
+	dispatch(
+		ctx.parent,
+		{ type: 'update_job', job: { queryId, userId, ...job }, error },
+		ctx.self
+	);
+};
+
 //function QueryJob(a_twitterAgent, a_contract_TwitterOracle) {
 module.exports = {
 	properties: {
@@ -171,23 +178,10 @@ module.exports = {
 			kind: 'queryJob',
 		},
 
-		receivers: ({ msg, ctx, state }) => ({
-			sink: receivers.sink({ msg, ctx, state }),
-			update_job: (job, error) => {
-				const {
-					job: { queryId },
-					userId,
-				} = state;
-				dispatch(
-					ctx.parent,
-					{ type: 'update_job', job: { queryId, userId, ...job }, error },
-					ctx.self
-				);
-			},
-		}),
+		receivers: [receivers.sink, update_job],
 	},
 	actions: {
-		...SinkAdapter(reducer),
+		...adapters.SinkReduce(reducer),
 		start: reducer,
 	},
 };

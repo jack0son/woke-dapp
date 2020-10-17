@@ -1,23 +1,20 @@
-const { ActorSystem, effects } = require('@woke/wact');
+const {
+	ActorSystem: { dispatch, block, stop },
+	action,
+} = require('@woke/wact');
 const {
 	web3Tools: { utils },
 } = require('@woke/lib');
-const { dispatch, block } = ActorSystem;
-const { withEffect } = effects;
-const {
-	ParamError,
-	TransactionError,
-	OnChainError,
-} = require('../../lib/errors');
+const { maxAttempts: MAX_ATTEMPTS } = require('./config');
+const errors = require('../../lib/errors');
 
-//const web3Errors = require('web3-core-helpers').errors;
-
-// @TODO replace this state machine with new reducer pattern
-// @TODO handle revert error
-const MAX_ATTEMPTS = 4;
+// 1. send (preflight): receive and validate transaction parameters and queue send
+// 2. publish: send tx to web3 provider and setup listeners
+// 3. reduce: reduce transaction state from listeners and peform effects:
+//	- notify tx sinks
+//	- throw errors
 
 function resolveStatus(txState) {
-	//console.log(txState);
 	if (txState.error) {
 		return 'error';
 	} else if (txState.receipt) {
@@ -29,77 +26,125 @@ function resolveStatus(txState) {
 	}
 }
 
-function reduce(msg, ctx, state) {
-	msg.type = 'reduce';
-	dispatch(ctx.self, msg, ctx.self);
+function TxState() {
+	return {
+		status: 'init',
+		error: null,
+		hash: undefined,
+		receipt: undefined,
+		attempts: 0,
+	};
 }
 
-// A parent actor can persist the sendTx messages then spin up a send actor for
-// each one, get notified of the result, then mark the tx message discarded or
-// complete
+// Errors that callers should receive details of
+function isServiceInterfaceError(error) {
+	// @TODO define service interface errors
+	return error instanceof errors.InterfaceError || error instanceof errors.RevertError;
+}
 
-// A sink is an actor that wants to be notified of a change to status
-// Behaves like an effect, with state.status as a dependency
-// @param _state: original state
-function dispatchSinks(msg, ctx, state) {
-	const prevState = state._state;
-	const prevStatus = resolveStatus({ ...prevState.tx, error: prevState.error });
+function isServiceFailureError(error) {
+	// @TODO define service failure errors
+	return error instanceof errors.ProviderError;
+}
 
-	const { tx, error, sinks, kind } = state;
-	//console.log(sinks);
+const actions = { action_send, action_publish, action_reduceTxEvent, action_notifySinks };
+const directory = action.buildDirectory(actions);
 
-	const status = resolveStatus({ ...tx, error });
-	//console.log(prevStatus);
-	//console.log(status);
-	if (status != prevStatus) {
-		//sinks.forEach(sink => console.log(sink));
-		sinks.forEach((a_sink) => {
-			const msgPayload = { type: 'tx', tx: state.tx, error, txStatus: status };
-			//dispatch(a_sink, msgPayload, ctx.self)
-			dispatch(
-				a_sink,
-				{
-					type: 'sink',
-					action: 'send',
-					kind,
-					tx: state.tx,
-					error,
-					txStatus: status,
-				},
-				ctx.self
-			);
-			//ctx.receivers.sink(msgPayload);
-		});
-		ctx.debug.info(msg, `${prevStatus} => ${status}`);
+function onCrash(msg, error, ctx) {
+	ctx.retry = retry({ msg, error, ctx });
+	ctx.notify = () => {
+		dispatch(
+			ctx.self,
+			{ type: directory.address(action_notifySinks), error, thenStop: true },
+			ctx.self
+		);
+		return ctx.resume;
+	};
 
-		if (status == 'success') {
-			dispatch(ctx.self, { type: 'tx', txStatus: status }, ctx.self);
+	if (isServiceFailureError(error)) {
+		return ctx.escalate; // a_contract or a_txManager will perform failure reporting
+	}
+
+	if (isServiceInterfaceError(error)) {
+		return ctx.notify();
+	}
+
+	switch (msg.type) {
+		case directory.address(action_reduceTxEvent):
+		case 'reduce':
+			return handleTransactionError(msg, error, ctx);
+
+		case directory.address(action_send):
+		case 'send':
+			return handlePreflightError(msg, error, ctx);
+
+		case directory.address(action_publish):
+		case '_send':
+			return handleSendError(msg, error, ctx);
+
+		default:
+			return ctx.escalate;
+	}
+}
+
+function handleSendError(msg, error, ctx) {
+	return ctx.escalate;
+}
+
+function handlePreflightError(msg, error, ctx) {
+	return ctx.escalate;
+}
+
+function handleTransactionError(msg, error, ctx) {
+	const { tx } = msg;
+	if (error instanceof errors.ParamError) {
+		if (error.web3Error.message.includes('nonce')) {
+			return ctx.retry({ tx, failedNonce: error.data.tx.nonce });
+		} else {
+			throw error;
 		}
 	}
 
-	return state;
-}
+	if (error instanceof errors.TransactionError) {
+		return ctx.retry();
+	}
 
-// Sender responses addressed to self
-async function action_tx(msg, ctx, state) {
-	const { txStatus } = msg;
+	if (error instanceof errors.OnChainError) {
+		// Fatal error, notify sinks
+		return ctx.notify();
+	}
 
-	if (txStatus == 'success') {
-		ctx.debug.d(msg, `Complete. Stopping...`);
-		return ctx.stop;
+	if (error.data && error.data.tx) {
+		return ctx.escalate;
 	}
 }
 
-function action_getStatus(msg, ctx, state) {
-	dispatch(
-		ctx.sender,
-		{ status: resolveStatus(ctx.txState), txState },
-		ctx.self
-	);
-}
+async function action_send(state, msg, ctx) {
+	const { maxAttempts, sinks } = state;
+	const { failedNonce } = msg;
 
-async function action_sendPreflight(msg, ctx, state) {
-	const { tx, failedNonce } = msg;
+	if (msg.transactionSpec && msg.tx) {
+		throw new Error('Should not receive new transaction specification with tx state');
+	}
+
+	const transactionSpec = msg.transactionSpec || state.transactionSpec;
+	if (!transactionSpec) {
+		throw new errors.InterfaceError(
+			'Must provide transaction specification (web3.transactionObject OR opts)',
+			'transactionSpec',
+			transactionSpec
+		);
+	}
+
+	// Tx property used internally by onCrash handlers so tx state from message
+	// contents must take precedence
+	const tx = msg.tx || state.tx || TxState();
+	tx.attempts++;
+
+	if (tx.attempts > (maxAttempts || MAX_ATTEMPTS)) {
+		// @TODO classify this error
+		throw new Error('Tx failed too many times');
+	}
 
 	tx.type = 'send';
 	const { web3Instance } = await block(state.a_web3, { type: 'get' });
@@ -110,109 +155,65 @@ async function action_sendPreflight(msg, ctx, state) {
 		network: web3Instance.network,
 	});
 
-	// console.log('nonce: ', nonce);
-
 	let account;
 	if (web3Instance.account) {
 		account = web3Instance.account;
-	} else if (process.env.NODE_ENV == 'development') {
-		account = (await web3Instance.web3.eth.personal.getAccounts())[1];
 	} else {
 		console.log(web3Instance.network);
 		console.log(`Account: `, web3Instance.account);
 		throw new Error(`No account defined for web3Instance`);
 	}
-	ctx.debug.info(msg, `Send from ${account}`);
-	tx.opts = { ...tx.opts, from: account };
 
-	dispatch(ctx.self, { type: '_send', tx, web3Instance, nonce }, ctx.self);
+	ctx.debug.info(msg, `Send from ${account}`);
+	const { method, ...spec } = transactionSpec;
+	if (method) tx.method = method;
+	tx.opts = { ...spec, from: account };
+	tx.nonce = nonce;
+
+	dispatch(
+		ctx.self,
+		{ type: directory.address(action_publish), web3Instance, nonce },
+		ctx.self
+	);
+	//dispatch(ctx.self, { type: '_send', tx, web3Instance, nonce }, ctx.self);
 	//dispatch(ctx.sender, {type: 'tx', txStatus: 'submitted', tx }, ctx.self);
+
 	return {
 		...state,
+		sinks,
 		error: null,
+		transactionSpec,
 		tx,
 	};
 }
 
-const action_reduce = (msg, ctx, state) =>
-	withEffect(
-		msg,
-		ctx,
-		state
-	)((msg, ctx, state) => {
-		//ctx.onlySelf()
-		const { error, tx } = msg;
+// Only called internally
+function action_publish(state, msg, ctx) {
+	const { sendOpts, getSendMethod, transactionSpec, tx, reportConfirmations } = state;
+	const { web3Instance, nonce } = msg; // receive a fresh web3 instance from action_send
 
-		let _error;
-		const retry = (opts) => {
-			const { failedNonce } = opts;
-			const _attempts = state.tx._attempts ? state.tx._attempts + 1 : 1;
-			if (_attempts > MAX_ATTEMPTS) {
-				_error = new Error('Tx failed too many times');
-				return { ...state, error: _error }; // notify sinks
-			}
+	if (!web3Instance)
+		throw new Error(`web3:tx:action:publish: Message must contain web3Instance`);
 
-			ctx.debug.d(msg, `Retrying tx: ${Object.values(state.tx)}`);
-			dispatch(
-				ctx.self,
-				{ type: 'send', tx: { ...state.tx, _attempts }, failedNonce },
-				ctx.self
-			);
-			return state; // absorb the error
-		};
+	if (!(getSendMethod && typeof getSendMethod === 'function'))
+		throw new Error(
+			`web3:tx:action:publish: Must have 'getSendMethod' function available in state`
+		);
 
-		// @brokenwindow
-		// This withEffect pattern breaks the let it crash philosophy
-		// This decision shouldn't be handled in the action logic.
-		//
-		// Challenge here is to distinguish between errors that the tx sink
-		// should be notified of and errors that the tx should just handle itself
-		//	-- if you wanted to get complex the sink could specifiy an error
-		//	policy the same way an actor specifies an onCrash policy
-		if (error) {
-			console.log(error);
-			if (error instanceof OnChainError) {
-			}
-			if (error instanceof ParamError) {
-				if (error.web3Error.message.includes('nonce')) {
-					return retry({ failedNonce: error.data.tx.nonce });
-				} else {
-					throw error;
-				}
-			} else if (error instanceof TransactionError) {
-				return retry();
-			} else if (error.data && error.data.tx) {
-				throw error;
-			}
-		}
-
-		const nextState = {
-			...state,
-			error: _error || error,
-			tx: {
-				...state.tx,
-				...tx,
-			},
-		};
-		return nextState;
-	})(dispatchSinks);
-
-function action_send(msg, ctx, state) {
-	const { sendOpts, sendMethod } = state;
-	const { tx, web3Instance, nonce } = msg;
-
-	if (nonce === undefined) {
-		throw new ParamError(`No nonce provided to tx actor _send`, tx);
+	if (nonce === undefined || nonce === null) {
+		throw new errors.ParamError(`Message must contain transaction nonce`, tx);
 	}
 
+	tx.nonce = nonce;
 	const opts = {
 		gas: web3Instance.network.gasLimit,
 		gasPrice: web3Instance.network.gasPrice,
 		common: web3Instance.network.defaultCommon,
 		...sendOpts,
-		...tx.opts,
+		...transactionSpec,
 		nonce,
 	};
+
 	if (web3Instance.account) {
 		opts.from = web3Instance.account;
 	}
@@ -227,85 +228,143 @@ function action_send(msg, ctx, state) {
 			msg,
 			`Transfer ${utils.valueString(web3Instance.web3.utils)(
 				opts.value
-			)} from ${utils.abridgeAddress(opts.from)} to ${utils.abridgeAddress(
-				opts.to
-			)}`
+			)} from ${utils.abridgeAddress(opts.from)} to ${utils.abridgeAddress(opts.to)}`
 		);
 	}
 
-	tx.nonce = nonce;
-	sendMethod(opts)
+	ctx.reduce = reduce({ ctx });
+	// @TODO replace with buildTxObject
+	getSendMethod(
+		state,
+		msg,
+		ctx
+	)(opts)
 		.on('transactionHash', (hash) => {
 			ctx.debug.info(msg, `... Pending ${hash}`);
-			reduce(
-				{
-					tx: { hash },
-				},
-				ctx
-			);
+			ctx.reduce({ hash });
 		})
-		.on('confirmation', (confNumber, receipt) => {
-			// @note not using this for now
-			//reduce({})
+		.on('confirmation', (confirmationNumber, receipt, latestBlockHash) => {
+			!!reportConfirmations && ctx.reduce({ confirmationNumber });
 		})
 		.on('receipt', (receipt) => {
-			reduce(
-				{
-					tx: { receipt },
-					error: null,
-				},
-				ctx
-			);
+			ctx.reduce({ receipt, error: null });
 		})
 		.on('error', (error, receipt) => {
-			if (receipt) {
-				// If receipt is provided web3js specifies tx was rejected on chain
-				const onChainError = new OnChainError(error, tx, receipt);
-				reduce({ error: onChainError }, ctx);
-			} else if (error.message.includes('not mined')) {
-				reduce({ error: new TransactionError(error, tx) }, ctx);
-			} else {
-				//console.dir(error);
-				const paramError = new ParamError(error, tx);
-				reduce({ error: paramError }, ctx);
-			}
+			ctx.reduce({ receipt, error });
 		})
-		.then((receipt) => {
-			//reduce({ tx: { receipt }, tx }, ctx);
-			//console.log('GOT RECEIPT -- REEEEEEEE');
-			//dispatch(ctx.sender, {type: 'tx', txStatus: 'success', tx, receipt }, ctx.self);
-			//dispatch(ctx.self, {type: 'tx', txStatus: 'success', tx, receipt }, ctx.self);
-		})
+		.then((receipt) => {})
 		.catch((error, receipt) => {
-			// Caught by promi-event error listener
+			ctx.debug.warn(msg, `Swallowing sendMethod() error: ${error}`);
 		});
+
+	state.tx = tx;
+	return state;
 }
 
-// Add sender to list of sinks to all changes in status
-// Pub sub pattern
-// -- could generalise this to attach to any state property
-function action_sinkStatus(msg, ctx, state) {
-	const { sinks } = state;
+// onCrash receiver
+const retry = ({ msg, error, ctx }) => (opts) => {
+	const { failedNonce } = opts;
 
-	return {
-		...state,
-		sinks: [...sinks, ctx.sender],
+	ctx.debug.d(msg, `Retrying tx...`);
+	dispatch(
+		ctx.self,
+		{
+			type: directory.address(action_send),
+			failedNonce,
+		},
+		ctx.self
+	);
+	return ctx.resume;
+};
+
+function action_reduceTxEvent(state, msg, ctx) {
+	const { type, ..._tx } = msg;
+	//const notify = notifySinks({ state, msg, ctx });
+
+	const tx = { ...state.tx, ..._tx };
+
+	let error = null;
+	if (_tx._error) {
+		if (tx.receipt) {
+			// If receipt is provided web3js specifies tx was rejected on chain
+			error = new OnChainError(error, tx, receipt);
+		} else if (error.message.includes('not mined')) {
+			error = new TransactionError(error, tx);
+		} else {
+			//console.dir(error);
+			error = new errors.ParamError(error, tx);
+		}
+
+		// If internal problem, retry
+		if (!isServiceInterfaceError(error)) {
+			throw error;
+		}
+		// If problem for caller, notify
+	}
+
+	// @TODO config which events are received
+	const nextState = { ...state, tx: { ...tx, error } };
+	return action_notifySinks(
+		nextState,
+		{ type: 'reduce', thenStop: !!error, original: msg },
+		ctx
+	);
+}
+
+// Receivers
+function reduce({ ctx }) {
+	return (payload) => {
+		payload.type = directory.address(action_reduceTxEvent);
+		dispatch(ctx.self, payload, ctx.self);
 	};
 }
 
-module.exports = {
-	action_tx,
-	action_sendPreflight,
-	action_send,
-	action_reduce,
-	action_getStatus,
-	action_sinkStatus,
+// Allows onCrash to notify sinks (needs access to actor state)
+function action_notifySinks(state, msg, ctx) {
+	const { error, thenStop } = msg;
+
+	if (error) state.error = error;
+	notifySinks({ state, msg, ctx })(error, { thenStop });
+	return state;
+}
+
+// Fill sinks
+const notifySinks = ({ state, msg, ctx }) => (_error, opts) => {
+	//const { thenStop, tx: _tx } = opts || {};
+	const { thenStop } = opts || {};
+	const { tx, sinks, kind } = state;
+
+	//const txState = _tx || msg.tx || state.tx;
+	// const txState = msg.tx || state.tx;
+
+	if (!tx) throw new Error('Attempt to notify of with empty tx state');
+
+	const status = _error ? 'error' : resolveStatus(tx);
+
+	ctx.debug.d(
+		msg,
+		`Notifying tx status change: ${status}. ${(tx && tx.error) || _error || ''}`
+	);
+
+	sinks.forEach((a_sink) =>
+		dispatch(
+			a_sink,
+			{
+				type: 'sink',
+				action: 'send',
+				kind,
+				status,
+				tx,
+				error: _error,
+			},
+			ctx.self
+		)
+	);
+	if (thenStop) stop(ctx.self);
 };
 
-/*
- *    { error:
-      { Error: Transaction was not mined within 50 blocks, please make sure your transaction was properly sent. Be aware that it might still be mined!
-          at Object.TransactionError (/home/jack/Repositories/jgitgud/woke-dapp/@woke/lib/node_modules/web3-core-helpers/src/errors.js:63:21)
-          at /home/jack/Repositories/jgitgud/woke-dapp/@woke/lib/node_modules/web3-core-method/src/index.js:495:40
-          at process._tickCallback (internal/process/next_tick.js:68:7) receipt: undefined },
-					*/
+const _receivers = { reduce, notifySinks };
+const _methods = { onCrash };
+
+// @ TODO receivers should not be included in actions
+module.exports = { ...actions, ...directory.actions, _receivers, _methods };
