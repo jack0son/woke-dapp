@@ -1,5 +1,6 @@
 #!/bin/bash
-set -ex
+set -e
+#set -x
 
 push=false
 build=false
@@ -13,16 +14,12 @@ do
 	esac
 done
 
-echo "Image: $module";
-echo "Push: $push";
-echo "Build: $build";
-
-SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
-PARENT_DIR=$(basename "${PWD%/*}")
-CURRENT_DIR="${PWD##*/}"
+#PARENT_DIR=$(basename "${PWD%/*}")
+#CURRENT_DIR="${PWD##*/}"
 #DOCKER_DIR="${SCRIPT_DIR}/../docker"
-DOCKER_DIR="docker"
 
+DOCKER_DIR="."
+SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 cd $SCRIPT_DIR
 cd ..
 
@@ -30,6 +27,7 @@ REGISTRY="wokenetwork"
 IMAGE_NAME="woke"
 build() {
 	TAG=$1
+	echo "Building ${TAG}..."
 	# OR using local tags (not doing this for the moment, will need for
 	# seperating staging images from production images)
 	# docker build -t ${REGISTRY}/${IMAGE_NAME}:${TAG} -t ${REGISTRY}/${IMAGE_NAME}:latest .
@@ -40,6 +38,8 @@ build() {
 
 push() {
 	TAG=$1
+	echo "Pushing ${TAG}..."
+	# OR using local tags (not doing this for the moment, will need for
 	docker push ${REGISTRY}/${IMAGE_NAME}:${TAG}
 }
 
@@ -63,10 +63,10 @@ all_images() {
 	done
 }
 
-# If image name provided
 if [ -z ${module} ]; then
 	all_images
 else
+	# If image name provided
 	if ls $DOCKER_DIR | grep -x -q "${module}.Dockerfile" ; then
 		single_image ${module}
 	else
