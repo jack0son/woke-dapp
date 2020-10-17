@@ -30,6 +30,6 @@ COPY @woke/secrets ./@woke/secrets
 COPY secrets ./secrets
 
 COPY lerna.json .
-RUN lerna bootstrap
+RUN lerna bootstrap -- --production --no-optional
 
 CMD [ "npm", "--prefix", "@woke/oracle", "run", "start" ]

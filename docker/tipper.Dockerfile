@@ -37,7 +37,7 @@ COPY lerna.json .
 # RUN lerna link
 # RUN npm install --prefix ./@woke/lib
 # RUN lerna clean --yes && lerna bootstrap
-RUN lerna bootstrap
+RUN lerna bootstrap -- --production --no-optional
 
 # Add the wait script to the image
 # Script originally from https://github.com/ufoscout/docker-compose-wait/releases/download/2.4.0/wait /usr/bin/wait

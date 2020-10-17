@@ -32,7 +32,8 @@ COPY @woke/secrets ./@woke/secrets
 COPY secrets ./secrets
 
 COPY lerna.json .
-RUN lerna bootstrap
+# Ignore devDependencies
+RUN lerna bootstrap -- --production --no-optional
 
 # Add the wait script to the image
 # Script originally from https://github.com/ufoscout/docker-compose-wait/releases/download/2.4.0/wait /usr/bin/wait

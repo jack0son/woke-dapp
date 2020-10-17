@@ -30,7 +30,7 @@ COPY @woke/secrets ./@woke/secrets
 COPY secrets ./secrets
 
 COPY lerna.json .
-RUN lerna bootstrap
+RUN lerna bootstrap -- --production --no-optional
 
 COPY @woke/server/scripts/wait /usr/bin/wait
 RUN chmod +x /usr/bin/wait
