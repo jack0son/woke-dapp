@@ -143,6 +143,7 @@ module.exports = {
 			goerli_3,
 
 			production: goerli,
+			staging: goerli,
 		},
 	},
 

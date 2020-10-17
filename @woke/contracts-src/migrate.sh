@@ -28,6 +28,7 @@ fi
 # @TODO exit if fail
 npm run migrate:$CONTRACT_ENV -- $ARGS
 
+SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 BUILD_DIR="./build/contracts/artifacts"
 APP_DEST="app/src/contracts/$CONTRACT_ENV"
 PKG_DEST="contracts/$CONTRACT_ENV"
