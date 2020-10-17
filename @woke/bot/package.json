@@ -9,8 +9,7 @@
     "timeout": 5000
   },
   "scripts": {
-    "test1": "ETH_ENV=development ./node_modules/.bin/mocha test/*.test.js",
-    "test": "ETH_ENV=development ./node_modules/.bin/mocha",
+    "test": "ETH_ENV=development ./node_modules/.bin/mocha test/*.test.js",
     "test:debug": "DEBUG=*,test:*,-mocha*,-*:info,-*twitter_monitor* ETH_ENV=development ./node_modules/.bin/mocha test/*.test.js",
     "tipper": "NODE_ENV=production node src/services/tipper.js",
     "tipper:dev": "NODE_ENV=development node src/services/tipper.js --persist=false --twitterApp=oracle-bot --twitterEnv=dev --verbose=true",
@@ -40,10 +39,10 @@
     "@woke/twitter": "0.1.0",
     "@woke/actors": "0.1.0",
     "@woke/secrets": "0.1.0",
-    "@woke/test": "0.1.0",
     "dotenv": "^8.2.0"
   },
   "devDependencies": {
+    "@woke/test": "0.1.0",
     "@woke/jack0son": "0.1.0",
     "chai": "^4.2.0",
     "chai-as-promised": "^7.1.1",

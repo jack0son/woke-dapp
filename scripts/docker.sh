@@ -18,7 +18,7 @@ done
 #CURRENT_DIR="${PWD##*/}"
 #DOCKER_DIR="${SCRIPT_DIR}/../docker"
 
-DOCKER_DIR="."
+DOCKER_DIR="docker"
 SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 cd $SCRIPT_DIR
 cd ..
