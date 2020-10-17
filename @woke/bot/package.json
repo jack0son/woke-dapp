@@ -42,7 +42,6 @@
     "dotenv": "^8.2.0"
   },
   "devDependencies": {
-    "@woke/test": "0.1.0",
     "@woke/jack0son": "0.1.0",
     "chai": "^4.2.0",
     "chai-as-promised": "^7.1.1",

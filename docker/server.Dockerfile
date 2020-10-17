@@ -9,15 +9,27 @@ RUN npm i lerna -g --loglevel notice
 COPY package.json .
 RUN npm install --loglevel notice
 
-# Lerna will fail gracefully when packages listed inside lerna.json do not exist
-COPY @woke/lib ./@woke/lib
-COPY @woke/actors ./@woke/actors
-COPY @woke/wact ./@woke/wact
-COPY @woke/web3-nact ./@woke/web3-nact
-COPY @woke/contracts ./@woke/contracts
-COPY @woke/actors ./@woke/actors
+# Service modules
 COPY @woke/server ./@woke/server
 COPY @woke/funder ./@woke/funder
+
+# Actor modules
+COPY @woke/wact ./@woke/wact
+COPY @woke/web3-nact ./@woke/web3-nact
+COPY @woke/actors ./@woke/actors
+COPY @woke/service ./@woke/service
+
+# Core deps
+COPY @woke/lib ./@woke/lib
+COPY @woke/contracts ./@woke/contracts
+COPY @woke/twitter ./@woke/twitter
+
+# Utils
+COPY @woke/jack0son ./@woke/jack0son
+COPY @woke/secrets ./@woke/secrets
+
+# Auth keys
+COPY secrets ./secrets
 
 COPY lerna.json .
 RUN lerna bootstrap

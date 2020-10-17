@@ -20,14 +20,13 @@
   "author": "Jackson Virgo",
   "license": "ISC",
   "dependencies": {
-    "@woke/web3-nact": "0.1.0",
-    "@woke/contracts": "0.4.0",
-    "@woke/lib": "0.4.0",
-    "@woke/actors": "0.1.0",
-    "@woke/twitter": "0.1.0",
     "@woke/wact": "0.1.0",
+    "@woke/web3-nact": "0.1.0",
+    "@woke/actors": "0.1.0",
     "@woke/service": "0.1.0",
-    "@woke/test": "0.1.0",
+    "@woke/lib": "0.4.0",
+    "@woke/contracts": "0.4.0",
+    "@woke/twitter": "0.1.0",
     "dotenv": "^8.2.0"
   },
   "devDependencies": {
