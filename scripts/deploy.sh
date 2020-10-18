@@ -15,6 +15,7 @@ do
 		p) pull=true;;
 		r) start=true;;
 		s) STOP_CONTAINERS=true;;
+		i) module=${OPTARG};;
 	esac
 done
 ENV_ARG=${!OPTIND} # get first argument using getops arg index
@@ -22,7 +23,7 @@ OPTIND+=1
 MODULE_ARG=${!OPTIND}
 
 print_usage() {
-	echo "Usage:		deploy [ OPTIONS ] COMMAND [ modules... ]"
+	echo "Usage:		deploy [ OPTIONS ] COMMAND [ services... ]"
 	echo "		deploy [ -h | --help ]"
 	echo ""
 	echo "Options:"
@@ -35,6 +36,10 @@ print_usage() {
 	echo "  development		Deploy services in development environment."
 	echo "  staging		Deploy services in staging environment."
 	echo "  production		Deploy services in production environment."
+	echo ""
+	echo "Example: Pull and run the oracle service in the staging environment"
+	echo "  $ deploy -pr staging oracle"
+
 }
 
 if [ "$#" -eq 0 ] || [ "$ENV_ARG" = "-h" ] || [ "$ENV_ARG" = "--help" ]; then
@@ -93,11 +98,17 @@ clean() {
 }
 
 pull() {
-	echo "Pulling images..."
-	docker pull wokenetwork/woke:server
-	docker pull wokenetwork/woke:oracle
-	docker pull wokenetwork/woke:tipper
-	docker pull wokenetwork/woke:notifier
+	TAG=$1;
+	if [ -z ${TAG} ]; then
+		echo "Pulling $TAG..."
+		docker pull wokenetwork/woke:${TAG}
+	else 
+		echo "Pulling images..."
+		docker pull wokenetwork/woke:server
+		docker pull wokenetwork/woke:oracle
+		docker pull wokenetwork/woke:tipper
+		docker pull wokenetwork/woke:notifier
+	fi
 }
 
 development() {
@@ -137,26 +148,44 @@ docker_compose() {
 	fi
 }
 
+start_container() {
+	MODULE_NAME=$1
+	DEPLOY_ENV=$2
+
+	if [ -z ${DEPLOY_ENV}} ]; then
+		# Default to production
+		compose_up ${DOCKER_DIR}/${MODULE_NAME}.docker-compose.yml
+	else
+		compose_up ${DOCKER_DIR}/${MODULE_NAME}.docker-compose.${DEPLOY_ENV}.yml
+	fi
+}
+
+start_containers() {
+	if [ -z ${MODULE_ARG} ]; then
+		start_container server $ENV_ARG
+		start_container oracle $ENV_ARG
+		start_container bot $ENV_ARG
+	else
+		start_container $MODULE_ARG $ENV_ARG
+	fi
+}
+
 compose_up() {
 	file=$1
 	docker_compose -f ${file} up -d
 }
 
 if ${pull} = true; then
-	pull
+	pull $MODULE_ARG
 fi
 
 if ${start} = true; then
 	# Run containers
 	echo "Starting $ENV_ARG containers..."
 	if [ "$ENV_ARG" = "production" ]; then
-		compose_up ${DOCKER_DIR}/server.docker-compose.yml
-		compose_up ${DOCKER_DIR}/bot.docker-compose.yml
-		compose_up ${DOCKER_DIR}/oracle.docker-compose.yml
+		start_containers
 	elif [ "$ENV_ARG" = "staging" ]; then
-		compose_up ${DOCKER_DIR}/server.docker-compose.staging.yml
-		compose_up ${DOCKER_DIR}/oracle.docker-compose.staging.yml
-		compose_up ${DOCKER_DIR}/bot.docker-compose.staging.yml
+		start_containers
 	elif [ "$ENV_ARG" = "development" ]; then
 		echo "Develpoment deployment not configured."
 	fi
