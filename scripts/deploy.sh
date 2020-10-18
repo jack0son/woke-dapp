@@ -7,13 +7,13 @@ cd ..
 
 # @TODO Accept opts offset by one
 pull=false
-run_containers=false
+start=false
 STOP_CONTAINERS=false
-while getopts ps flag
+while getopts prs flag
 do
 	case "${flag}" in
 		p) pull=true;;
-		r) run_containers=true;;
+		r) start=true;;
 		s) STOP_CONTAINERS=true;;
 	esac
 done
@@ -116,24 +116,30 @@ stop_containers() {
 	docker-compose -f bot.docker-compose.local.yml down
 }
 
+command_exists() {
+	hash $1 2>/dev/null
+}
+
 # For use in container optimized OS
 docker_compose() {
-	if hash docker-compose; then
-		docker-compose ${a}
-	elif hash docker; then
+	#if hash docker-composedfadsf 2>/dev/null; then
+	if command_exists "docker-compose"; then
+		docker-compose ${@}
+	elif command_exists "docker"; then
 		docker run --rm \
 			-v /var/run/docker.sock:/var/run/docker.sock \
 			-v "$PWD:$PWD" \
 			-w="$PWD" \
 			docker/compose:1.24.1 ${@}
-				else 
-					echo "Docker compose is not available on this system"
+
+	else
+		echo "Docker compose is not available on this system"
 	fi
 }
 
 compose_up() {
 	file=$1
-	docker-compose -f ${DOCKER_DIR}/${file} up -d
+	docker_compose -f ${file} up -d
 }
 
 if ${pull} = true; then
