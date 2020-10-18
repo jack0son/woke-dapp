@@ -20,8 +20,6 @@ const devPrivKeys = {
 	},
 };
 
-const funderPrivKey = privKeys.oracle;
-
 //const devPrivKey = '0x1aa8fa0e6762d47569b2aeb1fc53ee64ac0bc9d8070967f1c4970a35bc84ca7a';
 const devPrivKey = '0xe57d058bb90483a0ebf0ff0107a60d9250a0b9b5ab8c53d47217c9958025cce7'; // index 2
 //const tipperPrivkey = process.env.TIPPER_PRIV_KEY || '5af83b503129f5c2c32edb23ae02564762783ab1065d23fde5a6d6158762322c'; // index 1
@@ -64,6 +62,7 @@ function instantiate(networkName, opts) {
 	const conf = configure(opts, defaults);
 
 	const network = (!!networkName && config.web3.networks[networkName]) || defaultNetwork;
+	if (networkName) network.name = networkName;
 
 	const rpcUrl = config.createRpcUrl(network);
 	const web3 = new Web3(rpcUrl, { transactionConfirmationBlocks: 1 });

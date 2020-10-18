@@ -44,6 +44,7 @@ const goerli_infura = {
 };
 
 const goerli_1 = {
+	name: 'goerli_1',
 	id: 5,
 	protocol: 'ws',
 	host: `geth-goerli-1.us-west2-a.c.woke-network-services.internal`,
@@ -64,6 +65,7 @@ const goerli_1 = {
 
 const goerli_2 = {
 	id: 5,
+	name: 'goerli_2',
 	protocol: 'ws',
 	host: `geth-goerli-2.us-west2-a.c.woke-network-services.internal`,
 	port: 8546,
@@ -102,52 +104,48 @@ const goerli_3 = {
 
 const goerli = goerli_2;
 
-module.exports = {
-	web3: {
-		networks: {
-			development: {
-				id: 12,
-				protocol: 'ws',
-				host: 'localhost',
-				port: 8545,
-				gasPrice: '20000000000',
-				blockTime: 3000,
-				gasLimit: '8000000',
-				defaultCommon: {
-					customChain: {
-						name: 'ganache',
-						networkId: 1,
-						chainId: 1,
-					},
-					baseChain: 'mainnet',
-					hardfork: 'petersburg',
+const web3Config = {
+	networks: {
+		development: {
+			id: 12,
+			protocol: 'ws',
+			host: 'localhost',
+			port: 8545,
+			gasPrice: '20000000000',
+			blockTime: 3000,
+			gasLimit: '8000000',
+			defaultCommon: {
+				customChain: {
+					name: 'ganache',
+					networkId: 1,
+					chainId: 1,
 				},
+				baseChain: 'mainnet',
+				hardfork: 'petersburg',
 			},
-
-			ropsten: {
-				id: 3,
-				protocol: 'wss',
-				host: `ropsten.infura.io/ws/v3/${infuraApiKey}`,
-				gasPrice: 40 * GWei,
-				blockTime: 20000,
-				gasLimit: '8000000',
-			},
-
-			rinkeby,
-
-			goerli_infura,
-
-			goerli,
-			goerli_1,
-			goerli_2,
-			goerli_3,
-
-			production: goerli,
-			staging: goerli,
 		},
-	},
 
-	createRpcUrl,
+		ropsten: {
+			id: 3,
+			protocol: 'wss',
+			host: `ropsten.infura.io/ws/v3/${infuraApiKey}`,
+			gasPrice: 40 * GWei,
+			blockTime: 20000,
+			gasLimit: '8000000',
+		},
+
+		rinkeby,
+
+		goerli_infura,
+
+		goerli,
+		goerli_1,
+		goerli_2,
+		goerli_3,
+
+		production: goerli,
+		staging: goerli,
+	},
 };
 
 const invalidRpcUrl = (url) => url.includes('undefined');
@@ -162,3 +160,8 @@ function createRpcUrl(network) {
 	if (invalidRpcUrl(rpcUrl)) throw new Error(`Invalid web3 provider RPC URL ${rpcUrl}`);
 	return rpcUrl;
 }
+
+module.exports = {
+	web3: web3Config,
+	createRpcUrl,
+};

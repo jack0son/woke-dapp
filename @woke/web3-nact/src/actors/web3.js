@@ -110,7 +110,8 @@ function Web3Actor(
 								`FATAL ERROR: Could not instantiate Web3 after ${attempts} attempts.`
 							);
 							throw new ProviderError(
-								`FATAL ERROR: Could not instantiate Web3 after ${attempts} attempts.`
+								`FATAL ERROR: Could not instantiate Web3 after ${attempts} attempts.`,
+								web3Instance.network
 							);
 						}
 						attempts = 0;
