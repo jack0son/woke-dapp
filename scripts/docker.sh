@@ -23,14 +23,14 @@ cd $SCRIPT_DIR
 cd ..
 
 print_usage() {
-	echo "Usage:		docker [ OPTIONS ]"
-	echo "		deploy [ -h | --help ]"
+	echo "Usage:	docker [ OPTIONS ]"
+	echo "	docker [ -h | --help ]"
 	echo ""
 	echo "Options:"
-	echo "		-h, --help		Prints usage"
-	echo "		-i, --image=MODULE	Module choice (all if omitted)"
-	echo "		-b			Build flag"
-	echo "		-p			Push flag"
+	echo "  -h, --help		Prints usage"
+	echo "  -i, --image=MODULE	Module choice (all if omitted)"
+	echo "  -b			Build flag"
+	echo "  -p			Push flag"
 }
 
 REGISTRY="wokenetwork"

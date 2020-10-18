@@ -26,15 +26,15 @@ print_usage() {
 	echo "		deploy [ -h | --help ]"
 	echo ""
 	echo "Options:"
-	echo "		-h, --help		Prints usage"
-	echo "		-p			Pull images"
-	echo "		-r			Start (run) containers"
-	echo "		-s			Stop containers"
+	echo "  -h, --help		Prints usage"
+	echo "  -p			Pull images"
+	echo "  -r			Start (run) containers"
+	echo "  -s			Stop containers"
 	echo ""
 	echo "Commands:"
-	echo "		development		Deploy services in development environment."
-	echo "		staging			Deploy services in staging environment."
-	echo "		production		Deploy services in production environment."
+	echo "  development		Deploy services in development environment."
+	echo "  staging		Deploy services in staging environment."
+	echo "  production		Deploy services in production environment."
 }
 
 if [ "$#" -eq 0 ] || [ "$ENV_ARG" = "-h" ] || [ "$ENV_ARG" = "--help" ]; then
@@ -154,9 +154,9 @@ if ${start} = true; then
 		compose_up ${DOCKER_DIR}/bot.docker-compose.yml
 		compose_up ${DOCKER_DIR}/oracle.docker-compose.yml
 	elif [ "$ENV_ARG" = "staging" ]; then
-		compose_up ${DOCKER_DIR}/server.staging.docker-compose.yml
-		compose_up ${DOCKER_DIR}/oracle.staging.docker-compose.yml
-		compose_up ${DOCKER_DIR}/bot.staging.docker-compose.yml
+		compose_up ${DOCKER_DIR}/server.docker-compose.staging.yml
+		compose_up ${DOCKER_DIR}/oracle.docker-compose.staging.yml
+		compose_up ${DOCKER_DIR}/bot.docker-compose.staging.yml
 	elif [ "$ENV_ARG" = "development" ]; then
 		echo "Develpoment deployment not configured."
 	fi
