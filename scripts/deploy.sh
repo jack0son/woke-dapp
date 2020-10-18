@@ -26,7 +26,7 @@ print_usage() {
 	echo "Options:"
 	echo "		-h, --help		Prints usage"
 	echo "		-p			Pull images"
-	echo "		-start			Start containers"
+	echo "		-s			Start containers"
 	echo ""
 	echo "Commands:"
 	echo "		development		Deploy services in development environment."
@@ -96,6 +96,24 @@ pull() {
 	docker pull wokenetwork/woke:notifier
 }
 
+# For use in container optimized OS
+docker_compose() {
+	docker run --rm \
+		-v /var/run/docker.sock:/var/run/docker.sock \
+		-v "$PWD:$PWD" \
+		-w="$PWD" \
+		docker/compose:1.24.1 ${@}
+	}
+
+compose_up() {
+	file=$1
+	if hash docker-compose; then
+		docker-compose -f ${DOCKER_DIR}/server.docker-compose.yml up -d
+	else
+		docker_compose -f ${DOCKER_DIR}/server.docker-compose.yml up -d
+	fi
+}
+
 if ${pull} = true; then
 	pull
 fi
@@ -104,9 +122,9 @@ if ${start} = true; then
 	# Run containers
 	echo "Starting $ENV_ARG containers..."
 	if [ "$ENV_ARG" = "production" ]; then
-		docker-compose -f ${DOCKER_DIR}/server.docker-compose.yml up -d
-		docker-compose -f ${DOCKER_DIR}/bot.docker-compose.yml up -d
-		docker-compose -f ${DOCKER_DIR}/oracle.docker-compose.yml up -d
+		compose_up ${DOCKER_DIR}/server.docker-compose.yml
+		compose_up ${DOCKER_DIR}/bot.docker-compose.yml
+		compose_up ${DOCKER_DIR}/oracle.docker-compose.yml
 	elif [ "$ENV_ARG" = "staging" ]; then
 		echo "Staging deployment not configured."
 	elif [ "$ENV_ARG" = "development" ]; then
