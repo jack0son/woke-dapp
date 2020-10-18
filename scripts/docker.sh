@@ -4,13 +4,15 @@ set -e
 
 push=false
 build=false
+help_me=false
 
-while getopts i:pb flag
+while getopts i:pbh flag
 do
 	case "${flag}" in
 		i) module=${OPTARG};;
 		p) push=true;;
 		b) build=true;;
+		h) help_me=true;;
 	esac
 done
 
@@ -19,6 +21,17 @@ DOCKER_DIR="docker"
 SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 cd $SCRIPT_DIR
 cd ..
+
+print_usage() {
+	echo "Usage:		docker [ OPTIONS ]"
+	echo "		deploy [ -h | --help ]"
+	echo ""
+	echo "Options:"
+	echo "		-h, --help		Prints usage"
+	echo "		-i, --image=MODULE	Module choice (all if omitted)"
+	echo "		-b			Build flag"
+	echo "		-p			Push flag"
+}
 
 REGISTRY="wokenetwork"
 IMAGE_NAME="woke"
@@ -58,7 +71,12 @@ do_all_images() {
 	done
 }
 
-if [ -z ${module} ]; then
+if ${help_me}; then
+	print_usage
+elif [ -z ${module} ]; then
+	if [ ${build} = false ] && [ ${push} = false ]; then
+		print_usage
+	fi
 	do_all_images
 else
 	# If image name provided

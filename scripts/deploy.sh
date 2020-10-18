@@ -22,7 +22,7 @@ OPTIND+=1
 MODULE_ARG=${!OPTIND}
 
 print_usage() {
-	echo "Usage:		deploy [ OPTIONS ] ENVIRONMENT [ modules... ]"
+	echo "Usage:		deploy [ OPTIONS ] COMMAND [ modules... ]"
 	echo "		deploy [ -h | --help ]"
 	echo ""
 	echo "Options:"
@@ -154,7 +154,9 @@ if ${start} = true; then
 		compose_up ${DOCKER_DIR}/bot.docker-compose.yml
 		compose_up ${DOCKER_DIR}/oracle.docker-compose.yml
 	elif [ "$ENV_ARG" = "staging" ]; then
-		echo "Staging deployment not configured."
+		compose_up ${DOCKER_DIR}/server.staging.docker-compose.yml
+		compose_up ${DOCKER_DIR}/oracle.staging.docker-compose.yml
+		compose_up ${DOCKER_DIR}/bot.staging.docker-compose.yml
 	elif [ "$ENV_ARG" = "development" ]; then
 		echo "Develpoment deployment not configured."
 	fi
