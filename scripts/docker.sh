@@ -14,6 +14,7 @@ do
 	esac
 done
 
+# Assume script is located in in woke-dapp/scripts
 DOCKER_DIR="docker"
 SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 cd $SCRIPT_DIR
@@ -50,9 +51,7 @@ single_image() {
 }
 
 all_images() {
-	echo $DOCKER_DIR
 	for dockerfile in $DOCKER_DIR/*.Dockerfile; do
-		echo $dockerfile
 		# extract module name
 		M=$(basename $dockerfile .Dockerfile)
 		single_image $M

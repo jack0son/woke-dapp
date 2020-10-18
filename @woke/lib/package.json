@@ -8,6 +8,7 @@
   "license": "ISC",
   "dependencies": {
     "@woke/jack0son": "0.1.0",
+    "@woke/secrets": "0.1.0",
     "@woke/twitter": "0.1.0",
     "web3": "^1.3.0",
     "debug": ">=4.1",

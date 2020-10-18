@@ -1,5 +1,5 @@
 #!/bin/bash 
-docker pull jvindustries/woke:server
-docker pull jvindustries/woke:oracle
-docker pull jvindustries/woke:tipper
-docker pull jvindustries/woke:notifier
+docker pull wokenetwork/woke:server
+docker pull wokenetwork/woke:oracle
+docker pull wokenetwork/woke:tipper
+docker pull wokenetwork/woke:notifier

@@ -1,4 +1,5 @@
 const Web3 = require('web3');
+const secrets = require('@woke/secrets');
 const config = require('./web3-config');
 const configure = require('../configure');
 const instanceMethods = require('./instance-methods');
@@ -26,8 +27,11 @@ const devPrivKey = '0xe57d058bb90483a0ebf0ff0107a60d9250a0b9b5ab8c53d47217c99580
 //const tipperPrivkey = process.env.TIPPER_PRIV_KEY || '5af83b503129f5c2c32edb23ae02564762783ab1065d23fde5a6d6158762322c'; // index 1
 
 const ETH_ENV = process.env.ETH_ENV || 'development';
+const ENV_PRIV_KEY = process.env.ETH_KEY;
 
 function selectPrivKey() {
+	if (ENV_PRIV_KEY) return ENV_PRIV_KEY;
+
 	switch (process.env.ETH_ENV) {
 		case 'production':
 			throw new Error('Production priv keys not configured');
