@@ -40,7 +40,7 @@ push() {
 	docker push ${REGISTRY}/${IMAGE_NAME}:${TAG}
 }
 
-single_image() {
+do_image() {
 	image=$1
 	if ${build} = true; then
 		build $image
@@ -50,20 +50,20 @@ single_image() {
 	fi
 }
 
-all_images() {
+do_all_images() {
 	for dockerfile in $DOCKER_DIR/*.Dockerfile; do
 		# extract module name
 		M=$(basename $dockerfile .Dockerfile)
-		single_image $M
+		do_image $M
 	done
 }
 
 if [ -z ${module} ]; then
-	all_images
+	do_all_images
 else
 	# If image name provided
 	if ls $DOCKER_DIR | grep -x -q "${module}.Dockerfile" ; then
-		single_image ${module}
+		do_image ${module}
 	else
 		echo "Docker image '${image}' does not exist"
 	fi

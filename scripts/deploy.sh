@@ -7,12 +7,14 @@ cd ..
 
 # @TODO Accept opts offset by one
 pull=false
-start=false
+run_containers=false
+STOP_CONTAINERS=false
 while getopts ps flag
 do
 	case "${flag}" in
 		p) pull=true;;
-		s) start=true;;
+		r) run_containers=true;;
+		s) STOP_CONTAINERS=true;;
 	esac
 done
 ENV_ARG=${!OPTIND} # get first argument using getops arg index
@@ -26,7 +28,8 @@ print_usage() {
 	echo "Options:"
 	echo "		-h, --help		Prints usage"
 	echo "		-p			Pull images"
-	echo "		-s			Start containers"
+	echo "		-r			Start (run) containers"
+	echo "		-s			Stop containers"
 	echo ""
 	echo "Commands:"
 	echo "		development		Deploy services in development environment."
@@ -48,6 +51,7 @@ else
 	exit
 fi
 
+# @TODO Some should be stopped using compose
 stop_existing_containers() {
 	CONTAINERS="$(docker ps --all --quiet)"
 	# If greater than zero characters in CONTAINERS
@@ -96,22 +100,40 @@ pull() {
 	docker pull wokenetwork/woke:notifier
 }
 
+development() {
+	ENV="${1:-production}"
+	IMAGE="jvindustries/woke:oracle"
+
+	docker run -e "NODE_ENV=${ENV}" ${IMAGE}
+
+	compose_up server.docker-compose.local.yml
+	docker-compose -f server.docker-compose.local.yml up -d --build db
+	docker-compose -f bot.docker-compose.local.yml up -d --build bot-db
+	docker-compose -f bot.docker-compose.local.yml down
+}
+
+stop_containers() {
+	docker-compose -f bot.docker-compose.local.yml down
+}
+
 # For use in container optimized OS
 docker_compose() {
-	docker run --rm \
-		-v /var/run/docker.sock:/var/run/docker.sock \
-		-v "$PWD:$PWD" \
-		-w="$PWD" \
-		docker/compose:1.24.1 ${@}
-	}
+	if hash docker-compose; then
+		docker-compose ${a}
+	elif hash docker; then
+		docker run --rm \
+			-v /var/run/docker.sock:/var/run/docker.sock \
+			-v "$PWD:$PWD" \
+			-w="$PWD" \
+			docker/compose:1.24.1 ${@}
+				else 
+					echo "Docker compose is not available on this system"
+	fi
+}
 
 compose_up() {
 	file=$1
-	if hash docker-compose; then
-		docker-compose -f ${DOCKER_DIR}/server.docker-compose.yml up -d
-	else
-		docker_compose -f ${DOCKER_DIR}/server.docker-compose.yml up -d
-	fi
+	docker-compose -f ${DOCKER_DIR}/${file} up -d
 }
 
 if ${pull} = true; then
