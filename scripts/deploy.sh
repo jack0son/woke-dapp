@@ -102,7 +102,7 @@ pull() {
 
 development() {
 	ENV="${1:-production}"
-	IMAGE="jvindustries/woke:oracle"
+	IMAGE="wokenetwork/woke:oracle"
 
 	docker run -e "NODE_ENV=${ENV}" ${IMAGE}
 

@@ -11,7 +11,7 @@ services:
       #ports:
       #- '5433:5432'
   notifier:
-    image: jvindustries/woke:notifier
+    image: wokenetwork/woke:notifier
     depends_on:
       - bot-db
     environment:
@@ -29,7 +29,7 @@ services:
       WAIT_HOSTS: bot-db:5432
 
   tipper:
-    image: jvindustries/woke:tipper
+    image: wokenetwork/woke:tipper
     depends_on:
       - bot-db
     environment:
