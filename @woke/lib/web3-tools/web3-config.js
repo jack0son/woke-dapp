@@ -43,7 +43,9 @@ const goerli_infura = {
 	},
 };
 
-const internalGethHost = (idx) => `geth-goerli-${idx}-internal`;
+// const internalGethHost = (idx) => `geth-goerli-${idx}-internal`;
+const internalGethHost = (idx) =>
+	`geth-goerli-${idx}.us-west2-a.c.sturdy-index-292807.internal`;
 
 const goerli_1 = {
 	name: 'goerli_1',

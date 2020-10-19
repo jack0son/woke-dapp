@@ -6,13 +6,13 @@ cd $SCRIPT_DIR
 cd ..
 
 # @TODO Accept opts offset by one
-pull=false
+PULL=false
 start=false
 STOP_CONTAINERS=false
 while getopts prs flag
 do
 	case "${flag}" in
-		p) pull=true;;
+		p) PULL=true;;
 		r) start=true;;
 		s) STOP_CONTAINERS=true;;
 		i) module=${OPTARG};;
@@ -99,14 +99,14 @@ clean() {
 pull() {
 	TAG=$1;
 	if [ -z ${TAG} ]; then
-		echo "Pulling $TAG..."
-		docker pull wokenetwork/woke:${TAG}
-	else 
 		echo "Pulling images..."
 		docker pull wokenetwork/woke:server
 		docker pull wokenetwork/woke:oracle
 		docker pull wokenetwork/woke:tipper
 		docker pull wokenetwork/woke:notifier
+	else 
+		echo "Pulling $TAG..."
+		docker pull wokenetwork/woke:${TAG}
 	fi
 }
 
