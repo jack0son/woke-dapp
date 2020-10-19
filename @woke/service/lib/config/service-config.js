@@ -9,9 +9,14 @@ const {
 require('dotenv').config();
 const secrets = require('@woke/secrets');
 
+const parseNetworkList = (str) =>
+	str && str.length ? str.split(',').map((n) => n.trim()) : [];
+
 const envVars = [
 	['PERSIST', 'persist', parse_bool],
+	['PRINT_CONFIG', 'printConfig', parse_bool],
 	['FAULT_MONITORING', 'faultMonitoring', parse_bool],
+	['NETWORK_LIST', 'networkList', parseNetworkList],
 	['TWITTER_MENTIONS', 'muffled'],
 	['VERBOSE', 'verbose', parse_bool],
 	['TWITTER_ENV', 'twitterEnv'],

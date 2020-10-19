@@ -33,6 +33,7 @@ module.exports.parse_bool = (str) => {
 		case 'T':
 		case 'yes':
 		case 'y':
+		case 'on':
 		case 'true':
 		case true:
 			return true;
@@ -40,6 +41,7 @@ module.exports.parse_bool = (str) => {
 		case 'F':
 		case 'no':
 		case 'n':
+		case 'off':
 		case 'false':
 		case false:
 		default:

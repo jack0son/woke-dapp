@@ -2,7 +2,7 @@ const {
 	ActorSystem: { dispatch },
 } = require('@woke/wact');
 const { useNotifyOnCrash } = require('@woke/actors');
-const { web3Tools } = require('@woke/lib');
+const { web3Tools, configure } = require('@woke/lib');
 const { ProviderError } = require('../lib/errors');
 
 const delay = async (ms) => new Promise((res) => setTimeout(res, ms));
@@ -25,7 +25,11 @@ function Web3Actor(
 	maxAttempts = MAX_ATTEMPTS,
 	opts
 ) {
-	const { monitor, retryDelay, networkList } = { ...defaultOpts, ...opts };
+	const { monitor, retryDelay, networkList } = configure(opts, defaultOpts);
+	if (!networkList || !networkList.length)
+		console.warn(
+			`Web3 actor expects an array of network names for 'networkList'. Got: ${networkList}`
+		);
 
 	const notify = useNotifyOnCrash();
 	function onCrash(msg, error, ctx) {
@@ -62,7 +66,7 @@ function Web3Actor(
 
 			let idx = 0;
 			function getNetworkName() {
-				if (!!networkList && Array.isArray(networkList) && idx < networkList.length) {
+				if (!!networkList && networkList.length && idx < networkList.length) {
 					return networkList[idx++];
 				}
 				return;

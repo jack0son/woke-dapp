@@ -39,7 +39,6 @@ print_usage() {
 	echo ""
 	echo "Example: Pull and run the oracle service in the staging environment"
 	echo "  $ deploy -pr staging oracle"
-
 }
 
 if [ "$#" -eq 0 ] || [ "$ENV_ARG" = "-h" ] || [ "$ENV_ARG" = "--help" ]; then
