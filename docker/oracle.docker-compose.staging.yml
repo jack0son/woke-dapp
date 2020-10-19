@@ -16,18 +16,18 @@ services:
       - oracle-db
     environment:
       PRINT_CONFIG: 'true'
-      TWITTER_MENTIONS: 'false'
-      EARLIEST_BLOCKNUMBER: 3197271
+      VERBOSE: 'true'
+      PERSIST: 'true'
+      DEBUG_RECOVERY: 'true'
+      WOKE_ROLE: 'oracle'
       NODE_ENV: 'staging'
       ETH_ENV: 'staging'
       TWITTER_ENV: 'staging'
       TWITTER_APP: 'staging-bot'
-      WOKE_ROLE: 'oracle'
       NETWORK_LIST: 'goerli_1,goerli_infura'
       SUBSCRIPTION_WATCHDOG_INTERVAL: 300000
-      VERBOSE: 'true'
-      PERSIST: 'true'
-      DEBUG_RECOVERY: 'true'
+      TWITTER_MENTIONS: 'false'
+      EARLIEST_BLOCKNUMBER: 3197271
       POSTGRES_USER: woke_oracle
       POSTGRES_PWD: woke_oracle
       POSTGRES_DB: oracle_db

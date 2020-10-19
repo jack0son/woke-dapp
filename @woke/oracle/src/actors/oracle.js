@@ -152,6 +152,9 @@ function action_handleIncomingQuery(state, msg, ctx) {
 				ctx.debug.d(msg, `Incoming ${idStr}. Query already failed.`);
 				break;
 
+			case 'invalid':
+				break;
+
 			default:
 				throw new Error(`Unspecified query status: ${job.status}`);
 		}

@@ -17,12 +17,16 @@ services:
       - '3001:3001'
       - '8443:8443'
     environment:
-      NODE_ENV: production
-      CONTEXT: production
+      PRINT_CONFIG: 'true'
+      VERBOSE: 'true'
+      PERSIST: 'true'
+      DEBUG_RECOVERY: 'true'
       WOKE_ROLE: funder
-      NETWORK_LIST: 'goerli_3,goerli_2,goerli_infura'
-      DEBUG: server*,actor*,sys_*
-      ETH_ENV: production
+      NODE_ENV: staging
+      ETH_ENV: staging
+      TWITTER_ENV: 'staging'
+      TWITTER_APP: 'staging-bot'
+      NETWORK_LIST: 'goerli_1,goerli_infura'
       WAIT_HOSTS: db:5432
 
 volumes:
