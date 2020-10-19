@@ -174,7 +174,7 @@ compose_up() {
 	docker_compose -f ${file} up -d
 }
 
-if ${pull} = true; then
+if ${PULL} = true; then
 	pull $MODULE_ARG
 fi
 
