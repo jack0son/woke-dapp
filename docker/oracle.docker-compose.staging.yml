@@ -17,6 +17,7 @@ services:
     environment:
       PRINT_CONFIG: 'true'
       TWITTER_MENTIONS: 'false'
+      EARLIEST_BLOCKNUMBER: 3197271
       NODE_ENV: 'staging'
       ETH_ENV: 'staging'
       TWITTER_ENV: 'staging'
