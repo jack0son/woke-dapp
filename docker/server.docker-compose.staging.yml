@@ -20,6 +20,9 @@ services:
       PRINT_CONFIG: 'true'
       VERBOSE: 'true'
       PERSIST: 'true'
+      PERSIST_ENV: 'production'
+      TWITTER_ENV: 'staging'
+      DEBUG: '*'
       DEBUG_RECOVERY: 'true'
       WOKE_ROLE: funder
       NODE_ENV: staging
