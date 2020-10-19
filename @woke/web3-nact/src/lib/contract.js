@@ -1,6 +1,8 @@
-const artifacts = require('@woke/contracts')[
-	process.env.NODE_ENV !== 'production' ? 'development' : 'production'
-];
+const environments = ['production', 'development', 'staging'];
+const env = process.env.ETH_ENV || process.env.NODE_ENV;
+const decision = environments.includes(env) ? env : 'development';
+
+const artifacts = require('@woke/contracts')[decision];
 
 function loadArtifactByName(name) {
 	const a = artifacts[name];

@@ -9419,12 +9419,12 @@
         }
       },
       "links": {},
-      "address": "0xA3eC0C6390D496F528FaB445b93DFB3855F1FeAd",
-      "transactionHash": "0xad70317c07ae58b8b6c579f060345fe0dfabeba567e51e57ea5d306cea72c083"
+      "address": "0x42eD7BE0F6Bdb3667e1b0fD1Bf7A09988895F982",
+      "transactionHash": "0x5371d89209f19a6e41adb37f4ce1f964096b8c0fa4413340409095d7c9c44e1a"
     }
   },
   "schemaVersion": "3.0.20",
-  "updatedAt": "2020-10-17T03:49:31.740Z",
+  "updatedAt": "2020-10-19T01:13:53.646Z",
   "networkType": "ethereum",
   "devdoc": {
     "methods": {

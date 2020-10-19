@@ -6430,7 +6430,7 @@
                                   "name": "this",
                                   "nodeType": "Identifier",
                                   "overloadedDeclarations": [],
-                                  "referencedDeclaration": 13385,
+                                  "referencedDeclaration": 13371,
                                   "src": "6101:4:5",
                                   "typeDescriptions": {
                                     "typeIdentifier": "t_contract$_UserRegistry_$4110",
@@ -8906,7 +8906,7 @@
                             "name": "this",
                             "nodeType": "Identifier",
                             "overloadedDeclarations": [],
-                            "referencedDeclaration": 13385,
+                            "referencedDeclaration": 13371,
                             "src": "8352:4:5",
                             "typeDescriptions": {
                               "typeIdentifier": "t_contract$_UserRegistry_$4110",
@@ -23719,7 +23719,7 @@
                                   "name": "this",
                                   "nodeType": "Identifier",
                                   "overloadedDeclarations": [],
-                                  "referencedDeclaration": 13385,
+                                  "referencedDeclaration": 13371,
                                   "src": "6101:4:5",
                                   "typeDescriptions": {
                                     "typeIdentifier": "t_contract$_UserRegistry_$4110",
@@ -26195,7 +26195,7 @@
                             "name": "this",
                             "nodeType": "Identifier",
                             "overloadedDeclarations": [],
-                            "referencedDeclaration": 13385,
+                            "referencedDeclaration": 13371,
                             "src": "8352:4:5",
                             "typeDescriptions": {
                               "typeIdentifier": "t_contract$_UserRegistry_$4110",
@@ -35542,15 +35542,15 @@
         }
       },
       "links": {
-        "Helpers": "0x1C817107e9dFbEE3dD7275edb151b0947459fF05",
-        "Distribution": "0xbC03f13C2140225C3F5E0cC92b9B0824C5E3AE60"
+        "Helpers": "0x31EEb7bAcE3e6a73445534786a1083212a24cf76",
+        "Distribution": "0x6605884afFc9548DD65462f5c6D1F6A584c50eFb"
       },
-      "address": "0xa670eFcb3b1Ac58F77C14d51742228034af12857",
-      "transactionHash": "0xa30f2316b69667b793ba070b03d384bbdbaa9b29e51f33649d6e2ad5bc08b653"
+      "address": "0x9205134989DB15e1439789875484b3D6c8F3C06c",
+      "transactionHash": "0xf65b39c47f810ff446d0eb98cde9313bec03833a1ba24e0a2c045fb0ad04f8a1"
     }
   },
   "schemaVersion": "3.0.20",
-  "updatedAt": "2020-10-17T03:49:31.757Z",
+  "updatedAt": "2020-10-19T01:13:53.663Z",
   "networkType": "ethereum",
   "devdoc": {
     "methods": {

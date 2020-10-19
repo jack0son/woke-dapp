@@ -192,7 +192,7 @@ module.exports = {
 		initialState: {
 			jobRepo: [],
 			sinkHandlers: {
-				subscribe_log: action_handleQuerySubscription,
+				subscription: action_handleQuerySubscription,
 				a_contract: handleContractResponse,
 			},
 
