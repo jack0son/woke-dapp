@@ -1,7 +1,8 @@
 // Will cause create-react-app webpack to fail
 // No dynamic require (Issue #__);
 let production, development, staging;
-if (process.env.NODE_ENV !== 'production') {
+const contractEnv = process.env.ETH_ENV || process.env.NODE_ENV;
+if (contractEnv !== 'production') {
 	development = {
 		WokeToken: require('./development/WokeToken.json'),
 		TwitterOracleMock: require('./development/TwitterOracleMock.json'),

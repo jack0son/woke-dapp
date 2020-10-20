@@ -5,7 +5,7 @@ const bindApi = require('@woke/api');
 const { twitterUsers, fetchUserHandles } = require('./twitter');
 const utils = require('./utils');
 const artifacts = require('@woke/contracts')[
-	process.env.NODE_ENV !== 'development' ? 'production' : 'development'
+	process.env.ETH_ENV || process.env.NODE_ENV || 'development'
 ];
 
 const debug = Logger('cli');

@@ -38,7 +38,7 @@ async function initWeb3() {
 
 	while (!connected) {
 		++attempts;
-		web3Instance = web3Tools.init.instantiate();
+		web3Instance = web3Tools.init.instantiate('goerli_infura');
 
 		if (attempts == 1) {
 			debug.d(web3Instance.network);

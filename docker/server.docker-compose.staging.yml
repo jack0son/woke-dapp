@@ -27,7 +27,7 @@ services:
       WOKE_ROLE: 'funder'
       NODE_ENV: 'staging'
       ETH_ENV: 'staging'
-      HOST_ENV: 'staging'
+      HOST_ENV: 'staging' # select staging ssl certs
       TWITTER_ENV: 'staging'
       TWITTER_APP: 'staging-bot'
       NETWORK_LIST: 'goerli_1,goerli_infura'
