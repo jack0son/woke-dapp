@@ -66,7 +66,7 @@ export default {
 		},
 
 		staging: {
-			url: 'https://34.94.14.71:8443/',
+			url: 'https://api.staging.getwoke.me:8443/',
 		},
 
 		production: {
