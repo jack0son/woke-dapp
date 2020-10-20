@@ -80,6 +80,11 @@ export default {
 			hostUrl: 'http://localhost:3000/',
 		},
 
+		staging: {
+			api: twitterApi,
+			hostUrl: 'https://staging-app--getwoke.netlify.app/',
+		},
+
 		lan: {
 			api: twitterApi,
 			hostUrl: `http://${host}:3000/`,
