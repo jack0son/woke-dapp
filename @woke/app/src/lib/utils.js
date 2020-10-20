@@ -7,18 +7,18 @@ export function timeSince(date, startDate = Date.now()) {
 	date = dayjs(date);
 
 	const periods = [
-		["seconds", 60, "sec"],
-		["minutes", 60, "min"],
-		["hours", 24, "hour"],
-		["days", 30, "day"],
-		["months", 12, "month"],
-		["years", 100, "year"],
+		['seconds', 60, 'sec'],
+		['minutes', 60, 'min'],
+		['hours', 24, 'hour'],
+		['days', 30, 'day'],
+		['months', 12, 'month'],
+		['years', 100, 'year'],
 	];
 
 	let diff, i;
-	for(i = 0; i < periods.length; i++) {
+	for (i = 0; i < periods.length; i++) {
 		diff = startDate.diff(date, periods[i][0], true);
-		if(diff <= periods[i][1]) {
+		if (diff <= periods[i][1]) {
 			break;
 		}
 	}
@@ -33,28 +33,39 @@ export function createShareIntentUrl(claimString, noEncode) {
 	//const str = `https://twitter.com/intent/tweet?&amp;related=getwoketoke&amp;ref_src=twsrc%5Etfw&amp;text=${encodeURIComponent(claimString)}&amp;tw_p=tweetbutton&amp;url=${encodeURIComponent('https://getwoke.me')}`
 	//const str = `https://twitter.com/intent/tweet?&related=getwoketoke&ref_src=twsrc%5Etfw&text=${encodeURIComponent(claimString)}&tw_p=tweetbutton&url=${encodeURIComponent('https://getwoke.me')}`
 	//const str = `https://twitter.com/intent/tweet?&related=getwoketoke&ref_src=twsrc%5Etfw&text=${encodeURIComponent(claimString)}&tw_p=tweetbutton`;
-//	const str = `https://twitter.com/intent/tweet?&text=hello`;
+	//	const str = `https://twitter.com/intent/tweet?&text=hello`;
 	//const str = `https://twitter.com/intent/tweet?&related=getwoketoke&ref_src=twsrc%5Etfw&amp;text=${claimString}tw_p=tweetbutton&amp;url=${'https://getwoke.me'}`
 	//return str;
 	const str = `https://twitter.com/intent/tweet?&related=getwoketoke&text=${claimString}`;
-	return noEncode && str || encodeURI(str);
+	return (noEncode && str) || encodeURI(str);
 }
 
 export function popupCenter(url, title, w, h) {
-	var left = (document.body.clientWidth/2)-(w/2);
-	var top = (document.body.clientHeight.height/2)-(h/2);
-	return window.open(url, title, 'toolbar=no, location=no, directories=no, status=no, menubar=no, scrollbars=no, resizable=no, copyhistory=no, width='+w+', height='+h+', top='+top+', left='+left);
+	var left = document.body.clientWidth / 2 - w / 2;
+	var top = document.body.clientHeight.height / 2 - h / 2;
+	return window.open(
+		url,
+		title,
+		'toolbar=no, location=no, directories=no, status=no, menubar=no, scrollbars=no, resizable=no, copyhistory=no, width=' +
+			w +
+			', height=' +
+			h +
+			', top=' +
+			top +
+			', left=' +
+			left
+	);
 }
 
 export function clearOldVersionStorage(version) {
 	const app_ver = window.localStorage.getItem('app_ver');
-	if(!app_ver) {
+	if (!app_ver) {
 		console.log('Saving app_ver...');
 		window.localStorage.setItem('app_ver', version);
 		return false;
 	}
 
-	if(app_ver != version) {
+	if (app_ver != version) {
 		console.log('Found old app data. Clearing...');
 		window.localStorage.clear();
 		window.localStorage.setItem('app_ver', version);
@@ -64,35 +75,34 @@ export function clearOldVersionStorage(version) {
 	return false;
 }
 
-
 export function setSyncTimeout(ms) {
-	return new Promise(resolve => {
+	return new Promise((resolve) => {
 		setTimeout(() => {
 			resolve();
 		}, ms);
-	})
+	});
 }
 
 export function makeObjectCache(cacheKey) {
-	function store (cache) {
+	function store(cache) {
 		window.localStorage.setItem(cacheKey, JSON.stringify(cache));
 	}
 
-	function retrieve () {
+	function retrieve() {
 		return JSON.parse(window.localStorage.getItem(cacheKey));
 	}
 
 	return {
 		store,
 		retrieve,
-	}
+	};
 }
 
 // @dev this only works for a single key => callback handlers
 // Will overwrite all other onkeydown event handlers
 export function registerEnterKey(_callback) {
 	let callback = _callback;
-	document.onkeydown = e => {
+	document.onkeydown = (e) => {
 		e = e || window.event;
 		switch (e.which || e.keyCode) {
 			case 13:
@@ -102,11 +112,34 @@ export function registerEnterKey(_callback) {
 	};
 
 	// Clear callback
-	return () => { callback = () => {} };
-};
+	return () => {
+		callback = () => {};
+	};
+}
 
 // @brokenwindow
 export function nonEmptyString(str) {
 	return str && str.length && str != '' && str.length > 0;
 }
 
+export function parse_bool(str) {
+	switch (str) {
+		case 't':
+		case 'T':
+		case 'yes':
+		case 'y':
+		case 'on':
+		case 'true':
+		case true:
+			return true;
+		case 'f':
+		case 'F':
+		case 'no':
+		case 'n':
+		case 'off':
+		case 'false':
+		case false:
+		default:
+			return false;
+	}
+}

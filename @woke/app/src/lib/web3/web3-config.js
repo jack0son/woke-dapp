@@ -11,8 +11,8 @@ export function loadContractArtifacts() {
 }
 
 export function getWeb3Network() {
-	console.log('env ethNetwork', ethNetwork);
-	console.log('env nodeEnv', nodeEnv);
+	console.debug('env ethNetwork', ethNetwork);
+	console.debug('env nodeEnv', nodeEnv);
 	let networkName = ethNetwork || nodeEnv;
 	let network = config.web3.networks[networkName];
 
