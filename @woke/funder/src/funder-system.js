@@ -46,12 +46,14 @@ class FunderSystem extends Service {
 		const self = this;
 		if (!directorIsStarted(self.director))
 			throw new Error(`Funder system is not running`);
-		if (!isEthAddress(address)) throw new Error(`Not an address: ${address}`);
-		if (!userId) throw new Error(`No userId provided`);
+
+		// @TODO these errors should throw inside the actor system
+		// if (!isEthAddress(address)) throw new Error(`Not an address: ${address}`);
+		// if (!userId) throw new Error(`No userId provided`);
 
 		//console.log(`Dispatching funding request ${userId}:${address}...`);
 
-		// TODO: Query timeout here trigger supervision policy for funder system
+		// @TODO Query timeout here trigger supervision policy for funder system
 		//ActorSystem.query(self.a_funder, { type: 'fund',  address, userId } , self.config.queryTimeout)
 		//.then(reply => reply)
 		//.catch(console.log);

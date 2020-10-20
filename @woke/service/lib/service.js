@@ -67,6 +67,7 @@ class Service {
 	}
 
 	async init() {
+		if (this.config.printConfig) console.log('config', this.config);
 		for (let fn of this.initializers) {
 			if (typeof fn !== 'function')
 				throw new Error('Service initializers must be functions');

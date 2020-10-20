@@ -1,0 +1,37 @@
+version: '3'
+services:
+  db:
+    image: postgres:11.1
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_DB: woke_dapp 
+    volumes:
+      - postgres_data:/var/lib/postgresql/data/
+    #ports:
+      #- '5432:5432'
+  auth-server:
+    image: wokenetwork/woke:server
+    depends_on:
+      - db
+    ports:
+      - '3001:3001'
+      - '8443:8443'
+    environment:
+      PRINT_CONFIG: 'true'
+      VERBOSE: 'true'
+      PERSIST: 'true'
+      PERSIST_ENV: 'production'
+      TWITTER_ENV: 'staging'
+      DEBUG: '*,-sequelize:*,-expresss:router,-*:info'
+      DEBUG_RECOVERY: 'true'
+      WOKE_ROLE: 'funder'
+      NODE_ENV: 'staging'
+      ETH_ENV: 'staging'
+      HOST_ENV: 'staging' # select staging ssl certs
+      TWITTER_ENV: 'staging'
+      TWITTER_APP: 'staging-bot'
+      NETWORK_LIST: 'goerli_1,goerli_infura'
+      WAIT_HOSTS: db:5432
+
+volumes:
+  postgres_data:

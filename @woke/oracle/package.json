@@ -7,8 +7,9 @@
   "scripts": {
     "test": "ETH_ENV=development ./node_modules/.bin/mocha test/*.test.js",
     "test:debug": "DEBUG=*,test:*,-mocha*,-*:info ETH_ENV=development ./node_modules/.bin/mocha test/*.test.js",
-    "start": "NODE_ENV=production ETH_ENV=production WOKE_ROLE=oracle node src/index.js --persist",
-    "start:docker": "NODE_ENV=development ETH_ENV=development PERSIST_ENV=localDEBUG=* node src/index.js --debugRecovery",
+    "start": "WOKE_ROLE=oracle node src/index.js --debugRecovery",
+    "start:production": "NODE_ENV=production ETH_ENV=production WOKE_ROLE=oracle node src/index.js --persist --debugRecovery",
+    "start:staging": "NODE_ENV=staging ETH_ENV=staging PERSIST_ENV=local EARLIEST_BLOCKNUMBER=3197271 DEBUG=*,-*:info node src/index.js --persist --debugRecovery",
     "start:docker:dev": "docker-compose -f ../../oracle.docker-compose.local.yml up",
     "dev": "NODE_ENV=development ETH_ENV=development PERSIST_ENV=local node src/index.js --verbose",
     "goerli": "PERSIST_ENV=local NODE_ENV=development ETH_ENV=goerli DEBUG=*,twitter node src/index.js",

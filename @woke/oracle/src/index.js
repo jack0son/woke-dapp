@@ -5,7 +5,7 @@ const opts = require('./config');
 
 const conf = configure(opts, serviceConf);
 
-loadSecrets(['infura', 'ethereum'], conf);
+loadSecrets(['infura', 'ethereum', 'twitter'], conf);
 
 // @TODO parse polling interval
 const bootstrap = () => {

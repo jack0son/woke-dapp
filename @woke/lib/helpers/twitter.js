@@ -9,6 +9,7 @@ const defaults = {
 let opts = defaults;
 switch (TWITTER_ENV) {
 	case 'fake':
+	case 'staging':
 	case 'production':
 		opts.disableMentions = false;
 		break;

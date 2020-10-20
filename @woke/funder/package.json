@@ -7,7 +7,7 @@
   "scripts": {
     "test": "ETH_ENV=development ./node_modules/.bin/mocha test/*.test.js",
     "test:debug": "DEBUG=*,test:*,-mocha*,-*:info ETH_ENV=development ./node_modules/.bin/mocha test/*.test.js",
-    "start": "NODE_ENV=production ETH_ENV=production WOKE_ROLE=funder DEBUG=* node src/index.js",
+    "start": "WOKE_ROLE=funder node src/index.js --debugRecovery",
     "start:docker": "ETH_ENV=development NODE_ENV=development PERSIST_ENV=local DEBUG_RECOVERY=true DEBUG=* node src/index.js",
     "start:docker:dev": "docker-compose -f ../../funder.docker-compose.local.yml up",
     "dev": "NODE_ENV=development ETH_ENV=development PERSIST=false PERSIST_ENV=local DEBUG=*,twitter node src/index.js",
@@ -27,6 +27,7 @@
     "@woke/lib": "0.4.0",
     "@woke/wact": "0.1.0",
     "@woke/service": "0.1.0",
+    "web3-utils": "^1.3.0",
     "dotenv": "^8.2.0"
   },
   "devDependencies": {

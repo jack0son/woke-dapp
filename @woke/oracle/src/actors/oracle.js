@@ -59,7 +59,7 @@ async function action_updateQuery(state, msg, ctx) {
 			case 'invalid':
 				if (job.reason) {
 					//ctx.debug.error(msg, `job ${job.id} from ${job.fromHandle} error: ${job.error}`)
-					log(`\nQuery invalid: ${job.reason}`);
+					log(`\nQuery invalid, reason: ${job.reason}, (${queryIdStr(job)}) `);
 				}
 				break;
 
@@ -84,6 +84,8 @@ async function action_updateQuery(state, msg, ctx) {
 	return { ...state, jobRepo };
 }
 
+const queryIdStr = (query) => `userId: ${query.userId} queryId: ${query.queryId}`;
+
 const isUnresolvedQuery = (query) =>
 	query.status === 'settled' || query.status === 'pending';
 
@@ -95,24 +97,36 @@ function action_resumeQueries(state, msg, ctx) {
 	unresolvedQueries.forEach(ctx.receivers.settle_job);
 }
 
+const EARLIEST_BLOCKNUMBER = Number(process.env.EARLIEST_BLOCKNUMBER);
 function action_handleIncomingQuery(state, msg, ctx) {
 	const { query } = msg;
 	const { jobRepo } = state;
 
-	const { queryId, userId } = query;
+	const { queryId, userId, logData } = query;
 
-	const idStr = `userId: ${userId} queryId: ${queryId}`;
+	const idStr = queryIdStr(query);
 
 	let job = jobRepo[queryId];
 	if (!job) {
-		ctx.debug.d(msg, `New query ${idStr}. Settling...`);
 		job = { queryId, userId, status: 'pending' };
 
 		// @TODO do not need to associate job actor to job lookup
 		// Doing this would cause actor memory to be persisted
 		//job.a_job = ctx.receivers.settle_job(job);
 		// start the job
-		ctx.receivers.settle_job(job);
+
+		if (logData.blockNumber <= EARLIEST_BLOCKNUMBER) {
+			ctx.debug.d(
+				msg,
+				`... ignoring query ${idStr}, as it was issued before block ${EARLIEST_BLOCKNUMBER} `
+			);
+			job.status = 'invalid';
+			job.reason = 'expired';
+			dispatch(ctx.self, { type: 'update_job', job }, ctx.self);
+		} else {
+			ctx.debug.d(msg, `New query ${idStr}. Settling...`);
+			ctx.receivers.settle_job(job);
+		}
 	} else {
 		// Attempt to settle existing job
 		if (!job.status.toLowerCase) console.log('unknown job status:', job.status);
@@ -136,6 +150,9 @@ function action_handleIncomingQuery(state, msg, ctx) {
 			case 'failed':
 				//case statusEnum.FAILED:
 				ctx.debug.d(msg, `Incoming ${idStr}. Query already failed.`);
+				break;
+
+			case 'invalid':
 				break;
 
 			default:
@@ -192,7 +209,7 @@ module.exports = {
 		initialState: {
 			jobRepo: [],
 			sinkHandlers: {
-				subscribe_log: action_handleQuerySubscription,
+				subscription: action_handleQuerySubscription,
 				a_contract: handleContractResponse,
 			},
 

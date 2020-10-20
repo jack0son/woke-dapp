@@ -9,9 +9,15 @@ const {
 require('dotenv').config();
 const secrets = require('@woke/secrets');
 
+const parseNetworkList = (str) =>
+	str && str.length ? str.split(',').map((n) => n.trim()) : [];
+
+// env var specs
 const envVars = [
 	['PERSIST', 'persist', parse_bool],
+	['PRINT_CONFIG', 'printConfig', parse_bool],
 	['FAULT_MONITORING', 'faultMonitoring', parse_bool],
+	['NETWORK_LIST', 'networkList', parseNetworkList],
 	['TWITTER_MENTIONS', 'muffled'],
 	['VERBOSE', 'verbose', parse_bool],
 	['TWITTER_ENV', 'twitterEnv'],
@@ -42,4 +48,5 @@ const conf = configure(commandLineArgs, envOptions);
 // 3. [x] Prioritise CLI options over environment options
 // 4. [ ] Should map the conf options back on to process.env
 //				(so that modules relying on dotenv have access)
+// 5. [ ] Should allow passing of additional env var specs
 module.exports = conf;

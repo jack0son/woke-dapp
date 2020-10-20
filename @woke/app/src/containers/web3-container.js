@@ -1,12 +1,13 @@
-import React, {useState, useMemo} from 'react'
+import React, { useState, useMemo } from 'react';
 
 // Logical containers
-import Claim from './claim'
-import Wallet from './wallet'
-import Loading from './views/loading'
+import Claim from './claim';
+import Wallet from './wallet';
+import Loading from './views/loading';
+import ErrorView from './views/error';
 
 // Hooks
-import useClaimStatus, {states} from '../hooks/woke-contracts/claim-status';
+import useClaimStatus, { states } from '../hooks/woke-contracts/claim-status';
 
 export default function Web3Container(props) {
 	const [claimed, setClaimed] = useState(false);
@@ -17,35 +18,37 @@ export default function Web3Container(props) {
 	const handleClaimComplete = () => setClaimed(true);
 
 	const renderClaimProcess = () => (
-		<Claim 
+		<Claim
 			claimStatus={claimStatus}
 			userId={userId}
 			userHandle={userHandle}
 			handleClaimComplete={handleClaimComplete}
 		/>
-	)
+	);
 
 	const renderWallet = () => (
-		<Wallet
-			myUserId={retrieveUserId()}
-			myHandle={retrieveUserHandle()}
-		/>
+		<Wallet myUserId={retrieveUserId()} myHandle={retrieveUserHandle()} />
 	);
 
 	function renderLoading(message) {
-		return (
-			<Loading message={message}/>
-		);
+		return <Loading message={message} />;
+	}
+
+	// @TODO replace with redirect to home
+	// This should never happen
+	function renderFatalError(errorMessage) {
+		return <ErrorView message={errorMessage} />;
 	}
 
 	function chooseRender() {
-		if(claimed) {
+		console.log('claimStatus', claimStatus);
+		if (claimed) {
 			// claimStatus and claim hook will race to detect this state
 			console.log('Wallet triggered by claim process');
 			return renderWallet;
 		}
 
-		switch(claimStatus) {
+		switch (claimStatus) {
 			case states.UNCLAIMED: {
 				return renderClaimProcess;
 			}
@@ -57,11 +60,13 @@ export default function Web3Container(props) {
 
 			case states.USER_ALREADY_CLAIMED: {
 				console.log('Error: user already claimed by a different address');
+				return () => renderFatalError('User already claimed by a different address!');
 				// Go back to login
 			}
 
 			case states.ACCOUNT_ALREADY_CLAIMED: {
 				console.log('Error: address has already claimed another user');
+				return () => renderFatalError('!Address has already claimed another user!');
 			}
 
 			default: {
@@ -71,19 +76,15 @@ export default function Web3Container(props) {
 		}
 	}
 
-	const renderFunc = useMemo(() => (chooseRender()), [claimed, claimStatus])
+	const renderFunc = useMemo(() => chooseRender(), [chooseRender]);
 
-	return (
-		<>
-		{renderFunc()}
-		</>
-	)
+	return <>{renderFunc()}</>;
 }
 
-function retrieveUserId () {
+function retrieveUserId() {
 	return window.localStorage.getItem('user_id');
 }
 
-function retrieveUserHandle () {
+function retrieveUserHandle() {
 	return window.localStorage.getItem('user_handle');
 }

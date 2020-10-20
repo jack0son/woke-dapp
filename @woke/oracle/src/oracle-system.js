@@ -7,14 +7,13 @@ const { ContractSystem } = require('@woke/web3-nact');
 const TwitterAgent = require('./actors/twitter-agent');
 const Oracle = require('./actors/oracle');
 
-const debug = Logger('sys_oracle');
-
 const defaults = {
-	name: 'sys_oralce',
-	maxProviderConnectionAttempts: 'dunce',
+	name: 'sys_oracle',
+	maxProviderConnectionAttempts: 'unset',
 	retryInterval: 15000 * 3,
 	subscriptionWatchdogInterval: 15000 * 10,
 };
+const debug = Logger(defaults.name);
 
 class OracleSystem extends Service {
 	constructor(opts) {
