@@ -1,4 +1,4 @@
-import path from 'path'
+import path from 'path';
 const infuraApiKey = process.env.REACT_APP_INFURA_API_KEY;
 
 const root = path.dirname(require.main.filename);
@@ -6,9 +6,15 @@ const root = path.dirname(require.main.filename);
 const twitterApi = {
 	proxy_api_path: 'twitter_api',
 	callback_path: 'oauth_twitter',
-}
+};
 
 const host = process.env.REACT_APP_HOST || '192.168.1.167';
+const goerli = {
+	blockTime: 22000,
+	protocol: 'wss',
+	host: `goerli.infura.io/ws/v3/${infuraApiKey}`,
+	id: 5,
+};
 
 export default {
 	web3: {
@@ -42,20 +48,11 @@ export default {
 				id: 4,
 			},
 
-			goerli: {
-				blockTime: 22000,
-				protocol: 'wss',
-				host: `goerli.infura.io/ws/v3/${infuraApiKey}`,
-				id: 5,
-			},
+			goerli,
 
-			production: {
-				blockTime: 22000,
-				protocol: 'wss',
-				host: `goerli.infura.io/ws/v3/${infuraApiKey}`,
-				id: 5,
-			}
-		}
+			production: goerli,
+			staging: goerli,
+		},
 	},
 
 	server: {
@@ -66,6 +63,10 @@ export default {
 
 		lan: {
 			url: `http://${host}:3001/`,
+		},
+
+		staging: {
+			url: 'https://34.94.14.71:8443/',
 		},
 
 		production: {
@@ -88,5 +89,5 @@ export default {
 			api: twitterApi,
 			hostUrl: 'https://getwoke.me/',
 		},
-	}
-}
+	},
+};
