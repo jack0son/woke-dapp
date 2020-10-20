@@ -24,9 +24,10 @@ services:
       TWITTER_ENV: 'staging'
       DEBUG: '*,-sequelize:*,-expresss:router,-*:info'
       DEBUG_RECOVERY: 'true'
-      WOKE_ROLE: funder
-      NODE_ENV: staging
-      ETH_ENV: staging
+      WOKE_ROLE: 'funder'
+      NODE_ENV: 'staging'
+      ETH_ENV: 'staging'
+      HOST_ENV: 'staging'
       TWITTER_ENV: 'staging'
       TWITTER_APP: 'staging-bot'
       NETWORK_LIST: 'goerli_1,goerli_infura'

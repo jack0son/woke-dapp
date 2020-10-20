@@ -9,18 +9,28 @@ var migrationManager = require('../src/lib/migrationManager');
 // SSL certificate config
 var key, cert, ca;
 const nodeEnv = process.env.NODE_ENV;
-if (nodeEnv == 'production') {
-	key = fs.readFileSync('./ssl/api.getwoke.me/private.key');
-	cert = fs.readFileSync('./ssl/api.getwoke.me/certificate.crt');
-	ca = fs.readFileSync('./ssl/api.getwoke.me/ca_bundle.crt');
-} else if (nodeEnv == 'staging') {
-	key = fs.readFileSync('./ssl/api.staging.getwoke.me/private.key');
-	cert = fs.readFileSync('./ssl/api.staging.getwoke.me/certificate.crt');
-	ca = fs.readFileSync('./ssl/api.staging.getwoke.me/ca_bundle.crt');
-} else {
-	key = fs.readFileSync('./ssl/localhost/localhost.key');
-	cert = fs.readFileSync('./ssl/localhost/localhost.crt');
+const sslEnv = process.env.HOST_ENV || nodeEnv;
+
+let certNamespace = 'localhost';
+let useCa = true;
+switch (sslEnv) {
+	case 'production':
+		certNamespace = 'api.getwoke.me';
+		break;
+	case `staging`:
+		certNamespace = 'api.staging.getwoke.me';
+		break;
+	case 'development':
+	case 'local':
+	default:
+		useCa = false;
+		break;
 }
+
+console.log(`Using '${certNamespace}' certificates (SSL environment = ${sslEnv})`);
+key = fs.readFileSync(`./ssl/${certNamespace}/private.key`);
+cert = fs.readFileSync(`./ssl/${certNamespace}/certificate.crt`);
+if (useCa) ca = fs.readFileSync(`./ssl/${certNamespace}/ca_bundle.crt`);
 var credentials = { key, cert, ca };
 
 var port = normalizePort(process.env.PORT || '8443');
