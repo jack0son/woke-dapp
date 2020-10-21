@@ -19,6 +19,7 @@
   "homepage": "https://github.com/n/a#readme",
   "dependencies": {
     "@woke/lib": "0.4.0",
+    "@woke/secrets": "0.1.0",
     "dev": "^0.1.3",
     "dotenv": "^8.1.0",
     "openzeppelin-solidity": "^2.3.0"
@@ -38,7 +39,7 @@
     "migrate:ropsten": "./node_modules/.bin/truffle migrate --network ropsten",
     "migrate:rinkeby": "./node_modules/.bin/truffle migrate --network rinkeby",
     "migrate:goerli": "./node_modules/.bin/truffle migrate --network goerli",
-    "migrate:staging": "./node_modules/.bin/truffle migrate --network client",
+    "migrate:staging": "ETH_ENV=staging ./node_modules/.bin/truffle migrate --network client",
     "migrate:production": "ETH_ENV=production ./node_modules/.bin/truffle migrate --network geth-goerli",
     "bridge": "npx ethereum-bridge -a 9 -H 127.0.0.1 -p 9545 --dev",
     "ganache:dev": "ganache-cli -i 12 -a 100 -p 8545 --gasLimit 8000000 --gasPrice 20000000000 -m 'nerve marine frozen use brave brief nasty then acid remain stereo riot'",
