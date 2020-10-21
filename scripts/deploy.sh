@@ -159,7 +159,20 @@ start_container() {
 	fi
 }
 
+stop_container() {
+	MODULE_NAME=$1
+	DEPLOY_ENV=$2
+
+	if [ -z ${DEPLOY_ENV}} ]; then
+		# Default to production
+		compose_down ${DOCKER_DIR}/${MODULE_NAME}.docker-compose.yml
+	else
+		compose_down ${DOCKER_DIR}/${MODULE_NAME}.docker-compose.${DEPLOY_ENV}.yml
+	fi
+}
+
 start_containers() {
+	echo "Starting $ENV_ARG containers..."
 	if [ -z ${MODULE_ARG} ]; then
 		start_container server $ENV_ARG
 		start_container oracle $ENV_ARG
@@ -169,23 +182,42 @@ start_containers() {
 	fi
 }
 
+stop_containers() {
+	echo "Stopping $ENV_ARG containers..."
+	if [ -z ${MODULE_ARG} ]; then
+		stop_container server $ENV_ARG
+		stop_container oracle $ENV_ARG
+		stop_container bot $ENV_ARG
+	else
+		stop_container $MODULE_ARG $ENV_ARG
+	fi
+}
+
 compose_up() {
 	file=$1
 	docker_compose -f ${file} up -d
+}
+
+compose_down() {
+	file=$1
+	docker_compose -f ${file} down
 }
 
 if ${PULL} = true; then
 	pull $MODULE_ARG
 fi
 
-if ${start} = true; then
+runcommand="start"
+if ${STOP_CONTAINERS} = true; then
+	runcommand="stop"
+fi
+echo $runcommand
+
 	# Run containers
-	echo "Starting $ENV_ARG containers..."
 	if [ "$ENV_ARG" = "production" ]; then
-		start_containers
+		${runcommand}_containers
 	elif [ "$ENV_ARG" = "staging" ]; then
-		start_containers
+		${runcommand}_containers
 	elif [ "$ENV_ARG" = "development" ]; then
 		echo "Develpoment deployment not configured."
 	fi
-fi
