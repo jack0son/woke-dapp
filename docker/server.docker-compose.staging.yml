@@ -22,7 +22,7 @@ services:
       PERSIST: 'true'
       PERSIST_ENV: 'production'
       TWITTER_ENV: 'staging'
-      DEBUG: '*,-sequelize:*,-express:router,-*:info'
+      DEBUG: '*,-sequelize:*,-express:router*,-*:info'
       DEBUG_RECOVERY: 'true'
       WOKE_ROLE: 'funder'
       NODE_ENV: 'staging'
