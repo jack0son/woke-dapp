@@ -1,6 +1,7 @@
 #!/bin/bash
 # Copy contract artifacts into app src after truffle migration.
 # Temporary work around to avoid issue lerna builds on netlify.
+set -e # exit immediately if migration fails
 echo "Migrating smart-contracts ... "
 DEFAULT_ENV=development
 if [ -z "$1" ]; then
