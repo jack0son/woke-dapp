@@ -17,6 +17,7 @@ const chooseTwitterClient = (twitterEnv) => {
 			return twitter.fake.FakeClient(1, {});
 		case 'development':
 		case 'staging':
+		default:
 			return twitter.client;
 	}
 };

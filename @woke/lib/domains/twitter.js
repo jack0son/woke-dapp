@@ -43,7 +43,7 @@ class TwitterDomain {
 	}
 
 	init() {
-		if (!this.ready()) this.client.init();
+		if (!this.ready()) return this.client.init();
 	}
 
 	ready() {
@@ -122,7 +122,7 @@ class TwitterDomain {
 
 		try {
 			const r = await client.updateStatus(text, { in_reply_to_status_id: replyStatusId });
-			return r.data;
+			return r;
 		} catch (error) {
 			switch (error.code) {
 				case 220: {

@@ -7,7 +7,7 @@ up a web3 backend without worrying about transaction juggling, provider
 failures, or subscription reliability.
 
 Run me as service, or start me from your dApp back end. When I start a fire,
-I'll set it 🔥 at a safe distance from your backend.
+I'll set it 🔥 at a safe distance.
 
 - Self healing subscriptions (events, blockheaders)
 - Intelligent transaction submission (indempotence, gas calculation, nonce and

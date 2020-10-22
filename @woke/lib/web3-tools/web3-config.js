@@ -1,79 +1,101 @@
 require('dotenv').config();
-const infuraApiKey = process.env.INFURA_API_KEY;
+let infuraApiKey = process.env.INFURA_API_KEY;
 const ropstenMnemonic = process.env.ROPSTEN_MNEMONIC;
 const devMnemonic =
 	'nerve marine frozen use brave brief nasty then acid remain stereo riot'; // 12 word mnemonic
 
 const GWei = 1000000000;
 
-const rinkeby = {
-	id: 4,
-	protocol: 'wss',
-	host: `rinkeby.infura.io/ws/v3/${infuraApiKey}`,
-	gasPrice: 40 * GWei,
-	gasLimit: '6590000',
-	blockTime: 20000,
-	defaultCommon: {
-		customChain: {
-			name: 'rin',
-			networkId: 4,
-			chainId: 4,
+// @TODO fix workaround to load env vars due to secrets being loaded after @woke/lib
+const makeNetworks = () => {
+	infuraApiKey = process.env.INFURA_API_KEY;
+
+	const rinkeby = {
+		id: 4,
+		protocol: 'wss',
+		host: `rinkeby.infura.io/ws/v3/${infuraApiKey}`,
+		gasPrice: 40 * GWei,
+		gasLimit: '6590000',
+		blockTime: 20000,
+		defaultCommon: {
+			customChain: {
+				name: 'rin',
+				networkId: 4,
+				chainId: 4,
+			},
+			baseChain: 'rinkeby',
+			//hardfork: 'petersburg',
 		},
-		baseChain: 'rinkeby',
-		//hardfork: 'petersburg',
-	},
-};
+	};
 
-// GCloud conf
-const goerli_infura = {
-	id: 5,
-	protocol: 'wss',
-	host: `goerli.infura.io/ws/v3/${infuraApiKey}`,
-	gasPrice: 20 * GWei,
-	gasLimit: '8000000',
-	blockTime: 15000,
-	defaultCommon: {
-		customChain: {
-			name: 'goerli',
-			networkId: 5,
-			chainId: 5,
+	// GCloud conf
+	const goerli_infura = {
+		id: 5,
+		protocol: 'wss',
+		host: `goerli.infura.io/ws/v3/${infuraApiKey}`,
+		gasPrice: 20 * GWei,
+		gasLimit: '8000000',
+		blockTime: 15000,
+		defaultCommon: {
+			customChain: {
+				name: 'goerli',
+				networkId: 5,
+				chainId: 5,
+			},
+			baseChain: 'goerli',
+			//hardfork: 'petersburg',
 		},
-		baseChain: 'goerli',
-		//hardfork: 'petersburg',
-	},
-};
+	};
 
-// const internalGethHost = (idx) => `geth-goerli-${idx}-internal`;
-const internalGethHost = (idx) =>
-	`geth-goerli-${idx}.us-west2-a.c.sturdy-index-292807.internal`;
-
-const goerli_1 = {
-	name: 'goerli_1',
-	id: 5,
-	protocol: 'ws',
-	host: internalGethHost(1),
-	port: 8546,
-	gasPrice: 20 * GWei,
-	gasLimit: '8000000',
-	blockTime: 15000,
-	defaultCommon: {
-		customChain: {
-			name: 'goerli',
-			networkId: 5,
-			chainId: 5,
+	const goerli_local = {
+		id: 5,
+		protocol: 'ws',
+		host: `127.0.0.1`,
+		port: 8546,
+		gasPrice: 20 * GWei,
+		gasLimit: '8000000',
+		blockTime: 15000,
+		defaultCommon: {
+			customChain: {
+				name: 'goerli',
+				networkId: 5,
+				chainId: 5,
+			},
+			baseChain: 'goerli',
+			//hardfork: 'petersburg',
 		},
-		baseChain: 'goerli',
-		//hardfork: 'petersburg',
-	},
-};
+	};
 
-const goerli_2 = { ...goerli_1, name: 'goerli_2', host: internalGethHost(2) };
-const goerli_3 = { ...goerli_1, name: 'goerli_3', host: internalGethHost(3) };
+	// const internalGethHost = (idx) => `geth-goerli-${idx}-internal`;
+	const internalGethHost = (idx) =>
+		`geth-goerli-${idx}.us-west2-a.c.sturdy-index-292807.internal`;
 
-const goerli = goerli_1;
+	const goerli_1 = {
+		name: 'goerli_1',
+		id: 5,
+		protocol: 'ws',
+		host: internalGethHost(1),
+		port: 8546,
+		gasPrice: 20 * GWei,
+		gasLimit: '8000000',
+		blockTime: 15000,
+		defaultCommon: {
+			customChain: {
+				name: 'goerli',
+				networkId: 5,
+				chainId: 5,
+			},
+			baseChain: 'goerli',
+			//hardfork: 'petersburg',
+		},
+	};
 
-const web3Config = {
-	networks: {
+	const goerli_2 = { ...goerli_1, name: 'goerli_2', host: internalGethHost(2) };
+	const goerli_3 = { ...goerli_1, name: 'goerli_3', host: internalGethHost(3) };
+
+	const goerli = goerli_1;
+
+	const networks = {
 		development: {
 			id: 12,
 			protocol: 'ws',
@@ -105,6 +127,7 @@ const web3Config = {
 		rinkeby,
 
 		goerli_infura,
+		goerli_local,
 
 		goerli,
 		goerli_1,
@@ -113,7 +136,8 @@ const web3Config = {
 
 		production: goerli,
 		staging: goerli,
-	},
+	};
+	return networks;
 };
 
 const invalidRpcUrl = (url) => url.includes('undefined');
@@ -129,7 +153,12 @@ function createRpcUrl(network) {
 	return rpcUrl;
 }
 
+const web3Config = {
+	networks: makeNetworks(),
+};
+
 module.exports = {
 	web3: web3Config,
 	createRpcUrl,
+	getNetworks: makeNetworks,
 };

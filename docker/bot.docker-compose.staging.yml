@@ -15,11 +15,15 @@ services:
     depends_on:
       - bot-db
     environment:
-      NODE_ENV: 'production'
-      ETH_ENV: 'production'
+      PRINT_CONFIG: 'true'
+      VERBOSE: 'true'
+      PERSIST: 'true'
+      DEBUG_RECOVERY: 'true'
+      NODE_ENV: 'staging'
+      ETH_ENV: 'staging'
       WOKE_ROLE: 'notifier'
       PERSIST: 'true'
-      NETWORK_LIST: 'goerli_3,goerli_2,goerli_infura'
+      NETWORK_LIST: 'goerli_1,goerli_infura'
       DEBUG_RECOVERY: 'true'
       POSTGRES_USER: woke_bot
       POSTGRES_PWD: woke_bot
@@ -33,11 +37,16 @@ services:
     depends_on:
       - bot-db
     environment:
-      NODE_ENV: 'production'
-      ETH_ENV: 'production'
+      NOTIFICATIONS_SEEN: 'off'
+      PRINT_CONFIG: 'true'
+      VERBOSE: 'true'
+      PERSIST: 'true'
+      DEBUG_RECOVERY: 'true'
+      NODE_ENV: 'staging'
+      ETH_ENV: 'staging'
       WOKE_ROLE: 'tipper'
       PERSIST: 'true'
-      NETWORK_LIST: 'goerli_1,goerli_2,goerli_3,goerli_infura'
+      NETWORK_LIST: 'goerli_1,goerli_infura'
       DEBUG_RECOVERY: 'true'
       POSTGRES_USER: woke_bot
       POSTGRES_PWD: woke_bot

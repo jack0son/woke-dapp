@@ -61,7 +61,8 @@ const defaults = {
 function instantiate(networkName, opts) {
 	const conf = configure(opts, defaults);
 
-	const network = (!!networkName && config.web3.networks[networkName]) || defaultNetwork;
+	const networks = config.getNetworks();
+	const network = (!!networkName && networks[networkName]) || defaultNetwork;
 	if (networkName) network.name = networkName;
 
 	const rpcUrl = config.createRpcUrl(network);

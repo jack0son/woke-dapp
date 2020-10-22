@@ -1,12 +1,17 @@
 var HDWalletProvider = require('@truffle/hdwallet-provider');
+const secrets = require('@woke/secrets');
 const web3 = require('web3');
 require('dotenv').config();
 //var mnemonic = "large fountain love mountains supernatural bird fresh air through the swinging trees";
 // prettier-ignore
 var devMnemonic = 'nerve marine frozen use brave brief nasty then acid remain stereo riot';
+const contractEnv = process.env.ETH_ENV || process.env.NODE_ENV;
+secrets('ethereum', contractEnv);
+secrets('infura');
 var mnemonic = process.env.ETH_MNEMONIC;
 var infuraApiKey = process.env.INFURA_API_KEY;
-const contractEnv = process.env.ETH_ENV || process.env.NODE_ENV;
+
+console.log('mnemonic:', mnemonic);
 
 module.exports = {
 	contracts_build_directory: './build/contracts/artifacts',
@@ -107,6 +112,14 @@ module.exports = {
 			gas: 8000000,
 			gasPrice: 20000000000,
 			skipDryRun: true,
+			defaultCommon: {
+				customChain: {
+					name: 'goerli',
+					networkId: 5,
+					chainId: 5,
+				},
+				baseChain: 'goerli',
+			},
 		},
 
 		'geth-goerli': {
