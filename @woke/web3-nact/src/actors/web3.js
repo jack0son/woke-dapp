@@ -80,7 +80,7 @@ function Web3Actor(
 				if (attempts == 1) {
 					ctx.debug.d(
 						msg,
-						`Using network ${web3Instance.network.id}:${web3Instance.network.host}`
+						`Using network ${networkName}:${web3Instance.network.id}:${web3Instance.network.host}`
 					);
 					ctx.debug.d(msg, `\tConnection URL ${web3Instance.rpcUrl}`);
 				}

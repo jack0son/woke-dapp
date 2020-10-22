@@ -19,7 +19,7 @@ const contractSystem = (ContractSystemEngine) => (
 const twitterDomain = (service, conf) => {
 	service.twitterClient = conf.twitterClient || TwitterClient(conf.twitterEnv).client;
 	service.twitterDomain = new TwitterDomain(service.twitterClient);
-	service.initializers.push(() => service.twitterDomain.init());
+	service.initializers.push(async () => service.twitterDomain.init());
 };
 
 module.exports = { contractSystem, twitterDomain };

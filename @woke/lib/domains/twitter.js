@@ -43,7 +43,7 @@ class TwitterDomain {
 	}
 
 	init() {
-		if (!this.ready()) this.client.init();
+		if (!this.ready()) return this.client.init();
 	}
 
 	ready() {

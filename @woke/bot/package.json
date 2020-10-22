@@ -11,8 +11,9 @@
   "scripts": {
     "test": "ETH_ENV=development ./node_modules/.bin/mocha test/*.test.js",
     "test:debug": "DEBUG=*,test:*,-mocha*,-*:info,-*twitter_monitor* ETH_ENV=development ./node_modules/.bin/mocha test/*.test.js",
-    "tipper": "NODE_ENV=production node src/services/tipper.js",
+    "tipper": "NODE_ENV=production node src/services/tipper.js ",
     "tipper:dev": "NODE_ENV=development node src/services/tipper.js --persist=false --twitterApp=oracle-bot --twitterEnv=dev --verbose=true",
+    "tipper:staging": "NODE_ENV=staging ETH_ENV=staging node src/services/tipper.js --persist=false --debugRecovery --twitterApp=staging-bot --twitterEnv=staging --printConfig --networkList=goerli_infura",
     "tipper:fake": "NODE_ENV=development node src/services/tipper.js --persist=false --twitterEnv=fake --verbose=true",
     "tipper:muffled": "NODE_ENV=development node src/services/tipper.js --persist=false --twitterApp=oracle-bot --muffled",
     "tipper:goerli": "NODE_ENV=development node src/services/tipper.js --persist=true --twitterApp=oracle-bot",
