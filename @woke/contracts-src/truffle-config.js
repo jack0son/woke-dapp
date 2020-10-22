@@ -11,6 +11,8 @@ secrets('infura');
 var mnemonic = process.env.ETH_MNEMONIC;
 var infuraApiKey = process.env.INFURA_API_KEY;
 
+console.log('mnemonic:', mnemonic);
+
 module.exports = {
 	contracts_build_directory: './build/contracts/artifacts',
 	networks: {
@@ -110,6 +112,14 @@ module.exports = {
 			gas: 8000000,
 			gasPrice: 20000000000,
 			skipDryRun: true,
+			defaultCommon: {
+				customChain: {
+					name: 'goerli',
+					networkId: 5,
+					chainId: 5,
+				},
+				baseChain: 'goerli',
+			},
 		},
 
 		'geth-goerli': {
