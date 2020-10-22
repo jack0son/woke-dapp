@@ -15,7 +15,9 @@ function tip_success_tweet_text(tip) {
 }
 
 function tip_seen_text(tip) {
-	return `${mention(tip.fromHandle)} I accept your offering. #tribute #${tip.id}`;
+	return `${mention(tip.fromHandle)} ${emoji.eye} I accept your offering. #tribute #${
+		tip.id
+	}`;
 }
 
 function tip_success_message(tip) {

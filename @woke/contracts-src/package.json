@@ -35,11 +35,9 @@
     "truffle-flattener": "^1.4.2"
   },
   "scripts": {
-    "migrate:development": "./node_modules/.bin/truffle migrate --network client",
-    "migrate:ropsten": "./node_modules/.bin/truffle migrate --network ropsten",
-    "migrate:rinkeby": "./node_modules/.bin/truffle migrate --network rinkeby",
-    "migrate:goerli": "./node_modules/.bin/truffle migrate --network goerli",
-    "migrate:staging": "ETH_ENV=staging truffle migrate --network geth-goerli",
+    "migrate:development": "ETH_ENV=staging ./node_modules/.bin/truffle migrate --network client",
+    "migrate:goerli": "ETH_ENV=goerli ./node_modules/.bin/truffle migrate --network goerli",
+    "migrate:staging": "ETH_ENV=staging ./node_modules/.bin/truffle migrate --network geth-goerli",
     "migrate:production": "ETH_ENV=production ./node_modules/.bin/truffle migrate --network geth-goerli",
     "bridge": "npx ethereum-bridge -a 9 -H 127.0.0.1 -p 9545 --dev",
     "ganache:dev": "ganache-cli -i 12 -a 100 -p 8545 --gasLimit 8000000 --gasPrice 20000000000 -m 'nerve marine frozen use brave brief nasty then acid remain stereo riot'",

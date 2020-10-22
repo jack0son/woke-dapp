@@ -37,6 +37,7 @@ services:
     depends_on:
       - bot-db
     environment:
+      NOTIFICATIONS_SEEN: 'off'
       PRINT_CONFIG: 'true'
       VERBOSE: 'true'
       PERSIST: 'true'
