@@ -1,5 +1,5 @@
 const { ActorSystem } = require('@woke/wact');
-const { messageTemplates } = require('@woke/lib');
+const { messageTemplates, utils } = require('@woke/lib');
 const { start_actor, dispatch, query } = ActorSystem;
 
 const tipInvalidText = (tip) => {
@@ -18,6 +18,8 @@ function isInternalError() {
 	// Not important for now
 }
 
+const sendSeenNotifications = utils.parse_bool(process.env.NOTIFICATIONS_SEEN);
+
 async function action_tweet(state, msg, ctx) {
 	const { twitterDomain: td } = state;
 	const { tip, tweetType, recipientBalance } = msg;
@@ -32,14 +34,14 @@ async function action_tweet(state, msg, ctx) {
 			}
 
 			case 'tip-confirmed': {
-				text = messageTemplates.td.tip_success_tweet_text(tip);
+				text = messageTemplates.twitter.tip_success_tweet_text(tip);
 				tweet = await td.postTweetReply(text, tip.id);
 				// @TODO Tweet an invite
 				break;
 			}
 
 			case 'tip-failed': {
-				text = messageTemplates.td.tip_failure_message(tip);
+				text = messageTemplates.twitter.tip_failure_message(tip);
 				tweet = await td.postTweetReply(text, tip.id);
 				break;
 			}
@@ -50,7 +52,14 @@ async function action_tweet(state, msg, ctx) {
 				break;
 			}
 
-			case 'tip-seen':
+			case 'tip-seen': {
+				if (sendSeenNotifications) {
+					text = messageTemplates.twitter.tip_seen_text(tip);
+					tweet = await td.postTweetReply(text, tip.id);
+				}
+				break;
+			}
+
 			default:
 				ctx.debug.warn(msg, `Unknown tweet type: ${tweetType}`);
 				return;

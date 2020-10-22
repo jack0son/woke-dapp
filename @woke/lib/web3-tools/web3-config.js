@@ -47,6 +47,25 @@ const makeNetworks = () => {
 		},
 	};
 
+	const goerli_local = {
+		id: 5,
+		protocol: 'ws',
+		host: `127.0.0.1`,
+		port: 8546,
+		gasPrice: 20 * GWei,
+		gasLimit: '8000000',
+		blockTime: 15000,
+		defaultCommon: {
+			customChain: {
+				name: 'goerli',
+				networkId: 5,
+				chainId: 5,
+			},
+			baseChain: 'goerli',
+			//hardfork: 'petersburg',
+		},
+	};
+
 	// const internalGethHost = (idx) => `geth-goerli-${idx}-internal`;
 	const internalGethHost = (idx) =>
 		`geth-goerli-${idx}.us-west2-a.c.sturdy-index-292807.internal`;
@@ -108,6 +127,7 @@ const makeNetworks = () => {
 		rinkeby,
 
 		goerli_infura,
+		goerli_local,
 
 		goerli,
 		goerli_1,

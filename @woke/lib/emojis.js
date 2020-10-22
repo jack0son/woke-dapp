@@ -5,4 +5,5 @@ module.exports = {
 	folded_hands: '🙏',
 	no: '🙅',
 	shrug: '🤷',
+	eye: '👁️',
 };
