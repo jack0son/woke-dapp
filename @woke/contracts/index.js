@@ -1,21 +1,28 @@
-const production = {
-	WokeToken: require('./production/WokeToken.json'),
-	TwitterOracleMock: require('./production/TwitterOracleMock.json'),
-	UserRegistry: require('./production/UserRegistry.json'),
-}
-
 // Will cause create-react-app webpack to fail
 // No dynamic require (Issue #__);
-let development;
-if(process.env.NODE_ENV !== 'production') {
+let production, development, staging;
+const contractEnv = process.env.ETH_ENV || process.env.NODE_ENV;
+if (contractEnv !== 'production') {
 	development = {
 		WokeToken: require('./development/WokeToken.json'),
 		TwitterOracleMock: require('./development/TwitterOracleMock.json'),
 		UserRegistry: require('./development/UserRegistry.json'),
 	};
+	staging = {
+		WokeToken: require('./staging/WokeToken.json'),
+		TwitterOracleMock: require('./staging/TwitterOracleMock.json'),
+		UserRegistry: require('./staging/UserRegistry.json'),
+	};
+} else {
+	production = {
+		WokeToken: require('./production/WokeToken.json'),
+		TwitterOracleMock: require('./production/TwitterOracleMock.json'),
+		UserRegistry: require('./production/UserRegistry.json'),
+	};
 }
 
 module.exports = {
 	production,
+	staging,
 	development,
-}
+};

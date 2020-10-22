@@ -1,9 +1,6 @@
-const {
-	actors: { SinkAdapter },
-	ActorSystem,
-} = require('@woke/wact');
+const { ActorSystem, adapters } = require('@woke/wact');
 const { useNotifyOnCrash } = require('@woke/actors');
-const QueryQuery = require('./query');
+const Query = require('./query');
 const { dispatch, start_actor } = ActorSystem;
 // Each job is a simple linear state machine
 const statuses = ['UNSETTLED', 'PENDING', 'SETTLED', 'FAILED', 'INVALID'];
@@ -13,14 +10,14 @@ statuses.forEach((s, i) => (statusEnum[s] = i));
 // Send tip to WokeToken contract
 // @returns tip actor
 function spawn_job(_parent, job, a_contract_TwitterOracle, a_twitterAgent) {
-	return start_actor(_parent)(`_job-${job.queryId}`, QueryQuery, {
+	return start_actor(_parent)(`_job-${job.queryId}`, Query, {
 		a_contract_TwitterOracle,
 		a_twitterAgent,
 		job,
 	});
 }
 
-function settle_job({ msg, ctx, state }) {
+function settle_job({ state, msg, ctx }) {
 	return (job) => {
 		const a_job = spawn_job(
 			ctx.self,
@@ -35,7 +32,7 @@ function settle_job({ msg, ctx, state }) {
 	};
 }
 
-async function action_updateQuery(msg, ctx, state) {
+async function action_updateQuery(state, msg, ctx) {
 	const { jobRepo } = state;
 	const { job, error } = msg;
 
@@ -62,7 +59,7 @@ async function action_updateQuery(msg, ctx, state) {
 			case 'invalid':
 				if (job.reason) {
 					//ctx.debug.error(msg, `job ${job.id} from ${job.fromHandle} error: ${job.error}`)
-					log(`\nQuery invalid: ${job.reason}`);
+					log(`\nQuery invalid, reason: ${job.reason}, (${queryIdStr(job)}) `);
 				}
 				break;
 
@@ -87,35 +84,49 @@ async function action_updateQuery(msg, ctx, state) {
 	return { ...state, jobRepo };
 }
 
+const queryIdStr = (query) => `userId: ${query.userId} queryId: ${query.queryId}`;
+
 const isUnresolvedQuery = (query) =>
 	query.status === 'settled' || query.status === 'pending';
 
 // Find any unresolved queries and resume processing them
-function action_resumeQueries(msg, ctx, state) {
+function action_resumeQueries(state, msg, ctx) {
 	const { jobRepo } = state;
 	const unresolvedQueries = Object.keys(jobRepo).filter(isUnresolvedQuery);
 	ctx.debug.d(msg, `Settling ${unresolvedQueries.length} unresolved queries...`);
 	unresolvedQueries.forEach(ctx.receivers.settle_job);
 }
 
-function action_handleIncomingQuery(msg, ctx, state) {
+const EARLIEST_BLOCKNUMBER = Number(process.env.EARLIEST_BLOCKNUMBER);
+function action_handleIncomingQuery(state, msg, ctx) {
 	const { query } = msg;
 	const { jobRepo } = state;
 
-	const { queryId, userId } = query;
+	const { queryId, userId, logData } = query;
 
-	const idStr = `userId: ${userId} queryId: ${queryId}`;
+	const idStr = queryIdStr(query);
 
 	let job = jobRepo[queryId];
 	if (!job) {
-		ctx.debug.d(msg, `New query ${idStr}. Settling...`);
 		job = { queryId, userId, status: 'pending' };
 
 		// @TODO do not need to associate job actor to job lookup
 		// Doing this would cause actor memory to be persisted
 		//job.a_job = ctx.receivers.settle_job(job);
 		// start the job
-		ctx.receivers.settle_job(job);
+
+		if (logData.blockNumber <= EARLIEST_BLOCKNUMBER) {
+			ctx.debug.d(
+				msg,
+				`... ignoring query ${idStr}, as it was issued before block ${EARLIEST_BLOCKNUMBER} `
+			);
+			job.status = 'invalid';
+			job.reason = 'expired';
+			dispatch(ctx.self, { type: 'update_job', job }, ctx.self);
+		} else {
+			ctx.debug.d(msg, `New query ${idStr}. Settling...`);
+			ctx.receivers.settle_job(job);
+		}
 	} else {
 		// Attempt to settle existing job
 		if (!job.status.toLowerCase) console.log('unknown job status:', job.status);
@@ -141,6 +152,9 @@ function action_handleIncomingQuery(msg, ctx, state) {
 				ctx.debug.d(msg, `Incoming ${idStr}. Query already failed.`);
 				break;
 
+			case 'invalid':
+				break;
+
 			default:
 				throw new Error(`Unspecified query status: ${job.status}`);
 		}
@@ -150,7 +164,7 @@ function action_handleIncomingQuery(msg, ctx, state) {
 }
 
 // ----- Sink handlers
-function handleContractResponse(msg, ctx, state) {
+function handleContractResponse(state, msg, ctx) {
 	switch (msg.action) {
 		case 'subscribe_log': {
 			const { a_sub } = msg;
@@ -167,7 +181,7 @@ function handleContractResponse(msg, ctx, state) {
 	}
 }
 
-function action_handleQuerySubscription(msg, ctx, state) {
+function action_handleQuerySubscription(state, msg, ctx) {
 	const { eventName } = msg;
 	switch (eventName) {
 		case 'FindTweetLodged': {
@@ -195,7 +209,7 @@ module.exports = {
 		initialState: {
 			jobRepo: [],
 			sinkHandlers: {
-				subscribe_log: action_handleQuerySubscription,
+				subscription: action_handleQuerySubscription,
 				a_contract: handleContractResponse,
 			},
 
@@ -203,15 +217,12 @@ module.exports = {
 			a_contract_TwitterOracle: null,
 		},
 
-		receivers: (bundle) => ({
-			settle_job: settle_job(bundle),
-			//sink: sink(bundle),
-		}),
+		receivers: [settle_job],
 	},
 
 	actions: {
-		...SinkAdapter(),
-		init: (msg, ctx, state) => {
+		...adapters.SinkReduce(),
+		init: (state, msg, ctx) => {
 			const { a_contract_TwitterOracle, subscriptionWatchdogInterval } = state;
 
 			// Rely on subscription to submit logs from block 0
@@ -228,14 +239,14 @@ module.exports = {
 				ctx.self
 			);
 
-			return action_resumeQueries(msg, ctx, state);
+			return action_resumeQueries(state, msg, ctx);
 		},
 
 		query: action_handleIncomingQuery,
 		a_sub: action_handleQuerySubscription,
 		update_job: action_updateQuery,
 
-		stop: (msg, ctx, state) => {
+		stop: (state, msg, ctx) => {
 			// @TODO call stop
 			// Stop subscription
 		},

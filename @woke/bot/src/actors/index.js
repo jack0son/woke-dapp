@@ -1,5 +1,6 @@
 module.exports = {
-	tipper: require('./tipper'),
-	notifier: require('./notifier'),
+	//tipper: require('./tipper'),
+	TipSupervisor: require('./tip-supervisor'),
+	//notifier: require('./notifier'),
 	TwitterMonitor: require('./twitter-monitor'),
-}
+};

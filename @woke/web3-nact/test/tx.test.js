@@ -1,6 +1,5 @@
 const assert = require('assert');
-const expect = require('chai').use(require('chai-as-promised')).expect
-
+const expect = require('chai').use(require('chai-as-promised')).expect;
 
 const { query, dispatch } = require('nact');
 const { Web3 } = require('../src/actors');
@@ -15,45 +14,23 @@ const { delay } = require('../src/lib/utils');
 //
 // ## Spawn conditions
 
-// ## Call
-//
-// Types of errors?
-//
-// What errors cause termination, what errors sinked
-//
-// Do errors get hidden by the tx actor
-//
-// Return param cases:
-
-// ## Send
-//
-// Param error
-//
-// Onchain error
-//
-// Are errors sinked
-
-
 // The focus of these tests is the flow communication flow within the web3 actor
 // -- not the web3 tools
-context('TxActor', function() {
+context('TxActor', function () {
 	let director, a_web3;
 
-	const web3Instance_example = Web3Mock(getId_okay)
+	const web3Instance_example = Web3Mock(getId_okay);
 
 	beforeEach(function () {
 		director = bootstrap();
-	})
+	});
 
-	context('', function() {
-		it('should call', function() {
-		});
+	context('', function () {
+		it('should call', function () {});
 
-		it('should get a new nonce when nonce too low', function() {
-		});
-	})
-
-})
+		it('should get a new nonce when nonce too low', function () {});
+	});
+});
 
 // web3-core-helpers/errors.js
 /**
@@ -123,3 +100,20 @@ module.exports = {
 };
 */
 
+// ## Call
+//
+// Types of errors?
+//
+// What errors cause termination, what errors sinked
+//
+// Do errors get hidden by the tx actor
+//
+// Return param cases:
+
+// ## Send
+//
+// Param error
+//
+// Onchain error
+//
+// Are errors sinked

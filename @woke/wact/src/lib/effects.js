@@ -5,22 +5,22 @@
 // from the previous effect or action function
 // -- effects have the same function signature as an action
 
-//'action_name': applyPostEffect(msg, ctx, state)(dispatchSinks)(action)
-const applyPostEffect = (msg, ctx, state) => (effect) => (action) => {
-	const nextState = action(msg, ctx, state);
+//'action_name': applyPostEffect(state, msg, ctx)(dispatchSinks)(action)
+const applyPostEffect = (state, msg, ctx) => (effect) => (action) => {
+	const nextState = action(state, msg, ctx);
 	const effectState = effect(msg, ctx, nextState);
 	return effectState ? effectState : nextState;
 };
 
 // @TODO this could be creating some memory inefficiencies
 //	i.e. if states are being copied instead of referenced
-const withEffect = (msg, ctx, state) => (action_a) => (action_b) => {
+const withEffect = (state, msg, ctx) => (action_a) => (action_b) => {
 	const orig = { ...state }; // preserve original state
 
-	const state_a = action_a(msg, ctx, state);
+	const state_a = action_a(state, msg, ctx);
 	const nextState = state_a ? state_a : state;
 
-	const state_b = action_b(msg, ctx, { ...nextState, _state: orig });
+	const state_b = action_b({ ...nextState, _state: orig }, msg, ctx);
 	return state_b ? state_b : nextState;
 };
 

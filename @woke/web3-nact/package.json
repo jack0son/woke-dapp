@@ -6,7 +6,7 @@
   "main": "src/index.js",
   "scripts": {
     "test": "./node_modules/.bin/mocha",
-    "test:debug": "DEBUG=oracle:* ./node_modules/.bin/mocha",
+    "test:debug": "DEBUG=*,-mocha:* ./node_modules/.bin/mocha",
     "start": "NODE_ENV=production ETH_ENV=production WOKE_ROLE=oracle DEBUG=oracle* node src/index.js",
     "start-docker": "DEBUG=oracle* node src/index.js",
     "dev": "NODE_ENV=development ETH_ENV=development DEBUG=oracle*,twitter node src/index.js",
@@ -19,6 +19,7 @@
   "license": "ISC",
   "dependencies": {
     "@woke/contracts": "0.4.0",
+    "@woke/actors": "0.1.0",
     "@woke/lib": "0.4.0",
     "@woke/wact": "0.1.0",
     "dotenv": "^8.2.0",

@@ -1,18 +1,12 @@
-const serviceConfig = require('../config/service-config');
-const { Logger, twitter, TwitterStub } = require('@woke/lib');
+const { loadSecrets, serviceConf } = require('@woke/service');
 const TipSystem = require('../systems/tip-system');
-const debug = Logger();
+loadSecrets(['infura', 'ethereum', 'twitter'], serviceConf);
 
 // @TODO parse polling interval
-const bootstrap = async () => {
-	await twitter.initClient();
-	twitterStub = new TwitterStub(twitter);
-
+const bootstrap = () => {
 	const tipSystem = new TipSystem({
-		notify: true,
-		twitterStub,
 		pollingInterval: 5 * 1000,
-		...serviceConfig,
+		...serviceConf,
 	});
 	return tipSystem.start();
 };

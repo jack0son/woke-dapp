@@ -22,6 +22,7 @@ function MonitorSystem({ director, twitterClient }) {
 
 	const _director = director || ActorSystem.bootstrap();
 	twitterStub = new TwitterStub(_twitterClient);
+	console.log('Twitter stub ready?', twitterStub.ready());
 
 	// Make twitter channel
 	const a_tweeter = _director.start_actor(

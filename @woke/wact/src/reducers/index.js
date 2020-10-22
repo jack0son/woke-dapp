@@ -1,8 +1,7 @@
 // Reducers receive the message bundle, apply effects then return the modified
 // state. They are pure functions that must be applied last in the chain of
 // functions called on a message.
-
-const noEffect = (_, __, state) => state;
+const noEffect = (state) => state;
 
 /**
  * Make pattern object. Here pattern refers to a pattern similar to an arm of
@@ -31,12 +30,12 @@ function Pattern(predicate, effect) {
  * @param {Action} defaultEffect - Default effect to apply
  * @return {Action} Reducer function
  */
-const subsumeEffects = (patterns, defaultEffect = noEffect) => (msg, ctx, state) => ({
+const subsumeEffects = (patterns, defaultEffect = noEffect) => (state, msg, ctx) => ({
 	...state,
 	...patterns.reduce(
 		(effect, pattern) => (pattern.predicate(state) ? pattern.effect : effect),
 		defaultEffect
-	)(msg, ctx, state),
+	)(state, msg, ctx),
 });
 
 /**
@@ -46,14 +45,14 @@ const subsumeEffects = (patterns, defaultEffect = noEffect) => (msg, ctx, state)
  * @param {Action} defaultEffect - Default effect to apply
  * @return {Action} Reducer function
  */
-const matchEffects = (patterns, defaultEffect = noEffect) => (msg, ctx, state) => ({
+const matchEffects = (patterns, defaultEffect = noEffect) => (state, msg, ctx) => ({
 	...state,
 	...patterns
 		.reverse()
 		.reduce(
 			(effect, pattern) => (pattern.predicate(state) ? pattern.effect : effect),
 			defaultEffect
-		)(msg, ctx, state),
+		)(state, msg, ctx),
 });
 
 /**
@@ -63,12 +62,12 @@ const matchEffects = (patterns, defaultEffect = noEffect) => (msg, ctx, state) =
  * @param {Pattern[]} patterns - List of Patterns to evaluate
  * @return {Action} Reducer function
  */
-const pipeEffects = (patterns) => (msg, ctx, state) => ({
+const pipeEffects = (patterns) => (state, msg, ctx) => ({
 	...state,
 	...patterns.reduce(
 		(state, pattern) => (pattern.predicate(state) ? pattern.effect(state) : state),
 		state
-	)(msg, ctx, state),
+	)(state, msg, ctx),
 });
 
 /**
@@ -79,7 +78,7 @@ const pipeEffects = (patterns) => (msg, ctx, state) => ({
  * state machine definition
  * @return {Action} Reducer function
  */
-const effectFSM = (effectsMap) => (msg, ctx, state) => {
+const effectFSM = (effectsMap) => (state, msg, ctx) => {
 	const { stage } = state;
 	const { event } = msg;
 
@@ -99,7 +98,7 @@ const effectFSM = (effectsMap) => (msg, ctx, state) => {
 
 	ctx.reduce = ctx.receivers.reduce;
 
-	return { ...state, ...action.effect(msg, ctx, state) }; // next state
+	return { ...state, ...action.effect(state, msg, ctx) }; // next state
 };
 
 module.exports = {

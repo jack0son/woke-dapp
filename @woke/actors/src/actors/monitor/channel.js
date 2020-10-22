@@ -2,13 +2,13 @@ const {
 	ActorSystem: { dispatch },
 } = require('@woke/wact');
 
-function action_result(msg, ctx, state) {}
+function action_result(state, msg, ctx) {}
 
 function Channel({ actor, postActionName }) {
 	if (!actor) throw new Error('Must provide actor');
 	if (!postActionName) throw new Error('Must provide action name');
 
-	function action_post(msg, ctx, state) {
+	function action_post(state, msg, ctx) {
 		const { text } = msg;
 		dispatch(actor, { type: postActionName, text }, ctx.self);
 	}
@@ -16,7 +16,8 @@ function Channel({ actor, postActionName }) {
 	return {
 		properties: {},
 		actions: {
-			post_private: action_post,
+			post_owner: action_post,
+			// post_group: action_postGroup,
 
 			// Sink
 			// @fix does not match sink pattern

@@ -1,0 +1,23 @@
+{
+  "name": "@woke/service",
+  "version": "0.1.0",
+  "description": "Service template",
+  "private": true,
+  "main": "lib/index.js",
+  "scripts": {
+    "test": "./node_modules/.bin/mocha ./test/test*.js"
+  },
+  "author": "jack0son",
+  "license": "ISC",
+  "dependencies": {
+    "@woke/actors": "0.1.0",
+    "@woke/jack0son": "0.1.0",
+    "@woke/secrets": "0.1.0",
+    "@woke/lib": "0.4.0",
+    "@woke/wact": "0.1.0",
+    "dotenv": "^8.2.0"
+  },
+  "devDependencies": {
+    "benchmark": "^2.1.4"
+  }
+}

@@ -1,17 +1,22 @@
 //const oracle = artifacts.require("TwitterOracle.sol");
-var OracleMock = artifacts.require("TwitterOracleMock.sol");
-var WokeFormula = artifacts.require("WokeFormula.sol");
-var LogNormalPDF = artifacts.require("LogNormalPDF.sol");
-var UserRegistry = artifacts.require("UserRegistry.sol");
-var Token = artifacts.require("WokeToken.sol");
-var Distribution = artifacts.require("Distribution.sol");
-var Structs = artifacts.require("Helpers.sol");
-var Helpers = artifacts.require("Helpers.sol");
-var Strings = artifacts.require("Strings.sol");
-var ECDSA = artifacts.require("ECDSA.sol");
+var OracleMock = artifacts.require('TwitterOracleMock.sol');
+var WokeFormula = artifacts.require('WokeFormula.sol');
+var LogNormalPDF = artifacts.require('LogNormalPDF.sol');
+var UserRegistry = artifacts.require('UserRegistry.sol');
+var Token = artifacts.require('WokeToken.sol');
+var Distribution = artifacts.require('Distribution.sol');
+var Structs = artifacts.require('Helpers.sol');
+var Helpers = artifacts.require('Helpers.sol');
+var Strings = artifacts.require('Strings.sol');
+var ECDSA = artifacts.require('ECDSA.sol');
 
 const wokeFormulaConfig = require('../config').alpha;
 const fillLnpdfArrays = require('./fill_lnpdf');
+const { parse_bool } = require('@woke/lib/utils');
+
+let overwrite;
+const { OVERWRITE } = process.env;
+if (OVERWRITE !== undefined) overwrite = parse_bool(OVERWRITE);
 
 const doDeploy = async (deployer, network, accounts) => {
 	const [defaultAccount, owner, oracleCallback, ...rest] = accounts;
@@ -28,25 +33,24 @@ const doDeploy = async (deployer, network, accounts) => {
 	};
 
 	const overwrite = {
-		logNormalPDF: true,
-	}
-
+		logNormalPDF: OVERWRITE !== undefined ? parse_bool(OVERWRITE) : true,
+	};
 
 	let batchSize = 512;
-	switch(network) {
+	switch (network) {
 		case 'goerli': {
 			break;
 		}
 
 		case 'test': {
-			opts.value =  100000000000;
+			opts.value = 100000000000;
 			overwrite.logNormalPDF = true;
 			break;
 		}
 
 		default:
 		case 'development': {
-			overwrite.logNormalPDF = true;
+			overwrite.logNormalPDF = (overwrite !== undefined && overwrite) || true;
 			break;
 		}
 	}
@@ -82,42 +86,52 @@ const doDeploy = async (deployer, network, accounts) => {
 	const val = opts.value;
 	opts.value = 0;
 	console.log('Deploying WokeFormula...');
-	await deployer.deploy(WokeFormula,
+	await deployer.deploy(
+		WokeFormula,
 		curveParams.maxPrice,
 		curveParams.inflectionSupply,
 		curveParams.steepness,
-		opts,
+		opts
 	);
 	let formulaInstance = await WokeFormula.deployed();
 	console.log(`WokeFormula deployed at ${formulaInstance.address}`);
 
-	console.log('Deploying LogNormalPDF...')
-	await deployer.deploy(LogNormalPDF, { ...opts, overwrite: overwrite.logNormalPDF })
+	console.log('Deploying LogNormalPDF...');
+	await deployer.deploy(LogNormalPDF, { ...opts, overwrite: overwrite.logNormalPDF });
 	let lnpdfInstance = await LogNormalPDF.deployed();
 	console.log(`LogNormalPDF deployed at ${lnpdfInstance.address}`);
 
-	if(overwrite.logNormalPDF)
+	if (overwrite.logNormalPDF)
 		await fillLnpdfArrays(defaultAccount, lnpdfInstance)(batchSize);
 
 	opts.value = val;
-	console.log('Deploying WokeToken...')
-	await deployer.deploy(Token, formulaInstance.address, maxSupply, opts)
+	console.log('Deploying WokeToken...');
+	await deployer.deploy(Token, formulaInstance.address, maxSupply, opts);
 	let tokenInstance = await Token.deployed();
 	console.log(`WokeToken deployed at ${tokenInstance.address}`);
 
 	const maxTributors = 256;
-	console.log('Deploying UserRegistry...')
-	return await deployer.deploy(UserRegistry, tokenInstance.address, lnpdfInstance.address, oracleInstance.address, owner, maxTributors, opts)
-		.then(async registryInstance => {
+	console.log('Deploying UserRegistry...');
+	return await deployer
+		.deploy(
+			UserRegistry,
+			tokenInstance.address,
+			lnpdfInstance.address,
+			oracleInstance.address,
+			owner,
+			maxTributors,
+			opts
+		)
+		.then(async (registryInstance) => {
 			opts.value = 0;
 			await tokenInstance.setUserRegistry(registryInstance.address, opts);
 			console.log(`UserRegistry deployed at ${registryInstance.address}`);
 			return registryInstance;
 		});
-}
+};
 
-module.exports = function(deployer, network, accounts) {
+module.exports = function (deployer, network, accounts) {
 	deployer.then(async () => {
 		return await doDeploy(deployer, network, accounts);
 	});
-}
+};

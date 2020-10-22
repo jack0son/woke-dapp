@@ -1,7 +1,6 @@
 const { dispatch, query } = require('nact');
 const { Logger } = require('@woke/lib');
-const debug = (msg, args) =>
-	Logger('polling').name(`info:`, `${msg.type}>> ` + args);
+const debug = (msg, args) => Logger('polling').name(`info`, `${msg.type}>> ` + args);
 
 // Cron-like behaviour
 const pollingActor = {
@@ -12,13 +11,11 @@ const pollingActor = {
 		},
 
 		onCrash: (msg, error, ctx) => {
-			console.log('Polling actor crashed...');
-			console.log(error);
 			switch (msg.type) {
 				case 'perform': {
-					const { target, action, period, args } = msg;
-					dispatch(ctx.self, msg, ctx.sender);
+					//const { target, action, period, args } = msg;
 					//setTimeout(() => dispatch(ctx.self, msg, ctx.sender), period);
+					dispatch(ctx.self, msg, ctx.sender);
 					return ctx.resume;
 				}
 
@@ -29,7 +26,7 @@ const pollingActor = {
 	},
 
 	actions: {
-		poll: (msg, ctx, state) => {
+		poll: (state, msg, ctx) => {
 			const {
 				target, // target actor
 				action, // target action type
@@ -72,7 +69,7 @@ const pollingActor = {
 			};
 		},
 
-		perform: async (msg, ctx, state) => {
+		perform: async (state, msg, ctx) => {
 			const { halt, blockTimeout } = state;
 			const { target, action, period, args } = msg;
 
@@ -99,25 +96,24 @@ const pollingActor = {
 			return state;
 		},
 
-		resume: (msg, ctx, state) => {
+		resume: (state, msg, ctx) => {
 			const { currentAction } = state;
 			if (!currentAction) {
 				throw new Error(`No action being polled`);
 			}
 			debug(msg, `Resuming polling of {${state.target.name}:${state.action}}`);
 			dispatch(ctx.self, currentAction, currentAction.impetus);
-			return { ...state, halt: false };
+			state.halt = false;
+			return state;
 		},
 
-		interupt: (msg, ctx, state) => {
-			debug(
-				msg,
-				`Interupting polling of {${state.target.name}:${state.action}}`
-			);
-			return { ...state, halt: true };
+		interupt: (state, msg, ctx) => {
+			debug(msg, `Interupting polling of {${state.target.name}:${state.action}}`);
+			state.halt = true;
+			return state;
 		},
 
-		stop: (msg, ctx, state) => {
+		stop: (state, msg, ctx) => {
 			debug(msg, `Stopping polling of {${state.target.name}:${state.action}}`);
 			return ctx.stop;
 		},

@@ -2,50 +2,7 @@ const { ActorSystem } = require('@woke/wact');
 const { messageTemplates } = require('@woke/lib');
 const { start_actor, dispatch, query } = ActorSystem;
 
-async function action_tweetUnclaimedTransfer(msg, ctx, state) {
-	//'tweet_unclaimed_transfer': async (msg, ctx, state) => {
-	const { twitter } = state;
-	const { fromId, toId, amount, balance } = msg;
-	const tweet = await twitter.postUnclaimedTransfer(
-		fromId,
-		toId,
-		amount,
-		balance
-	);
-	ctx.debug.d(msg, `tweeted '${tweet.text}'`);
-	dispatch(ctx.sender, { type: msg.type, tweet }, ctx.self);
-}
-
-async function action_tweetTipSeen(msg, ctx, state) {
-	//'tweet_tip_seen': async (msg, ctx, state) => {
-	const { twitter } = state;
-	const { fromId, toId, amount } = msg;
-	const tweet = await twitter.postUnclaimedTransfer(fromId, toId, amount);
-	ctx.debug.d(msg, `tweeted '${tweet.text}'`);
-	dispatch(ctx.sender, { type: msg.type, tweet }, ctx.self);
-	// Tweet an invite
-}
-
-async function action_tweetTipConfirmed(msg, ctx, state) {
-	//	'tweet_tip_confirmed': async (msg, ctx, state) => {
-	const { twitter } = state;
-	const { tip } = msg;
-
-	ctx.debug.info(msg, `tweeting ${tip.id} success...`);
-	const text = messageTemplates.twitter.tip_success_tweet_text(tip);
-	const tweet = await twitter.postTweetReply(text, tip.id);
-	ctx.debug.d(msg, `tweeted '${text}'`);
-
-	dispatch(ctx.sender, { type: msg.type, tweet }, ctx.self);
-	// Tweet an invite
-}
-
-async function action_tweetTipInvalid(msg, ctx, state) {
-	//'tweet_tip_invalid': async (msg, ctx, state) => {
-	const { twitter } = state;
-	const { tip } = msg;
-
-	ctx.debug.info(msg, `tweeting ${tip.id} invalid...`);
+const tipInvalidText = (tip) => {
 	let text = messageTemplates.twitter.tip_invalid_message(tip);
 	if (tip.reason == 'broke') {
 		text = messageTemplates.twitter.tip_broke_message(tip);
@@ -54,40 +11,68 @@ async function action_tweetTipInvalid(msg, ctx, state) {
 	} else {
 		// No invalidation reason
 	}
-	const tweet = await twitter.postTweetReply(text, tip.id);
-	ctx.debug.d(msg, `tweeted '${text}'`);
+	return text;
+};
 
-	dispatch(ctx.sender, { type: msg.type, tweet }, ctx.self);
-	// Tweet an invite
+function isInternalError() {
+	// Not important for now
 }
 
-async function action_tweetTipFailed(msg, ctx, state) {
-	//'tweet_tip_failed': async (msg, ctx, state) => {
-	const { twitter } = state;
-	const { tip } = msg;
+async function action_tweet(state, msg, ctx) {
+	const { twitterDomain: td } = state;
+	const { tip, tweetType, recipientBalance } = msg;
+	const { fromId, toId, amount } = tip;
 
-	ctx.debug.info(msg, `tweeting ${tip.id} failure...`);
-	const text = messageTemplates.twitter.tip_failure_message(tip);
-	const tweet = await twitter.postTweetReply(text, tip.id);
-	ctx.debug.d(msg, `tweeted '${text}'`);
+	let tweet, text;
+	try {
+		switch (tweetType) {
+			case 'transfer-unclaimed': {
+				tweet = await td.postUnclaimedTransfer(fromId, toId, amount, recipientBalance);
+				break;
+			}
 
-	dispatch(ctx.sender, { type: msg.type, tweet }, ctx.self);
-	// Tweet an invite
+			case 'tip-confirmed': {
+				text = messageTemplates.td.tip_success_tweet_text(tip);
+				tweet = await td.postTweetReply(text, tip.id);
+				// @TODO Tweet an invite
+				break;
+			}
+
+			case 'tip-failed': {
+				text = messageTemplates.td.tip_failure_message(tip);
+				tweet = await td.postTweetReply(text, tip.id);
+				break;
+			}
+
+			case 'tip-invalid': {
+				text = tipInvalidText(tip);
+				tweet = await td.postTweetReply(text, tip.id);
+				break;
+			}
+
+			case 'tip-seen':
+			default:
+				ctx.debug.warn(msg, `Unknown tweet type: ${tweetType}`);
+				return;
+		}
+		dispatch(ctx.sender, { type: msg.type, tweet }, ctx.self);
+		ctx.debug.d(msg, `tweeted '${tweet.text}'`);
+	} catch (error) {
+		ctx.debug.error(msg, error);
+		text && ctx.debug.warn(msg, `Unable to tweet text: ${text}`);
+		throw error;
+	}
 }
 
-async function action_sendDirectMessage(msg, ctx, state) {
-	const { twitter } = state;
+async function action_sendDirectMessage(state, msg, ctx) {
+	const { twitterDomain: td } = state;
 	const { recipientId, text } = msg;
-	const result = await twitter.postDirectMessage(recipientId, text);
+	const result = await td.postDirectMessage(recipientId, text);
 
 	dispatch(ctx.sender, { type: msg.type, result }, ctx.self);
 }
 
 module.exports = {
-	action_tweetUnclaimedTransfer,
-	action_tweetTipSeen,
-	action_tweetTipConfirmed,
-	action_tweetTipInvalid,
-	action_tweetTipFailed,
+	action_tweet,
 	action_sendDirectMessage,
 };

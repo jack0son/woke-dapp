@@ -1,106 +1,82 @@
-const { ActorSystem, PersistenceEngine, actors } = require('@woke/wact');
-const { bootstrap, dispatch, spawnStateless } = ActorSystem;
+const { ActorSystem, actors } = require('@woke/wact');
+const { Service, extensions } = require('@woke/service');
+const { ContractSystem } = require('@woke/web3-nact');
+const { dispatch, spawnStateless, block } = ActorSystem;
 const {
-	useMonitor,
 	tweeter: { Tweeter },
 } = require('@woke/actors');
-const { ContractSystem } = require('@woke/web3-nact');
-const { TwitterStub, Logger, mocks } = require('@woke/lib');
-const { tipper, TwitterMonitor } = require('../actors');
+const { twitter } = require('@woke/lib');
+const { TipSupervisor, TwitterMonitor } = require('../actors');
 
-const twitterMock = mocks.twitterClient;
-const debug = Logger('sys_tip');
+const LOGGER_STRING = 'actor*,-*:twitter_monitor*,-*:_tip-*:info';
+const VERBOSE_LOGGER_STRING = 'actor*,-*:twitter_monitor*,-*:_tip-*:info';
 
-function TwitterClient() {
-	return twitterMock.createMockClient(3);
-}
-
-const defaults = {
-	monitoring: true,
-	persist: false,
-	pollingInterval: 5 * 1000,
-	notify: true,
+const chooseTwitterClient = (twitterEnv) => {
+	switch (twitterEnv) {
+		case 'fake':
+			return twitter.fake.FakeClient(1, {});
+		case 'development':
+		case 'staging':
+		default:
+			return twitter.client;
+	}
 };
 
-class TipSystem {
+const defaults = {
+	name: 'sys_tip',
+	faultMonitoring: false,
+	persist: false,
+	pollingInterval: 100 * 1000,
+	notificationTweets: true,
+	contractInstances: {},
+	// contractSystem,
+	// persist,
+	// pollingInterval,
+	// notificationTweets,
+	// networkList,
+	// faultMonitoring,
+	// twitterClient: tiwt,
+	// verbose,
+};
+
+class TipSystem extends Service {
 	constructor(opts) {
-		const {
-			contractSystem,
-			twitterStub,
-			persist,
-			pollingInterval,
-			notify,
-			networkList,
-			monitoring,
-		} = { ...defaults, ...opts };
-		this.persist = persist ? true : false;
-		this.config = {
-			TWITTER_POLLING_INTERVAL: pollingInterval || 100 * 1000,
-			networkList,
-			monitoring,
-		};
-		this.twitterClient = TwitterClient();
-		this.twitterStub = opts.twitterStub || new TwitterStub(this.twitterClient);
-
-		if (this.persist) {
-			debug.d(`Using persistence...`);
-			this.persistenceEngine = PersistenceEngine();
-		} else {
-			debug.warn(`Persistence not enabled.`);
-		}
-
-		this.director = this.persist ? bootstrap(this.persistenceEngine) : bootstrap();
+		super(opts, defaults, [
+			extensions.contractSystem(ContractSystem)(['UserRegistry'], opts.contractInstances),
+			extensions.twitterDomain,
+		]);
 		const director = this.director;
 
-		if (!!this.config.monitoring) {
-			// Initialise monitor using own actor system and twitter client
-			this.monitor = useMonitor({ twitterClient: this.twitterClient, director });
-		}
-
 		// Actors
-		this.contractSystem =
-			contractSystem ||
-			ContractSystem(director, ['UserRegistry'], {
-				persist: this.persist,
-				networkList: this.config.networkList,
-			});
-
-		if (notify) {
-			this.a_tweeter = director.start_actor('tweeter', Tweeter(this.twitterStub));
+		if (this.config.notificationTweets) {
+			this.a_tweeter = director.start_actor('tweeter', Tweeter(this.twitterDomain));
 		}
 
-		this.a_tipper = director[this.persist ? 'start_persistent' : 'start_actor'](
-			'tipper', // name
-			tipper, // actor definition
-			{
-				// initial state
-				a_wokenContract: this.contractSystem.UserRegistry,
-				a_tweeter: this.a_tweeter,
-			}
+		this.a_tipSupervisor = director[this.persist ? 'start_persistent' : 'start_actor'](
+			'tip-supervisor', // name
+			TipSupervisor(this.contractSystem.UserRegistry, this.a_tweeter)
 		);
 
 		this.a_tMon = director.start_actor(
 			'twitter_monitor',
-			TwitterMonitor(this.twitterStub)
+			TwitterMonitor(this.twitterDomain),
+			{}
 		);
 		this.a_polling = director.start_actor('polling_service', actors.Polling);
 
 		// Forward twitter monitor messages to tipper
-		this.a_tweetForwarder = spawn_tweet_forwarder(this.a_polling, this.a_tipper);
+		this.a_tweetForwarder = spawn_tweet_forwarder(this.a_polling, this.a_tipSupervisor);
+	}
+
+	setTweeter(a_tweeter) {
+		return block(this.a_tipSupervisor, { type: 'setTweeter', a_tweeter });
 	}
 
 	async start() {
 		const self = this;
+		await self.init();
 
-		if (self.persist) {
-			try {
-				await self.persistenceEngine.db.then((db) => db.connect());
-			} catch (error) {
-				throw error;
-			}
-		}
-
-		dispatch(self.a_tipper, { type: 'resume' });
+		dispatch(self.a_tipSupervisor, { type: 'restart' });
 
 		// Poll twitter API for new tips
 		dispatch(
@@ -109,7 +85,7 @@ class TipSystem {
 				type: 'poll',
 				target: self.a_tMon,
 				action: 'find_tips',
-				period: self.config.TWITTER_POLLING_INTERVAL,
+				period: self.config.pollingInterval,
 				msg: { a_polling: self.a_polling },
 			},
 			self.a_tweetForwarder
@@ -120,12 +96,12 @@ class TipSystem {
 }
 
 // Forward tips to the tipper
-function spawn_tweet_forwarder(parent, a_tipper) {
+function spawn_tweet_forwarder(parent, a_tipSupervisor) {
 	return spawnStateless(parent, (msg, ctx) => {
 		switch (msg.type) {
 			case 'new_tips': {
 				const { tips } = msg;
-				tips.forEach((tip) => dispatch(a_tipper, { type: 'tip', tip }));
+				tips.forEach((tip) => dispatch(a_tipSupervisor, { type: 'submit', task: tip }));
 				break;
 			}
 
@@ -137,15 +113,3 @@ function spawn_tweet_forwarder(parent, a_tipper) {
 }
 
 module.exports = TipSystem;
-
-// Mock tip system
-if (debug.control.enabled && require.main === module) {
-	var argv = process.argv.slice(2);
-	const [persist, ...args] = argv;
-
-	(async () => {
-		const twitterStub = new TwitterStub(TwitterClient());
-		const tipSystem = new TipSystem(undefined, { persist: false });
-		tipSystem.start();
-	})();
-}

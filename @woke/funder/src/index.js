@@ -1,14 +1,10 @@
-const { persist, persistenceConfig, networkList, queryTimeout, retryInterval } = require('./config');
-const { Logger } = require('@woke/lib');
+const { configure } = require('@woke/lib');
+const { loadSecrets, serviceConf } = require('@woke/service');
 const FunderSystem = require('./funder-system');
-const debug = Logger();
+const opts = require('./config');
+const conf = configure(opts, serviceConf);
+
+loadSecrets(['infura', 'ethereum'], conf);
 
 // @TODO parse polling interval
-module.exports =  () => new FunderSystem(undefined, {
-		persist,
-		persistenceConfig,
-		networkList,
-		queryTimeout, 
-		retryInterval,
-		//retryInterval: 5*1000,
-});
+module.exports = () => new FunderSystem(conf);

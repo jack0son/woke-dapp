@@ -1,0 +1,58 @@
+version: '3'
+services:
+  bot-db:
+    image: postgres:11.1
+    environment:
+      POSTGRES_USER: woke_bot
+      POSTGRES_PWD: woke_bot
+      POSTGRES_DB: bot_db
+    volumes:
+      - bot_postgres_data:/var/lib/postgresql/data/
+      #ports:
+      #- '5433:5432'
+  notifier:
+    image: wokenetwork/woke:notifier
+    depends_on:
+      - bot-db
+    environment:
+      PRINT_CONFIG: 'true'
+      VERBOSE: 'true'
+      PERSIST: 'true'
+      DEBUG_RECOVERY: 'true'
+      NODE_ENV: 'staging'
+      ETH_ENV: 'staging'
+      WOKE_ROLE: 'notifier'
+      PERSIST: 'true'
+      NETWORK_LIST: 'goerli_1,goerli_infura'
+      DEBUG_RECOVERY: 'true'
+      POSTGRES_USER: woke_bot
+      POSTGRES_PWD: woke_bot
+      POSTGRES_DB: bot_db
+      POSTGRES_HOST: bot-db
+      POSTGRES_PORT: 5432
+      WAIT_HOSTS: bot-db:5432
+
+  tipper:
+    image: wokenetwork/woke:tipper
+    depends_on:
+      - bot-db
+    environment:
+      PRINT_CONFIG: 'true'
+      VERBOSE: 'true'
+      PERSIST: 'true'
+      DEBUG_RECOVERY: 'true'
+      NODE_ENV: 'staging'
+      ETH_ENV: 'staging'
+      WOKE_ROLE: 'tipper'
+      PERSIST: 'true'
+      NETWORK_LIST: 'goerli_1,goerli_infura'
+      DEBUG_RECOVERY: 'true'
+      POSTGRES_USER: woke_bot
+      POSTGRES_PWD: woke_bot
+      POSTGRES_DB: bot_db
+      POSTGRES_HOST: bot-db
+      POSTGRES_PORT: 5432
+      WAIT_HOSTS: bot-db:5432
+
+volumes:
+  bot_postgres_data:

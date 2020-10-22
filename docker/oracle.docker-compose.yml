@@ -1,0 +1,33 @@
+version: '3'
+services:
+  oracle-db:
+    image: postgres:11.1
+    environment:
+      POSTGRES_USER: woke_oracle
+      POSTGRES_PWD: woke_oracle
+      POSTGRES_DB: oracle_db
+    volumes:
+      - oracle_postgres_data:/var/lib/postgresql/data/
+      #ports:
+      #- '5433:5432'
+  oracle:
+    image: wokenetwork/woke:oracle
+    depends_on:
+      - oracle-db
+    environment:
+      NODE_ENV: 'production'
+      ETH_ENV: 'production'
+      WOKE_ROLE: 'oracle'
+      NETWORK_LIST: 'goerli_3,goerli_2,goerli_infura'
+      SUBSCRIPTION_WATCHDOG_INTERVAL: 300000
+      PERSIST: 'true'
+      DEBUG_RECOVERY: 'true'
+      POSTGRES_USER: woke_oracle
+      POSTGRES_PWD: woke_oracle
+      POSTGRES_DB: oracle_db
+      POSTGRES_HOST: oracle-db
+      POSTGRES_PORT: 5432
+      WAIT_HOSTS: oracle-db:5432
+
+volumes:
+  oracle_postgres_data:

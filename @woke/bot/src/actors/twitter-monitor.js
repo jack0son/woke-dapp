@@ -6,34 +6,20 @@ const {
 	Logger,
 	utils: { delay },
 } = require('@woke/lib');
+const { parseTweetToTip } = require('../lib/tip');
 const debug = (msg, args) => Logger().name(`TMON`, `${msg.type}>> ` + args);
 // Driven by polling twitter
 // https://developer.twitter.com/en/docs/tweets/search/api-reference/get-search-tweets
 
 // @returns tip
-function parseTweetToTip(tweet) {
-	return {
-		id: tweet.id_str,
-		fromId: tweet.user.id_str,
-		fromHandle: tweet.user.screen_name,
-		//toId: tweet.entities.user_mentions[0].id_str,
 
-		// This is correct for both replies AND tweets mentioning a user.
-		//toId: tweet.in_reply_to_user_id_str,
-		toId: tweet.entities.user_mentions[0].id_str,
-		toHandle: tweet.entities.user_mentions[0].screen_name,
-		full_text: tweet.full_text,
-		amount: tweet.tip_amount,
-	};
-}
-
-const TwitterMonitor = (twitterStub) => {
+const TwitterMonitor = (twitterDomain) => {
 	const retry = exponentialRetry(3);
 
 	return {
 		properties: {
 			initialState: {
-				twitter: twitterStub,
+				twitter: twitterDomain,
 				seenTips: {},
 
 				// @TODO Tweet finality
@@ -64,7 +50,7 @@ const TwitterMonitor = (twitterStub) => {
 		},
 
 		actions: {
-			find_tips: (msg, ctx, state) => {
+			find_tips: (state, msg, ctx) => {
 				const { twitter, seenTips } = state;
 				// @brokenwindow
 				// Polling actor should not be a dependency
@@ -74,10 +60,10 @@ const TwitterMonitor = (twitterStub) => {
 					//a_processor,
 				} = msg;
 
-				validateTwitterStub(twitter);
+				validateTwitterDomain(twitter);
 				//isActor(a_processor, 'a_processor');
 
-				ctx.debug.info(msg, 'Finding tip tweets...');
+				ctx.debug.d(msg, 'Finding tip tweets...');
 				return twitter
 					.findTips()
 					.then((tipTweets) => {
@@ -88,7 +74,7 @@ const TwitterMonitor = (twitterStub) => {
 						}
 
 						// @TODO sorting through tweets for valid tips belongs in the twitter
-						// stub
+						// domain
 
 						const newTips = tipTweets
 							.filter((tweet) => {
@@ -122,7 +108,7 @@ const TwitterMonitor = (twitterStub) => {
 					});
 			},
 
-			seen_tips: (msg, ctx, state) => {
+			seen_tips: (state, msg, ctx) => {
 				const { twitter, seenTips } = state;
 				const { tips } = msg;
 
@@ -135,7 +121,7 @@ const TwitterMonitor = (twitterStub) => {
 				};
 			},
 
-			get_user_data: (msg, ctx, state) => {
+			get_user_data: (state, msg, ctx) => {
 				const { twitter } = state;
 				const { userId, handle } = msg;
 
@@ -149,28 +135,28 @@ const TwitterMonitor = (twitterStub) => {
 					});
 			},
 
-			wokeness: (msg, ctx, state) => {
+			wokeness: (state, msg, ctx) => {
 				// Search for woke tweets and add their users into the leaderboard
 			},
 
-			vote: (msg, ctx, state) => {
+			vote: (state, msg, ctx) => {
 				// Search for wokens votes
 				// Daily leaderboard for most woke tweets
 			},
 
-			wokendrop: (msg, ctx, state) => {
+			wokendrop: (state, msg, ctx) => {
 				// Sent WOKENS to the top three on the leaderboard
 			},
 		},
 	};
 };
 
-function validateTwitterStub(stub) {
-	if (!stub) {
-		throw new Error('No stub provided');
+function validateTwitterDomain(domain) {
+	if (!domain) {
+		throw new Error('No domain provided');
 	}
-	if (!stub.ready()) {
-		throw new Error('Twitter stub not initialised');
+	if (!domain.ready()) {
+		throw new Error('Twitter domain not initialised');
 	}
 }
 

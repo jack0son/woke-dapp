@@ -43,6 +43,7 @@ function onCrash(msg, error, ctx) {
 
 		default:
 			console.log('Unknown twitter error: ', error);
+			dispatch(ctx.sender, { type: msg.type, error }, ctx.self);
 		case 187: // status is a duplicate
 			console.log(msg, error);
 			if (msg.i_want_the_error) {
@@ -52,13 +53,13 @@ function onCrash(msg, error, ctx) {
 	}
 }
 
-function makeProperties({ twitterStub }) {
+function Properties(twitterDomain) {
 	return {
 		initialState: {
-			twitter: twitterStub,
+			twitterDomain,
 		},
 		onCrash,
 	};
 }
 
-module.exports = makeProperties;
+module.exports = Properties;

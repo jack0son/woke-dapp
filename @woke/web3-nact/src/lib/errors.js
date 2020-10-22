@@ -6,6 +6,15 @@ class DomainError extends Error {
 	}
 }
 
+class InterfaceError extends DomainError {
+	constructor(error, key, value) {
+		// and tx data?
+		super(`Invalid value for '${key}' message parameter: ${value}`);
+		this.param = key;
+		this.value = value;
+	}
+}
+
 class ProviderError extends DomainError {
 	constructor(error, network) {
 		// and tx data?
@@ -56,6 +65,7 @@ class RevertError extends DomainError {
 
 module.exports = {
 	DomainError,
+	InterfaceError,
 	ProviderError,
 	ParamError,
 	TransactionError,

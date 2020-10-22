@@ -1,9 +1,11 @@
-const { Logger, twitter } = require('@woke/lib');
-const bindApi = require('./api');
+require('dotenv').config();
+const { Logger } = require('@woke/lib');
+const twitter = require('@woke/twitter').client;
+const bindApi = require('@woke/api');
 const { twitterUsers, fetchUserHandles } = require('./twitter');
 const utils = require('./utils');
 const artifacts = require('@woke/contracts')[
-	process.env.NODE_ENV !== 'development' ? 'production' : 'development'
+	process.env.ETH_ENV || process.env.NODE_ENV || 'development'
 ];
 
 const debug = Logger('cli');
@@ -20,6 +22,27 @@ const printId = (id) => id.padEnd(20, ' ');
 const printHandle = (id) => id.padEnd(20, ' ');
 const printFollowers = (f) => f.toString().padStart(12, ' ');
 const printAmount = (f) => f.toString().padStart(24, ' ');
+
+async function initContext() {
+	const web3Instance = await utils.initWeb3();
+	const contracts = {
+		TwitterOracle: utils.initContract(web3Instance, oracleInterface),
+		UserRegistry: utils.initContract(web3Instance, userRegistryInterface),
+		WokeToken: utils.initContract(web3Instance, wokeTokenInterface),
+	};
+	await twitter.initClient();
+
+	return {
+		web3Instance,
+		api: {
+			TwitterOracle: bindApi.TwitterOracle(contracts.TwitterOracle),
+			WokeToken: bindApi.WokeToken(contracts.WokeToken),
+			UserRegistry: bindApi.UserRegistry(contracts.UserRegistry),
+		},
+		contracts,
+		twitterUsers: twitterUsers(twitter),
+	};
+}
 
 // Inefficient but convenient
 const Commands = (ctx) => ({
@@ -202,27 +225,6 @@ const Commands = (ctx) => ({
 		return;
 	},
 });
-
-async function initContext() {
-	const web3Instance = await utils.initWeb3();
-	const contracts = {
-		TwitterOracle: utils.initContract(web3Instance, oracleInterface),
-		UserRegistry: utils.initContract(web3Instance, userRegistryInterface),
-		WokeToken: utils.initContract(web3Instance, wokeTokenInterface),
-	};
-	await twitter.initClient();
-
-	return {
-		web3Instance,
-		api: {
-			TwitterOracle: bindApi.TwitterOracle(contracts.TwitterOracle),
-			WokeToken: bindApi.WokeToken(contracts.WokeToken),
-			UserRegistry: bindApi.UserRegistry(contracts.UserRegistry),
-		},
-		contracts,
-		twitterUsers: twitterUsers(twitter),
-	};
-}
 
 const bindCommands = () => initContext().then(Commands);
 

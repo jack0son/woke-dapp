@@ -1,25 +1,6 @@
 const { Logger, web3Tools } = require('@woke/lib');
 const debug = Logger('cli');
 
-const getEvents = (contractInstance) => async (eventName, filter) => {
-	let opts = {
-		fromBlock: 0,
-	};
-	const events = await contractInstance.getPastEvents(eventName, opts);
-	return filter
-		? events.filter((e) => {
-				let match = true;
-				for (prop of Object.keys(filter)) {
-					if (e.returnValues[prop] !== filter[prop]) {
-						match = false;
-						break;
-					}
-				}
-				return match;
-		  })
-		: events;
-};
-
 const checkConnection = async (web3Instance) => {
 	const maxAttempts = 3;
 	let attempts = 0;
@@ -57,7 +38,7 @@ async function initWeb3() {
 
 	while (!connected) {
 		++attempts;
-		web3Instance = web3Tools.init.instantiate();
+		web3Instance = web3Tools.init.instantiate('goerli_infura');
 
 		if (attempts == 1) {
 			debug.d(web3Instance.network);
@@ -121,7 +102,6 @@ function logWhyAlive() {
 }
 
 module.exports = {
-	getEvents,
 	checkConnection,
 	initWeb3,
 	initContract,
