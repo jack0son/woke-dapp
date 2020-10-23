@@ -1,3 +1,6 @@
+require('../../lib/debug/apply-line-numbers')(console)(['log', 'warn'], {
+	prepend: true,
+});
 const should = require('chai').use(require('chai-as-promised')).should();
 
 const { ActorSystem, adapters, Deferral } = require('@woke/wact');
@@ -136,6 +139,7 @@ context('TxSystem', function () {
 
 	describe('nonce errors', function () {
 		it('should retry on failed nonce', async function () {
+			this.timeout(10000);
 			// 1. do a tx to  ensure correct nonce > 0
 			const rx1 = await query(
 				a_txSystem,
@@ -151,6 +155,13 @@ context('TxSystem', function () {
 				TIME_TIMEOUT
 			);
 			rx2.should.have.deep.property('status', 'success');
+
+			const rx3 = await query(
+				a_txSystem,
+				{ type: 'send', opts: { importantOnly: true, nonce: 1 } },
+				TIME_TIMEOUT
+			);
+			rx3.should.have.deep.property('status', 'success');
 		});
 	});
 

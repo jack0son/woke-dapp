@@ -40,10 +40,15 @@ function TxState() {
 // Errors that callers should receive details of
 function isServiceInterfaceError(error) {
 	// @TODO define service interface errors
-	return error instanceof errors.InterfaceError || error instanceof errors.RevertError;
+	return error instanceof errors.InterfaceError || error instanceof errors.ParamError;
 }
 
-function isServiceFailureError(error) {
+function isInternalFailure(error) {
+	// @TODO define service interface errors
+	return error instanceof errors.RevertError || error instanceof errors.NonceError;
+}
+
+function isCriticalFailure(error) {
 	// @TODO define service failure errors
 	return error instanceof errors.ProviderError;
 }
@@ -64,11 +69,13 @@ function onCrash(msg, error, ctx) {
 		return ctx.resume;
 	};
 
-	if (isServiceFailureError(error)) {
+	if (isCriticalFailure(error)) {
+		console.log('isCriticalFailure', error);
 		return ctx.escalate; // a_contract or a_txManager will perform failure reporting
 	}
 
 	if (isServiceInterfaceError(error)) {
+		console.log('isServiceInterfaceError', error);
 		return ctx.notify();
 	}
 
@@ -98,15 +105,33 @@ function handlePreflightError(msg, error, ctx) {
 	return ctx.escalate;
 }
 
+// onCrash receiver
+const retry = ({ msg, error, ctx }) => (opts) => {
+	const { failedNonce } = opts;
+
+	console.log(ctx.self.name, `: Retrying tx...`);
+	dispatch(
+		ctx.self,
+		{
+			type: directory.address(action_send),
+			failedNonce,
+		},
+		ctx.self
+	);
+	return ctx.resume;
+};
+
 function handleTransactionError(msg, error, ctx) {
 	const { tx } = msg;
-	console.log(error);
+
 	if (error instanceof errors.ParamError) {
-		if (error.web3Error.message.includes('nonce')) {
-			return ctx.retry({ tx, failedNonce: error.data.tx.nonce });
-		} else {
-			throw error;
-		}
+		// Problem with caller (service interface boundary)
+		// @TODO SHOULDNT GET HERE, should be handled at tx state reducer or send
+		return ctx.escalate;
+	}
+
+	if (error instanceof errors.NonceError) {
+		return ctx.retry({ failedNonce: error.nonce });
 	}
 
 	if (error instanceof errors.TransactionError) {
@@ -152,14 +177,15 @@ async function action_send(state, msg, ctx) {
 
 	tx.type = 'send';
 	const { web3Instance } = await block(state.a_web3, { type: 'get' });
-	const { nonce } = j0.exists(transactionSpec.nonce)
-		? transactionSpec
-		: await block(state.a_nonce, {
-				type: 'get_nonce',
-				failedNonce,
-				account: web3Instance.account,
-				network: web3Instance.network,
-		  });
+	const { nonce } =
+		!j0.exists(failedNonce) && j0.exists(transactionSpec.nonce)
+			? transactionSpec
+			: await block(state.a_nonce, {
+					type: 'get_nonce',
+					failedNonce,
+					account: web3Instance.account,
+					network: web3Instance.network,
+			  });
 
 	let account;
 	if (web3Instance.account) {
@@ -239,7 +265,8 @@ function action_publish(state, msg, ctx) {
 		);
 	}
 
-	ctx.reduce = reduce({ ctx });
+	ctx.reduce = reduce({ ctx }); // manually bind receiver
+
 	// @TODO replace with buildTxObject
 	getSendMethod(
 		state,
@@ -261,45 +288,32 @@ function action_publish(state, msg, ctx) {
 		})
 		.then((receipt) => {})
 		.catch((error, receipt) => {
-			ctx.debug.warn(msg, `Swallowing sendMethod() error: ${error}`);
+			// ctx.debug.warn(msg, `Swallowing sendMethod() error: ${error}`);
 		});
 
 	state.tx = tx;
 	return state;
 }
 
-// onCrash receiver
-const retry = ({ msg, error, ctx }) => (opts) => {
-	const { failedNonce } = opts;
-
-	ctx.debug.d(msg, `Retrying tx...`);
-	dispatch(
-		ctx.self,
-		{
-			type: directory.address(action_send),
-			failedNonce,
-		},
-		ctx.self
-	);
-	return ctx.resume;
-};
-
 function action_reduceTxEvent(state, msg, ctx) {
 	const { type, ..._tx } = msg;
-	//const notify = notifySinks({ state, msg, ctx });
 
 	const tx = { ...state.tx, ..._tx };
 
+	// Determin error type
 	let error = null;
-	if (_tx._error) {
+	if (tx.error) {
+		ctx.debug.warn(msg, `txObject.send() error: ${tx.error}`);
 		if (tx.receipt) {
 			// If receipt is provided web3js specifies tx was rejected on chain
-			error = new OnChainError(error, tx, receipt);
-		} else if (error.message.includes('not mined')) {
-			error = new TransactionError(error, tx);
+			error = new errors.OnChainError(tx.error, tx, receipt);
+		} else if (tx.error.message.includes('not mined')) {
+			error = new errors.TransactionError(tx.error, tx);
+		} else if (tx.error.message.includes('nonce')) {
+			error = new errors.NonceError(tx.error, tx);
 		} else {
 			//console.dir(error);
-			error = new errors.ParamError(error, tx);
+			error = new errors.ParamError(tx.error, tx);
 		}
 
 		// If internal problem, retry
@@ -309,7 +323,7 @@ function action_reduceTxEvent(state, msg, ctx) {
 		// If problem for caller, notify
 	}
 
-	// @TODO config which events are received
+	// Commit new tx state
 	const nextState = { ...state, tx: { ...tx, error } };
 	return action_notifySinks(
 		nextState,

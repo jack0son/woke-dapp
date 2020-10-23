@@ -166,6 +166,10 @@ patterns such as:
 - request-response (sink/source)
 - pub-sub
 
+### Supervision
+
+- Using wact to define service interface boundaries
+
 ### Usage Hints
 
 - Actor definitions should use named functions for actions if they

@@ -23,11 +23,21 @@ class ProviderError extends DomainError {
 	}
 }
 
+const txIdStr = (tx) => tx.method || 'from ' + tx.opts.from;
+
 class ParamError extends DomainError {
 	constructor(error, tx) {
-		// and tx data?
-		super(`Transaction '${tx.method}' failed due to invalid parameters.`);
+		super(`Transaction '${txIdStr(tx)}' failed due to invalid parameters.`);
 		this.web3Error = error;
+		this.data = { tx };
+	}
+}
+
+class NonceError extends DomainError {
+	constructor(error, tx) {
+		super(`Transaction '${txIdStr(tx)}' failed due to invalid nonce ${tx.opts.nonce}`);
+		this.web3Error = error;
+		this.nonce = tx.opts.nonce;
 		this.data = { tx };
 	}
 }
@@ -69,6 +79,7 @@ module.exports = {
 	ProviderError,
 	ParamError,
 	TransactionError,
+	NonceError,
 	OnChainError,
 	RevertError,
 };
