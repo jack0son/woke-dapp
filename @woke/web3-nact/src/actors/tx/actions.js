@@ -177,6 +177,8 @@ async function action_send(state, msg, ctx) {
 
 	tx.type = 'send';
 	const { web3Instance } = await block(state.a_web3, { type: 'get' });
+
+	// If the nonce fails, always defer to the nonce manager
 	const { nonce } =
 		!j0.exists(failedNonce) && j0.exists(transactionSpec.nonce)
 			? transactionSpec
