@@ -50,6 +50,8 @@ function isServiceFailureError(error) {
 const actions = { action_send, action_publish, action_reduceTxEvent, action_notifySinks };
 const directory = action.buildDirectory(actions);
 
+// @TODO Create generic oncrash handler that can set a supervision policy per
+// action
 function onCrash(msg, error, ctx) {
 	ctx.retry = retry({ msg, error, ctx });
 	ctx.notify = () => {
@@ -97,6 +99,7 @@ function handlePreflightError(msg, error, ctx) {
 
 function handleTransactionError(msg, error, ctx) {
 	const { tx } = msg;
+	console.log(error);
 	if (error instanceof errors.ParamError) {
 		if (error.web3Error.message.includes('nonce')) {
 			return ctx.retry({ tx, failedNonce: error.data.tx.nonce });
@@ -120,7 +123,7 @@ function handleTransactionError(msg, error, ctx) {
 }
 
 async function action_send(state, msg, ctx) {
-	const { maxAttempts, sinks } = state;
+	const { maxAttempts, sinks, importantSinks } = state;
 	const { failedNonce } = msg;
 
 	if (msg.transactionSpec && msg.tx) {
@@ -180,6 +183,7 @@ async function action_send(state, msg, ctx) {
 
 	return {
 		...state,
+		importantSinks: importantSinks || [],
 		sinks,
 		error: null,
 		transactionSpec,
@@ -328,11 +332,13 @@ function action_notifySinks(state, msg, ctx) {
 	return state;
 }
 
+const importantStatuses = new Set(['error', 'success']);
+
 // Fill sinks
 const notifySinks = ({ state, msg, ctx }) => (_error, opts) => {
 	//const { thenStop, tx: _tx } = opts || {};
 	const { thenStop } = opts || {};
-	const { tx, sinks, kind } = state;
+	const { tx, sinks, kind, importantSinks } = state;
 
 	//const txState = _tx || msg.tx || state.tx;
 	// const txState = msg.tx || state.tx;
@@ -346,9 +352,9 @@ const notifySinks = ({ state, msg, ctx }) => (_error, opts) => {
 		`Notifying tx status change: ${status}. ${(tx && tx.error) || _error || ''}`
 	);
 
-	sinks.forEach((a_sink) =>
+	const notify = (consumer) => {
 		dispatch(
-			a_sink,
+			consumer,
 			{
 				type: 'sink',
 				action: 'send',
@@ -358,8 +364,13 @@ const notifySinks = ({ state, msg, ctx }) => (_error, opts) => {
 				error: _error,
 			},
 			ctx.self
-		)
-	);
+		);
+	};
+
+	// Dispatch notify messages
+	importantStatuses.has(status) && importantSinks.forEach(notify);
+	sinks.forEach(notify);
+
 	if (thenStop) stop(ctx.self);
 };
 

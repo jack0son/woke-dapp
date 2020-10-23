@@ -64,6 +64,19 @@ context('TxSystem', function () {
 			return res.should.have.deep.property('status', 'pending');
 		});
 
+		it('should not notify intermediate states if requested', async function () {
+			// @TODO fix, called 'important states' for now (error, success)
+			const res = await query(
+				a_txSystem,
+				{ type: 'send', opts: { importantOnly: true } },
+				TIME_TIMEOUT
+			);
+
+			res.should.have.property('status');
+			res.status.should.deep.equal('success');
+			return res.should.have.deep.property('status', 'success');
+		});
+
 		it('should respond with transaction complete', async function () {
 			const deferred = new Deferral();
 
@@ -107,17 +120,38 @@ context('TxSystem', function () {
 			await deferred.promise;
 		});
 
-		it('should report message parameter error', async function () {});
+		it('should report message parameter error', async function () {
+			this.skip();
+		});
 
-		it('should support multiple addresses', async function () {});
+		it('should support multiple addresses', async function () {
+			this.skip();
+		});
 
-		it('should support options x, y, z', async function () {});
+		it('should support options x, y, z', async function () {
+			this.skip();
+		});
+	});
+
+	describe('nonce errors', function () {
+		it('should retry on failed nonce', async function () {
+			this.skip();
+			// 1. do a tx to  ensure correct nonce > 0
+			// 2. set nonce to 0
+			// 3. Attempt tx
+		});
 	});
 
 	// @TODO create test mock contract that will cause deterministic errors
 	describe('#interface errors', function () {
-		it('should report if no to address is provided', function () {});
-		it('should report nonce error', function () {});
-		it('should report insufficient funds / out of gas error', function () {});
+		it('should report if no to address is provided', function () {
+			this.skip();
+		});
+		it('should report nonce error', function () {
+			this.skip();
+		});
+		it('should report insufficient funds / out of gas error', function () {
+			this.skip();
+		});
 	});
 });
