@@ -5,6 +5,7 @@ const {
 const {
 	web3Tools: { utils },
 } = require('@woke/lib');
+const j0 = require('@woke/jack0son');
 const { maxAttempts: MAX_ATTEMPTS } = require('./config');
 const errors = require('../../lib/errors');
 
@@ -151,12 +152,14 @@ async function action_send(state, msg, ctx) {
 
 	tx.type = 'send';
 	const { web3Instance } = await block(state.a_web3, { type: 'get' });
-	const { nonce } = await block(state.a_nonce, {
-		type: 'get_nonce',
-		failedNonce,
-		account: web3Instance.account,
-		network: web3Instance.network,
-	});
+	const { nonce } = j0.exists(transactionSpec.nonce)
+		? transactionSpec
+		: await block(state.a_nonce, {
+				type: 'get_nonce',
+				failedNonce,
+				account: web3Instance.account,
+				network: web3Instance.network,
+		  });
 
 	let account;
 	if (web3Instance.account) {
@@ -368,6 +371,8 @@ const notifySinks = ({ state, msg, ctx }) => (_error, opts) => {
 	};
 
 	// Dispatch notify messages
+	// @TODO this is obviously really ugly and some kind of per sink status
+	// subscription map would be preferable, but haven't needed it yet...
 	importantStatuses.has(status) && importantSinks.forEach(notify);
 	sinks.forEach(notify);
 

@@ -57,29 +57,30 @@ context('TxSystem', function () {
 	describe('#send - Tx.actions', function () {
 		// @TODO
 		it('should respond with transaction pending', async function () {
-			const res = await query(a_txSystem, { type: 'send', opts: {} }, TIME_TIMEOUT);
+			const rx = await query(a_txSystem, { type: 'send', opts: {} }, TIME_TIMEOUT);
 
-			res.should.have.property('status');
-			res.status.should.deep.equal('pending');
-			return res.should.have.deep.property('status', 'pending');
+			rx.should.have.property('status');
+			rx.status.should.deep.equal('pending');
+			return rx.should.have.deep.property('status', 'pending');
 		});
 
 		it('should not notify intermediate states if requested', async function () {
 			// @TODO fix, called 'important states' for now (error, success)
-			const res = await query(
+			const rx = await query(
 				a_txSystem,
 				{ type: 'send', opts: { importantOnly: true } },
 				TIME_TIMEOUT
 			);
 
-			res.should.have.property('status');
-			res.status.should.deep.equal('success');
-			return res.should.have.deep.property('status', 'success');
+			rx.should.have.property('status');
+			rx.status.should.deep.equal('success');
+			return rx.should.have.deep.property('status', 'success');
 		});
 
 		it('should respond with transaction complete', async function () {
 			const deferred = new Deferral();
 
+			// Set tx handler in the mock tx caller
 			setTxHandler((state, msg, ctx) => {
 				msg.action.should.equal('send');
 				const { txState } = state;
@@ -135,10 +136,21 @@ context('TxSystem', function () {
 
 	describe('nonce errors', function () {
 		it('should retry on failed nonce', async function () {
-			this.skip();
 			// 1. do a tx to  ensure correct nonce > 0
+			const rx1 = await query(
+				a_txSystem,
+				{ type: 'send', opts: { importantOnly: true } },
+				TIME_TIMEOUT
+			);
+			rx1.should.have.deep.property('status', 'success');
 			// 2. set nonce to 0
 			// 3. Attempt tx
+			const rx2 = await query(
+				a_txSystem,
+				{ type: 'send', opts: { importantOnly: true, nonce: 0 } },
+				TIME_TIMEOUT
+			);
+			rx2.should.have.deep.property('status', 'success');
 		});
 	});
 
