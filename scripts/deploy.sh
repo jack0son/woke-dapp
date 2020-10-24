@@ -9,13 +9,13 @@ cd ..
 PULL=false
 start=false
 STOP_CONTAINERS=false
-while getopts prs flag
+while getopts i:prs flag
 do
 	case "${flag}" in
+		i) module=${OPTARG};;
 		p) PULL=true;;
 		r) start=true;;
 		s) STOP_CONTAINERS=true;;
-		i) module=${OPTARG};;
 	esac
 done
 ENV_ARG=${!OPTIND} # get first argument using getops arg index
@@ -23,12 +23,13 @@ OPTIND+=1
 MODULE_ARG=${!OPTIND}
 
 print_usage() {
-	echo "Usage:		deploy [ OPTIONS ] COMMAND [ services... ]"
+	echo "Usage:		deploy [ OPTIONS ] COMMAND [ modules... ]"
 	echo "		deploy [ -h | --help ]"
 	echo ""
 	echo "Options:"
 	echo "  -h, --help		Prints usage"
 	echo "  -p			Pull images"
+	echo "  -i, --image=MODULE	Module pull choice"
 	echo "  -r			Start (run) containers"
 	echo "  -s			Stop containers"
 	echo ""
@@ -41,6 +42,7 @@ print_usage() {
 	echo "  $ deploy -pr staging oracle"
 }
 
+# Print usage if input does not constitute a valid command
 if [ "$#" -eq 0 ] || [ "$ENV_ARG" = "-h" ] || [ "$ENV_ARG" = "--help" ]; then
 	print_usage
 	exit
@@ -50,7 +52,7 @@ elif [ "$ENV_ARG" = "staging" ]; then
 	ENV="staging"
 elif [ "$ENV_ARG" = "production" ]; then
 	ENV="production"
-else
+elif [ ${PULL} = false ]; then
 	print_usage
 	exit
 fi
@@ -204,20 +206,23 @@ compose_down() {
 }
 
 if ${PULL} = true; then
-	pull $MODULE_ARG
+	if [ -z ${module} ]; then
+		pull $MODULE_ARG
+	else
+		pull ${module}
+	fi
 fi
 
 runcommand="start"
 if ${STOP_CONTAINERS} = true; then
 	runcommand="stop"
 fi
-echo $runcommand
 
-	# Run containers
-	if [ "$ENV_ARG" = "production" ]; then
-		${runcommand}_containers
-	elif [ "$ENV_ARG" = "staging" ]; then
-		${runcommand}_containers
-	elif [ "$ENV_ARG" = "development" ]; then
-		echo "Develpoment deployment not configured."
-	fi
+# Run containers
+if [ "$ENV_ARG" = "production" ]; then
+	${runcommand}_containers
+elif [ "$ENV_ARG" = "staging" ]; then
+	${runcommand}_containers
+elif [ "$ENV_ARG" = "development" ]; then
+	echo "Develpoment deployment not configured."
+fi
