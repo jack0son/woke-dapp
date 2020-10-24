@@ -1,11 +1,8 @@
-const { serviceConf } = require('@woke/service');
-const web3Config = require('@woke/web3-nact').config;
+const { loadSecrets, serviceConf } = require('@woke/service');
 const NotificationSystem = require('../systems/notification-system');
+loadSecrets(['infura', 'ethereum', 'twitter'], serviceConf);
 
-serviceConf.networkList = web3Config.networkList;
-console.log('config', serviceConf);
-
-const bootstrap = async () => {
+const bootstrap = () => {
 	const notiSystem = new NotificationSystem(serviceConf);
 	return notiSystem.start();
 };

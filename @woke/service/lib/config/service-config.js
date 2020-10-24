@@ -20,6 +20,7 @@ const envVars = [
 	['NETWORK_LIST', 'networkList', parseNetworkList],
 	['TWITTER_MENTIONS', 'muffled'],
 	['VERBOSE', 'verbose', parse_bool],
+	['TWITTER_POLLING_INTERVAL', 'pollingInterval'],
 	['TWITTER_ENV', 'twitterEnv'],
 	['TWITTER_APP', 'twitterApp'],
 	['TWITTER_ENV', 'twitterEnv'], // fake client or real client

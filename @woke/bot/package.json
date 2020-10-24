@@ -11,7 +11,7 @@
   "scripts": {
     "test": "ETH_ENV=development ./node_modules/.bin/mocha test/*.test.js",
     "test:debug": "DEBUG=*,test:*,-mocha*,-*:info,-*twitter_monitor* ETH_ENV=development ./node_modules/.bin/mocha test/*.test.js",
-    "tipper": "NODE_ENV=production node src/services/tipper.js ",
+    "tipper": "node src/services/tipper.js ",
     "tipper:dev": "NODE_ENV=development node src/services/tipper.js --persist=false --twitterApp=oracle-bot --twitterEnv=dev --verbose=true",
     "tipper:staging": "NODE_ENV=staging ETH_ENV=staging node src/services/tipper.js --persist=false --debugRecovery --twitterApp=staging-bot --twitterEnv=staging --printConfig --networkList=goerli_local",
     "tipper:fake": "NODE_ENV=development node src/services/tipper.js --persist=false --twitterEnv=fake --verbose=true",
@@ -20,6 +20,8 @@
     "notifier": "DEBUG=* node src/services/notifier.js",
     "notifier:development": "PERSIST=true DEBUG=* NODE_ENV=development node src/services/notifier.js",
     "notifier:production": "PERSIST=true DEBUG=* NODE_ENV=development node src/services/notifier.js",
+    "notifier:staging": "NODE_ENV=staging ETH_ENV=staging node src/services/notifier.js --persist=false --debugRecovery --twitterApp=staging-bot --twitterEnv=staging --printConfig --networkList=goerli_infura",
+    "tipper:fake": "NODE_ENV=development node src/services/tipper.js --persist=false --twitterEnv=fake --verbose=true",
     "muffled:notifier": "TWITTER_ENV=fake NODE_ENV=development DEBUG=actor* node src/services/mock-notifier.js",
     "muffled:notifier:verbose": "TWITTER_ENV=fake NODE_ENV=development node src/services/mock-notifier.js",
     "muffled:notifier:goerli": "TWITTER_ENV=fake ETH_ENV=goerli NODE_ENV=development DEBUG=actor* node src/services/mock-notifier.js",

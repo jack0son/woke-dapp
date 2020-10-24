@@ -35,4 +35,4 @@ RUN lerna bootstrap -- --production --no-optional
 COPY @woke/server/scripts/wait /usr/bin/wait
 RUN chmod +x /usr/bin/wait
 
-CMD ["sh", "-c", "/usr/bin/wait && exec npm --prefix @woke/bot run tipper"]
+CMD ["sh", "-c", "/usr/bin/wait && exec npm --prefix @woke/bot run notifier"]
