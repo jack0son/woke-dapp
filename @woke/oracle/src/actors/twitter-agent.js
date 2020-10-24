@@ -47,6 +47,7 @@ function TwitterAgent(twitterDomain) {
 						ctx.receivers.sink({ userId, tweet, userData });
 					})
 					.catch((error) => {
+						console.log(error);
 						ctx.receivers.sink({ userId, error });
 					});
 			},

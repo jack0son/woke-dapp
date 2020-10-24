@@ -18,6 +18,7 @@ services:
       PRINT_CONFIG: 'true'
       VERBOSE: 'true'
       PERSIST: 'true'
+      DEBUG: '*'
       DEBUG_RECOVERY: 'true'
       WOKE_ROLE: 'oracle'
       NODE_ENV: 'staging'
