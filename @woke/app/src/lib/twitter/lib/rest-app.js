@@ -13,7 +13,7 @@ export default function makeAppMixin(clientRequest, checkAuth) {
 		//let avatarSmall = userObject.profile_image_url_https;
 
 		return {
-			id: userObject.id,
+			id: userObject.id_str,
 			name: userObject.name,
 			handle: userObject.screen_name,
 			avatar: userObject.profile_image_url_https,

@@ -10,7 +10,7 @@
     "db": "docker-compose -f ../../docker/server.docker-compose.local.yml up -d --build db",
     "down": "docker-compose -f ../../docker/server.docker-compose.local.yml down",
     "reset": "docker-compose -f ../../docker/server.docker-compose.local.yml down -v",
-    "dev": "NODE_ENV=development ETH_ENV=development node ./bin/www",
+    "dev": "DEBUG=*,-sequelize:*,-express:router*,-*:info NODE_ENV=development ETH_ENV=development HOST_ENV=local node ./bin/www --verbose",
     "dev:verbose": "NODE_ENV=development ETH_ENV=development node ./bin/www --verbose",
     "dev:persist": "NODE_ENV=development ETH_ENV=development PERSIST=true CONTEXT=local DEBUG=server*,actor*,sys_funder* node ./bin/www --verbose --persist",
     "ropsten": "NODE_ENV=development ETH_ENV=ropsten DEBUG=server:* node ./bin/www",

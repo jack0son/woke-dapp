@@ -55,4 +55,8 @@ context('funder-system', function () {
 			contractDomain.instance.web3.eth.getBalance(user.address).then((b) => new BN(b))
 		).to.eventually.deep.equal(new BN(balance).add(new BN(amount)));
 	});
+
+	it('funds the original address used', async function () {
+		this.skip();
+	});
 });

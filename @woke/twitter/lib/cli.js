@@ -17,7 +17,7 @@ if (debug.control.enabled && require.main === module) {
 			switch (command) {
 				case 'user': {
 					const [userId] = args;
-					console.log(userId);
+					console.log('UserId', userId);
 					let r = await client.getUserData(userId);
 					//debug.d(`Found tweet: ${r}`);
 					console.dir(r);

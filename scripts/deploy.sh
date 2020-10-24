@@ -224,5 +224,7 @@ if [ "$ENV_ARG" = "production" ]; then
 elif [ "$ENV_ARG" = "staging" ]; then
 	${runcommand}_containers
 elif [ "$ENV_ARG" = "development" ]; then
-	echo "Develpoment deployment not configured."
+	ENV_ARG=local
+	${runcommand}_containers
+	# echo "Develpoment deployment not configured."
 fi
