@@ -6,7 +6,7 @@
   "main": "index.js",
   "scripts": {
     "start": "DEBUG=* node index.js",
-    "twitter": "DEBUG=twitter* node ../lib/twitter/cli.js",
+    "twitter": "DEBUG=twitter* node ../twitter/lib/cli.js",
     "cli": "ETH_ENV=staging node --trace-warnings index.js",
     "cli:verbose": "DEBUG=* node index.js"
   },
