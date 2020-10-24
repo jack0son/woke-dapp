@@ -39,6 +39,7 @@ const init = async () => {
 	let creds = {
 		consumer_key: conf.consumerKey,
 		consumer_secret: conf.consumerSecret,
+		bearer_token: bearerToken,
 	};
 
 	if (!!conf.accessKey && !!conf.accessSecret) {

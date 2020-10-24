@@ -53,12 +53,7 @@ class TwitterDomain {
 	async findClaimTweet(userId) {
 		const { client } = this;
 		let userData = {};
-		try {
-			userData = await client.getUserData(userId);
-		} catch (error) {
-			debug.error(error);
-			throw new Error(`User ${userId} not found`);
-		}
+		userData = await client.getUserData(userId);
 
 		const searchParams = {
 			q: userData.handle
