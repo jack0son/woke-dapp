@@ -12,6 +12,7 @@ const secrets = require('@woke/secrets');
 const parseNetworkList = (str) =>
 	str && str.length ? str.split(',').map((n) => n.trim()) : [];
 
+// @TODO allow passing config options per service
 // env var specs
 const envVars = [
 	['PERSIST', 'persist', parse_bool],
@@ -21,6 +22,7 @@ const envVars = [
 	['TWITTER_MENTIONS', 'muffled'],
 	['WEB3_RESUBSCRIBE_INTERVAL', 'resubscribeInterval'],
 	['VERBOSE', 'verbose', parse_bool],
+	['NOTIFICATIONS_SEEN', 'sendSeenNotifications', parse_bool],
 	['TWITTER_POLLING_INTERVAL', 'pollingInterval'],
 	['TWITTER_ENV', 'twitterEnv'],
 	['TWITTER_APP', 'twitterApp'],

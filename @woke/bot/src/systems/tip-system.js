@@ -54,7 +54,9 @@ class TipSystem extends Service {
 
 		this.a_tipSupervisor = director[this.persist ? 'start_persistent' : 'start_actor'](
 			'tip-supervisor', // name
-			TipSupervisor(this.contractSystem.UserRegistry, this.a_tweeter)
+			TipSupervisor(this.contractSystem.UserRegistry, this.a_tweeter, {
+				sendSeenNotifications: this.config.sendSeenNotifications,
+			})
 		);
 
 		this.a_tMon = director.start_actor(
