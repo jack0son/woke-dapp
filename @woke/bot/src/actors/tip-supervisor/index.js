@@ -9,6 +9,8 @@ const { dispatch, start_actor } = ActorSystem;
 const { TaskStatuses: Statuses } = TaskSupervisor;
 const { action_setTweeter } = require('../actions');
 
+const sendSeenNotifications = utils.parse_bool(process.env.NOTIFICATIONS_SEEN);
+
 function spawn_tip_task(_parent, a_wokenContract, tip) {
 	return start_actor(_parent)(`_tip-${tip.taskId}`, tipTaskDefn, {
 		a_wokenContract,
@@ -52,7 +54,8 @@ function TipSupervisor(a_wokenContract, a_tweeter, opts) {
 		// Just send the tweeter messages, not concerned if they fail.
 		switch (statusSymbol) {
 			case Statuses.ready:
-				dispatch(a_tweeter, { type: 'tweet', tweetType: 'tip-seen', tip }); //, ctx.self);
+				sendSeenNotifications &&
+					dispatch(a_tweeter, { type: 'tweet', tweetType: 'tip-seen', tip }); //, ctx.self);
 				break;
 			case Statuses.done:
 				dispatch(a_tweeter, { type: 'tweet', tweetType: 'tip-confirmed', tip }); //, ctx.self);

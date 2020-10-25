@@ -16,7 +16,6 @@ services:
       - bot-db
     environment:
       PRINT_CONFIG: 'true'
-      WEB3_RESUBSCRIBE_INTERVAL: '300000'
       VERBOSE: 'true'
       PERSIST: 'true'
       DEBUG_RECOVERY: 'true'
@@ -26,8 +25,8 @@ services:
       TWITTER_APP: 'staging-bot'
       WOKE_ROLE: 'notifier'
       PERSIST: 'true'
+      WEB3_RESUBSCRIBE_INTERVAL: '300000'
       NETWORK_LIST: 'goerli_1,goerli_infura'
-      DEBUG_RECOVERY: 'true'
       POSTGRES_USER: woke_bot
       POSTGRES_PWD: woke_bot
       POSTGRES_DB: bot_db
@@ -44,6 +43,7 @@ services:
       PRINT_CONFIG: 'true'
       VERBOSE: 'true'
       PERSIST: 'true'
+      DEBUG: '*'
       DEBUG_RECOVERY: 'true'
       NODE_ENV: 'staging'
       ETH_ENV: 'staging'
@@ -51,8 +51,8 @@ services:
       TWITTER_APP: 'staging-bot'
       WOKE_ROLE: 'tipper'
       PERSIST: 'true'
-      NETWORK_LIST: 'goerli_1,goerli_infura'
-      DEBUG_RECOVERY: 'true'
+      TWITTER_POLLING_INTERVAL: '5000'
+      NETWORK_LIST: 'goerli_infura'
       POSTGRES_USER: woke_bot
       POSTGRES_PWD: woke_bot
       POSTGRES_DB: bot_db

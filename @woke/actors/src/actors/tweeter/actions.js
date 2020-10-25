@@ -59,6 +59,8 @@ async function action_tweet(state, msg, ctx) {
 				if (sendSeenNotifications) {
 					text = messageTemplates.twitter.tip_seen_text(tip);
 					tweet = await td.postTweetReply(text, tip.id);
+				} else {
+					return;
 				}
 				break;
 			}

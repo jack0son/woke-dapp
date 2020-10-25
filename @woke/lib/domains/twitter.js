@@ -120,7 +120,6 @@ class TwitterDomain {
 
 		try {
 			const r = await client.updateStatus(text, { in_reply_to_status_id: replyStatusId });
-			console.log(r);
 			return r;
 		} catch (error) {
 			switch (error.code) {
