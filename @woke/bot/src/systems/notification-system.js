@@ -21,7 +21,7 @@ class NotificationSystem extends Service {
 		const director = this.director;
 
 		// Actors
-		this.a_tweeter = director.start_actor('tweeter', tweeter.Tweeter(this.twitterStub));
+		this.a_tweeter = director.start_actor('tweeter', tweeter.Tweeter(this.twitterDomain));
 
 		this.a_notifier = director[this.persist ? 'start_persistent' : 'start_actor'](
 			'notifier', // name
@@ -36,6 +36,7 @@ class NotificationSystem extends Service {
 
 	async start() {
 		const self = this;
+		await self.init();
 
 		dispatch(self.a_notifier, { type: 'subscribeToTransfers' });
 
