@@ -19,6 +19,7 @@ const envVars = [
 	['FAULT_MONITORING', 'faultMonitoring', parse_bool],
 	['NETWORK_LIST', 'networkList', parseNetworkList],
 	['TWITTER_MENTIONS', 'muffled'],
+	['WEB3_RESUBSCRIBE_INTERVAL', 'resubscribeInterval'],
 	['VERBOSE', 'verbose', parse_bool],
 	['TWITTER_POLLING_INTERVAL', 'pollingInterval'],
 	['TWITTER_ENV', 'twitterEnv'],

@@ -26,7 +26,10 @@ class NotificationSystem extends Service {
 		this.a_notifier = director[this.persist ? 'start_persistent' : 'start_actor'](
 			'notifier', // name
 			NotifierSupervisor(this.contractSystem.UserRegistry, this.a_tweeter), // actor definition
-			{ onTaskComplete: this.config.onTaskComplete }
+			{
+				onTaskComplete: this.config.onTaskComplete,
+				resubscribeInterval: this.config.resubscribeInterval,
+			}
 		);
 	}
 

@@ -16,6 +16,7 @@ services:
       - bot-db
     environment:
       PRINT_CONFIG: 'true'
+      WEB3_RESUBSCRIBE_INTERVAL: '300000'
       VERBOSE: 'true'
       PERSIST: 'true'
       DEBUG_RECOVERY: 'true'

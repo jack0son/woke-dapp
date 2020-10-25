@@ -1,4 +1,4 @@
-require('../../lib/debug/apply-line-numbers')(console)(['log', 'warn'], {
+require('@woke/lib/debug/apply-line-numbers')(console)(['log', 'warn'], {
 	prepend: true,
 });
 const chai = require('chai');

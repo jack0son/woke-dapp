@@ -6,7 +6,6 @@ const {
 } = require('@woke/wact');
 const { dispatch, spawnStateless, stop, block } = ActorSystem;
 const { useNotifyOnCrash } = require('@woke/actors');
-const j0 = require('@woke/jack0son');
 const { action_setTweeter } = require('./actions');
 const { TaskStatuses: Statuses } = TaskSupervisor;
 
@@ -142,7 +141,7 @@ function handleContractResponse(state, msg, ctx) {
 }
 
 function action_subscribeToTransfers(state, msg, ctx) {
-	const { a_contract_UserRegistry } = state;
+	const { a_contract_UserRegistry, resubscribeInterval } = state;
 
 	// Subscribe to unclaimed transfers
 
@@ -153,6 +152,7 @@ function action_subscribeToTransfers(state, msg, ctx) {
 		{
 			type: 'subscribe_log',
 			eventName: 'Tx',
+			resubscribeInterval,
 			opts: { fromBlock: 0 },
 			filter: (event) => event.claimed === false,
 			// filter: (e) => e.claimed == false,
