@@ -18,6 +18,7 @@ services:
       PRINT_CONFIG: 'true'
       VERBOSE: 'true'
       PERSIST: 'true'
+      DEBUG: '*,sys_*'
       DEBUG_RECOVERY: 'true'
       NODE_ENV: 'staging'
       ETH_ENV: 'staging'
@@ -39,11 +40,12 @@ services:
     depends_on:
       - bot-db
     environment:
+      FAULT_MONITORING: 'true'
       NOTIFICATIONS_SEEN: 'off'
       PRINT_CONFIG: 'true'
       VERBOSE: 'true'
       PERSIST: 'true'
-      DEBUG: '*'
+      DEBUG: '*,sys_*'
       DEBUG_RECOVERY: 'true'
       NODE_ENV: 'staging'
       ETH_ENV: 'staging'

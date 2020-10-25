@@ -16,6 +16,7 @@ services:
       - oracle-db
     environment:
       PRINT_CONFIG: 'true'
+      FAULT_MONITORING: 'true'
       VERBOSE: 'true'
       PERSIST: 'true'
       DEBUG: '*'

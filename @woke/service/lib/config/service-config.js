@@ -18,6 +18,7 @@ const envVars = [
 	['PERSIST', 'persist', parse_bool],
 	['PRINT_CONFIG', 'printConfig', parse_bool],
 	['FAULT_MONITORING', 'faultMonitoring', parse_bool],
+	['LOGGER_STRING', 'loggerString'],
 	['NETWORK_LIST', 'networkList', parseNetworkList],
 	['TWITTER_MENTIONS', 'muffled'],
 	['WEB3_RESUBSCRIBE_INTERVAL', 'resubscribeInterval'],

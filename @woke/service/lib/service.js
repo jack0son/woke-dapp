@@ -3,7 +3,7 @@ const { Logger, configure } = require('@woke/lib');
 const configureLogger = require('./config/logger-config');
 const { useMonitor } = require('@woke/actors');
 
-const VERBOSE_LOGGER_STRING = 'actor*,-*:info';
+const VERBOSE_LOGGER_STRING = 'sys_*,actor*,-*:info';
 const defaults = {
 	faultMonitoring: false,
 	persist: false,

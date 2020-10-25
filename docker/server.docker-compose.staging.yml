@@ -18,11 +18,12 @@ services:
       - '8443:8443'
     environment:
       PRINT_CONFIG: 'true'
+      FAULT_MONITORING: 'true'
       VERBOSE: 'true'
       PERSIST: 'true'
       PERSIST_ENV: 'production'
       TWITTER_ENV: 'staging'
-      DEBUG: '*,-sequelize:*,-express:router*,-*:info'
+      DEBUG: 'sys_*,*,-sequelize:*,-express:router*,-*:info'
       DEBUG_RECOVERY: 'true'
       WOKE_ROLE: 'funder'
       NODE_ENV: 'staging'
