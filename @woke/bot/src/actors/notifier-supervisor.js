@@ -92,7 +92,6 @@ async function effect_unclaimedTx(state, msg, ctx) {
 	dispatch(ctx.self, { type: 'update', task }, ctx.self);
 
 	const a_promise = spawn_tweet_promise(task, ctx);
-	console.log(a_promise);
 	dispatch(
 		a_tweeter,
 		{

@@ -49,6 +49,7 @@ function TipSupervisor(a_wokenContract, a_tweeter, opts) {
 			return;
 		}
 
+		// Just send the tweeter messages, not concerned if they fail.
 		switch (statusSymbol) {
 			case Statuses.ready:
 				dispatch(a_tweeter, { type: 'tweet', tweetType: 'tip-seen', tip }); //, ctx.self);
