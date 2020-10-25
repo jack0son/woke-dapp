@@ -33,7 +33,7 @@ class OracleSystem extends Service {
 			TwitterAgent(this.twitterDomain)
 		);
 
-		this.a_oracle = director[this.persist ? 'start_persistent' : 'start_actor'](
+		this.a_oracle = director[this.persistent ? 'start_persistent' : 'start_actor'](
 			'oracle',
 			Oracle,
 			{

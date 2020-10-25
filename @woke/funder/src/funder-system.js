@@ -35,7 +35,7 @@ class FunderSystem extends Service {
 		this.fundAmount = fundAmount;
 		this.a_txManager =
 			this.config.a_txManager || TxSystem(director, { networkList, persist });
-		this.a_funder = director[this.persist ? 'start_persistent' : 'start_actor'](
+		this.a_funder = director[this.persistent ? 'start_persistent' : 'start_actor'](
 			'supervisor',
 			FundingSupervisor(this.a_txManager, '0x0', { fundAmount, onFundingComplete }),
 			{}

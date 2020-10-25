@@ -12,10 +12,11 @@ const { block } = require('./lib/nact-utils');
 const { buildReceiversHOF } = require('./receivers');
 const action = require('./action');
 const { merge } = require('./lib/utils');
+const { parse_bool } = require('@woke/lib/utils');
 const MessageDebugger = require('./lib/message-debugger');
 
 // Whether revovery stage in persistent actor should print debug logs
-const DEBUG_RECOVERY = process.env.DEBUG_RECOVERY == 'true' ? true : false;
+const DEBUG_RECOVERY = parse_bool(process.env.DEBUG_RECOVERY);
 
 const DEFAULT_ACTION_KEY = 'default_action';
 

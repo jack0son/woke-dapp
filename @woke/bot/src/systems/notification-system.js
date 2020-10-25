@@ -23,7 +23,7 @@ class NotificationSystem extends Service {
 		// Actors
 		this.a_tweeter = director.start_actor('tweeter', tweeter.Tweeter(this.twitterDomain));
 
-		this.a_notifier = director[this.persist ? 'start_persistent' : 'start_actor'](
+		this.a_notifier = director[this.persistent ? 'start_persistent' : 'start_actor'](
 			'notifier', // name
 			NotifierSupervisor(this.contractSystem.UserRegistry, this.a_tweeter), // actor definition
 			{
