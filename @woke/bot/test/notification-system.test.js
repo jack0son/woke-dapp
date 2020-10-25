@@ -91,4 +91,10 @@ context('funder-system', function () {
 			// 	.on('data', () => console.log('.................................'));
 		});
 	});
+
+	describe('tweeter' function () {
+		it('should report certain errors...', async function () {
+			this.skip();
+		})
+	});
 });

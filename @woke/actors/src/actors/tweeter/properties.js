@@ -1,5 +1,6 @@
 const {
 	supervision: { exponentialRetry },
+	ActorSystem: { dispatch },
 } = require('@woke/wact');
 
 // @TODO add to error directory on notion
@@ -12,7 +13,8 @@ const retry = exponentialRetry(100);
 const retryDaily = exponentialRetry(1000);
 
 function onCrash(msg, error, ctx) {
-	const twitterError = error[0];
+	const { sender } = msg;
+	const twitterError = error;
 
 	if (!(twitterError && twitterError.code)) {
 		console.log('Invalid twitter error: ', error);
@@ -42,8 +44,12 @@ function onCrash(msg, error, ctx) {
 			return retryDaily(msg, error, ctx);
 
 		default:
-			console.log('Unknown twitter error: ', error);
-			dispatch(ctx.sender, { type: msg.type, error }, ctx.self);
+			console.log('Unknown twitter error: ');
+		case 50:
+		case 187: // status is a duplicate
+			console.log(msg, '...\n...', error);
+			dispatch(sender || ctx.sender, { type: msg.type, error }, ctx.self);
+			return ctx.resume;
 		case 187: // status is a duplicate
 			console.log(msg, error);
 			if (msg.i_want_the_error) {

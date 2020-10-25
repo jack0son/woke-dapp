@@ -6,6 +6,7 @@ const {
 } = require('@woke/wact');
 const { dispatch, spawnStateless, stop, block } = ActorSystem;
 const { useNotifyOnCrash } = require('@woke/actors');
+const j0 = require('@woke/jack0son');
 const { action_setTweeter } = require('./actions');
 const { TaskStatuses: Statuses } = TaskSupervisor;
 
@@ -48,9 +49,25 @@ const spawn_tweet_promise = (task, _ctx) => {
 	);
 };
 
+const isValidTip = (tip) => !!tip.toId && !!tip.fromId;
+
 async function effect_unclaimedTx(state, msg, ctx) {
 	const { task } = msg;
 	const { a_contract_UserRegistry, a_tweeter } = state;
+	const tip = {
+		toId: task.event.toId,
+		fromId: task.event.fromId,
+		amount: task.event.amount,
+	};
+	console.log({ tip });
+
+	if (!isValidTip(tip)) {
+		task.status = Statuses.invalid;
+		task.reason = 'missing id';
+		dispatch(ctx.self, { type: 'update', task }, ctx.self);
+		return state;
+	}
+
 	let balance;
 	try {
 		// Contract version incompatible (missing unclaimedBalance method)
@@ -75,17 +92,15 @@ async function effect_unclaimedTx(state, msg, ctx) {
 	dispatch(ctx.self, { type: 'update', task }, ctx.self);
 
 	const a_promise = spawn_tweet_promise(task, ctx);
+	console.log(a_promise);
 	dispatch(
 		a_tweeter,
 		{
 			type: 'tweet',
 			tweetType: 'transfer-unclaimed',
-			tip: {
-				toId: task.event.toId,
-				fromId: task.event.fromId,
-				amount: task.event.amount,
-			},
+			tip,
 			recipientBalance: balance,
+			sender: a_promise,
 		},
 		a_promise
 	);

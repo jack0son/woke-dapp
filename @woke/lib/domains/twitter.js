@@ -85,10 +85,13 @@ class TwitterDomain {
 	async postUnclaimedTransfer(fromId, toId, amount, balance) {
 		const { client } = this;
 
-		const [fromUser, toUser] = await Promise.all([
-			client.getUserData(fromId),
-			client.getUserData(toId),
-		]);
+		const reportId = (id) =>
+			client.getUserData(id).catch((error) => {
+				error.message = `userId:${id}, ` + error.message;
+				throw error;
+			});
+
+		const [fromUser, toUser] = await Promise.all([reportId(fromId), reportId(toId)]);
 
 		const balanceStr = () =>
 			balance ? `${balance} $WOKE with a tweet` : `your $WOKE with a tweet`;
@@ -100,7 +103,7 @@ class TwitterDomain {
 		}.\nGo to ${appUrl} to claim ${balanceStr()}.`;
 		try {
 			const r = await client.updateStatus(text);
-			return r.data;
+			return r;
 		} catch (error) {
 			switch (error.code) {
 				case 220: {

@@ -1,3 +1,6 @@
+require('@woke/lib/debug/apply-line-numbers')(console)(['log', 'warn'], {
+	prepend: true,
+});
 const { ActorSystem } = require('@woke/wact');
 const { messageTemplates, utils } = require('@woke/lib');
 const { start_actor, dispatch, query } = ActorSystem;
@@ -67,7 +70,7 @@ async function action_tweet(state, msg, ctx) {
 		dispatch(ctx.sender, { type: msg.type, tweet }, ctx.self);
 		ctx.debug.d(msg, `tweeted '${tweet.text}'`);
 	} catch (error) {
-		ctx.debug.error(msg, error);
+		ctx.debug.error(msg, `${tweetType}:${(tip && tip.id) || fromId}`, error);
 		text && ctx.debug.warn(msg, `Unable to tweet text: ${text}`);
 		throw error;
 	}
