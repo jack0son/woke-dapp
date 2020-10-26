@@ -10,7 +10,7 @@ require('dotenv').config();
 const secrets = require('@woke/secrets');
 
 const parseNetworkList = (str) =>
-	str && str.length ? str.split(',').map((n) => n.trim()) : [];
+	str && str.length ? (!!str.split ? str.split(',').map((n) => n.trim()) : str) : [];
 
 // @TODO allow passing config options per service
 // env var specs

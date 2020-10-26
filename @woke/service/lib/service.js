@@ -2,6 +2,7 @@ const { ActorSystem, PersistenceEngine } = require('@woke/wact');
 const { Logger, configure } = require('@woke/lib');
 const configureLogger = require('./config/logger-config');
 const { useMonitor } = require('@woke/actors');
+const j0 = require('@woke/jack0son');
 
 const VERBOSE_LOGGER_STRING = 'sys_*,actor*,-*:info';
 const defaults = {
@@ -18,6 +19,9 @@ const defaultName = () => `sys_${(++i).toString().padStart(3, 0)}`;
 // Service template
 class Service {
 	constructor(opts, _defaults, extensions) {
+		// @TODO options merge should give precedence to default values over
+		// undefined config options
+		j0.deleteEmptyKeys(opts);
 		const conf = configure(opts, { ...defaults, ..._defaults });
 		if (conf.verbose) configureLogger({ enableString: conf.loggerString });
 		this.config = conf;

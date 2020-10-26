@@ -15,10 +15,10 @@ const spawn_tweet_promise = (task, _ctx) => {
 	return spawnStateless(
 		notifier,
 		(msg, ctx) => {
-			const updateStatus = (status, reason = null) => {
+			const updateStatus = (status, { reason, error }) => {
 				dispatch(
 					notifier,
-					{ type: 'update', task: { ...task, status, reason } },
+					{ type: 'update', task: { ...task, status, reason, error } },
 					ctx.self
 				);
 				stop(ctx.self);
@@ -31,12 +31,12 @@ const spawn_tweet_promise = (task, _ctx) => {
 						console.log(`Promise from tweeter: ${error}`);
 						_ctx.debug.error(msg, `Promise from tweeter: ${error}`);
 						// @TODO fix this error condition
-						updateStatus(Statuses.failed, error);
+						updateStatus(Statuses.failed, { error });
 					} else if (tweet) {
-						updateStatus(Statuses.done);
+						updateStatus(Statuses.done, {});
 					} else {
 						// @TODO fix this error condition
-						updateStatus(Statuses.failed, 'Tweeter did not tweet');
+						updateStatus(Statuses.failed, { reason: 'Tweeter did not tweet', error });
 					}
 					stop(ctx.self);
 					break;

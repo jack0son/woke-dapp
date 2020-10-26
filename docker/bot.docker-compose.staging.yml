@@ -54,7 +54,7 @@ services:
       WOKE_ROLE: 'tipper'
       PERSIST: 'true'
       TWITTER_POLLING_INTERVAL: '5000'
-      NETWORK_LIST: 'goerli_infura'
+      NETWORK_LIST: 'goerli_1,goerli_infura'
       POSTGRES_USER: woke_bot
       POSTGRES_PWD: woke_bot
       POSTGRES_DB: bot_db

@@ -1,4 +1,4 @@
-const { TaskStatuses, statusList } = require('./statuses');
+const { TaskStatuses, statusList, encoder, decoder } = require('./statuses');
 
 module.exports = () => ({
 	initialState: {
@@ -8,4 +8,6 @@ module.exports = () => ({
 			{}
 		),
 	},
+	encoder,
+	decoder,
 });

@@ -298,7 +298,21 @@ context('TaskSupervisor', function () {
 			await Promise.all(tasks.map((t) => t.deferred.promise));
 		});
 
-		it('should allow custom taskId generation', function () {});
+		it('should allow custom taskId generation', function () {
+			this.skip();
+		});
+
+		it('should discard invalid status updates', function () {});
+	});
+
+	describe('Persistence', function () {
+		it('recovery:bug: tasks being updated with undefined status', function () {
+			this.skip();
+		});
+
+		it('piped actions should persist correct message type', function () {
+			this.skip();
+		});
 	});
 
 	describe('Effect', function () {

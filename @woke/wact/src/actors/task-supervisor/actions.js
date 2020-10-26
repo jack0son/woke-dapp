@@ -81,12 +81,14 @@ function Actions(
 		if (!taskRepo.has(taskId))
 			throw new Error(`Attempt to update task ${taskId} which does not exist`);
 
-		if (!isStatus(_task.status))
-			throw new Error(
-				`Unspecified task status for taskId ${taskId}: ${_task.status.toString()}`
-			);
+		if (!isStatus(_task.status)) {
+			console.log(_msg);
+			throw new Error(`Unspecified task status for taskId ${taskId}: ${_task.status}`);
+		}
 
-		if (ctx.persist && !ctx.recovering) await ctx.persist(_msg);
+		if (ctx.persist && !ctx.recovering) {
+			await ctx.persist({ ..._msg });
+		}
 
 		const prev = taskRepo.get(taskId);
 		if (_task.status === prev.status) {

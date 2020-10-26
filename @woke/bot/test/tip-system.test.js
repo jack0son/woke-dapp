@@ -84,11 +84,10 @@ context('tip-system', function () {
 	let i = 0;
 
 	// Assert failure from inside a catch block (e.g. nact actor's handle function)
-	const expectNotCalled = (msg, callback) =>
-		function (...args) {
-			callback(...args);
-			this.test.callback(new Error(msg));
-		};
+	const expectNotCalled = (msg, callback) => (...args) => {
+		callback(...args);
+		this.test.callback(new Error(msg));
+	};
 
 	before(async function () {
 		this.timeout(5000);
@@ -96,7 +95,7 @@ context('tip-system', function () {
 		const testBed = await initTestBed(users);
 		wokeDomain = testBed.wokeDomain;
 		contractDomain = testBed.contractDomain;
-		await contractDomain.redeploy();
+		// await contractDomain.redeploy();
 	});
 
 	beforeEach(async function () {

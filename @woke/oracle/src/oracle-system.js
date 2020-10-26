@@ -39,7 +39,7 @@ class OracleSystem extends Service {
 			{
 				a_contract_TwitterOracle: this.contractSystem.TwitterOracleMock,
 				a_twitterAgent: this.a_twitterAgent,
-				subscriptionWatchdogInterval: this.config.subscriptionWatchdogInterval,
+				subscriptionWatchdogInterval: this.config.resubscribeInterval,
 			}
 		);
 	}

@@ -28,6 +28,7 @@ services:
       TWITTER_APP: 'staging-bot'
       NETWORK_LIST: 'goerli_1,goerli_infura'
       SUBSCRIPTION_WATCHDOG_INTERVAL: 300000
+      WEB3_RESUBSCRIBE_INTERVAL: 300000
       TWITTER_MENTIONS: 'false'
       EARLIEST_BLOCKNUMBER: 3197271
       POSTGRES_USER: woke_oracle
