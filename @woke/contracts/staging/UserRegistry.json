@@ -6430,7 +6430,7 @@
                                   "name": "this",
                                   "nodeType": "Identifier",
                                   "overloadedDeclarations": [],
-                                  "referencedDeclaration": 13385,
+                                  "referencedDeclaration": 13371,
                                   "src": "6101:4:5",
                                   "typeDescriptions": {
                                     "typeIdentifier": "t_contract$_UserRegistry_$4110",
@@ -8906,7 +8906,7 @@
                             "name": "this",
                             "nodeType": "Identifier",
                             "overloadedDeclarations": [],
-                            "referencedDeclaration": 13385,
+                            "referencedDeclaration": 13371,
                             "src": "8352:4:5",
                             "typeDescriptions": {
                               "typeIdentifier": "t_contract$_UserRegistry_$4110",
@@ -23719,7 +23719,7 @@
                                   "name": "this",
                                   "nodeType": "Identifier",
                                   "overloadedDeclarations": [],
-                                  "referencedDeclaration": 13385,
+                                  "referencedDeclaration": 13371,
                                   "src": "6101:4:5",
                                   "typeDescriptions": {
                                     "typeIdentifier": "t_contract$_UserRegistry_$4110",
@@ -26195,7 +26195,7 @@
                             "name": "this",
                             "nodeType": "Identifier",
                             "overloadedDeclarations": [],
-                            "referencedDeclaration": 13385,
+                            "referencedDeclaration": 13371,
                             "src": "8352:4:5",
                             "typeDescriptions": {
                               "typeIdentifier": "t_contract$_UserRegistry_$4110",
@@ -35542,15 +35542,277 @@
         }
       },
       "links": {
-        "Helpers": "0xfd934c68a7d56871856D87EEc99B7D73Ef363b94",
-        "Distribution": "0xd989bEc39D2c145f79fF09f4a4993DCe82E7542E"
+        "Helpers": "0x0B5005EB501Fd821f02f223119e6918b05A12dD4",
+        "Distribution": "0xb6622fE9802D13aA6caFED9a6Ecc4da607b65aEd"
       },
-      "address": "0x1019C6768fB0eF35542449A6e386e64053c2B4b1",
-      "transactionHash": "0xea2742b7e7c48e0e81a3b1f8c5a50ddc781e53550f2202a5a929ca2ecaf10295"
+      "address": "0x94dDe9E1405B4d4ca4BAF7F255f253549Fffc611",
+      "transactionHash": "0x34fa2bfc27445f00025f391d3aa6bc46f7e0a12461685c93f226eeb08ed2c3fc"
+    },
+    "12": {
+      "events": {
+        "0xad32e83c9322068f49f7a247253392fca01bc70546750bb12fd3bf67940af0e3": {
+          "anonymous": false,
+          "inputs": [
+            {
+              "indexed": false,
+              "internalType": "string",
+              "name": "m",
+              "type": "string"
+            },
+            {
+              "indexed": false,
+              "internalType": "bytes",
+              "name": "v",
+              "type": "bytes"
+            }
+          ],
+          "name": "TraceBytes",
+          "type": "event",
+          "signature": "0xad32e83c9322068f49f7a247253392fca01bc70546750bb12fd3bf67940af0e3"
+        },
+        "0x94ecf0a5d009635618b71e100a518cc65ea421ea74e1c309691c0669b0d5168c": {
+          "anonymous": false,
+          "inputs": [
+            {
+              "indexed": false,
+              "internalType": "string",
+              "name": "m",
+              "type": "string"
+            },
+            {
+              "indexed": false,
+              "internalType": "uint32",
+              "name": "v",
+              "type": "uint32"
+            }
+          ],
+          "name": "TraceUint32",
+          "type": "event",
+          "signature": "0x94ecf0a5d009635618b71e100a518cc65ea421ea74e1c309691c0669b0d5168c"
+        },
+        "0x0887a0a2a4e76ce280641a334ed99948a0c7c28935f86c92875db6564a4822bf": {
+          "anonymous": false,
+          "inputs": [
+            {
+              "indexed": false,
+              "internalType": "bool",
+              "name": "value",
+              "type": "bool"
+            },
+            {
+              "indexed": false,
+              "internalType": "address",
+              "name": "recovered",
+              "type": "address"
+            },
+            {
+              "indexed": false,
+              "internalType": "address",
+              "name": "claimer",
+              "type": "address"
+            },
+            {
+              "indexed": false,
+              "internalType": "string",
+              "name": "userId",
+              "type": "string"
+            },
+            {
+              "indexed": false,
+              "internalType": "uint32",
+              "name": "followers",
+              "type": "uint32"
+            }
+          ],
+          "name": "Verification",
+          "type": "event",
+          "signature": "0x0887a0a2a4e76ce280641a334ed99948a0c7c28935f86c92875db6564a4822bf"
+        },
+        "0xb25a82dfc1061bf265e8b8479974c535009f1ac36c8ddfc024a61956c595e845": {
+          "anonymous": false,
+          "inputs": [
+            {
+              "indexed": true,
+              "internalType": "address",
+              "name": "claimer",
+              "type": "address"
+            },
+            {
+              "indexed": true,
+              "internalType": "address",
+              "name": "referrer",
+              "type": "address"
+            },
+            {
+              "indexed": false,
+              "internalType": "uint256",
+              "name": "amount",
+              "type": "uint256"
+            }
+          ],
+          "name": "Bonus",
+          "type": "event",
+          "signature": "0xb25a82dfc1061bf265e8b8479974c535009f1ac36c8ddfc024a61956c595e845"
+        },
+        "0x5b45ef85abce1209df7bad74d032adc3ecffef94a35b4e45715744ee333986cd": {
+          "anonymous": false,
+          "inputs": [
+            {
+              "indexed": true,
+              "internalType": "address",
+              "name": "account",
+              "type": "address"
+            },
+            {
+              "indexed": false,
+              "internalType": "string",
+              "name": "userId",
+              "type": "string"
+            },
+            {
+              "indexed": false,
+              "internalType": "uint256",
+              "name": "amount",
+              "type": "uint256"
+            },
+            {
+              "indexed": false,
+              "internalType": "uint256",
+              "name": "bonus",
+              "type": "uint256"
+            }
+          ],
+          "name": "Claimed",
+          "type": "event",
+          "signature": "0x5b45ef85abce1209df7bad74d032adc3ecffef94a35b4e45715744ee333986cd"
+        },
+        "0xb0d414ea5b38d8b64668bffef05f15ced84395b44b3be0c8bb3deceeb5626e0e": {
+          "anonymous": false,
+          "inputs": [
+            {
+              "indexed": true,
+              "internalType": "address",
+              "name": "claimer",
+              "type": "address"
+            },
+            {
+              "indexed": false,
+              "internalType": "string",
+              "name": "userId",
+              "type": "string"
+            },
+            {
+              "indexed": false,
+              "internalType": "bytes32",
+              "name": "queryId",
+              "type": "bytes32"
+            }
+          ],
+          "name": "Lodged",
+          "type": "event",
+          "signature": "0xb0d414ea5b38d8b64668bffef05f15ced84395b44b3be0c8bb3deceeb5626e0e"
+        },
+        "0x8be0079c531659141344cd1fd0a4f28419497f9722a3daafe3b4186f6b6457e0": {
+          "anonymous": false,
+          "inputs": [
+            {
+              "indexed": true,
+              "internalType": "address",
+              "name": "previousOwner",
+              "type": "address"
+            },
+            {
+              "indexed": true,
+              "internalType": "address",
+              "name": "newOwner",
+              "type": "address"
+            }
+          ],
+          "name": "OwnershipTransferred",
+          "type": "event",
+          "signature": "0x8be0079c531659141344cd1fd0a4f28419497f9722a3daafe3b4186f6b6457e0"
+        },
+        "0xc58663f31c3549520494f7c83d9787b7bf8bb4878e12f0bf3ce44e272626a0bd": {
+          "anonymous": false,
+          "inputs": [
+            {
+              "indexed": false,
+              "internalType": "string",
+              "name": "fromId",
+              "type": "string"
+            },
+            {
+              "indexed": false,
+              "internalType": "string",
+              "name": "toId",
+              "type": "string"
+            },
+            {
+              "indexed": false,
+              "internalType": "uint256",
+              "name": "amount",
+              "type": "uint256"
+            }
+          ],
+          "name": "Tip",
+          "type": "event",
+          "signature": "0xc58663f31c3549520494f7c83d9787b7bf8bb4878e12f0bf3ce44e272626a0bd"
+        },
+        "0x299eb6f534c4f090c37218944eb2f615b31d9da18a8ecb624f7b76134f71784d": {
+          "anonymous": false,
+          "inputs": [
+            {
+              "indexed": true,
+              "internalType": "address",
+              "name": "from",
+              "type": "address"
+            },
+            {
+              "indexed": true,
+              "internalType": "address",
+              "name": "to",
+              "type": "address"
+            },
+            {
+              "indexed": false,
+              "internalType": "string",
+              "name": "fromId",
+              "type": "string"
+            },
+            {
+              "indexed": false,
+              "internalType": "string",
+              "name": "toId",
+              "type": "string"
+            },
+            {
+              "indexed": false,
+              "internalType": "uint256",
+              "name": "amount",
+              "type": "uint256"
+            },
+            {
+              "indexed": false,
+              "internalType": "bool",
+              "name": "claimed",
+              "type": "bool"
+            }
+          ],
+          "name": "Tx",
+          "type": "event",
+          "signature": "0x299eb6f534c4f090c37218944eb2f615b31d9da18a8ecb624f7b76134f71784d"
+        }
+      },
+      "links": {
+        "Helpers": "0xE23db657850aF422edd5d8E1DCAD78c0AcA86532",
+        "Distribution": "0x1C817107e9dFbEE3dD7275edb151b0947459fF05"
+      },
+      "address": "0x2661B97B0362073c800165f217D5b61DD09dACAb",
+      "transactionHash": "0xea0d706cf4e1bf976e2c413b35ea1c9f2864f3ca10066b23ccf96ece091a8c24"
     }
   },
   "schemaVersion": "3.0.20",
-  "updatedAt": "2020-10-22T05:22:17.787Z",
+  "updatedAt": "2020-10-26T09:54:11.337Z",
   "networkType": "ethereum",
   "devdoc": {
     "methods": {
