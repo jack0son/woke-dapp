@@ -133,7 +133,7 @@ function action_handleIncomingQuery(state, msg, ctx) {
 		switch (job.status.toLowerCase()) {
 			case 'settled':
 				//case statusEnum.SETTLED:
-				ctx.debug.d(msg, `Incoming ${idStr}. Query already settled.`);
+				ctx.debug.info(msg, `Incoming ${idStr}. Query already settled.`);
 				break;
 
 			case 'unsettled':
@@ -144,12 +144,12 @@ function action_handleIncomingQuery(state, msg, ctx) {
 
 			case 'pending':
 				//case statusEnum.PENDING:
-				ctx.debug.d(msg, `Incoming ${idStr}. Query already pending.`);
+				ctx.debug.info(msg, `Incoming ${idStr}. Query already pending.`);
 				break;
 
 			case 'failed':
 				//case statusEnum.FAILED:
-				ctx.debug.d(msg, `Incoming ${idStr}. Query already failed.`);
+				ctx.debug.info(msg, `Incoming ${idStr}. Query already failed.`);
 				break;
 
 			case 'invalid':

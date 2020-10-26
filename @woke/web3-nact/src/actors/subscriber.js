@@ -118,7 +118,7 @@ const subscriptionActor = {
 
 			if (log && filter(log.event)) {
 				//if(log && filter ? filter(log.event) : true) {
-				console.log(`Prev BN: ${state.latestBlock}, Log BN: ${log.blockNumber}`);
+				ctx.debug.info(`Prev BN: ${state.latestBlock}, Log BN: ${log.blockNumber}`);
 				const latestBlock =
 					log.blockNumber > state.latestBlock ? log.blockNumber : state.latestBlock;
 

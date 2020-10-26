@@ -63,14 +63,14 @@ const TwitterMonitor = (twitterDomain) => {
 				validateTwitterDomain(twitter);
 				//isActor(a_processor, 'a_processor');
 
-				ctx.debug.d(msg, 'Finding tip tweets...');
+				ctx.debug.info(msg, 'Finding tip tweets...');
 				return twitter
 					.findTips()
 					.then((tipTweets) => {
 						if (a_polling) dispatch(a_polling, { type: 'resume' }); // no longer rate limited
 
 						if (tipTweets.length > 0) {
-							ctx.debug.d(msg, `Found ${tipTweets.length} tip tweets`);
+							ctx.debug.info(msg, `Found ${tipTweets.length} tip tweets`);
 						}
 
 						// @TODO sorting through tweets for valid tips belongs in the twitter
