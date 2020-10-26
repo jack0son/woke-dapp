@@ -13,6 +13,34 @@ const SymbolDirectory = (actionDirectory) =>
 		return dir;
 	}, new Map());
 
+const actionTypeEncoder = (actionDirectory) => (msg) => ({
+	...msg,
+	type: msg.type.toString(),
+});
+
+const actionTypeDecoder = (actionDirectory) => {
+	const symbolStringLut = Object.getOwnPropertySymbols(actionDirectory).reduce(
+		(lut, symbol) => {
+			lut[symbol.toString()] = symbol;
+			return lut;
+		},
+		{}
+	);
+
+	return (msg) => {
+		const { type } = msg;
+		if (
+			msg.type &&
+			msg.type.length &&
+			msg.type.startsWith &&
+			msg.type.startsWith('Symbol')
+		) {
+			msg.type = symbolStringLut[type];
+		}
+		return msg;
+	};
+};
+
 const getMessageType = (symbolDirectory) => (actionFunc) =>
 	symbolDirectory.get(actionFunc);
 
@@ -23,6 +51,8 @@ const buildDirectory = (actions) => {
 		actions: actionDirectory,
 		symbols: symbolDirectory,
 		address: getMessageType(symbolDirectory),
+		encoder: actionTypeEncoder(actionDirectory),
+		decoder: actionTypeDecoder(actionDirectory),
 	};
 };
 

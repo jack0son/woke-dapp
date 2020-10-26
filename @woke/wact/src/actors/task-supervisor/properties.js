@@ -1,6 +1,6 @@
 const { TaskStatuses, statusList, encoder, decoder } = require('./statuses');
 
-module.exports = () => ({
+module.exports = (actions) => ({
 	initialState: {
 		taskRepo: new Map(),
 		tasksByStatus: statusList.reduce(
@@ -8,6 +8,6 @@ module.exports = () => ({
 			{}
 		),
 	},
-	encoder,
-	decoder,
+	encoder: (msg) => encoder(actions._directory.encoder(msg)),
+	decoder: (msg) => decoder(actions._directory.decoder(msg)),
 });

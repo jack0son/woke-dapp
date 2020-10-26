@@ -232,6 +232,7 @@ function Actions(
 		);
 	}
 
+	actions._directory = directory;
 	return Object.assign(actions, directory.actions);
 }
 
