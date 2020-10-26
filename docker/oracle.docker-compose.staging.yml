@@ -19,7 +19,7 @@ services:
       FAULT_MONITORING: 'true'
       VERBOSE: 'true'
       PERSIST: 'true'
-      DEBUG: '*'
+      DEBUG: '*,-*:info'
       DEBUG_RECOVERY: 'true'
       WOKE_ROLE: 'oracle'
       NODE_ENV: 'staging'
