@@ -26,9 +26,9 @@ services:
       DEBUG: 'sys_*,*,-sequelize:*,-express:router*,-*:info'
       DEBUG_RECOVERY: 'true'
       WOKE_ROLE: 'funder'
-      NODE_ENV: 'staging'
-      ETH_ENV: 'staging'
-      HOST_ENV: 'staging' # select staging ssl certs
+      NODE_ENV: 'production'
+      ETH_ENV: 'production'
+      HOST_ENV: 'production' # select production ssl certs
       TWITTER_APP: 'production-oracle'
       NETWORK_LIST: 'goerli_1,goerli_infura'
       WAIT_HOSTS: db:5432
