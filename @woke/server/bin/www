@@ -5,8 +5,10 @@ var http = require('http');
 var https = require('https');
 var fs = require('fs');
 var migrationManager = require('../src/lib/migrationManager');
+const secrets = require('@woke/secrets');
 
 // SSL certificate config
+// @TODO all SSL environments should be configured using @woke/secrets
 var key, cert, ca;
 const nodeEnv = process.env.NODE_ENV;
 const sslEnv = process.env.HOST_ENV || nodeEnv;
@@ -16,6 +18,8 @@ let useCa = true;
 switch (sslEnv) {
 	case 'production':
 		certNamespace = 'api.getwoke.me';
+		secrets('ssl', 'production');
+		key = process.env.SSL_PRIVATE_KEY;
 		break;
 	case `staging`:
 		certNamespace = 'api.staging.getwoke.me';
@@ -28,7 +32,7 @@ switch (sslEnv) {
 }
 
 console.log(`Using '${certNamespace}' certificates (SSL environment = ${sslEnv})`);
-key = fs.readFileSync(`./ssl/${certNamespace}/private.key`);
+if (!key) key = fs.readFileSync(`./ssl/${certNamespace}/private.key`);
 cert = fs.readFileSync(`./ssl/${certNamespace}/certificate.crt`);
 if (useCa) ca = fs.readFileSync(`./ssl/${certNamespace}/ca_bundle.crt`);
 var credentials = { key, cert, ca };

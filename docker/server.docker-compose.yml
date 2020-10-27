@@ -4,7 +4,7 @@ services:
     image: postgres:11.1
     environment:
       POSTGRES_USER: postgres
-      POSTGRES_DB: woke_dapp 
+      POSTGRES_DB: woke_dapp
     volumes:
       - postgres_data:/var/lib/postgresql/data/
     #ports:
@@ -17,12 +17,20 @@ services:
       - '3001:3001'
       - '8443:8443'
     environment:
-      NODE_ENV: production
-      CONTEXT: production
-      WOKE_ROLE: funder
-      NETWORK_LIST: 'goerli_3,goerli_2,goerli_infura'
-      DEBUG: server*,actor*,sys_*
-      ETH_ENV: production
+      PRINT_CONFIG: 'true'
+      FAULT_MONITORING: 'true'
+      VERBOSE: 'true'
+      PERSIST: 'true'
+      PERSIST_ENV: 'production'
+      TWITTER_ENV: 'production'
+      DEBUG: 'sys_*,*,-sequelize:*,-express:router*,-*:info'
+      DEBUG_RECOVERY: 'true'
+      WOKE_ROLE: 'funder'
+      NODE_ENV: 'staging'
+      ETH_ENV: 'staging'
+      HOST_ENV: 'staging' # select staging ssl certs
+      TWITTER_APP: 'production-oracle'
+      NETWORK_LIST: 'goerli_1,goerli_infura'
       WAIT_HOSTS: db:5432
 
 volumes:
