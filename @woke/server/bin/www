@@ -19,6 +19,8 @@ switch (sslEnv) {
 	case 'production':
 		certNamespace = 'api.getwoke.me';
 		secrets('ssl', 'production');
+		// key must be all on one string with '\n' characters dispayed (not newline in text
+		// editor)
 		key = process.env.SSL_PRIVATE_KEY;
 		break;
 	case `staging`:

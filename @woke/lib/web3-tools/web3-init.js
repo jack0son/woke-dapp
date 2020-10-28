@@ -38,7 +38,6 @@ function selectPrivKey() {
 			// load env vars before web3-tools is important.
 			const key = process.env[`PRIV_KEY_${keyPostfix.toUpperCase()}`];
 			if (!key) throw new Error('Production priv keys not configured');
-			console.log({ key });
 			return key;
 
 		case 'staging':

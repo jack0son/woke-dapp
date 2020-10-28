@@ -9,7 +9,7 @@ services:
       - postgres_data:/var/lib/postgresql/data/
     #ports:
       #- '5432:5432'
-  auth-server:
+  server:
     image: wokenetwork/woke:server
     depends_on:
       - db

@@ -153,7 +153,7 @@ start_container() {
 	MODULE_NAME=$1
 	DEPLOY_ENV=$2
 
-	if [ -z ${DEPLOY_ENV}} ]; then
+	if [ "$DEPLOY_ENV" = "production" ] || [ -z ${DEPLOY_ENV} ]; then
 		# Default to production
 		compose_up ${DOCKER_DIR}/${MODULE_NAME}.docker-compose.yml
 	else
@@ -165,7 +165,7 @@ stop_container() {
 	MODULE_NAME=$1
 	DEPLOY_ENV=$2
 
-	if [ -z ${DEPLOY_ENV}} ]; then
+	if [ "$DEPLOY_ENV" = "production" ] || [ -z ${DEPLOY_ENV} ]; then
 		# Default to production
 		compose_down ${DOCKER_DIR}/${MODULE_NAME}.docker-compose.yml
 	else
