@@ -22,8 +22,8 @@ export default function makeWrapperClient(config) {
 	// ** Auth config API
 	const hasAppAuth = () => true;
 	const hasUserAuth = () => ((
-			isValidAccessKey(config.accessKey) && 
-			isValidAccessSecret(config.accessSecret)
+			isValidAccessKey(accessKey) && 
+			isValidAccessSecret(accessSecret)
 	) ? true : false );
 	const checkAuth = (hasAuth, label) => () => {
 		if(!hasAuth()) {
@@ -42,7 +42,7 @@ export default function makeWrapperClient(config) {
 	//		Private API
 	if(hasUserAuth()) {
 		const userApiMixin = makeUserMixin(baseClient.request, checkAuth(hasUserAuth, 'user'));
-		mixins = {...mixins, ...userApiMixin}
+		mixins = { ...mixins, ...userApiMixin };
 	}
 
 	// ** Wrapper client interface
@@ -50,5 +50,5 @@ export default function makeWrapperClient(config) {
 		hasAppAuth,
 		hasUserAuth,
 		...mixins,
-	}
+	};
 }

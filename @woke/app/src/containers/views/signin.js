@@ -35,6 +35,7 @@ const Message = () =>
 	</BodyStandard>;
 
 export default function SigninView(props) {
+	const { triggerSignIn } = props;
 	const classes = useStyles();
 
 	return (<>
@@ -58,7 +59,7 @@ export default function SigninView(props) {
 				message='Sign in with twitter to claim your enlightenment bonus and spread the wokeness.'
 				Message={Message}
 				buttonProps={{
-					onClick: props.triggerSignIn,
+					onClick: triggerSignIn,
 					text: 'sign in',
 					color: 'primary',
 					iconLeft: <TwitterIcon/>,

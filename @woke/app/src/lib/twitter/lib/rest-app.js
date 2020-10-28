@@ -6,8 +6,8 @@
 // @returns: app API methods interface
 export default function makeAppMixin(clientRequest, checkAuth) {
 	const getUserData = async (userId, handle) => {
-		checkAuth()
-		const params = handle ? {screen_name: handle} : {user_id: userId};
+		checkAuth();
+		const params = handle ? { screen_name: handle } : { user_id: userId };
 
 		let userObject = await clientRequest.get('users/show.json', params);
 		//let avatarSmall = userObject.profile_image_url_https;
@@ -17,11 +17,11 @@ export default function makeAppMixin(clientRequest, checkAuth) {
 			name: userObject.name,
 			handle: userObject.screen_name,
 			avatar: userObject.profile_image_url_https,
-		}
-	}
+		};
+	};
 
 	const getUserTimeline = async (userId, count) => {
-		checkAuth()
+		checkAuth();
 		const params = {
 			id: userId,
 			trim_user: false,
@@ -33,15 +33,15 @@ export default function makeAppMixin(clientRequest, checkAuth) {
 
 		let r = await clientRequest.get('statuses/user_timeline.json', params);
 
-		if(r.length < 1) {
+		if (r.length < 1) {
 			throw new Error('No tweets found');
 		}
 
 		return r;
-	}
+	};
 
 	return {
 		getUserData,
 		getUserTimeline,
-	}
+	};
 }

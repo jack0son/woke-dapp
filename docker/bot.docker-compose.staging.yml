@@ -1,0 +1,67 @@
+version: '3'
+services:
+  bot-db:
+    image: postgres:11.1
+    environment:
+      POSTGRES_USER: woke_bot
+      POSTGRES_PWD: woke_bot
+      POSTGRES_DB: bot_db
+    volumes:
+      - bot_postgres_data:/var/lib/postgresql/data/
+      #ports:
+      #- '5433:5432'
+  notifier:
+    image: wokenetwork/woke:notifier
+    depends_on:
+      - bot-db
+    environment:
+      PRINT_CONFIG: 'true'
+      VERBOSE: 'true'
+      PERSIST: 'true'
+      DEBUG: '*,sys_*,-*:info'
+      DEBUG_RECOVERY: 'true'
+      NODE_ENV: 'staging'
+      ETH_ENV: 'staging'
+      TWITTER_ENV: 'staging'
+      TWITTER_APP: 'staging-bot'
+      WOKE_ROLE: 'notifier'
+      PERSIST: 'true'
+      WEB3_RESUBSCRIBE_INTERVAL: '300000'
+      NETWORK_LIST: 'goerli_1,goerli_infura'
+      POSTGRES_USER: woke_bot
+      POSTGRES_PWD: woke_bot
+      POSTGRES_DB: bot_db
+      POSTGRES_HOST: bot-db
+      POSTGRES_PORT: 5432
+      WAIT_HOSTS: bot-db:5432
+
+  tipper:
+    image: wokenetwork/woke:tipper
+    depends_on:
+      - bot-db
+    environment:
+      FAULT_MONITORING: 'true'
+      NOTIFICATIONS_SEEN: 'off'
+      EARLIEST_TIP_ID: '1320610074167918594'
+      PRINT_CONFIG: 'true'
+      VERBOSE: 'true'
+      PERSIST: 'true'
+      DEBUG: '*,sys_*,-*:info'
+      DEBUG_RECOVERY: 'true'
+      NODE_ENV: 'staging'
+      ETH_ENV: 'staging'
+      TWITTER_ENV: 'staging'
+      TWITTER_APP: 'staging-bot'
+      WOKE_ROLE: 'tipper'
+      PERSIST: 'true'
+      TWITTER_POLLING_INTERVAL: '5000'
+      NETWORK_LIST: 'goerli_1,goerli_infura'
+      POSTGRES_USER: woke_bot
+      POSTGRES_PWD: woke_bot
+      POSTGRES_DB: bot_db
+      POSTGRES_HOST: bot-db
+      POSTGRES_PORT: 5432
+      WAIT_HOSTS: bot-db:5432
+
+volumes:
+  bot_postgres_data:

@@ -1,0 +1,16 @@
+{
+  "name": "@woke/jack0son",
+  "version": "0.1.0",
+  "description": "My depless utilities",
+  "private": true,
+  "main": "jack0son.js",
+  "scripts": {
+    "test": "./node_modules/.bin/mocha ./test/test*.js"
+  },
+  "author": "jack0son",
+  "license": "ISC",
+  "dependencies": {},
+  "devDependencies": {
+    "benchmark": "^2.1.4"
+  }
+}

@@ -3,12 +3,18 @@
   "private": true,
   "scripts": {
     "start": "NODE_ENV=production ETH_ENV=production DEBUG=server:* node ./bin/www",
+    "staging:oracle": "npm run start:staging --prefix @woke/oracle -- --printConfig --persist=no --networkList=goerli_infura",
+    "staging:server": "npm run start:staging --prefix @woke/server -- --printConfig --persist=no --networkList=goerli_infura",
     "build": "bash ./scripts/build.sh",
     "push": "bash ./scripts/push.sh",
     "pull": "bash ./scripts/pull.sh"
   },
   "devDependencies": {
-    "lerna": "^3.20.2"
+    "eslint": "^6.1.0",
+    "eslint-config-prettier": "^6.11.0",
+    "eslint-plugin-prettier": "^3.1.4",
+    "lerna": "^3.20.2",
+    "prettier": "^2.0.5"
   },
   "dependencies": {
     "react-router-dom": "^5.1.2"

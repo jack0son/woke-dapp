@@ -29,8 +29,9 @@
   },
   "devDependencies": {},
   "scripts": {
-    "start": "react-scripts start",
+    "start": "NODE_ENV=development react-scripts start",
     "start:lan": "REACT_APP_ETH_NETWORK=lan react-scripts start",
+    "start:staging": "NODE_ENV=staging REACT_APP_SERVER_ENV=staging REACT_APP_ETH_NETWORK=staging react-scripts start",
     "remote": "REACT_APP_SERVER_ENV=production REACT_APP_ETH_NETWORK=production REACT_APP_TWITTER_ENV=development react-scripts start",
     "remote:rinkeby": "REACT_APP_SERVER_ENV=production REACT_APP_ETH_NETWORK=rinkeby react-scripts start",
     "remote:goerli": "REACT_APP_SERVER_ENV=production REACT_APP_ETH_NETWORK=goerli react-scripts start",

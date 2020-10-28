@@ -68,7 +68,7 @@ export default function How () {
 
 				Wokens can be:
 				<ul>
-					<li>Pooled by a community to power-up tweets</li>
+					<li>Pooled by your community to power-up tweets</li>
 					<li>Sacrificed to your tweets to encourage engagement</li>
 					<li>Exchanged for unique digital items</li>
 				</ul>

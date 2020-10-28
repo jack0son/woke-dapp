@@ -1,0 +1,27 @@
+{
+  "name": "@woke/eth",
+  "version": "0.1.0",
+  "description": "Ethereum stuff",
+  "private": true,
+  "main": "src/index.js",
+  "scripts": {
+    "test": "./node_modules/.bin/mocha ./test/test*.js",
+    "test:debug": "DEBUG=oracle:* ./node_modules/.bin/mocha"
+  },
+  "author": "Jackson Virgo",
+  "license": "ISC",
+  "dependencies": {
+    "@woke/lib": "0.4.0",
+    "dotenv": "^8.2.0",
+    "web3": "^1.3.0",
+    "web3-eth-contract": "^1.3.0",
+    "web3-utils": "^1.3.0"
+  },
+  "devDependencies": {
+    "chai": "^4.2.0",
+    "chai-as-promised": "^7.1.1",
+    "minimist": "^1.2.0",
+    "mocha": "^6.2.2",
+    "typescript": "^4.0.3"
+  }
+}

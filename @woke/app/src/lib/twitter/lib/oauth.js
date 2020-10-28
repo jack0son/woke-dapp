@@ -48,6 +48,7 @@ export function getUserRequestToken() {
 	};
 
 	// Returns {oauth_token, oauth_token_secret, oauth_callback_confirmed}
+	console.log('posting', opts);
 	return request.post(opts).then(resp => {
 		var resp = unmarshal(resp);
 		if(resp.oauth_callback_confirmed === 'true') {

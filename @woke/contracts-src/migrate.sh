@@ -1,6 +1,7 @@
 #!/bin/bash
 # Copy contract artifacts into app src after truffle migration.
 # Temporary work around to avoid issue lerna builds on netlify.
+set -e # exit immediately if migration fails
 echo "Migrating smart-contracts ... "
 DEFAULT_ENV=development
 if [ -z "$1" ]; then
@@ -15,29 +16,35 @@ if [ "$2" == "reset" ]; then
 	ARGS="--reset"
 fi
 
+
 WORK_DIR=$(pwd)
-BASE_DIR=${WORK_DIR##*/}
+BASE_DIR=${WORK_DIR##*/} # get script's directory
+# Alt. $(dirname $(readlink -f $0)
+
 if [[ "$BASE_DIR" != "contracts-src" ]]; then
 	echo "FAILED .. script must be run from @woke/contracts"
 	exit
 fi
 
 # @TODO exit if fail
-echo $ARGS
-npm run migrate:$CONTRACT_ENV $ARGS
+npm run migrate:$CONTRACT_ENV -- $ARGS
 
-APP_DEST="../app/src/contracts/$CONTRACT_ENV"
-# @woke/contracts package
-PKG_DEST="../contracts/$CONTRACT_ENV"
-mkdir -p "$APP_DEST"
-mkdir -p "$PKG_DEST"
-
+SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 BUILD_DIR="./build/contracts/artifacts"
-echo "Copying contracts $APP_DEST ..."
-cp "$BUILD_DIR/TwitterOracleMock.json" "$APP_DEST"
-cp "$BUILD_DIR/WokeToken.json" "$APP_DEST"
-cp "$BUILD_DIR/UserRegistry.json" "$APP_DEST"
+APP_DEST="app/src/contracts/$CONTRACT_ENV"
+PKG_DEST="contracts/$CONTRACT_ENV"
+mkdir -p "../$APP_DEST"
+mkdir -p "../$PKG_DEST"
 
-cp "$BUILD_DIR/TwitterOracleMock.json" "$PKG_DEST"
-cp "$BUILD_DIR/WokeToken.json" "$PKG_DEST"
-cp "$BUILD_DIR/UserRegistry.json" "$PKG_DEST"
+echo "Adding contracts to app $APP_DEST ..."
+cp $BUILD_DIR/{TwitterOracleMock,WokeToken,UserRegistry}.json "../$APP_DEST"
+
+echo "Adding contracts to lib package $PKG_DEST ..."
+cp $BUILD_DIR/{TwitterOracleMock,WokeToken,UserRegistry}.json "../$PKG_DEST"
+
+CLONE=false
+PACKAGES_PATH="$HOME/Repositories/jack0son/tmp/woke-dapp/@woke"
+if $CLONE; then
+	echo "Cloning artifacts into $PACKAGES_PATH ..."
+	cp $BUILD_DIR/{TwitterOracleMock,WokeToken,UserRegistry}.json "$PACKAGES_PATH/$PKG_DEST"
+fi

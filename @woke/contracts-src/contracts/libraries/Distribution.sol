@@ -32,8 +32,7 @@ library Distribution {
 
 		// Use highest influence weight from tributors
 		if(_users[_id].referrers.length == 0) {
-			//followers = logNormalPDF.max_x();
-			tributeWeight = logNormalPDF.maximum();
+			tributeWeight = logNormalPDF.maximum(); // i.e. followers = logNormalPDF.max_x();
 		} else {
 			// OR could use the sum of tribute weights to heavily skew the minted tokens
 			// towards tributors
@@ -79,7 +78,7 @@ library Distribution {
 			// @TODO is storage saving worth the gas expense?
 			//user.referralAmount[tributor.account] = 0;
 
-			// @note Too expensive 
+			// @NB Expensive
 			emit Bonus(user.account, tributor.account, amount);
 
 			if(amount < minAmount) {
