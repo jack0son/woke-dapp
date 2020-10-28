@@ -3,6 +3,10 @@
 # will inherit these settings.
 [context.production]
   [context.production.environment]
+	REACT_APP_ETH_NETWORK = "production"
+	REACT_APP_SERVER_ENV = "production"
+	REACT_APP_TWITTER_ENV = "production"
+	REACT_APP_CONSOLE_DEBUG = "true"
 
 # Deploy Preview context:
 # All deploys generated from a pull/merge request
