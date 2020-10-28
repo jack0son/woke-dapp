@@ -42,6 +42,7 @@ services:
     environment:
       FAULT_MONITORING: 'true'
       NOTIFICATIONS_SEEN: 'off'
+      EARLIEST_TIP_ID: '1320610074167918594'
       PRINT_CONFIG: 'true'
       VERBOSE: 'true'
       PERSIST: 'true'

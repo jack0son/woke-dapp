@@ -56,6 +56,7 @@ class TipSystem extends Service {
 			'tip-supervisor', // name
 			TipSupervisor(this.contractSystem.UserRegistry, this.a_tweeter, {
 				sendSeenNotifications: this.config.sendSeenNotifications,
+				earliestId: this.config.earliestTipId,
 			})
 		);
 

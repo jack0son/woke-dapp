@@ -30,7 +30,7 @@ function TipSupervisor(a_wokenContract, a_tweeter, opts) {
 	// Ignore all tips that come in after the specified ID (twitter IDs ascend
 	// with time)
 	const ignoreTask = (tip) =>
-		earliestId && tip.id < earliestId
+		earliestId && tip.id <= earliestId
 			? 'tip was created before the line in the sand...'
 			: false;
 
