@@ -22,15 +22,15 @@ services:
       VERBOSE: 'true'
       PERSIST: 'true'
       PERSIST_ENV: 'production'
-      TWITTER_ENV: 'staging'
+      TWITTER_ENV: 'production'
       DEBUG: 'sys_*,*,-sequelize:*,-express:router*,-*:info'
       DEBUG_RECOVERY: 'true'
       WOKE_ROLE: 'funder'
-      NODE_ENV: 'staging'
-      ETH_ENV: 'staging'
-      HOST_ENV: 'staging' # select staging ssl certs
-      TWITTER_ENV: 'staging'
-      TWITTER_APP: 'staging-bot'
+      NODE_ENV: 'production'
+      ETH_ENV: 'production'
+      HOST_ENV: 'production' # select production ssl certs
+      TWITTER_ENV: 'production'
+      TWITTER_APP: 'production-oracle'
       NETWORK_LIST: 'goerli_1,goerli_infura'
       WAIT_HOSTS: db:5432
 
