@@ -1,16 +1,13 @@
-var HDWalletProvider = require('@truffle/hdwallet-provider');
 const secrets = require('@woke/secrets');
+var HDWalletProvider = require('@truffle/hdwallet-provider');
 const web3 = require('web3');
-require('dotenv').config();
 //var mnemonic = "large fountain love mountains supernatural bird fresh air through the swinging trees";
 // prettier-ignore
 var devMnemonic = 'nerve marine frozen use brave brief nasty then acid remain stereo riot';
 const contractEnv = process.env.ETH_ENV || process.env.NODE_ENV;
 secrets('ethereum', contractEnv);
 secrets('infura');
-var mnemonic = process.env.ETH_MNEMONIC;
-var infuraApiKey = process.env.INFURA_API_KEY;
-
+mnemonic = process.env.ETH_MNEMONIC;
 console.log('mnemonic:', mnemonic);
 
 module.exports = {
