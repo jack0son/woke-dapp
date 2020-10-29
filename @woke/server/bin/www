@@ -1,11 +1,13 @@
 #!/usr/bin/env node
+const secrets = require('@woke/secrets');
+var faultMonitor = require('../src/lib/fault-monitor');
+
 var app = require('../src/app');
 var debug = require('debug')('server:server');
 var http = require('http');
 var https = require('https');
 var fs = require('fs');
 var migrationManager = require('../src/lib/migrationManager');
-const secrets = require('@woke/secrets');
 
 // SSL certificate config
 // @TODO all SSL environments should be configured using @woke/secrets
@@ -70,6 +72,7 @@ migrationManager
 		}
 	})
 	.error(function (err) {
+		faultMonitor.error(err, 'server:migrationManager');
 		console.error(err);
 	});
 
@@ -92,6 +95,7 @@ function onError(error) {
 			process.exit(1);
 			break;
 		default:
+			faultMonitor.notify(error, 'server:onError');
 			throw error;
 	}
 }
