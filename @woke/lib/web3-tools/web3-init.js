@@ -1,5 +1,6 @@
 const Web3 = require('web3');
 const secrets = require('@woke/secrets');
+secrets('ethereum', process.env.ETH_ENV || process.env.NODE_ENV);
 const config = require('./web3-config');
 const configure = require('../configure');
 const instanceMethods = require('./instance-methods');
