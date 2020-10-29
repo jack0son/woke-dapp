@@ -13,6 +13,13 @@ const persistenceConfig = {
 		HOST: 'localhost',
 		PORT: 5432,
 	},
+	staging: {
+		USER: 'postgres',
+		PWD: 'postgres',
+		DB: 'woke_dapp',
+		HOST: 'db',
+		PORT: 5432,
+	},
 	production: {
 		USER: 'postgres',
 		PWD: 'postgres',
