@@ -81,6 +81,7 @@ async function action_tweet(state, msg, ctx) {
 async function action_sendDirectMessage(state, msg, ctx) {
 	const { twitterDomain: td } = state;
 	const { recipientId, text } = msg;
+	console.log({ state });
 	const result = await td.postDirectMessage(recipientId, text);
 
 	dispatch(ctx.sender, { type: msg.type, result }, ctx.self);

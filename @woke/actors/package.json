@@ -12,6 +12,7 @@
   "license": "ISC",
   "dependencies": {
     "@woke/wact": "0.1.0",
+    "@woke/twitter": "0.1.0",
     "@woke/lib": "0.4.0",
     "dotenv": "^8.2.0"
   },

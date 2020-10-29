@@ -82,7 +82,6 @@ function instantiate(networkName, opts) {
 	web3.eth.handleRevert = conf.handleRevert;
 
 	let wallet = null;
-	console.log(privKey);
 	if (!privKey) {
 		console.log('WARNING: web3 has no local unlocked account');
 		// If using ganache, unlock the accounts
