@@ -8,7 +8,6 @@ module.exports = (userRegistry) => {
 	const getUsers = async (userId) => {
 		let opts = { fromBlock: 0 };
 		let events = await userRegistry.getPastEvents('Claimed', opts);
-		console.log(events);
 		if (userId && userId.length && userId.length > 0) {
 			events = events.filter((e) => e.returnValues.userId == userId);
 		}
