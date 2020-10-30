@@ -17,7 +17,13 @@ const useStyles = makeStyles((theme) => ({
 			marginBottom: '20%',
 		},
 	},
+	break: {
+		display: 'inline-block',
+	},
 }));
+
+const LineBreak = (props) =>
+	BodyStandard({ component: 'span', styles: { display: 'inline-block' }, ...props });
 
 const SHL = (props) => BodyStandard({ component: 'span', color: 'secondary', ...props });
 const SHL_p = (props) => BodyStandard({ component: 'span', color: 'primary', ...props });
@@ -29,12 +35,16 @@ const Message = () => (
 			paddingLeft: '0',
 			paddingRight: '0',
 			small: {
+				textAlign: 'center',
 				paddingLeft: '10%',
 				paddingRight: '10%',
 			},
 		}}
 	>
-		Sign in with <SHL_p>twitter</SHL_p> to get your <SHL>$WOKENS</SHL>.
+		Sign in with <SHL_p>twitter</SHL_p> to{' '}
+		<LineBreak>
+			get your <SHL>$WOKENS</SHL>.
+		</LineBreak>
 	</BodyStandard>
 );
 
