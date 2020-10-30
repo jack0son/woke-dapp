@@ -35,7 +35,7 @@ class OracleSystem extends Service {
 
 		this.a_oracle = director[this.persistent ? 'start_persistent' : 'start_actor'](
 			'oracle',
-			Oracle,
+			Oracle({ twitterClient: this.twitterClient }),
 			{
 				a_contract_TwitterOracle: this.contractSystem.TwitterOracleMock,
 				a_twitterAgent: this.a_twitterAgent,

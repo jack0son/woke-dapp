@@ -201,56 +201,60 @@ function action_handleQuerySubscription(state, msg, ctx) {
 
 //function OracleOrchestrator(a_twitterAgent, a_contract_TwitterOracle) {
 // ----- Oracle actor definition
-module.exports = {
-	properties: {
-		persistenceKey: 'oracle', // only ever 1, static key OK
-		onCrash: useNotifyOnCrash(),
+module.exports = function Oracle(opts) {
+	const { twitterClient } = opts;
+	return {
+		properties: {
+			persistenceKey: 'oracle', // only ever 1, static key OK
+			// onCrash: useNotifyOnCrash({ twitterClient }),
+			onCrash: useNotifyOnCrash(),
 
-		initialState: {
-			jobRepo: [],
-			sinkHandlers: {
-				subscription: action_handleQuerySubscription,
-				a_contract: handleContractResponse,
+			initialState: {
+				jobRepo: [],
+				sinkHandlers: {
+					subscription: action_handleQuerySubscription,
+					a_contract: handleContractResponse,
+				},
+
+				a_twitterAgent: null,
+				a_contract_TwitterOracle: null,
 			},
 
-			a_twitterAgent: null,
-			a_contract_TwitterOracle: null,
+			receivers: [settle_job],
 		},
 
-		receivers: [settle_job],
-	},
+		actions: {
+			...adapters.SinkReduce(),
+			init: (state, msg, ctx) => {
+				const { a_contract_TwitterOracle, subscriptionWatchdogInterval } = state;
 
-	actions: {
-		...adapters.SinkReduce(),
-		init: (state, msg, ctx) => {
-			const { a_contract_TwitterOracle, subscriptionWatchdogInterval } = state;
+				// Rely on subscription to submit logs from block 0
+				// @TODO persist last seen block number
+				dispatch(
+					a_contract_TwitterOracle,
+					{
+						type: 'subscribe_log',
+						resubscribeInterval: subscriptionWatchdogInterval,
+						eventName: 'FindTweetLodged',
+						opts: { fromBlock: 0 },
+						filter: (e) => true,
+					},
+					ctx.self
+				);
 
-			// Rely on subscription to submit logs from block 0
-			// @TODO persist last seen block number
-			dispatch(
-				a_contract_TwitterOracle,
-				{
-					type: 'subscribe_log',
-					resubscribeInterval: subscriptionWatchdogInterval,
-					eventName: 'FindTweetLodged',
-					opts: { fromBlock: 0 },
-					filter: (e) => true,
-				},
-				ctx.self
-			);
+				return action_resumeQueries(state, msg, ctx);
+			},
 
-			return action_resumeQueries(state, msg, ctx);
+			query: action_handleIncomingQuery,
+			a_sub: action_handleQuerySubscription,
+			update_job: action_updateQuery,
+
+			stop: (state, msg, ctx) => {
+				// @TODO call stop
+				// Stop subscription
+			},
 		},
-
-		query: action_handleIncomingQuery,
-		a_sub: action_handleQuerySubscription,
-		update_job: action_updateQuery,
-
-		stop: (state, msg, ctx) => {
-			// @TODO call stop
-			// Stop subscription
-		},
-	},
+	};
 };
 
 //module.exports = OracleOrchestrator;

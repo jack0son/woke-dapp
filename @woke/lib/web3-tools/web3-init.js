@@ -1,5 +1,6 @@
 const Web3 = require('web3');
 const secrets = require('@woke/secrets');
+secrets('ethereum', process.env.ETH_ENV || process.env.NODE_ENV);
 const config = require('./web3-config');
 const configure = require('../configure');
 const instanceMethods = require('./instance-methods');
@@ -27,7 +28,8 @@ const devPrivKey = '0xe57d058bb90483a0ebf0ff0107a60d9250a0b9b5ab8c53d47217c99580
 const ETH_ENV = process.env.ETH_ENV || 'development';
 const ENV_PRIV_KEY = process.env.ETH_KEY;
 
-const keyPostfix = process.env.WOKE_ROLE || 'DEFAULT';
+const keyPostfix =
+	process.env.ETH_WALLET_IDENTIFIER || process.env.WOKE_ROLE || 'DEFAULT';
 
 function selectPrivKey() {
 	if (ENV_PRIV_KEY) return ENV_PRIV_KEY;
@@ -37,7 +39,10 @@ function selectPrivKey() {
 			// @TODO should just be loaded as ETH_KEY, but secrets package needs to
 			// load env vars before web3-tools is important.
 			const key = process.env[`PRIV_KEY_${keyPostfix.toUpperCase()}`];
-			if (!key) throw new Error('Production priv keys not configured');
+			if (!key)
+				throw new Error(
+					`Production priv keys not configured for role ${keyPostfix || 'unknown'}`
+				);
 			return key;
 
 		case 'staging':
@@ -78,7 +83,6 @@ function instantiate(networkName, opts) {
 	web3.eth.handleRevert = conf.handleRevert;
 
 	let wallet = null;
-	console.log(privKey);
 	if (!privKey) {
 		console.log('WARNING: web3 has no local unlocked account');
 		// If using ganache, unlock the accounts

@@ -1,5 +1,6 @@
 const { ActorSystem, PersistenceEngine, actors } = require('@woke/wact');
-const { Logger, twitter, TwitterStub } = require('@woke/lib');
+const { Logger, TwitterDomain } = require('@woke/lib');
+const twitter = require('@woke/twitter');
 const Channel = require('../../actors/monitor/channel');
 const Monitor = require('../../actors/monitor/monitor');
 const Tweeter = require('./tweeter');
@@ -10,24 +11,25 @@ const recipientId = '932596541822418944'; // Oracle of Woke
 
 // System monitor using twitter DMs as output channel
 function MonitorSystem({ director, twitterClient }) {
-	let _twitterClient = twitter;
+	let _twitterClient = twitter.client;
 	if (!!twitterClient) {
+		console.log({ twitterClient });
 		_twitterClient = twitterClient;
 	} else {
 		_twitterClient
 			.initClient()
-			.then(() => debug.d(`Monitor initialised twitter client`))
+			.then(() => console.log(`Crash monitor initialised twitter client`))
 			.catch(console.log);
 	}
 
 	const _director = director || ActorSystem.bootstrap();
-	twitterStub = new TwitterStub(_twitterClient);
-	console.log('Twitter stub ready?', twitterStub.ready());
+	twitterDomain = new TwitterDomain(_twitterClient);
+	debug.d('Twitter domain ready?', twitterDomain.ready());
 
 	// Make twitter channel
 	const a_tweeter = _director.start_actor(
 		'monitor-tweeter',
-		Tweeter({ twitterStub, recipientId })
+		Tweeter({ twitterDomain, recipientId })
 	);
 	const a_channel = _director.start_actor(
 		'channel-twitter',

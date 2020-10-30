@@ -45,14 +45,14 @@ class Service {
 		this.director = conf.director || ActorSystem.bootstrap(...directorArgs);
 		const director = this.director;
 
-		extensions && extensions.forEach((extension) => extension(this, conf));
-
 		// Initialise monitor using own actor system and twitter client
 		this.monitor = useMonitor({
 			twitterClient: this.twitterClient,
 			director,
 			enabled: conf.faultMonitoring,
 		});
+
+		extensions && extensions.forEach((extension) => extension(this, conf));
 	}
 
 	getDirector() {

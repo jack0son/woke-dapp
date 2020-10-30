@@ -28,9 +28,9 @@ function CoreSystem(director, opts) {
 	);
 	let a_nonce;
 	if (opts && opts.persist) {
-		a_nonce = director.start_persistent('nonce', Nonce, { a_web3 });
+		a_nonce = director.start_persistent('nonce', Nonce(), { a_web3 });
 	} else {
-		a_nonce = director.start_actor('nonce', Nonce, { a_web3 });
+		a_nonce = director.start_actor('nonce', Nonce(), { a_web3 });
 	}
 
 	// @TODO supervision actor that decides what to do when web3 fatally crashes
