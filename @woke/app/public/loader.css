@@ -1,7 +1,9 @@
 #root {
+	background: linear-gradient(135deg, #090117, #350e47);
 }
 
-html {
+html,
+body {
 	background: linear-gradient(135deg, #090117, #350e47);
 	/* background-color: #000000; */
 }
