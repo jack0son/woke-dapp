@@ -55,24 +55,38 @@ class TwitterDomain {
 		let userData = {};
 		userData = await client.getUserData(userId);
 
+		let tweet;
 		const searchParams = {
 			q: userData.handle
-				? `@getwoketoke from:${userData.handle}`
+				? // ? `@getwoketoke from:bitveldt`
+				  `0xWOKE from:${userData.handle}`
 				: `@getwoketoke OR 0xWOKE`,
-			result_type: 'recent',
+			// q: encodeURIComponent(
+			// 	userData.handle
+			// 		? `@getwoketoke from:${userData.handle}`
+			// 		: `@getwoketoke OR 0xWOKE`
+			// ),
+			// result_type: 'recent',
 			include_entities: true,
 			tweet_mode: 'extended',
-			count: 100,
+			// count: 100,
 		};
+		console.log(searchParams);
 
 		//let tweets = await client.searchClaimTweets(userData.handle);
 		let tweets = await client.searchTweets(searchParams);
-		if (tweets.length < 1) {
-			throw new Error('No claim tweet found');
+		console.log(tweets);
+		if (tweets.length < 1 || !tweets[0].includes('0xWOKE')) {
+			// @TODO this is horrible and you should feel bad
+			let tweets = (await client.getUserTimeline(userId, 10)).filter((t) =>
+				t.full_text.includes('0xWOKE')
+			);
+			tweet = tweets[0];
+		} else {
+			tweet = tweets[0];
 		}
 
 		//let tweet = tweets[0].full_text;
-		let tweet = tweets[0];
 		debug.d(`Found tweet: ${tweet.full_text}`);
 		return { tweet, userData };
 	}

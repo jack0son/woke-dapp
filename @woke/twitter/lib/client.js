@@ -63,7 +63,7 @@ const getUserTimeline = (userId, count) => {
 		tweet_mode: 'extended',
 		inlcude_entities: false,
 		exclude_replies: false,
-		count: 10,
+		count: count || 10,
 	};
 
 	return client.get('statuses/user_timeline', params).then(({ data }) => {
@@ -151,13 +151,17 @@ const searchTweets = (params) => {
 		result_type: 'recent',
 		tweet_mode: 'extended',
 		count: 10,
+		refresh_url: '',
 		...params,
 	};
 
-	return client.get('search/tweets', searchParams).then(({ data }) => {
-		debug.d(`Found ${data.statuses.length || 0} tweets for query '${searchParams.q}'`);
-		return data.statuses;
-	});
+	return client
+		.get('search/tweets/search/30day/wokeproduction.json', searchParams)
+		.then(({ data }) => {
+			debug.d(`Found ${data.statuses.length || 0} tweets for query '${searchParams.q}'`);
+			console.log(data);
+			return data.statuses;
+		});
 };
 
 const searchClaimTweets = async (handle) => {
@@ -223,6 +227,7 @@ module.exports = {
 	directMessage,
 	searchClaimTweets,
 	getUserData,
+	getUserTimeline,
 	searchTweets,
 	updateStatus,
 };

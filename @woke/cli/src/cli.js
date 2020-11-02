@@ -1,5 +1,5 @@
 require('dotenv').config();
-const { Logger } = require('@woke/lib');
+const { Logger, TwitterDomain } = require('@woke/lib');
 const twitter = require('@woke/twitter').client;
 const bindApi = require('@woke/api');
 const { twitterUsers, fetchUserHandles } = require('./twitter');
@@ -41,6 +41,7 @@ async function initContext() {
 		},
 		contracts,
 		twitterUsers: twitterUsers(twitter),
+		twitterDomain: new TwitterDomain(twitter),
 	};
 }
 
@@ -89,6 +90,11 @@ const Commands = (ctx) => ({
 		}
 		console.dir(tweet);
 		return;
+	},
+
+	findClaimTweet: async (userId) => {
+		const r = await ctx.twitterDomain.findClaimTweet(userId);
+		console.log({ r });
 	},
 
 	getLodgedTweets: async (userId) => {
