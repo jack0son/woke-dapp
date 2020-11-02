@@ -155,13 +155,17 @@ const searchTweets = (params) => {
 		...params,
 	};
 
-	return client
-		.get('search/tweets/search/30day/wokeproduction.json', searchParams)
-		.then(({ data }) => {
-			debug.d(`Found ${data.statuses.length || 0} tweets for query '${searchParams.q}'`);
-			console.log(data);
-			return data.statuses;
-		});
+	return (
+		client
+			// .get('tweets/search/30day/wokeproduction.json', searchParams)
+			.get('search/tweets', searchParams)
+			.then(({ data }) => {
+				debug.d(
+					`Found ${data.statuses.length || 0} tweets for query '${searchParams.q}'`
+				);
+				return data.statuses;
+			})
+	);
 };
 
 const searchClaimTweets = async (handle) => {

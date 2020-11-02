@@ -52,38 +52,45 @@ class TwitterDomain {
 
 	async findClaimTweet(userId) {
 		const { client } = this;
-		let userData = {};
-		userData = await client.getUserData(userId);
+		let userData = await client.getUserData(userId); // always need follower count
 
-		let tweet;
-		const searchParams = {
-			q: userData.handle
-				? // ? `@getwoketoke from:bitveldt`
-				  `0xWOKE from:${userData.handle}`
-				: `@getwoketoke OR 0xWOKE`,
-			// q: encodeURIComponent(
-			// 	userData.handle
-			// 		? `@getwoketoke from:${userData.handle}`
-			// 		: `@getwoketoke OR 0xWOKE`
-			// ),
-			// result_type: 'recent',
-			include_entities: true,
-			tweet_mode: 'extended',
-			// count: 100,
-		};
-		console.log(searchParams);
-
-		//let tweets = await client.searchClaimTweets(userData.handle);
-		let tweets = await client.searchTweets(searchParams);
-		console.log(tweets);
-		if (tweets.length < 1 || !tweets[0].includes('0xWOKE')) {
-			// @TODO this is horrible and you should feel bad
+		async function findUsingTimeline() {
 			let tweets = (await client.getUserTimeline(userId, 10)).filter((t) =>
 				t.full_text.includes('0xWOKE')
 			);
-			tweet = tweets[0];
-		} else {
-			tweet = tweets[0];
+
+			if (!tweets.length) {
+				throw new Error('None found using timeline');
+			}
+
+			return tweets[0];
+		}
+
+		async function findUsingSearch() {
+			let tweet;
+			const searchParams = {
+				q: userData.handle ? `0xWOKE from:${userData.handle}` : `@getwoketoke OR 0xWOKE`,
+				result_type: 'recent',
+				include_entities: true,
+				tweet_mode: 'extended',
+				// count: 100,
+			};
+
+			//let tweets = await client.searchClaimTweets(userData.handle);
+			let tweets = await client.searchTweets(searchParams);
+			if (tweets.length < 1 || !tweets[0].full_text.includes('0xWOKE')) {
+				throw new Error('None found using search');
+			}
+
+			return tweets[0];
+		}
+
+		let tweet;
+		try {
+			tweet = await findUsingTimeline();
+		} catch (error) {
+			console.log('Could not find proof tweet using timeline: ', error);
+			tweet = await findUsingSearch();
 		}
 
 		//let tweet = tweets[0].full_text;
