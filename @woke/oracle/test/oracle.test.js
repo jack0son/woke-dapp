@@ -47,6 +47,10 @@ context('oracle-system', function () {
 		director.stop();
 	});
 
+	describe('protocol', function () {
+		it('should detect invalid proof strings', function () {});
+	});
+
 	it('should fulfill a valid user claim', async function () {
 		this.timeout(50000);
 
@@ -75,6 +79,44 @@ context('oracle-system', function () {
 			'user was not claimed'
 		);
 	});
+
+	// @TODO add an error to the app to tell the user to tweet again without
+	// chaning the proof tweet text
+	it('should allow adding trash to the start or end of the proof tweet', async function () {
+		this.timeout(50000);
+		const [user] = users.list();
+
+		let prefix = 'My chance to become woke\n\n⚡️';
+		const claimString = prefix + (await wokeDomain.api.userClaimString(user));
+		+'some other trash';
+
+		twitterClient.updateStatus(claimString, { user });
+		await expect(wokeDomain.api.userIsClaimed(user)).to.eventually.equal(
+			false,
+			'user is already claimed'
+		);
+
+		// 1. Start the oracle
+		await oracleSystem.start();
+
+		// 2. Submit claim request
+		let { queryId, receipt } = await wokeDomain.api.sendClaimUser(user);
+		const tweetStored = await web3Tools.utils.waitForNextEvent(
+			contractDomain.contracts.Oracle
+		)('TweetStored', receipt.blockNumber);
+		expect(tweetStored.returnValues.queryId).to.equal(queryId);
+		expect(tweetStored.returnValues.statusId).to.equal(user.id);
+
+		receipt = await wokeDomain.api.sendFulfillClaim(user);
+		await expect(wokeDomain.api.userIsClaimed(user)).to.eventually.equal(
+			true,
+			'user was not claimed'
+		);
+	});
+
+	it('should allow adding text to the end of the proof tweet', async function () {});
+
+	it('should throw an error if the claim string is the incorrect length', function () {});
 
 	/*
 	it(

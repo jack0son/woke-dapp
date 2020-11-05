@@ -81,6 +81,7 @@ const getUserData = (userId) => {
 	const params = {
 		user_id: userId,
 		include_entities: true,
+		tweet_mode: 'extended',
 	};
 
 	return client.get('users/show', params).then(({ data }) => ({
