@@ -33,11 +33,22 @@ const FakeClient = (sampleSize = 2, opts) => {
 
 	// Simulate search
 	const queryEngine = {
-		match: async (query = '') => {
+		match: async (query = '', userId) => {
 			var regex = new RegExp(query.replace(/ /g, '|'));
-			// No AND only OR lol
-			return tweetList.filter((t) => regex.test(t.full_text));
+			// No AND only OR lol, spaces are ANDS in twitter search
+
+			return tweetList.filter((t) => {
+				return userId
+					? t.id_str === userId && regex.test(t.full_text)
+					: regex.test(t.full_text);
+			});
 		},
+
+		// @TODO REPLACE THIS TRASH
+		timeline: async (userId, subString) =>
+			tweetList.filter((t) => {
+				return t.user.id_str === userId && t.full_text.includes(subString);
+			}),
 	};
 
 	// e.g. Search is 180 per user per 15 min window
@@ -96,6 +107,13 @@ const FakeClient = (sampleSize = 2, opts) => {
 		async getUserData(userId) {
 			const user = users[userId];
 			return this.request(user ? user : users['0']);
+		}
+
+		async getUserTimeline(userId) {
+			const user = users[userId];
+			const r = queryEngine.timeline(userId, '0xWOKE');
+
+			return this.request(r);
 		}
 
 		// async updateStatus(text, params) {

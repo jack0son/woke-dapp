@@ -1,19 +1,19 @@
 import React, { useEffect } from 'react';
 import { useTheme } from '@material-ui/styles';
-import { useMediaQuery } from "@material-ui/core";
+import { useMediaQuery } from '@material-ui/core';
 
-import Loading from './loading'
-import Error from './error'
-import ClaimPage from '../../layouts/page-claim'
+import Loading from './loading';
+import Error from './error';
+import ClaimPage from '../../layouts/page-claim';
 
-import TweetButton from '../../components/buttons/button-tweet'
-import StandardBody from '../../components/text/body-standard'
-import LargeBody from '../../components/text/body-large'
-import Button from '../../components/buttons/button-contained'
-import WokeSpan from '../../components/text/span-woke'
+import TweetButton from '../../components/buttons/button-tweet';
+import StandardBody from '../../components/text/body-standard';
+import FlashingBody from '../../components/text/body-standard-flashing';
+import LargeBody from '../../components/text/body-large';
+import Button from '../../components/buttons/button-contained';
+import WokeSpan from '../../components/text/span-woke';
 import Typography from '@material-ui/core/Typography';
-import LinearProgress from '../../components/progress/linear-stages'
-
+import LinearProgress from '../../components/progress/linear-stages';
 
 // @fix shouldn't need this whole library
 // Need widget so that tweet intent works as popup
@@ -22,11 +22,10 @@ import LinearProgress from '../../components/progress/linear-stages'
 import useIsMobile from '../../hooks/is-mobile';
 import { createShareIntentUrl, popupCenter } from '../../lib/utils';
 
-
-export default function ClaimView (props) {
+export default function ClaimView(props) {
 	const {
 		userHandle,
-		claimState, 
+		claimState,
 		handleTweeted,
 		handleConfirmedTweeted,
 		handleNotTweeted,
@@ -43,49 +42,67 @@ export default function ClaimView (props) {
 
 	const Span = (props) => LargeBody({ component: 'span', color: 'primary', ...props });
 
-	const unclaimedString = () => unclaimedBalance && unclaimedBalance > 0 ? <><span>your </span><Span>{unclaimedBalance}</Span></> : 'any' ;
+	const unclaimedString = () =>
+		unclaimedBalance && unclaimedBalance > 0 ? (
+			<>
+				<span>your </span>
+				<Span>{unclaimedBalance}</Span>
+			</>
+		) : (
+			'any'
+		);
 	// Message will make sense before unclaimed balance is loaded.
-	const grammarString = () => !(unclaimedBalance && unclaimedBalance != 0) && ` you've already been sent`;
+	const grammarString = () =>
+		!(unclaimedBalance && unclaimedBalance != 0) && ` you've already been sent`;
 
-	const TweetInstruction = () => (<>
-				<LargeBody
-					styles={{
-						textAlign: 'justify',
-						paddingLeft: '10%',
-						paddingRight: '10%',
-						small: {
-							paddingLeft: '0%',
-							paddingRight: '0%',
-						},
-					}}
-				>
-					Hey <Span color='secondary'>@</Span><Span>{userHandle}</Span>, to securely claim {unclaimedString()} <WokeSpan key="WokeSpan">WOKEN{unclaimedBalance && unclaimedBalance == 1 ? '' : 's'}</WokeSpan>{grammarString()}, we need to tweet a proof message. <br/><br/>
-				</LargeBody>
-			<StandardBody color='primary' styles={{
-				fontSize: '1.5rem',
-				//color: theme.palette.error.main,
-			}}>
-			You can delete the tweet once your account is created
-			</StandardBody>
-		</>);
-
-
+	const TweetInstruction = () => (
+		<>
+			<LargeBody
+				styles={{
+					textAlign: 'justify',
+					paddingLeft: '10%',
+					paddingRight: '10%',
+					small: {
+						paddingLeft: '0%',
+						paddingRight: '0%',
+					},
+				}}
+			>
+				Hey <Span color="secondary">@</Span>
+				<Span>{userHandle}</Span>, to securely claim {unclaimedString()}{' '}
+				<WokeSpan key="WokeSpan">
+					WOKEN{unclaimedBalance && unclaimedBalance == 1 ? '' : 's'}
+				</WokeSpan>
+				{grammarString()}, we need to tweet a proof message. <br />
+				<br />
+			</LargeBody>
+			<FlashingBody
+				color="primary"
+				styles={{
+					fontSize: '1.5rem',
+					//color: theme.palette.error.main,
+				}}
+			>
+				You can delete the tweet once your account is created
+			</FlashingBody>
+		</>
+	);
 
 	// Share intent url
 	const renderTweetClaim = () => {
 		const intentUrl = createShareIntentUrl(claimState.claimString, true);
 
 		const tweetClicked = () => {
-			if(!isMobile) popupCenter(intentUrl, 'Proof Tweet', 500, 350);
+			if (!isMobile) popupCenter(intentUrl, 'Proof Tweet', 500, 350);
 			handleTweeted();
-		}
+		};
 
 		return (
 			<ClaimPage
 				//instructionText={[`To securely claim any `, <WokeSpan key="WokeSpan">WOKENs</WokeSpan>, ` you've already been sent, we need to tweet a proof message.`]}
-				childrenAbove={[<TweetInstruction key={0}/>]}
+				childrenAbove={[<TweetInstruction key={0} />]}
 				Button={TweetButton}
-				textAlign='center'
+				textAlign="center"
 				buttonProps={{
 					memeMode: true,
 					target: isMobile ? '_blank' : '_self',
@@ -95,9 +112,8 @@ export default function ClaimView (props) {
 				}}
 				buttonMessage="🚨 Don't change the tweet text"
 				messageColor="primary"
-			>
-			</ClaimPage>
-		)
+			></ClaimPage>
+		);
 	};
 	//<a href={intentUrl} target="_self">TWEET</a>
 	//<Share target="_blank" url={''} options={{text: claimState.claimString, hashtags: 'WokeNetwork'}}/>
@@ -106,14 +122,14 @@ export default function ClaimView (props) {
 		<>
 			<ClaimPage
 				instructionText={`Did you tweet?`}
-				textAlign='center'
+				textAlign="center"
 				flexContainerProps={{
 					flexDirection: 'column !important',
 					alignItems: 'stretch !important',
 				}}
 				buttonProps={{
 					onClick: handleConfirmedTweeted,
-					styles: {textAlign: 'center'},
+					styles: { textAlign: 'center' },
 					text: `Yes, I tweeted!`,
 					color: 'primary',
 				}}
@@ -135,14 +151,12 @@ export default function ClaimView (props) {
 	useEffect(() => {
 		timer.stop();
 		timer.start();
-	}, [stage]);
+	}, [stage, timer]);
 
 	const renderClaiming = () => (
-		<Loading
-			handleDone={() => {}}
-		>
-			<LinearProgress 
-				stageList={claimState.stageList.slice(sc.CONFIRMED,sc.CLAIMED + 1)}
+		<Loading handleDone={() => {}}>
+			<LinearProgress
+				stageList={claimState.stageList.slice(sc.CONFIRMED, sc.CLAIMED + 1)}
 				labelList={claimState.stageLabels}
 				stage={stage - sc.CONFIRMED}
 				bufferEnd={timer.transferTime}
@@ -151,15 +165,13 @@ export default function ClaimView (props) {
 		</Loading>
 	);
 
-	const renderError = () => (
-		<Error message={claimState.error}/>
-	);
+	const renderError = () => <Error message={claimState.error} />;
 
 	// Subsumption tree
-	let chooseRender = () => (<Loading message={'Analysing wokeness ...'}/>);
-	if(stage === sc.ERROR) {
+	let chooseRender = () => <Loading message={'Analysing wokeness ...'} />;
+	if (stage === sc.ERROR) {
 		chooseRender = renderError;
-	} else if(stage === sc.CLAIMED) {
+	} else if (stage === sc.CLAIMED) {
 		// Shouldn't get here
 		console.warn('Claim in incorrect state: ', `${stage}: ${stageString}`);
 	} else if (stage >= sc.CONFIRMED) {
@@ -171,13 +183,11 @@ export default function ClaimView (props) {
 	} else {
 		console.warn('Claim in undefined state: ', `${stage}: ${stageString}`);
 	}
-	
+
 	// @TODO use transaction status
 	//const claimStatus = claimState.transactions.sendClaimUser.pending;
 	//const fulfillStatus = claimState.transactions.sendFulfillClaim.pending;
 
-	return (<>
-		{ chooseRender() }
-	</>);
+	return <>{chooseRender()}</>;
 }
 //const targetUrl = `javascript:window.open('${refUrl}', 'WOKE - Tweet claim string', 'width=500 height=300')`;

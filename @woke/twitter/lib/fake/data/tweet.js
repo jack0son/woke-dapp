@@ -32,7 +32,7 @@ const Status = (user, text, mention) => {
 		in_reply_to_screen_name: null,
 		user: {
 			id: user.id,
-			id_str: user.id_str,
+			id_str: user.id_str || user.id.toString(),
 			name: 'Get Woke',
 			screen_name: user.screen_name || user.handle,
 			location: '',

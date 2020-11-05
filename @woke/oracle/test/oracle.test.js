@@ -89,6 +89,7 @@ context('oracle-system', function () {
 		let prefix = 'My chance to become woke\n\n⚡️';
 		const claimString = prefix + (await wokeDomain.api.userClaimString(user));
 		+'some other trash';
+		console.log({ claimString });
 
 		twitterClient.updateStatus(claimString, { user });
 		await expect(wokeDomain.api.userIsClaimed(user)).to.eventually.equal(
