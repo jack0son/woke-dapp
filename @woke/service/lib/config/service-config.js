@@ -9,7 +9,7 @@ const {
 require('dotenv').config();
 const secrets = require('@woke/secrets');
 
-const parseNetworkList = (str) =>
+const parse_list = (str) =>
 	str && str.length ? (!!str.split ? str.split(',').map((n) => n.trim()) : str) : [];
 
 // @TODO allow passing config options per service
@@ -19,12 +19,13 @@ const envVars = [
 	['PRINT_CONFIG', 'printConfig', parse_bool],
 	['FAULT_MONITORING', 'faultMonitoring', parse_bool],
 	['LOGGER_STRING', 'loggerString'],
-	['NETWORK_LIST', 'networkList', parseNetworkList],
+	['NETWORK_LIST', 'networkList', parse_list],
 	['TWITTER_MENTIONS', 'muffled'],
 	['WEB3_RESUBSCRIBE_INTERVAL', 'resubscribeInterval', parseInt],
 	['VERBOSE', 'verbose', parse_bool],
 	['NOTIFICATIONS_SEEN', 'sendSeenNotifications', parse_bool],
 	['EARLIEST_TIP_ID', 'earliestTipId', parseInt],
+	['RESUBMIT_QUERY_IDS', 'resumbitQueryIds', parse_list],
 	['TWITTER_POLLING_INTERVAL', 'pollingInterval'],
 	['TWITTER_ENV', 'twitterEnv'],
 	['TWITTER_APP', 'twitterApp'],

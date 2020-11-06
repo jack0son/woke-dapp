@@ -11,8 +11,8 @@ const dummyUsers = require('./data/users');
 
 const tipTweets = tweets.filter((t) => t.full_text.includes('+'));
 // @param return a subset of the sample tweet data
-const REQ_PER_EPOCH = 3;
-const EPOCH = 3000;
+const REQ_PER_EPOCH = 100;
+const EPOCH = 1000;
 const FakeClient = (sampleSize = 2, opts) => {
 	const { data, ...conf } = configure(opts, {
 		rateLimit: REQ_PER_EPOCH,
@@ -53,9 +53,19 @@ const FakeClient = (sampleSize = 2, opts) => {
 
 	// e.g. Search is 180 per user per 15 min window
 	const twitterErrors = {
-		duplicate: [{ code: 187, message: 'Status is a duplicate.' }],
-		rateLimit: [{ code: 88, message: 'Rate limit exceeded' }],
+		duplicate: { code: 187, message: 'Status is a duplicate.' },
+		rateLimit: { code: 88, message: 'Rate limit exceeded' },
+		// rateLimit: [{ code: 88, message: 'Rate limit exceeded' }],
 	};
+
+	class ApiError extends Error {
+		constructor({ code, message }) {
+			super(message);
+			this.name = this.constructor.name;
+			this.code = code;
+			Error.captureStackTrace(this, this.constructor);
+		}
+	}
 
 	const rateLimiter = (limit = conf.rateLimit) => {
 		let requests = 0;
@@ -67,15 +77,17 @@ const FakeClient = (sampleSize = 2, opts) => {
 				if (requests++ < limit) {
 					resolve(resp);
 				} else {
-					reject(twitterErrors.rateLimit);
+					console.log({ requests });
+					console.log({ limit });
+					reject(new ApiError(twitterErrors.rateLimit));
 				}
 			});
 	};
 
 	class FakeClient {
-		constructor(_credentials, limitPerMin) {
+		constructor(_credentials) {
 			this.credentials = _credentials;
-			this.request = rateLimiter(limitPerMin);
+			this.request = rateLimiter();
 		}
 
 		isConnected() {

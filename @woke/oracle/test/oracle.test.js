@@ -21,7 +21,10 @@ const OracleSystem = require('../src/oracle-system');
 
 const users = userCollections.dummy;
 
-const twitterClient = twitter.fake.FakeClient(0, { users: users.getDictionary() });
+const twitterClient = twitter.fake.FakeClient(0, {
+	users: users.getDictionary(),
+	rateLimit: 1000,
+});
 
 function postClaimTweet() {}
 
@@ -56,8 +59,6 @@ context('oracle-system', function () {
 	});
 
 	it('should fulfill a valid user claim', async function () {
-		this.timeout(50000);
-
 		const [_, user] = users.list();
 		const claimString = await wokeDomain.api.userClaimString(user);
 		twitterClient.updateStatus(claimString, { user });
@@ -76,6 +77,7 @@ context('oracle-system', function () {
 		)('TweetStored', receipt.blockNumber);
 		expect(tweetStored.returnValues.queryId).to.equal(queryId);
 		expect(tweetStored.returnValues.statusId).to.equal(user.id);
+		console.log({ tweetStored });
 
 		receipt = await wokeDomain.api.sendFulfillClaim(user);
 		await expect(wokeDomain.api.userIsClaimed(user)).to.eventually.equal(
@@ -88,12 +90,13 @@ context('oracle-system', function () {
 	// chaning the proof tweet text
 	it('should allow adding trash to the start or end of the proof tweet', async function () {
 		this.timeout(50000);
-		const [user] = users.list();
+		const [_, __, user] = users.list();
 
 		let prefix = 'My chance to become woke\n\n⚡️';
 		const claimString = prefix + (await wokeDomain.api.userClaimString(user));
 		+'some other trash';
 
+		console.log(claimString);
 		twitterClient.updateStatus(claimString, { user });
 		await expect(wokeDomain.api.userIsClaimed(user)).to.eventually.equal(
 			false,

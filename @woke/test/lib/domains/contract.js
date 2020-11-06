@@ -104,6 +104,7 @@ class ContractDomain {
 
 	allocateAdminAccounts() {
 		if (!this.adminAccounts) {
+			// Take the frist 4 accounts (default accounts used to migrate contracts)
 			const [defaultAccount, owner, oraclize_cb, tipAgent] = this.allocateAccounts(4);
 			this.adminAccounts = {
 				defaultAccount,
@@ -147,14 +148,13 @@ class ContractDomain {
 				});
 				// }).send({
 
-				console.log(sendOpts);
+				// @TODO Send opts defaults should be set on contract initialisation
 				const { data, to, ..._sendOpts } = sendOpts;
-				const tmp = await tx.send({
+				this.contracts.Oracle = await tx.send({
 					// this.contracts.Oracle = await tx.send({
 					value: 5000000000000000,
 					..._sendOpts,
 				});
-				console.log('New Oracle address:', this.contracts.Oracle.options.address);
 			} catch (error) {
 				// console.log({ tx });
 				throw error;
@@ -199,7 +199,7 @@ class ContractDomain {
 			// console.log({ tx });
 
 			debug.d(`Deploying UserRegistry...`);
-			console.log(sendOpts);
+			// @TODO Send opts defaults should be set on contract initialisation
 			const { data, to, ..._sendOpts } = sendOpts;
 			this.contracts.UserRegistry = await tx.send(_sendOpts);
 
