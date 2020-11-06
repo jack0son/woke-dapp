@@ -48,7 +48,7 @@ class OracleSystem extends Service {
 		const _this = this;
 		await _this.init();
 
-		ActorSystem.dispatch(_this.a_oracle, { type: 'init' });
+		await ActorSystem.block(_this.a_oracle, { type: 'init' });
 		console.log(`Started oracle system.`);
 		return this.resubmit();
 	}
@@ -59,7 +59,11 @@ class OracleSystem extends Service {
 		if (!queryIds || !queryIds.length) return;
 		debug.d(`Resubmitting ${queryIds.length} queries...`);
 		queryIds.forEach((queryId) => {
-			ActorSystem.dispatch(_this.a_oracle, { type: 'query', query: { queryId } });
+			ActorSystem.dispatch(_this.a_oracle, {
+				type: 'query',
+				query: { queryId },
+				opts: { resubmitSettledJobs: true },
+			});
 		});
 	}
 }

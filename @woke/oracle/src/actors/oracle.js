@@ -95,11 +95,12 @@ function action_resumeQueries(state, msg, ctx) {
 	const unresolvedQueries = Object.keys(jobRepo).filter(isUnresolvedQuery);
 	ctx.debug.d(msg, `Settling ${unresolvedQueries.length} unresolved queries...`);
 	unresolvedQueries.forEach(ctx.receivers.settle_job);
+	dispatch(ctx.sender, 'done', ctx.self);
 }
 
 const EARLIEST_BLOCKNUMBER = Number(process.env.EARLIEST_BLOCKNUMBER);
 function action_handleIncomingQuery(state, msg, ctx) {
-	const { query } = msg;
+	const { query, opts } = msg;
 	const { jobRepo } = state;
 
 	const { queryId, userId, logData } = query;
@@ -132,6 +133,9 @@ function action_handleIncomingQuery(state, msg, ctx) {
 		if (!job.status.toLowerCase) console.log('unknown job status:', job.status);
 		switch (job.status.toLowerCase()) {
 			case 'settled':
+				if (opts && opts.resubmitSettledJobs) {
+					ctx.receivers.settle_job(job);
+				}
 				//case statusEnum.SETTLED:
 				ctx.debug.info(msg, `Incoming ${idStr}. Query already settled.`);
 				break;
