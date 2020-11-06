@@ -35,6 +35,8 @@ context('oracle-system', function () {
 
 	beforeEach(async function () {
 		this.timeout(50000);
+		// @TODO bug with contract domain does not allow Oracle or UserRegistry to be redeployed
+		// more than once
 		await contractDomain.redeploy();
 		oracleSystem = new OracleSystem({
 			twitterClient,
@@ -48,13 +50,15 @@ context('oracle-system', function () {
 	});
 
 	describe('protocol', function () {
-		it('should detect invalid proof strings', function () {});
+		it('should detect invalid proof strings', function () {
+			this.skip();
+		});
 	});
 
 	it('should fulfill a valid user claim', async function () {
 		this.timeout(50000);
 
-		const [user] = users.list();
+		const [_, user] = users.list();
 		const claimString = await wokeDomain.api.userClaimString(user);
 		twitterClient.updateStatus(claimString, { user });
 		await expect(wokeDomain.api.userIsClaimed(user)).to.eventually.equal(
@@ -89,7 +93,6 @@ context('oracle-system', function () {
 		let prefix = 'My chance to become woke\n\n⚡️';
 		const claimString = prefix + (await wokeDomain.api.userClaimString(user));
 		+'some other trash';
-		console.log({ claimString });
 
 		twitterClient.updateStatus(claimString, { user });
 		await expect(wokeDomain.api.userIsClaimed(user)).to.eventually.equal(
@@ -115,9 +118,13 @@ context('oracle-system', function () {
 		);
 	});
 
-	it('should allow adding text to the end of the proof tweet', async function () {});
+	it('should allow adding text to the end of the proof tweet', async function () {
+		this.skip();
+	});
 
-	it('should throw an error if the claim string is the incorrect length', function () {});
+	it('should throw an error if the claim string is the incorrect length', function () {
+		this.skip();
+	});
 
 	/*
 	it(
