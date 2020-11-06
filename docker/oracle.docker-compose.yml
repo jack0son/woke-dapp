@@ -25,7 +25,7 @@ services:
       NODE_ENV: 'production'
       ETH_ENV: 'production'
       TWITTER_ENV: 'production'
-      TWITTER_APP: 'production-oracle'
+      TWITTER_APP: 'staging-oracle'
       NETWORK_LIST: 'goerli_1,goerli_infura'
       SUBSCRIPTION_WATCHDOG_INTERVAL: 300000
       WEB3_RESUBSCRIBE_INTERVAL: 300000

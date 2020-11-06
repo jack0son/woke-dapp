@@ -52,7 +52,7 @@ services:
       NODE_ENV: 'production'
       ETH_ENV: 'production'
       TWITTER_ENV: 'production'
-      TWITTER_APP: 'production-bot'
+      TWITTER_APP: 'production-oracle'
       WOKE_ROLE: 'tipper'
       ETH_WALLET_IDENTIFIER: 'owner'
       PERSIST: 'true'
