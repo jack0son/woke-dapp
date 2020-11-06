@@ -14,7 +14,6 @@ function fetchProofTweet(state, msg, ctx) {
 
 function handleFailure(state, msg, ctx) {
 	const { error } = state;
-	console.log(error);
 	if (error) {
 		// Catch error in on crash, schedule new attempt
 		if (

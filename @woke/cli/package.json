@@ -5,7 +5,8 @@
   "private": true,
   "main": "index.js",
   "scripts": {
-    "start": "DEBUG=* node index.js",
+    "start": "node index.js",
+    "start:debug": "DEBUG=* node index.js",
     "twitter": "DEBUG=twitter* node ../twitter/lib/cli.js",
     "cli": "ETH_ENV=staging node --trace-warnings index.js",
     "cli:verbose": "DEBUG=* node index.js"
@@ -14,6 +15,7 @@
   "license": "ISC",
   "dependencies": {
     "@woke/api": "0.1.0",
+    "@woke/secrets": "0.1.0",
     "@woke/contracts": "0.4.0",
     "@woke/lib": "0.4.0",
     "@woke/twitter": "0.1.0",

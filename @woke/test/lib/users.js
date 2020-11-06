@@ -5,6 +5,7 @@ const lists = {
 	dummy: [
 		{ id: '123345', handle: 'wokenet1', followers_count: 5 },
 		{ id: '123346', handle: 'wokenet2', followers_count: 3 },
+		{ id: '1233462312213', handle: 'wokenet3', followers_count: 132132412 },
 	],
 	real: ['list of real twitter users'],
 	test: [],

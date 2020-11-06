@@ -1,4 +1,6 @@
 const { Logger } = require('@woke/lib');
+const secrets = require('@woke/secrets');
+secrets('twitter', process.env.TWITTER_APP || 'production-oracle');
 const bindCommands = require('./src/cli.js');
 const utils = require('./src/utils');
 const debug = Logger('cli');
@@ -9,6 +11,7 @@ if (require.main === module) {
 	const [command, ...args] = argv;
 
 	const usage = {
+		findClaimTweet: '<userId>',
 		getTweetText: '<userId>',
 		getLodgedTweets: '<userId>',
 		getUser: '<userId>',
@@ -28,6 +31,18 @@ if (require.main === module) {
 			case 'supply': {
 				const showMintEvents = args[0];
 				return await commands.supply(showMintEvents);
+			}
+
+			case 'findClaimTweet': {
+				const userId = args[0];
+				if (!utils.nonEmptyString(userId)) {
+					console.log('No value provided for userId');
+					printCmdUsage();
+					return;
+				}
+				debug.d('Getting tweet text for user ', userId);
+
+				return await commands.findClaimTweet(userId);
 			}
 
 			case 'getTweetText': {

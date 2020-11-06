@@ -5,12 +5,14 @@
   "private": true,
   "main": "lib/index.js",
   "scripts": {
-    "test": "./node_modules/.bin/mocha ./test/test*.js"
+    "test": "./node_modules/.bin/mocha ./test/test*.js",
+    "twitter": "DEBUG=twitter* TWITTER_APP=production-oracle node ./lib/cli.js"
   },
   "author": "jack0son",
   "license": "ISC",
   "dependencies": {
     "@woke/lib": "0.4.0",
+    "@woke/secrets": "0.1.0",
     "twit": "^2.2.11",
     "dotenv": "^8.2.0",
     "request-promise-native": "^1.0.8"

@@ -7,7 +7,7 @@ const Tweeter = require('./tweeter');
 
 const debug = Logger('sys_monitor');
 
-const recipientId = '932596541822418944'; // Oracle of Woke
+const recipientId = '176737312'; // Oracle of Woke
 
 // System monitor using twitter DMs as output channel
 function MonitorSystem({ director, twitterClient }) {

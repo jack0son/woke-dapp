@@ -13,6 +13,7 @@ function buildUserClaimString(web3) {
 			reddit: 30,
 		};
 
+		console.log({ userId, signatory });
 		let followersCountHex = web3Utils.uInt32ToHexString(followersCount);
 		let msgHash = web3.utils
 			.soliditySha3(

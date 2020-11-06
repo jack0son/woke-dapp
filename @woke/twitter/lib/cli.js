@@ -2,6 +2,7 @@
 const debug = require('@woke/lib').Logger('twitter:cli');
 const fs = require('fs');
 const client = require('./client');
+require('@woke/secrets')('twitter', process.env.TWITTER_APP || 'production-oracle');
 
 if (debug.control.enabled && require.main === module) {
 	//var argv = require('minimist')(process.argv.slice(2));
@@ -19,6 +20,15 @@ if (debug.control.enabled && require.main === module) {
 					const [userId] = args;
 					console.log('UserId', userId);
 					let r = await client.getUserData(userId);
+					//debug.d(`Found tweet: ${r}`);
+					console.dir(r);
+					break;
+				}
+
+				case 'timeline': {
+					const [userId, count] = args;
+					console.log('UserId', userId);
+					let r = await client.getUserTimeline(userId, count);
 					//debug.d(`Found tweet: ${r}`);
 					console.dir(r);
 					break;

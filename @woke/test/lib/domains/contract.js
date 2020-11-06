@@ -104,6 +104,7 @@ class ContractDomain {
 
 	allocateAdminAccounts() {
 		if (!this.adminAccounts) {
+			// Take the frist 4 accounts (default accounts used to migrate contracts)
 			const [defaultAccount, owner, oraclize_cb, tipAgent] = this.allocateAccounts(4);
 			this.adminAccounts = {
 				defaultAccount,
@@ -137,17 +138,30 @@ class ContractDomain {
 		if (contractNames.includes('Oracle')) {
 			//console.log('Current Oracle address:', this.contracts.Oracle.options.address);
 			debug.d(`Deploying Oracle...`);
-			const bytecode = configs.Oracle.artifact.bytecode;
-			this.contracts.Oracle = await this.contracts.Oracle.deploy({
-				data: bytecode,
-				arguments: [this.adminAccounts.oraclize_cb],
-			}).send({
-				value: 5000000000000000,
-				...sendOpts,
-			});
-			// console.log('New Oracle address:', this.contracts.Oracle.options.address);
+			let tx;
+			try {
+				tx = this.contracts.Oracle.deploy({
+					// this.contracts.Oracle = await this.contracts.Oracle.deploy({
+					data: configs.Oracle.artifact.bytecode,
+					// data: this.contracts.Oracle.options.data,
+					arguments: [this.adminAccounts.oraclize_cb],
+				});
+				// }).send({
+
+				// @TODO Send opts defaults should be set on contract initialisation
+				const { data, to, ..._sendOpts } = sendOpts;
+				this.contracts.Oracle = await tx.send({
+					// this.contracts.Oracle = await tx.send({
+					value: 5000000000000000,
+					..._sendOpts,
+				});
+			} catch (error) {
+				// console.log({ tx });
+				throw error;
+			}
+
 			updateArtifacts &&
-				updateArtifact(this.configs.Oracle.path, {
+				updateArtifact(configs.Oracle.path, {
 					networkId: this.instance.network.id,
 					adddress: this.contracts.Oracle.options.address,
 				});
@@ -177,15 +191,23 @@ class ContractDomain {
 				maxTributors: 256,
 			});
 
-			this.contracts.UserRegistry = await this.contracts.UserRegistry.deploy({
+			let tx = this.contracts.UserRegistry.deploy({
+				// this.contracts.UserRegistry = await this.contracts.UserRegistry.deploy({
 				data: web3Tools.linkBytecode(configs.UserRegistry.artifact, instance.network.id),
 				arguments: args,
-			}).send(sendOpts);
+			});
+			// console.log({ tx });
+
+			debug.d(`Deploying UserRegistry...`);
+			// @TODO Send opts defaults should be set on contract initialisation
+			const { data, to, ..._sendOpts } = sendOpts;
+			this.contracts.UserRegistry = await tx.send(_sendOpts);
 
 			// Update the user registry address in the token contract
+			debug.d(`Set WokeToken UserRegistry...`);
 			await this.contracts.WokeToken.methods
 				.setUserRegistry(this.contracts.UserRegistry.options.address)
-				.send(sendOpts);
+				.send(_sendOpts);
 			// console.log('New UserRegistry address:', this.contracts.UserRegistry.options.address);
 			updateArtifacts &&
 				updateArtifact(this.configs.UserRegistry.path, {
