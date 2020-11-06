@@ -54,7 +54,8 @@ class OracleSystem extends Service {
 	}
 
 	async resubmit() {
-		const queryIds = this.config.resumbitQueryIds;
+		const _this = this;
+		const queryIds = _this.config.resumbitQueryIds;
 		if (!queryIds || !queryIds.length) return;
 		debug.d(`Resubmitting ${queryIds.length} queries...`);
 		queryIds.forEach((queryId) => {
