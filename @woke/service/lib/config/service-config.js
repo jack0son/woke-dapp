@@ -25,6 +25,7 @@ const envVars = [
 	['VERBOSE', 'verbose', parse_bool],
 	['NOTIFICATIONS_SEEN', 'sendSeenNotifications', parse_bool],
 	['EARLIEST_TIP_ID', 'earliestTipId', parseInt],
+	['EARLIEST_BLOCKNUMBER', 'earliestBlockNumber', parseInt],
 	['RESUBMIT_QUERY_IDS', 'resumbitQueryIds', parse_list],
 	['TWITTER_POLLING_INTERVAL', 'pollingInterval'],
 	['TWITTER_ENV', 'twitterEnv'],

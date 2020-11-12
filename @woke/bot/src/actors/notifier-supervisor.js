@@ -58,6 +58,7 @@ async function effect_unclaimedTx(state, msg, ctx) {
 		fromId: task.event.fromId,
 		amount: task.event.amount,
 	};
+	console.log({ task });
 	console.log({ tip });
 
 	if (!isValidTip(tip)) {
@@ -162,12 +163,12 @@ function action_subscribeToTransfers(state, msg, ctx) {
 }
 
 function NotifierSupervisor(a_contract_UserRegistry, a_tweeter, opts) {
-	const earliestId = (opts && opts.earliestId) || 0;
+	const earliestBlockNumber = (opts && opts.earliestBlockNumber) || 0;
 	const getId = (log) => log.transactionHash;
 
-	const ignoreTask = (tip) =>
-		earliestId && tip.id < earliestId
-			? 'log event before the line in the sand...'
+	const ignoreTask = (log) =>
+		earliestBlockNumber && log.blockNumber < earliestBlockNumber
+			? `log event before the line in the sand... (block numbber ${log.blockNumber})`
 			: false;
 
 	const isValidTask = (tip) => true; // @TODO is a log event

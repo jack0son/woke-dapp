@@ -204,7 +204,7 @@ class ContractDomain {
 			this.contracts.UserRegistry = await tx.send(_sendOpts);
 
 			// Update the user registry address in the token contract
-			debug.d(`Set WokeToken UserRegistry...`);
+			debug.d(`Setting WokeToken UserRegistry...`);
 			await this.contracts.WokeToken.methods
 				.setUserRegistry(this.contracts.UserRegistry.options.address)
 				.send(_sendOpts);

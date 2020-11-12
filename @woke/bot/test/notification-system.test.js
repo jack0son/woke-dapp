@@ -58,6 +58,7 @@ context('funder-system', function () {
 				persist: false,
 				sendFaultLogs: false,
 				onTaskComplete,
+				earliestBlockNumber: 0,
 				contractInstances: { UserRegistry: contractDomain.contracts.UserRegistry },
 			});
 
@@ -90,11 +91,21 @@ context('funder-system', function () {
 			// 	// .on('data', (e) => console.log('log', e));
 			// 	.on('data', () => console.log('.................................'));
 		});
+
+		it('should ignore tx from before earliestBlockNumber', async function () {
+			// should not notify
+
+			this.skip();
+			// contractDomain.contracts.UserRegistry.events
+			// 	.Tx({ fromBlock: 0 })
+			// 	// .on('data', (e) => console.log('log', e));
+			// 	.on('data', () => console.log('.................................'));
+		});
 	});
 
-	describe('tweeter' function () {
+	describe('tweeter', function () {
 		it('should report certain errors...', async function () {
 			this.skip();
-		})
+		});
 	});
 });
