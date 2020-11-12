@@ -23,7 +23,7 @@ services:
       NODE_ENV: 'production'
       ETH_ENV: 'production'
       TWITTER_ENV: 'production'
-      TWITTER_APP: 'twitter.production-notifier'
+      TWITTER_APP: 'production-notifier'
       WOKE_ROLE: 'notifier'
       ETH_WALLET_IDENTIFIER: 'owner'
       PERSIST: 'true'
