@@ -1,19 +1,21 @@
 #  Woke Network 🐦<--->🌐³
 **Bridging Twitter to Web3**
 
-Woke Network delivers much needed curation mechanics to the world's (broken) forum.  It is a bridge to the decentralised online communities of the future.
+[Woke
+Network](https://about.getwoke.me) brings curation mechanics to the world's (broken) forum - a bridge to decentralised communities on web3.
 
-Crypto-incentivised social networks are the way of the future. Steemit and Cent provide curation mechanisms using the programmable market mechanisms native to blockchains, but if a tree falls in the forest and no one tweets about it...
+Crypto-incentivised social networks are the way of the future. Steemit and Cent provide curation mechanisms using the programmable finance native to blockchains, but if a tree falls in the forest and no one tweets about it...
 
-**v0.1.0 Alpha**
-1. 💸 **Issuance** Securitisation of followers using a novel issuance method called
-   an "influence bonding curve"
-2. 🏭 **Minting** Creation of a social currency with the following properties that
+The human conversation is happening on social networks with a critical mass of users: Zucc Et al. have achieved network effects. Tweets are free, extreme beats true, and the loudest dominate. There is no incentive structure encouraging productive conversation.
+
+**v0.1.0 Alpha** [Get Woke or Go Broke](https://getwoke.me)
+1. 💸 **Issuance** Securitisation of followers into an ERC-20 using an influence bonding curve
+2. 🏭 **Minting** Creation of a social currency that
    is readily spent and equitably distributed.
 3. 👛 **Onboarding** “Walletless” onboarding for non-crypto users into the web3
    ecosystem.
-4. 🍄 **Powerups** (walletless transfers) send tokens to any user on
-   twitter using a tweet.
+4. 🍄 **Powerups** Send tokens to any user on
+   twitter using a tweet (walletless transfers).
 
 
 **Repo Contents**
@@ -22,100 +24,115 @@ Monerepo for the Woke Network dApp client, smart-contracts, and back-end service
 
 ## Economics
 
+Joining the Woke Network consumes your follower count to "power" the Woke
+Token ([$WOKEN](https://twitter.com/search?q=%24WOKE&src=typed_query)) minting process. New Wokens are distributed according to users' relative influence to counteract the pareto distribution of followers.
 
-## Repo Structure
-Packages `@woke/PACKAGE`
+Anyone who has sent you wokens before you joined, called Tributors, will also
+receieve a portion of the minted wokens.
+
+The issuance process sets up three incentives for early network growth:
+1. Small influence users are able to unlock large bounties of trapped Wokens by hunting “influence whales”
+2. Influence whales are encouraged to participate to unlock the Wokens sent to them by whale hunters.
+3. Smaller new users receive much larger portions of minted tokens than whales, but distribution is generally biased towards existing users due to the tribute ratio calculation.
+
+### Influence Bonding Curve
+![Woke Token Issuance value flow](doc/woken_issuance.png "Woken Issuance")
+
+1. Tributors transfer Wokens to the “unclaimed” user’s twitter account. We’ll call the new user Udi.
+2. Udi completes the account claiming process, triggering an issuance event. Udi’s follower count is used to calculate how many tokens to mint.
+3. Udi’s handicap is compared to the highest handicap in the group of tributors to calculate the tribute ratio.
+4. The tribute ratio determines the size of the tributor and awakening bonus pools.
+5. Tributor allocations are calculated using the distribution curve.
+6. Tributor allocations are transferred to the tributors
+7. Awakening bonus is transferred to the Udi. Claims process is complete
+8. Udi must spend at least half of his dormant Wokens before they are burned.
+
+
+
+## Packages
+
+
+### @woke/wact
+wAct is an actor composition framework for [Nact](https://github.com/ncthbrt/nact) that provides
+message and actor structure, common actor behaviour (like state machines), and
+supervision policies.
+
+Presently being extracted as a stand-alone package: [Wact](https://github.com/jack0son/wact).
 
 ### @woke/app
-React app.
+Basic wallet dapp allowing users to signup and securely claim any Wokens they were
+sent prior to joining.
+
+React app. Home-rolled web3-hooks package. Spicey.
+
+### @woke/oracle
+Simplified [Provable](https://provable.xyz) oracle for local development.
 
 ### @woke/server
-Burner wallet authentication and wallet funder. The current approach to wallet
-funding is highly wasteful, inefficient and insecure... we are on testnet.
+Burner wallet authentication using
+[Hedgehog](https://github.com/AudiusProject/hedgehog), 
 
-### @woke/lib
-Web3 init, twitter client, utils.
+In lieu of relay transactions, alpha funds new accounts with a small amount of
+goerli ETH to complete the account claiming process.
+
+### @woke/nact-web3
+Web3 microservice with self healing subscriptions and transactions. Easily spin
+up a web3 backend without worrying about transaction juggling, provider
+failures, or subscription reliability. Built with [📬 Wact](https://github.com/jack0son/wact).
+
+Takes responsibility for blockchain nuances, applying its own policies for
+problems like account balances, gas usage, and node availability, giving the
+rest of the application a much smaller error and API surface to work
+with, and some clean assumptions for how web3 interactions are handled.
+
+Presently being extracted as a stand-alone package: [web3-sendee](https://github.com/jack0son/web3-sendee).
 
 ### @woke/bot
-Tipping, twitter notifications, leaderboard, token distribution. 
+Tweet powerups, twitter notifications, leaderboard. See [Woke
+Network](https://about.getwoke.me).
 
-Architecture is centred around the actor model, courtesty of [Nact](https://nact.io).
-Learning from the excitement of managing web3 connections, providers and
-transctions in the funder, oracle and app, a more fault tolerant and 
-*decoupled* structure for dealing with ethereum interactions was needed.
-
-Actors help seperate the frequent and broad set of errors that occur in web3
-calls, from the simple core functionality we want: sending transactions and
-subscribing to events.
-
-For example:
-* Provider / websocket connection errors
-* Nonce errors
-* Transaction errors (paramaters, client, node, eth network, onchain, etc)
-
-The web3 service (a set of actors) takes responsibility for blockchain
-nuances, applying its own policies for problems like account balances, gas
-usage, and node availability, giving the rest of the application (other services)
-a much smaller error surface to work with and some clean assumptions for how
-web3 interactions are handled.
-
-One such assumption is that transactions will never fail due a lack of
-connection to the ethereum node. Once the web3 service receives a transaction
-message, it becomes responsible for confirming it with the network. Upon
-failure, the requesting service receives a message which enacts it's
-own policies for dealing with reverts and incorrect parameters.
-
-Once the actors library is tested and cleaned up it will replace existing
-server-side web3 code in the oracle and wallet funder.
+Architecture is centred around the actor model, courtesty of [Nact](https://nact.io) and [Wact](https://github.com/jack0son/wact).
+Recovery-oriented so we can move fast.
 
 ### @woke/contracts 
-The contract artifacts which are built by truffle contain the compiled contract
+Truffle contract artifacts containing the compiled contract
 binaries, method interfaces, and the migration configuration.
 
 Migration configuration is essentially the contract address and network
 information for each chain the the contract has been deployed to. Truffle
 will continually update this build file as you migrate so a contract
-residing on multiple networks can be interacted with using one artifact.
-
-Unfortunately a clean method of importing the contract artifacts without
-commiting them to the repo on each migration isn't in place yet. Plan is to pull
-them from an S3 bucket.
+residing on multiple networks can be interacted with using a common artifact.
 
 ### @woke/contracts-src
 * Solidity source code and truffle based tests.
 * Ethereum testchain (ganache), and deployment configuration.
 
 # Deployment
-The dApp client is currently deployed on netlify whilst all the back end
-services are deployed on google cloud compute engine.
+Deploy script help: `./scripts/build.sh -h && ./scripts/deploy.sh -h`
 
-### Deployment branches
-Deploy procedure:
+**On build host**
 1. Make changes on feature branch
 2. Merge into `develop`
-3. Merge into `deploy`
+3. Merge into `production`
+4. Build `./scripts/build.sh -bp`
 4. Merge into hooked branch
-.. + Netlify: `deploy-netlify`
-.. + GCloud: `deploy-gcloud`
-Deployment branches must always be downstream of develop.
+	+ Netlify: `deploy-netlify`
 
-SSH into deployment instance.
-1. Checkout `deploy`
-2. `git pull`
-3. `bash ./scripts/pull.sh`
-4. `docker-compose -f server.docker-compose.yml up -d`
-5. `docker-compose -f bot.docker-compose.yml up -d`
+Deployment branches must always be downstream from develop.
 
+**On production host** (e.g. GCloud COOS)
+
+1. Checkout & pull `production`
+2. Pull and start images `bash ./scripts/deploy.sh -pr production`
+
+
+# Contributing
 ## Hosting
 ### Netlify
-Because of the more limited build options available on netlify (and not wanting 
-to fiddle with webpack just yet), it was simplest to avoid using any lerna
-dependencies and simply copy the contract artifacts into the `@woke/app/src`
-on every production migration.
 
 ### Google Cloud
 
-**Configuring docker-compose for container optimized OS**
+**Configuring docker-compose for Container-Optimized OS**
 
 This [tutorial](https://cloud.google.com/community/tutorials/docker-compose-on-container-optimized-os)
 guides you through running Docker Compose in a container on a [Container Optimized
@@ -126,11 +143,9 @@ instance.
 Goerli is the testnet. Also configured for Rinkeby. Goerli appears to be more
 reliable and less congested atm (so fresh).
 
-# Development
-No automation yet. Use these commands to set up a local dev environment.
+## Development
 
-**Nodejs:** 
-Using version 10. Just use [nvm](https://github.com/nvm-sh/nvm#installing-and-updating).
+**Nodejs:** Just use [nvm](https://github.com/nvm-sh/nvm#installing-and-updating).
 ```
 nvm install 10.17.0
 ```
@@ -148,15 +163,15 @@ To test with local ethereum functionality you must be running the server and
 oracle.
 
 ```
-# View only
+# Views only
 npm run design
 
-# Local instance with blockchain
+# Local instance with local IO
 npm run start
 
 ```
 
-**Mock ethereum blockchain:**
+**Deploy contracts locally**
 ```
 cd @woke/contracts-src
 npm run ganache:client
@@ -164,14 +179,6 @@ npm run ganache:client
 # New terminal
 cd @woke/contracts-src
 ./migrate.sh development
-# if this command doesn't work try
-bash migrate.sh development
-# OR
-sh migrate.sh development
-
-# OR if you aren't on unix (god help you)
-npm run migrate:client
-# Then copy @woke/contracts-src/build/contracts/[WokeToken.json, TwitterOracleMock.json] to @woke/contracts/development/
 ```
 
 **Server:**
@@ -209,6 +216,7 @@ npm run dev
   sudo)](https://docs.docker.com/install/linux/linux-postinstall/)
 
 
-**Readme TODO**
-* [] Dev env for testing on mobile.
-* [] Bot readme
+**Readme todo**
+* [ ] Move Woke Network description to blog post.
+* [ ] Dev env for testing on mobile.
+* [ ] S3 bucket for contract artifacts
