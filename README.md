@@ -1,5 +1,27 @@
-# woke-dapp
-Mono repo for the woke dApp client, smart-contracts, and back-end services. 
+#  Woke Network 🐦<--->🌐³
+**Bridging Twitter to Web3**
+
+Woke Network delivers much needed curation mechanics to the world's (broken) forum.  It is a bridge to the decentralised online communities of the future.
+
+Crypto-incentivised social networks are the way of the future. Steemit and Cent provide curation mechanisms using the programmable market mechanisms native to blockchains, but if a tree falls in the forest and no one tweets about it...
+
+**v0.1.0 Alpha**
+1. 💸 **Issuance** Securitisation of followers using a novel issuance method called
+   an "influence bonding curve"
+2. 🏭 **Minting** Creation of a social currency with the following properties that
+   is readily spent and equitably distributed.
+3. 👛 **Onboarding** “Walletless” onboarding for non-crypto users into the web3
+   ecosystem.
+4. 🍄 **Powerups** (walletless transfers) send tokens to any user on
+   twitter using a tweet.
+
+
+**Repo Contents**
+
+Monerepo for the Woke Network dApp client, smart-contracts, and back-end services. 
+
+## Economics
+
 
 ## Repo Structure
 Packages `@woke/PACKAGE`
